@@ -1,0 +1,104 @@
+.mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.confirmBox {
+  width: 90%;
+  max-width: 500px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  animation: scaleIn 0.3s ease;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  padding: 16px 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid #eee;
+}
+
+.message {
+  padding: 24px 20px;
+  font-size: 16px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px solid #eee;
+}
+
+.cancelBtn, .confirmBtn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #ddd;
+}
+
+.cancelBtn {
+  background-color: #fff;
+  color: #666;
+}
+
+.cancelBtn:hover {
+  background-color: #f5f5f5;
+}
+
+.confirmBtn {
+  background-color: #1890ff;
+  color: #fff;
+  border-color: #1890ff;
+}
+
+.confirmBtn:hover {
+  background-color: #096dd9;
+}
+
+.confirmBtn:disabled, .cancelBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

@@ -1,0 +1,205 @@
+/* Navbar.module.css */
+
+/* 基础导航栏样式 */
+.navbar {
+	box-sizing: border-box;
+	background-color: #ffffff;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	border-radius: 8px;
+	padding: 8px;
+}
+
+/* 横向排列 */
+.navbar__horizontal {
+	width: 100%;
+}
+
+.navbar__horizontal .navList {
+	display: flex;
+	align-items: center;
+}
+
+.navbar__horizontal .navItem {
+	margin-right: 4px;
+}
+
+.navbar__horizontal .navItem:last-child {
+	margin-right: 0;
+}
+
+/* 纵向排列 */
+.navbar__vertical {
+	width: 200px;
+}
+
+.navbar__vertical .navList {
+	display: flex;
+	flex-direction: column;
+}
+
+.navbar__vertical .navItem {
+	margin-bottom: 4px;
+}
+
+.navbar__vertical .navItem:last-child {
+	margin-bottom: 0;
+}
+
+/* 导航列表 */
+.navList {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+/* 导航项 */
+.navItem {
+	position: relative;
+}
+
+/* 导航链接/按钮 */
+.navLink {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 16px;
+	background: transparent;
+	border: none;
+	border-radius: 6px;
+	color: #666;
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	position: relative;
+	width: 100%;
+	min-width: max-content;
+}
+
+.navLink:hover:not(:disabled) {
+	background-color: #f5f5f5;
+	color: #333;
+	transform: translateY(-1px);
+}
+
+.navLink:focus {
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+/* 激活状态 */
+.navLink.active {
+	background-color: #007bff;
+	color: #ffffff;
+}
+
+.navLink.active:hover:not(:disabled) {
+	background-color: #0056b3;
+}
+
+/* 禁用状态 */
+.navLink:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	transform: none !important;
+}
+
+.navLink:disabled:hover {
+	background-color: transparent;
+	color: #666;
+}
+
+/* 图标样式 */
+.icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	font-size: 16px;
+}
+
+.iconImage {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+/* 文字样式 */
+.text {
+	white-space: nowrap;
+	font-weight: 500;
+}
+
+/* 激活状态指示器 */
+.activeIndicator {
+	position: absolute;
+	bottom: -8px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 4px;
+	height: 4px;
+	background-color: currentColor;
+	border-radius: 50%;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.navbar__horizontal .activeIndicator {
+	bottom: -8px;
+	width: 20px;
+	height: 3px;
+	border-radius: 2px;
+}
+
+.navbar__vertical .activeIndicator {
+	left: -8px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 3px;
+	height: 20px;
+	border-radius: 2px;
+}
+
+.navLink.active .activeIndicator {
+	opacity: 1;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+	.navbar__horizontal .navList {
+		flex-wrap: wrap;
+		gap: 4px;
+	}
+
+	.navbar__horizontal .navItem {
+		margin-right: 0;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.navLink {
+		padding: 10px 12px;
+		font-size: 13px;
+		justify-content: center;
+	}
+
+	.text {
+		white-space: normal;
+		text-align: center;
+		line-height: 1.2;
+	}
+}
+
+/* 紧凑模式 */
+.navbar.compact .navLink {
+	padding: 8px 12px;
+	font-size: 13px;
+}
+
+.navbar.compact .icon {
+	width: 16px;
+	height: 16px;
+	font-size: 14px;
+}
