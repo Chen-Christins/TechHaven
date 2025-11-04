@@ -1,18 +1,21 @@
 import './App.css';
-import { MessageProvider } from './components/message/Message'; // 导入MessageProvider
-import { ConfirmProvider } from './components/confirm/Confirm'; // 导入ConfirmProvider
-import AuthPage from './pages/auth/AuthPage';
+// import { MessageProvider } from './components/message/Message';
+// import { ConfirmProvider } from './components/confirm/Confirm';
+// import StatsPanel from './components/StatsPanel/StatsPanel';
+// import AuthPage from './pages/auth/AuthPage';
+// import SubscribeBox from './components/SubscribeBox/SubscribeBox';
 
 function App() {
   return (
-    // 外层包裹MessageProvider
-    <MessageProvider>
-      {/* 内层包裹ConfirmProvider */}
-      <ConfirmProvider>
-        {/* 子组件可以同时使用message和confirm功能 */}
-		<AuthPage />
-      </ConfirmProvider>
-    </MessageProvider>
+	<>
+		{/* <MessageProvider>
+			<ConfirmProvider>
+					<AuthPage />
+					<StatsPanel />
+			</ConfirmProvider>
+		</MessageProvider> */}
+		{/* <SubscribeBox /> */}
+	</>
   );
 }
 
