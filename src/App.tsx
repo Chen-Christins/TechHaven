@@ -1,20 +1,17 @@
 import './App.css';
-// import { MessageProvider } from './components/message/Message';
-// import { ConfirmProvider } from './components/confirm/Confirm';
-// import StatsPanel from './components/StatsPanel/StatsPanel';
+import { MessageProvider } from './components/message/Message';
+import { ConfirmProvider } from './components/confirm/Confirm';
 // import AuthPage from './pages/auth/AuthPage';
-// import SubscribeBox from './components/SubscribeBox/SubscribeBox';
+import IndexPage from './pages/home/IndexPage';
 
 function App() {
   return (
 	<>
-		{/* <MessageProvider>
+		<MessageProvider>
 			<ConfirmProvider>
-					<AuthPage />
-					<StatsPanel />
+				<IndexPage />
 			</ConfirmProvider>
-		</MessageProvider> */}
-		{/* <SubscribeBox /> */}
+		</MessageProvider>
 	</>
   );
 }

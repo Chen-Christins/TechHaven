@@ -16,10 +16,12 @@ export interface StatsData {
   totalVisitors: number;
 }
 
-// 分类类型
+// 二级分类类型（支持父分类→子分类）
 export interface Category {
-  name: string;
-  count: number;
+  id: number;           // 分类唯一标识
+  name: string;         // 分类名称
+  count: number;        // 该分类下的文章总数（含子分类）
+  children?: Category[]; // 子分类（可选，二级分类）
 }
 
 // 标签类型
