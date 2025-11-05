@@ -5,12 +5,13 @@ import StatsPanel from "../../components/StatsPanel/StatsPanel";
 import SubscribeBox from "../../components/SubscribeBox/SubscribeBox";
 import Calendar from "../../components/calendar/Calendar";
 import CategoryPanel from "../../components/categoryPanel/CategoryPanel";
+import Navbar from "../../components/navbar/Navbar";
 
 const IndexPage: React.FC = () => {
 	return (
 		<div className={styles.index}>
 			{/* 顶部导航栏 */}
-			{/* <Navbar /> */}
+			<Navbar />
 
 			{/* 主内容区（左右分栏） */}
 			<div className={styles.mainContent}>

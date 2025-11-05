@@ -1,107 +1,181 @@
-import React, { useState, type MouseEvent } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { FaHome, FaThList, FaTags, FaUser, FaBars, FaSignOutAlt, FaCog, FaUserCircle } from 'react-icons/fa';
 import styles from './Navbar.module.css';
 
-// 定义导航项类型
-interface NavItem {
-	text: string;
-	icon?: React.ReactNode | string | React.ComponentType;
-	onClick?: (event: MouseEvent<HTMLButtonElement>, index: number) => void;
-	disabled?: boolean;
+// 用户信息类型
+interface User {
+  name: string;
+  avatar: string;
+  role: string; // 用于显示用户身份（如博主/访客）
 }
 
-// 定义组件属性类型
-interface NavbarProps {
-	items: NavItem[];
-	activeIndex?: number;
-	onItemClick?: (index: number) => void;
-	className?: string;
-	orientation?: 'horizontal' | 'vertical';
-}
+const Navbar: React.FC = () => {
+  // 状态管理
+  const [isScrolled, setIsScrolled] = useState(false); // 滚动状态（控制导航栏样式变化）
+  const [userMenuOpen, setUserMenuOpen] = useState(false); // 用户下拉菜单状态
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // 移动端菜单状态
+  const userMenuRef = useRef<HTMLDivElement>(null); // 用户菜单DOM引用
 
-const Navbar: React.FC<NavbarProps> = ({
-	items = [],
-	activeIndex = 0,
-	onItemClick,
-	className = '',
-	orientation = 'horizontal',
-	...props
-}) => {
-	const [currentActive, setCurrentActive] = useState<number>(activeIndex);
+  // 模拟用户数据
+  const currentUser: User = {
+    name: "张小明",
+    avatar: "https://picsum.photos/id/64/200", // 占位头像
+    role: "博主"
+  };
 
-	const handleItemClick = (index: number, itemOnClick?: NavItem['onClick']) => (e: MouseEvent<HTMLButtonElement>) => {
-		setCurrentActive(index);
+  // 导航链接数据（包含图标和路径）
+  const navLinks = [
+    { label: "首页", icon: <FaHome />, path: "/" },
+    { label: "分类", icon: <FaThList />, path: "/categories" },
+    { label: "标签", icon: <FaTags />, path: "/tags" },
+    { label: "关于", icon: <FaUser />, path: "/about" }
+  ];
 
-		// 调用自定义点击事件
-		if (itemOnClick) {
-			itemOnClick(e, index);
-		}
+  // 监听滚动事件，改变导航栏样式
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-		// 调用父组件的回调
-		if (onItemClick) {
-			onItemClick(index);
-		}
-	};
+  // 点击外部关闭用户菜单
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-	// 渲染图标辅助函数
-	const renderIcon = (icon: NavItem['icon']) => {
-		if (!icon) return null;
+  // 切换用户菜单
+  const toggleUserMenu = () => {
+    setUserMenuOpen(!userMenuOpen);
+  };
 
-		// 如果是字符串，可能是图片URL或emoji
-		if (typeof icon === 'string') {
-			// 检查是否是URL
-			if (icon.startsWith('http') || icon.startsWith('/')) {
-				return <img src={icon} alt="" className={styles.iconImage} />;
-			}
-			// 否则当作文本/emoji处理
-			return <span className={styles.iconText}>{icon}</span>;
-		}
+  // 渲染导航链接（桌面端）
+  const renderNavLinks = () => {
+    return (
+      <ul className={styles.navLinks}>
+        {navLinks.map((link, index) => (
+          <li key={index} className={styles.navItem}>
+            <a 
+              href={link.path} 
+              className={styles.navLink}
+              // 假设首页为当前活跃页
+              data-active={link.path === "/"}
+            >
+              <span className={styles.linkIcon}>{link.icon}</span>
+              <span className={styles.linkText}>{link.label}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    );
+  };
 
-		// 如果是函数组件，渲染它
-		if (typeof icon === 'function') {
-			const IconComponent = icon;
-			return <IconComponent />;
-		}
+  // 渲染移动端菜单
+  const renderMobileMenu = () => {
+    return (
+      <div className={`${styles.mobileMenu} ${mobileMenuOpen ? styles.mobileMenuOpen : ''}`}>
+        <ul className={styles.mobileNavLinks}>
+          {navLinks.map((link, index) => (
+            <li key={index} className={styles.mobileNavItem}>
+              <a 
+                href={link.path} 
+                className={styles.mobileNavLink}
+                onClick={() => setMobileMenuOpen(false)} // 点击后关闭菜单
+              >
+                <span className={styles.mobileLinkIcon}>{link.icon}</span>
+                <span className={styles.mobileLinkText}>{link.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
 
-		// 如果是React元素，直接渲染
-		return icon;
-	};
+  return (
+    <header className={`${styles.navbar} ${isScrolled ? styles.navbarScrolled : ''}`}>
+      <div className={styles.container}>
+        {/* 左侧Logo和导航 */}
+        <div className={styles.leftSection}>
+          {/* Logo */}
+          <a href="/" className={styles.logo}>
+            <span className={styles.logoText}>TechBlog</span>
+          </a>
 
-	return (
-		<nav
-			className={`${styles.navbar} ${styles[`navbar__${orientation}`]} ${className}`}
-			{...props}
-		>
-			<ul className={styles.navList}>
-				{items.map((item, index) => {
-					const isActive = index === currentActive;
+          {/* 桌面端导航链接 */}
+          <div className={styles.desktopNav}>
+            {renderNavLinks()}
+          </div>
 
-					return (
-						<li key={index} className={styles.navItem}>
-							<button
-								type="button"
-								className={`${styles.navLink} ${isActive ? styles.active : ''}`}
-								onClick={handleItemClick(index, item.onClick)}
-								disabled={item.disabled}
-							>
-								{/* 图标部分 */}
-								{item.icon && (
-									<span className={styles.icon}>
-										{renderIcon(item.icon)}
-									</span>
-								)}
+          {/* 移动端菜单按钮 */}
+          <button 
+            className={styles.mobileMenuBtn}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "关闭菜单" : "打开菜单"}
+          >
+            <FaBars className={styles.menuIcon} />
+          </button>
+        </div>
 
-								{/* 文字内容 */}
-								<span className={styles.text}>{item.text}</span>
+        {/* 右侧用户区域 */}
+        <div className={styles.rightSection} ref={userMenuRef}>
+          <div className={styles.userArea} onClick={toggleUserMenu}>
+            {/* 用户头像 */}
+            <div className={styles.avatarContainer}>
+              <img 
+                src={currentUser.avatar} 
+                alt={currentUser.name}
+                className={styles.avatar}
+              />
+              {/* 在线状态指示器 */}
+              <span className={styles.statusIndicator}></span>
+            </div>
 
-								{/* 激活状态指示器 */}
-								{isActive && <div className={styles.activeIndicator}></div>}
-							</button>
-						</li>
-					);
-				})}
-			</ul>
-		</nav>
-	);
+            {/* 用户信息（桌面端显示） */}
+            <div className={styles.userInfo}>
+              <div className={styles.userName}>{currentUser.name}</div>
+              <div className={styles.userRole}>{currentUser.role}</div>
+            </div>
+          </div>
+
+          {/* 用户下拉菜单 */}
+          <div className={`${styles.userMenu} ${userMenuOpen ? styles.userMenuOpen : ''}`}>
+            <ul className={styles.menuItems}>
+              <li className={styles.menuItem}>
+                <a href="/profile" className={styles.menuLink}>
+                  <FaUserCircle className={styles.menuIcon} />
+                  <span>个人中心</span>
+                </a>
+              </li>
+              {/* <li className={styles.menuItem}>
+                <a href="/settings" className={styles.menuLink}>
+                  <FaCog className={styles.menuIcon} />
+                  <span>设置</span>
+                </a>
+              </li> */}
+              <li className={styles.menuDivider}></li>
+              <li className={styles.menuItem}>
+                <a href="/logout" className={styles.menuLink} style={{ color: '#ef4444' }}>
+                  <FaSignOutAlt className={styles.menuIcon} />
+                  <span>退出登录</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* 移动端菜单 */}
+      {renderMobileMenu()}
+    </header>
+  );
 };
 
 export default Navbar;

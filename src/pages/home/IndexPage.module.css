@@ -8,22 +8,23 @@
   display: flex;
   gap: 2rem;
   min-width: 768px;
-  /* min-width: 1400px; */
-  max-width: 80%;
+  max-width: 1560px;
   margin: 2rem auto;
   padding: 0 1rem;
+  padding-top: 48px;
 }
 
 .leftColumn {
   flex: 2;
-  /* min-width: 768px; */
+  min-width: 400px;
 }
 
 .rightColumn {
   flex: 1;
   display: flex;
   flex-direction: column;
-  max-width: 768px;
+  max-width: 460px;
+  min-width: 320px;
   gap: 1rem;
 }
 
@@ -32,7 +33,14 @@
   .mainContent {
     flex-direction: column;
   }
+  .leftColumn {
+	flex: 2;
+	max-width: 768px;
+	min-width: 400px;
+  }
   .rightColumn {
 	padding: 0 1rem;
+	max-width: 768px;
+	min-width: 400px;
   }
 }
