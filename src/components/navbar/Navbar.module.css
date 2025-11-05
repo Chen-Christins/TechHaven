@@ -206,7 +206,8 @@
     right: 0;
     width: 135px;
     background-color: #1e293b;
-    border-radius: 10px;
+    /* background-color: #ffffff; */
+    border-radius: 5px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
     padding: 0.5rem 0;
     opacity: 0;
@@ -263,7 +264,6 @@
 .menuDivider {
     height: 1px;
     background-color: #334155;
-    margin: 0.5rem 0;
 }
 
 /* 移动端菜单按钮 */

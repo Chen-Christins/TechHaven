@@ -1,7 +1,8 @@
 // ExampleUsage.tsx
 import React from 'react';
-import ArticleView from '../components/articleView/ArticleView';
+import ArticleView from '../pages/articleView/ArticleView';
 import Footer from '../components/footer/Footer';
+import Navbar from '../components/navbar/Navbar';
 
 const ExampleUsage: React.FC = () => {
 	// 示例Markdown内容，包含代码和公式
@@ -10,7 +11,7 @@ const ExampleUsage: React.FC = () => {
 
 ## 代码示例
 
-以下是一个TypeScript函数示例：
+以下是一个 TypeScript 函数示例：
 
 \`\`\`typescript
 function calculateArea(radius: number): number {
@@ -69,6 +70,7 @@ $$
 
 	return (
 		<>
+            <Navbar />
 			<ArticleView content={markdownContent} />
 			<Footer companyName="TechBlog" startYear={2025} />
 		</>

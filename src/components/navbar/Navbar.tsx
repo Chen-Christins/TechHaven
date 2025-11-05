@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaHome, FaThList, FaTags, FaUser, FaBars, FaSignOutAlt, FaCog, FaUserCircle } from 'react-icons/fa';
+import { FaHome, FaThList, FaPen, FaUser, FaBars, FaSignOutAlt, FaCog, FaUserCircle } from 'react-icons/fa';
 import styles from './Navbar.module.css';
 import SearchBox from '../searchBox/SearchBox';
 
@@ -166,6 +166,13 @@ const Navbar: React.FC = () => {
 								<a href="/profile" className={styles.menuLink}>
 									<FaUserCircle className={styles.menuIcon} />
 									<span>个人中心</span>
+								</a>
+							</li>
+							<li className={styles.menuDivider}></li>
+                            <li className={styles.menuItem}>
+								<a href="/article/create" className={styles.menuLink}>
+									<FaPen className={styles.menuIcon} />
+									<span>撰写文章</span>
 								</a>
 							</li>
 							<li className={styles.menuDivider}></li>

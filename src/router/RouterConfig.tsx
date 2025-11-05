@@ -15,7 +15,7 @@ const RouterConfig: React.FC = () => {
 
             {/* 登录页 */}
             <Route path="/auth" element={<AuthPage />} />
-
+            
             {/* 文章详情页 */}
             <Route path="/article/:id" element={<ArticleView />} />
 
