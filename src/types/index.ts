@@ -26,6 +26,7 @@ export interface Category {
 
 // 标签类型
 export interface Tag {
+  id: string;
+  color: string; // 背景颜色
   name: string;
-  count: number;
 }

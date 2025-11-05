@@ -110,24 +110,23 @@ const ArticleView: React.FC<ArticleViewProps> = ({ content, className = '' }) =>
     };
   }, [headings]);
 
-  // 处理目录点击
+  // 修复目录点击跳转
   const handleTocClick = useCallback((id: string, event: React.MouseEvent) => {
     event.preventDefault();
-    
-    setTimeout(() => {
-      const element = document.getElementById(id);
-      if (element) {
-        const elementTop = element.getBoundingClientRect().top + window.pageYOffset;
-        const offset = 100;
-        
-        window.scrollTo({
-          top: elementTop - offset,
-          behavior: 'smooth'
-        });
 
-        setActiveId(id);
-      }
-    }, 100);
+    const element = document.getElementById(id);
+	if (element) {
+	  element.scrollIntoView({ 
+		behavior: 'smooth',
+		block: 'start'
+	  });
+
+      // 更新活跃ID
+      setActiveId(id);
+      
+      // 更新URL的hash（可选）
+      window.history.pushState(null, '', `#${id}`);
+    }
   }, []);
 
   // 复制代码功能

@@ -6,8 +6,23 @@ import SubscribeBox from "../../components/SubscribeBox/SubscribeBox";
 import Calendar from "../../components/calendar/Calendar";
 import CategoryPanel from "../../components/categoryPanel/CategoryPanel";
 import Navbar from "../../components/navbar/Navbar";
+import Footer from "../../components/footer/Footer";
+import TagPanel from "../../components/tagPanel/TagPanel";
 
 const IndexPage: React.FC = () => {
+	const mockTags = [
+		{ id: '1', color: '#3b82f6', name: 'React' },
+		{ id: '2', color: '#ef4444', name: 'TypeScript' },
+		{ id: '3', color: '#10b981', name: 'CSS Modules' },
+		{ id: '4', color: '#f59e0b', name: '前端开发' },
+		{ id: '5', color: '#8b5cf6', name: '组件库' },
+		{ id: '6', color: '#ec4899', name: 'UI设计' },
+		{ id: '7', color: '#ec4899', name: 'UI设计' },
+		{ id: '8', color: '#ec4899', name: 'UI设计' },
+		{ id: '9', color: '#ec4899', name: 'UI设计' },
+		{ id: '10', color: '#ec4899', name: 'UI设计' },
+		{ id: '11', color: '#ec4899', name: 'UI设计' },
+	];
 	return (
 		<div className={styles.index}>
 			{/* 顶部导航栏 */}
@@ -22,13 +37,18 @@ const IndexPage: React.FC = () => {
 
 				{/* 右侧：侧边栏（占1/3宽度） */}
 				<div className={styles.rightColumn}>
+					<TagPanel tags={mockTags}/>
 					<SubscribeBox />
 					<CategoryPanel />
-					{/* <TagPanel /> */}
 					<StatsPanel />
 					<Calendar />
 				</div>
 			</div>
+			<Footer
+				companyName="TechBlog"
+				startYear={2025}
+				authorName="chen"
+			/>
 		</div>
 	)
 };

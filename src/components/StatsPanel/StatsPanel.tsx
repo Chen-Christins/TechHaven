@@ -16,22 +16,26 @@ const StatsPanel: React.FC = () => {
     { 
       title: "在线用户", 
       value: mockStats.onlineUsers, 
-      icon: <FaUsers className={styles.statIcon} /> 
+      icon: <FaUsers className={styles.statIcon}/>,
+      color: styles.online,
     },
     { 
       title: "今日访问", 
       value: mockStats.todayVisits, 
-      icon: <FaChartLine className={styles.statIcon} /> 
+      icon: <FaChartLine className={styles.statIcon}/>,
+      color: styles.today,
     },
     { 
       title: "累计访问", 
       value: mockStats.totalVisits.toLocaleString(), 
-      icon: <FaEye className={styles.statIcon} /> 
+      icon: <FaEye className={styles.statIcon}/>,
+      color: styles.total,
     },
     { 
       title: "累计访客", 
       value: mockStats.totalVisitors.toLocaleString(), 
-      icon: <FaUserPlus className={styles.statIcon} /> 
+      icon: <FaUserPlus className={styles.statIcon}/>,
+      color: styles.visitors,
     }
   ];
 
@@ -41,7 +45,7 @@ const StatsPanel: React.FC = () => {
       <div className={styles.statsGrid}>
         {statsItems.map((item, index) => (
           <div key={index} className={styles.statItem}>
-            {item.icon}
+            <div className={item.color}>{item.icon}</div>
             <div className={styles.statInfo}>
               <div className={styles.statValue}>{item.value}</div>
               <div className={styles.statTitle}>{item.title}</div>

@@ -1,96 +1,96 @@
 .calendar {
-  background-color: white;
-  border-radius: 8px;
-  padding: 1.2rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  margin-bottom: 1.5rem;
+	background-color: white;
+    border-radius: 8px;
+    padding: 1.2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 0.5rem;
 }
 
 .panelTitle {
-  font-size: 1.2rem;
-  color: #2c3e50;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #ecf0f1;
-  padding-bottom: 0.5rem;
+	font-size: 1.2rem;
+	color: #2c3e50;
+	margin-bottom: 0.8rem;
+	border-bottom: 1px solid #ecf0f1;
+	padding-bottom: 0.5rem;
 }
 
 .calendarHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.8rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.8rem;
 }
 
 .monthBtn {
-  background: none;
-  border: none;
-  color: #3498db;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.3s;
+	background: none;
+	border: none;
+	color: #3498db;
+	font-size: 1.2rem;
+	cursor: pointer;
+	padding: 0.2rem 0.5rem;
+	border-radius: 4px;
+	transition: background-color 0.3s;
 }
 
 .monthBtn:hover {
-  background-color: #f1f5f9;
+	background-color: #f1f5f9;
 }
 
 .monthYear {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #2c3e50;
+	font-size: 1rem;
+	font-weight: 500;
+	color: #2c3e50;
 }
 
 .weekDays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  margin-bottom: 4px;
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 4px;
+	margin-bottom: 4px;
 }
 
 .weekDay {
-  text-align: center;
-  font-size: 0.9rem;
-  color: #7f8c8d;
-  padding: 0.3rem 0;
+	text-align: center;
+	font-size: 0.9rem;
+	color: #7f8c8d;
+	padding: 0.3rem 0;
 }
 
 .calendarDays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 4px;
 }
 
 .calendarDay {
-  text-align: center;
-  padding: 0.5rem 0;
-  border-radius: 4px;
-  position: relative;
-  cursor: pointer;
-  transition: background-color 0.3s;
+	text-align: center;
+	padding: 0.5rem 0;
+	border-radius: 4px;
+	position: relative;
+	cursor: pointer;
+	transition: background-color 0.3s;
 }
 
 .calendarDay:hover {
-  background-color: #f1f5f9;
+	background-color: #f1f5f9;
 }
 
 .otherMonth {
-  color: #bdc3c7;
+	color: #bdc3c7;
 }
 
 .hasArticle {
-  color: #3498db;
-  font-weight: 500;
+	color: #3498db;
+	font-weight: 500;
 }
 
 .articleDot {
-  position: absolute;
-  bottom: 3px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
-  background-color: #3498db;
-  border-radius: 50%;
+	position: absolute;
+	bottom: 3px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 6px;
+	height: 6px;
+	background-color: #3498db;
+	border-radius: 50%;
 }

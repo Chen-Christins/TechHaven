@@ -1,22 +1,19 @@
 /* 面板容器 */
 .categoryPanel {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.2rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   margin-bottom: 0.5rem;
-  overflow: hidden;
 }
 
 /* 面板标题 */
 .panelTitle {
-  font-size: 1.3rem;
-  color: #1e293b;
-  margin: 0 0 1.2rem 0;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid #f1f5f9;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+	font-size: 1.2rem;
+	color: #2c3e50;
+	margin-bottom: 0.8rem;
+	border-bottom: 1px solid #ecf0f1;
+	padding-bottom: 0.5rem;
 }
 
 /* 分类列表容器 */
@@ -28,7 +25,7 @@
 
 /* 父分类项 */
 .parentItem {
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.1rem;
   position: relative;
 }
 
@@ -40,6 +37,7 @@
   border-radius: 8px;
   transition: background-color 0.2s ease;
   padding: 0.2rem 0;
+  height: 38px;
 }
 
 .parentCategory:hover {
@@ -54,7 +52,6 @@
   align-items: center;
   justify-content: center;
   color: #94a3b8;
-  margin-right: 0.5rem;
   flex-shrink: 0;
 }
 
@@ -70,10 +67,11 @@
   align-items: center;
   flex: 1;
   text-decoration: none;
-  padding: 0.8rem 0.5rem;
+  padding: 0.8rem 0.2rem;
   color: #1e293b;
   font-weight: 500;
   font-size: 1rem;
+  height: 38px;
 }
 
 .parentName {
@@ -122,12 +120,12 @@
   padding: 0;
   margin: 0;
   border-left: 1px dashed #e2e8f0; /* 虚线分隔层级 */
-  padding-left: 1.2rem;
+  padding-left: 0.5rem;
 }
 
 /* 子分类项 */
 .childItem {
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.1rem;
 }
 
 /* 子分类链接 */
@@ -136,11 +134,12 @@
   justify-content: space-between;
   align-items: center;
   text-decoration: none;
-  padding: 0.6rem 0.5rem;
+  padding: 0.0rem 0.4rem;
   color: #475569;
   font-size: 0.95rem;
   border-radius: 6px;
   transition: all 0.2s ease;
+  height: 32px;
 }
 
 .childLink:hover {

@@ -42,7 +42,7 @@ const mockCategories: Category[] = [
 
 const CategoryPanel: React.FC = () => {
 	const [expanded, setExpanded] = useState<Record<number, boolean>>({
-		1: true // 默认展开第一个分类
+		1: false // 默认展开第一个分类
 	});
 
 	const toggleExpand = (categoryId: number) => {

@@ -58,7 +58,7 @@ const Calendar: React.FC = () => {
         </button>
         <span className={styles.monthYear}>{year}年 {monthNames[month]}</span>
         <button 
-          className={styles.monthBtn} 
+          className={styles.monthBtn}
           onClick={() => changeMonth('next')}
         >
           →

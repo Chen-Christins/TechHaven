@@ -1,181 +1,189 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaHome, FaThList, FaTags, FaUser, FaBars, FaSignOutAlt, FaCog, FaUserCircle } from 'react-icons/fa';
 import styles from './Navbar.module.css';
+import SearchBox from '../searchBox/SearchBox';
 
 // 用户信息类型
 interface User {
-  name: string;
-  avatar: string;
-  role: string; // 用于显示用户身份（如博主/访客）
+	name: string;
+	avatar: string;
+	role: string; // 用于显示用户身份（如博主/访客）
 }
 
 const Navbar: React.FC = () => {
-  // 状态管理
-  const [isScrolled, setIsScrolled] = useState(false); // 滚动状态（控制导航栏样式变化）
-  const [userMenuOpen, setUserMenuOpen] = useState(false); // 用户下拉菜单状态
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // 移动端菜单状态
-  const userMenuRef = useRef<HTMLDivElement>(null); // 用户菜单DOM引用
+	// 状态管理
+	const [isScrolled, setIsScrolled] = useState(false); // 滚动状态（控制导航栏样式变化）
+	const [userMenuOpen, setUserMenuOpen] = useState(false); // 用户下拉菜单状态
+	const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // 移动端菜单状态
+	const userMenuRef = useRef<HTMLDivElement>(null); // 用户菜单DOM引用
 
-  // 模拟用户数据
-  const currentUser: User = {
-    name: "张小明",
-    avatar: "https://picsum.photos/id/64/200", // 占位头像
-    role: "博主"
-  };
+	// 模拟用户数据
+	const currentUser: User = {
+		name: "张小明",
+		avatar: "https://picsum.photos/id/64/200", // 占位头像
+		role: "博主"
+	};
 
-  // 导航链接数据（包含图标和路径）
-  const navLinks = [
-    { label: "首页", icon: <FaHome />, path: "/" },
-    { label: "分类", icon: <FaThList />, path: "/categories" },
-    { label: "标签", icon: <FaTags />, path: "/tags" },
-    { label: "关于", icon: <FaUser />, path: "/about" }
-  ];
+	// 导航链接数据（包含图标和路径）
+	const navLinks = [
+		{ label: "首页", icon: <FaHome />, path: "/" },
+		{ label: "分类", icon: <FaThList />, path: "/categories" },
+		{ label: "标签", icon: <FaTags />, path: "/tags" },
+		{ label: "关于", icon: <FaUser />, path: "/about" },
+	];
 
-  // 监听滚动事件，改变导航栏样式
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+	// 监听滚动事件，改变导航栏样式
+	useEffect(() => {
+		const handleScroll = () => {
+			setIsScrolled(window.scrollY > 10);
+		};
+		window.addEventListener('scroll', handleScroll);
+		return () => window.removeEventListener('scroll', handleScroll);
+	}, []);
 
-  // 点击外部关闭用户菜单
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setUserMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+	// 点击外部关闭用户菜单
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+				setUserMenuOpen(false);
+			}
+		};
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => document.removeEventListener('mousedown', handleClickOutside);
+	}, []);
 
-  // 切换用户菜单
-  const toggleUserMenu = () => {
-    setUserMenuOpen(!userMenuOpen);
-  };
+	// 切换用户菜单
+	const toggleUserMenu = () => {
+		setUserMenuOpen(!userMenuOpen);
+	};
 
-  // 渲染导航链接（桌面端）
-  const renderNavLinks = () => {
-    return (
-      <ul className={styles.navLinks}>
-        {navLinks.map((link, index) => (
-          <li key={index} className={styles.navItem}>
-            <a 
-              href={link.path} 
-              className={styles.navLink}
-              // 假设首页为当前活跃页
-              data-active={link.path === "/"}
-            >
-              <span className={styles.linkIcon}>{link.icon}</span>
-              <span className={styles.linkText}>{link.label}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    );
-  };
+	// 渲染导航链接（桌面端）
+	const renderNavLinks = () => {
+		return (
+			<ul className={styles.navLinks}>
+				{navLinks.map((link, index) => (
+					<li key={index} className={styles.navItem}>
+						<a
+							href={link.path}
+							className={styles.navLink}
+							// 假设首页为当前活跃页
+							data-active={link.path === "/"}
+						>
+							<span className={styles.linkIcon}>{link.icon}</span>
+							<span className={styles.linkText}>{link.label}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		);
+	};
 
-  // 渲染移动端菜单
-  const renderMobileMenu = () => {
-    return (
-      <div className={`${styles.mobileMenu} ${mobileMenuOpen ? styles.mobileMenuOpen : ''}`}>
-        <ul className={styles.mobileNavLinks}>
-          {navLinks.map((link, index) => (
-            <li key={index} className={styles.mobileNavItem}>
-              <a 
-                href={link.path} 
-                className={styles.mobileNavLink}
-                onClick={() => setMobileMenuOpen(false)} // 点击后关闭菜单
-              >
-                <span className={styles.mobileLinkIcon}>{link.icon}</span>
-                <span className={styles.mobileLinkText}>{link.label}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  };
+	// 渲染移动端菜单
+	const renderMobileMenu = () => {
+		return (
+			<div className={`${styles.mobileMenu} ${mobileMenuOpen ? styles.mobileMenuOpen : ''}`}>
+				<ul className={styles.mobileNavLinks}>
+					{navLinks.map((link, index) => (
+						<li key={index} className={styles.mobileNavItem}>
+							<a
+								href={link.path}
+								className={styles.mobileNavLink}
+								onClick={() => setMobileMenuOpen(false)} // 点击后关闭菜单
+							>
+								<span className={styles.mobileLinkIcon}>{link.icon}</span>
+								<span className={styles.mobileLinkText}>{link.label}</span>
+							</a>
+						</li>
+					))}
+				</ul>
+			</div>
+		);
+	};
 
-  return (
-    <header className={`${styles.navbar} ${isScrolled ? styles.navbarScrolled : ''}`}>
-      <div className={styles.container}>
-        {/* 左侧Logo和导航 */}
-        <div className={styles.leftSection}>
-          {/* Logo */}
-          <a href="/" className={styles.logo}>
-            <span className={styles.logoText}>TechBlog</span>
-          </a>
+	const [searchValue, setSearchValue] = useState('');
+	const [searchResults, setSearchResults] = useState<string[]>([]);
+	const handleSearch = (value: string) => {
+		console.log('搜索:', value);
+		// 模拟搜索逻辑
+		setSearchResults([`结果1 (${value})`, `结果2 (${value})`, `结果3 (${value})`]);
+	};
 
-          {/* 桌面端导航链接 */}
-          <div className={styles.desktopNav}>
-            {renderNavLinks()}
-          </div>
+	const handleChange = (value: string) => {
+		setSearchValue(value);
+	};
 
-          {/* 移动端菜单按钮 */}
-          <button 
-            className={styles.mobileMenuBtn}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "关闭菜单" : "打开菜单"}
-          >
-            <FaBars className={styles.menuIcon} />
-          </button>
-        </div>
+	return (
+		<header className={`${styles.navbar} ${isScrolled ? styles.navbarScrolled : ''}`}>
+			<div className={styles.container}>
+				{/* 左侧Logo和导航 */}
+				<div className={styles.leftSection}>
+					{/* Logo */}
+					<a href="/" className={styles.logo}>
+						<span className={styles.logoText}>TechBlog</span>
+					</a>
 
-        {/* 右侧用户区域 */}
-        <div className={styles.rightSection} ref={userMenuRef}>
-          <div className={styles.userArea} onClick={toggleUserMenu}>
-            {/* 用户头像 */}
-            <div className={styles.avatarContainer}>
-              <img 
-                src={currentUser.avatar} 
-                alt={currentUser.name}
-                className={styles.avatar}
-              />
-              {/* 在线状态指示器 */}
-              <span className={styles.statusIndicator}></span>
-            </div>
+					{/* 桌面端导航链接 */}
+					<div className={styles.desktopNav}>
+						{renderNavLinks()}
+					</div>
 
-            {/* 用户信息（桌面端显示） */}
-            <div className={styles.userInfo}>
-              <div className={styles.userName}>{currentUser.name}</div>
-              <div className={styles.userRole}>{currentUser.role}</div>
-            </div>
-          </div>
+					{/* 移动端菜单按钮 */}
+					<button
+						className={styles.mobileMenuBtn}
+						onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+						aria-label={mobileMenuOpen ? "关闭菜单" : "打开菜单"}
+					>
+						<FaBars className={styles.menuIcon} />
+					</button>
+				</div>
 
-          {/* 用户下拉菜单 */}
-          <div className={`${styles.userMenu} ${userMenuOpen ? styles.userMenuOpen : ''}`}>
-            <ul className={styles.menuItems}>
-              <li className={styles.menuItem}>
-                <a href="/profile" className={styles.menuLink}>
-                  <FaUserCircle className={styles.menuIcon} />
-                  <span>个人中心</span>
-                </a>
-              </li>
-              {/* <li className={styles.menuItem}>
-                <a href="/settings" className={styles.menuLink}>
-                  <FaCog className={styles.menuIcon} />
-                  <span>设置</span>
-                </a>
-              </li> */}
-              <li className={styles.menuDivider}></li>
-              <li className={styles.menuItem}>
-                <a href="/logout" className={styles.menuLink} style={{ color: '#ef4444' }}>
-                  <FaSignOutAlt className={styles.menuIcon} />
-                  <span>退出登录</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+				<SearchBox placeholder="搜索文章..." onSearch={handleSearch} onChange={handleChange} />
+				{/* 右侧用户区域 */}
+				<div className={styles.rightSection} ref={userMenuRef}>
+					<div className={styles.userArea} onClick={toggleUserMenu}>
+						{/* 用户头像 */}
+						<div className={styles.avatarContainer}>
+							<img
+								src={currentUser.avatar}
+								alt={currentUser.name}
+								className={styles.avatar}
+							/>
+							{/* 在线状态指示器 */}
+							<span className={styles.statusIndicator}></span>
+						</div>
 
-      {/* 移动端菜单 */}
-      {renderMobileMenu()}
-    </header>
-  );
+						{/* 用户信息（桌面端显示） */}
+						<div className={styles.userInfo}>
+							<div className={styles.userName}>{currentUser.name}</div>
+							<div className={styles.userRole}>{currentUser.role}</div>
+						</div>
+					</div>
+
+					{/* 用户下拉菜单 */}
+					<div className={`${styles.userMenu} ${userMenuOpen ? styles.userMenuOpen : ''}`}>
+						<ul className={styles.menuItems}>
+							<li className={styles.menuItem}>
+								<a href="/profile" className={styles.menuLink}>
+									<FaUserCircle className={styles.menuIcon} />
+									<span>个人中心</span>
+								</a>
+							</li>
+							<li className={styles.menuDivider}></li>
+							<li className={styles.menuItem}>
+								<a href="/logout" className={styles.menuLink} style={{ color: '#ef4444' }}>
+									<FaSignOutAlt className={styles.menuIcon} />
+									<span>退出登录</span>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+			{/* 移动端菜单 */}
+			{renderMobileMenu()}
+		</header>
+	);
 };
 
 export default Navbar;

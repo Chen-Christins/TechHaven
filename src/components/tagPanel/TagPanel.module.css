@@ -1,0 +1,87 @@
+.tagPanel {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.5rem;
+}
+
+.panelTitle {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid #ecf0f1;
+    padding-bottom: 0.5rem;
+}
+
+.content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.tag:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 尺寸变体 */
+.tagSmall {
+    padding: 4px 8px;
+    font-size: 11px;
+    border-radius: 5px;
+}
+
+.tagMedium {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 5px;
+}
+
+.tagLarge {
+    padding: 4px 8px;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+/* 面板布局变体 */
+.panelInline {
+    display: inline-flex;
+    width: auto;
+}
+
+.panelVertical {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.panelCentered {
+    justify-content: center;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .tagPanel {
+        gap: 6px;
+        padding: 15px;
+    }
+
+    .tag {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}

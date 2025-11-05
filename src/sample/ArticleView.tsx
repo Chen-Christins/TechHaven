@@ -1,10 +1,11 @@
 // ExampleUsage.tsx
 import React from 'react';
 import ArticleView from '../components/articleView/ArticleView';
+import Footer from '../components/footer/Footer';
 
 const ExampleUsage: React.FC = () => {
-  // 示例Markdown内容，包含代码和公式
-  const markdownContent = `
+	// 示例Markdown内容，包含代码和公式
+	const markdownContent = `
 这是一篇包含代码和数学公式的示例文章。
 
 ## 代码示例
@@ -66,9 +67,12 @@ $$
 这是一张示例图片的说明文字。
   `;
 
-  return (
-    <ArticleView content={markdownContent} />
-  );
+	return (
+		<>
+			<ArticleView content={markdownContent} />
+			<Footer companyName='TechBlog' startYear={2025} authorName='chen' />
+		</>
+	);
 };
 
 export default ExampleUsage;
