@@ -70,7 +70,7 @@ $$
 	return (
 		<>
 			<ArticleView content={markdownContent} />
-			<Footer companyName='TechBlog' startYear={2025} authorName='chen' />
+			<Footer companyName="TechBlog" startYear={2025} />
 		</>
 	);
 };

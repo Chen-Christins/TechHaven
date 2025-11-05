@@ -14,14 +14,14 @@ const IndexPage: React.FC = () => {
 		{ id: '1', color: '#3b82f6', name: 'React' },
 		{ id: '2', color: '#ef4444', name: 'TypeScript' },
 		{ id: '3', color: '#10b981', name: 'CSS Modules' },
-		{ id: '4', color: '#f59e0b', name: '前端开发' },
-		{ id: '5', color: '#8b5cf6', name: '组件库' },
-		{ id: '6', color: '#ec4899', name: 'UI设计' },
-		{ id: '7', color: '#ec4899', name: 'UI设计' },
-		{ id: '8', color: '#ec4899', name: 'UI设计' },
-		{ id: '9', color: '#ec4899', name: 'UI设计' },
-		{ id: '10', color: '#ec4899', name: 'UI设计' },
-		{ id: '11', color: '#ec4899', name: 'UI设计' },
+		// { id: '4', color: '#f59e0b', name: '前端开发' },
+		// { id: '5', color: '#8b5cf6', name: '组件库' },
+		// { id: '6', color: '#ec4899', name: 'UI设计' },
+		// { id: '7', color: '#ec4899', name: 'UI设计' },
+		// { id: '8', color: '#ec4899', name: 'UI设计' },
+		// { id: '9', color: '#ec4899', name: 'UI设计' },
+		// { id: '10', color: '#ec4899', name: 'UI设计' },
+		// { id: '11', color: '#ec4899', name: 'UI设计' },
 	];
 	return (
 		<div className={styles.index}>
@@ -30,12 +30,12 @@ const IndexPage: React.FC = () => {
 
 			{/* 主内容区（左右分栏） */}
 			<div className={styles.mainContent}>
-				{/* 左侧：文章列表（占2/3宽度） */}
+				{/* 左侧：文章列表*/}
 				<div className={styles.leftColumn}>
 					<ArticleList />
 				</div>
 
-				{/* 右侧：侧边栏（占1/3宽度） */}
+				{/* 右侧：侧边栏 */}
 				<div className={styles.rightColumn}>
 					<TagPanel tags={mockTags}/>
 					<SubscribeBox />
@@ -44,11 +44,7 @@ const IndexPage: React.FC = () => {
 					<Calendar />
 				</div>
 			</div>
-			<Footer
-				companyName="TechBlog"
-				startYear={2025}
-				authorName="chen"
-			/>
+			<Footer companyName="TechBlog" startYear={2025} />
 		</div>
 	)
 };

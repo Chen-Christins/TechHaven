@@ -1,21 +1,18 @@
 import './App.css';
+import { BrowserRouter } from 'react-router-dom';
 import { MessageProvider } from './components/message/Message';
 import { ConfirmProvider } from './components/confirm/Confirm';
-// import AuthPage from './pages/auth/AuthPage';
-import IndexPage from './pages/home/IndexPage';
-// import ArticleView from "./sample/ArticleView";
+import RouterConfig from './router/RouterConfig';
 
 function App() {
   return (
-	<>
-		<MessageProvider>
-			<ConfirmProvider>
-				<IndexPage />
-				{/* <ArticleView /> */}
-				{/* <AuthPage /> */}
-			</ConfirmProvider>
-		</MessageProvider>
-	</>
+    <BrowserRouter>
+      <MessageProvider>
+        <ConfirmProvider>
+          <RouterConfig />
+        </ConfirmProvider>
+      </MessageProvider>
+    </BrowserRouter>
   );
 }
 

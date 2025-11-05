@@ -19,17 +19,17 @@ const Navbar: React.FC = () => {
 
 	// 模拟用户数据
 	const currentUser: User = {
-		name: "张小明",
+		name: "Admin",
 		avatar: "https://picsum.photos/id/64/200", // 占位头像
-		role: "博主"
+		role: "管理员"
 	};
 
 	// 导航链接数据（包含图标和路径）
 	const navLinks = [
 		{ label: "首页", icon: <FaHome />, path: "/" },
-		{ label: "分类", icon: <FaThList />, path: "/categories" },
-		{ label: "标签", icon: <FaTags />, path: "/tags" },
-		{ label: "关于", icon: <FaUser />, path: "/about" },
+		{ label: "登录", icon: <FaThList />, path: "/auth" },
+		// { label: "标签", icon: <FaTags />, path: "/tags" },
+		// { label: "关于", icon: <FaUser />, path: "/about" },
 	];
 
 	// 监听滚动事件，改变导航栏样式

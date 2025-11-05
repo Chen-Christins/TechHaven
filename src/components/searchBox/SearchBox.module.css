@@ -1,147 +1,147 @@
 .searchContainer {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  max-width: 280px;
-  margin: 0 auto;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
 }
 
 .searchInput {
-  flex: 1;
-  padding: 12px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px 0 0 8px;
-  font-size: 14px;
-  outline: none;
-  transition: all 0.2s ease;
-  background-color: white;
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px 0 0 8px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+    background-color: white;
 }
 
 .searchInput:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .searchInput::placeholder {
-  color: #9ca3af;
+    color: #9ca3af;
 }
 
 .searchButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 16px;
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 0 8px 8px 0;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 14px;
-  font-weight: 500;
-  min-width: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 50px;
 }
 
 .searchButton:hover {
-  background-color: #2563eb;
+    background-color: #2563eb;
 }
 
 .searchButton:active {
-  background-color: #1d4ed8;
+    background-color: #1d4ed8;
 }
 
 .searchButton:disabled {
-  background-color: #9ca3af;
-  cursor: not-allowed;
+    background-color: #9ca3af;
+    cursor: not-allowed;
 }
 
 .searchIcon {
-  width: 18px;
-  height: 18px;
+    width: 18px;
+    height: 18px;
 }
 
 .clearButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: #9ca3af;
-  cursor: pointer;
-  padding: 8px;
-  margin-left: -40px;
-  margin-right: 8px;
-  transition: color 0.2s ease;
-  border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 8px;
+    margin-left: -40px;
+    margin-right: 8px;
+    transition: color 0.2s ease;
+    border-radius: 50%;
 }
 
 .clearButton:hover {
-  color: #6b7280;
-  background-color: #f3f4f6;
+    color: #6b7280;
+    background-color: #f3f4f6;
 }
 
 /* 变体样式 */
 .variantOutline .searchInput {
-  border: 2px solid #e5e7eb;
-  background-color: #f9fafb;
+    border: 2px solid #e5e7eb;
+    background-color: #f9fafb;
 }
 
 .variantOutline .searchInput:focus {
-  border-color: #3b82f6;
-  background-color: white;
+    border-color: #3b82f6;
+    background-color: white;
 }
 
 .variantFilled .searchInput {
-  border: none;
-  background-color: #f3f4f6;
+    border: none;
+    background-color: #f3f4f6;
 }
 
 .variantFilled .searchInput:focus {
-  background-color: white;
-  box-shadow: 0 0 0 2px #3b82f6;
+    background-color: white;
+    box-shadow: 0 0 0 2px #3b82f6;
 }
 
 /* 尺寸样式 */
 .sizeSmall .searchInput,
 .sizeSmall .searchButton {
-  padding: 8px 12px;
-  font-size: 13px;
+    padding: 8px 12px;
+    font-size: 13px;
 }
 
 .sizeLarge .searchInput,
 .sizeLarge .searchButton {
-  padding: 16px 20px;
-  font-size: 16px;
+    padding: 16px 20px;
+    font-size: 16px;
 }
 
 /* 禁用状态 */
 .disabled .searchInput {
-  background-color: #f3f4f6;
-  color: #9ca3af;
-  cursor: not-allowed;
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
 }
 
 /* 错误状态 */
 .error .searchInput {
-  border-color: #ef4444;
+    border-color: #ef4444;
 }
 
 .error .searchInput:focus {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
 /* 响应式设计 */
 @media (max-width: 640px) {
-  .searchContainer {
-    max-width: 100%;
-  }
-  
-  .searchButtonText {
-    display: none;
-  }
-  
-  .searchButton {
-    min-width: 50px;
-  }
+    .searchContainer {
+        max-width: 100%;
+    }
+
+    .searchButtonText {
+        display: none;
+    }
+
+    .searchButton {
+        min-width: 50px;
+    }
 }

@@ -1,367 +1,368 @@
 /* 基础导航栏样式 */
 .navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 56px;
-  /* background-color: #0f172a; */
-  background-color: #ffffff;
-  color: #f8fafc;
-  z-index: 1000;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    /* background-color: #0f172a; */
+    background-color: #ffffff;
+    color: #f8fafc;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* 滚动时导航栏样式变化 */
 .navbarScrolled {
-  background-color: rgba(15, 23, 42, 0.95); /* 半透明效果 */
-  backdrop-filter: blur(8px);
-  height: 60px;
+    background-color: rgba(15, 23, 42, 0.95);
+    /* 半透明效果 */
+    backdrop-filter: blur(8px);
+    height: 60px;
 }
 
 .container {
-  max-width: 1560px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  height: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    max-width: 1560px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 /* 左侧区域（Logo + 导航） */
 .leftSection {
-  display: flex;
-  align-items: center;
-  gap: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
 }
 
 /* Logo样式 */
 .logo {
-  text-decoration: none;
-  display: flex;
-  align-items: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
 }
 
 .logoText {
-  font-size: 1.4rem;
-  font-weight: 700;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  letter-spacing: 0.02em;
-  transition: transform 0.2s ease;
+    font-size: 1.4rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 0.02em;
+    transition: transform 0.2s ease;
 }
 
 .logo:hover .logoText {
-  transform: scale(1.05);
+    transform: scale(1.05);
 }
 
 /* 桌面端导航链接 */
 .desktopNav {
-  display: block;
+    display: block;
 }
 
 .navLinks {
-  display: flex;
-  list-style: none;
-  /* gap: 0.2rem; */
-  margin: 0;
-  padding: 0;
+    display: flex;
+    list-style: none;
+    /* gap: 0.2rem; */
+    margin: 0;
+    padding: 0;
 }
 
 .navItem {
-  position: relative;
+    position: relative;
 }
 
 .navLink {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  color: #94a3b8;
-  text-decoration: none;
-  font-weight: 500;
-  border-radius: 5px;
-  transition: all 0.2s ease;
-  height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: 5px;
+    transition: all 0.2s ease;
+    height: 56px;
 }
 
 .navLink:hover {
-  background-color: rgba(148, 163, 184, 0.1);
+    background-color: rgba(148, 163, 184, 0.1);
 }
 
 /* 活跃状态链接 */
 .navLink[data-active="true"] {
-  color: #3b82f6;
-  background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.1);
 }
 
 .navLink[data-active="true"]::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: #3b82f6;
-  border-radius: 2px;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #3b82f6;
+    border-radius: 2px;
 }
 
 .linkIcon {
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* 右侧用户区域 */
 .rightSection {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .userArea {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  cursor: pointer;
-  padding: 0.3rem 0.5rem;
-  border-radius: 5px;
-  transition: background-color 0.2s ease;
-  height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    padding: 0.3rem 0.5rem;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+    height: 56px;
 }
 
 .userArea:hover {
-  background-color: rgba(148, 163, 184, 0.1);
+    background-color: rgba(148, 163, 184, 0.1);
 }
 
 /* 用户头像 */
 .avatarContainer {
-  position: relative;
-  width: 38px;
-  height: 38px;
+    position: relative;
+    width: 38px;
+    height: 38px;
 }
 
 .avatar {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-  background-image: linear-gradient(to right, #3b82f6, #818cf8);
-  transition: transform 0.2s ease;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    background-image: linear-gradient(to right, #3b82f6, #818cf8);
+    transition: transform 0.2s ease;
 }
 
 .userArea:hover .avatar {
-  transform: scale(1.05);
+    transform: scale(1.05);
 }
 
 /* 在线状态指示器 */
 .statusIndicator {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 12px;
-  height: 12px;
-  background-color: #10b981;
-  border: 2px solid #0f172a;
-  border-radius: 50%;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background-color: #10b981;
+    border: 2px solid #0f172a;
+    border-radius: 50%;
 }
 
 /* 用户信息 */
 .userInfo {
-  display: none;
+    display: none;
 }
 
 @media (min-width: 768px) {
-  .userInfo {
-    display: block;
-  }
+    .userInfo {
+        display: block;
+    }
 }
 
 .userName {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #02274d;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #02274d;
 }
 
 .userRole {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  text-transform: lowercase;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: lowercase;
 }
 
 /* 用户下拉菜单 */
 .userMenu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 135px;
-  background-color: #1e293b;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
-  padding: 0.5rem 0;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(10px);
-  transition: all 0.2s ease;
-  z-index: 1001;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 135px;
+    background-color: #1e293b;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    padding: 0.5rem 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s ease;
+    z-index: 1001;
 }
 
 .userMenuOpen {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
 .menuItems {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
 .menuItem {
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 .menuLink {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;	
-  padding: 0.75rem 1.25rem;
-  color: #e2e8f0;
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    color: #e2e8f0;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
 }
 
 .menuLink:hover {
-  background-color: #334155;
-  color: #f8fafc;
+    background-color: #334155;
+    color: #f8fafc;
 }
 
 .menuIcon {
-  font-size: 1.1rem;
-  width: 20px;
-  text-align: center;
-  color: #94a3b8;
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+    color: #94a3b8;
 }
 
 .menuLink:hover .menuIcon {
-  color: #3b82f6;
+    color: #3b82f6;
 }
 
 .menuDivider {
-  height: 1px;
-  background-color: #334155;
-  margin: 0.5rem 0;
+    height: 1px;
+    background-color: #334155;
+    margin: 0.5rem 0;
 }
 
 /* 移动端菜单按钮 */
 .mobileMenuBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: #f8fafc;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 6px;
-  transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #f8fafc;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
 }
 
 .mobileMenuBtn:hover {
-  background-color: rgba(148, 163, 184, 0.1);
+    background-color: rgba(148, 163, 184, 0.1);
 }
 
 .menuIcon {
-  font-size: 1.5rem;
+    font-size: 1.5rem;
 }
 
 /* 移动端导航菜单 */
 .mobileMenu {
-  position: fixed;
-  top: 56px;
-  left: 0;
-  right: 0;
-  background-color: #1e293b;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  transform: translateY(-100%);
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-  z-index: 999;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    background-color: #1e293b;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 999;
 }
 
 .mobileMenuOpen {
-  transform: translateY(0);
-  opacity: 1;
-  visibility: visible;
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
 }
 
 .mobileNavLinks {
-  list-style: none;
-  margin: 0;
-  padding: 1rem 0;
+    list-style: none;
+    margin: 0;
+    padding: 1rem 0;
 }
 
 .mobileNavItem {
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 .mobileNavLink {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  color: #e2e8f0;
-  text-decoration: none;
-  font-size: 1rem;
-  transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    color: #e2e8f0;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.2s ease;
 }
 
 .mobileNavLink:hover {
-  background-color: #334155;
-  color: #3b82f6;
+    background-color: #334155;
+    color: #3b82f6;
 }
 
 .mobileLinkIcon {
-  font-size: 1.2rem;
-  width: 24px;
-  text-align: center;
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
 }
 
 /* 响应式调整 */
-@media (max-width: 768px) {
-  .desktopNav {
-    display: none;
-  }
+@media (max-width: 1164px) {
+    .desktopNav {
+        display: none;
+    }
 
-  .leftSection {
-    gap: 1rem;
-  }
+    .leftSection {
+        gap: 1rem;
+    }
 
-  .logoText {
-    font-size: 1.25rem;
-  }
+    .logoText {
+        font-size: 1.25rem;
+    }
 }
 
-@media (min-width: 769px) {
-  .mobileMenuBtn {
-    display: none;
-  }
+@media (min-width: 1165px) {
+    .mobileMenuBtn {
+        display: none;
+    }
 
-  .mobileMenu {
-    display: none;
-  }
+    .mobileMenu {
+        display: none;
+    }
 }

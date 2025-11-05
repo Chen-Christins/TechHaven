@@ -1,175 +1,178 @@
 /* 面板容器 */
 .categoryPanel {
-  background-color: white;
-  border-radius: 8px;
-  padding: 1.2rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  margin-bottom: 0.5rem;
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.5rem;
 }
 
 /* 面板标题 */
 .panelTitle {
-	font-size: 1.2rem;
-	color: #2c3e50;
-	margin-bottom: 0.8rem;
-	border-bottom: 1px solid #ecf0f1;
-	padding-bottom: 0.5rem;
+    font-size: 1.2rem;
+    color: #2c3e50;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid #ecf0f1;
+    padding-bottom: 0.5rem;
 }
 
 /* 分类列表容器 */
 .categoryList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 /* 父分类项 */
 .parentItem {
-  margin-bottom: 0.1rem;
-  position: relative;
+    margin-bottom: 0.1rem;
+    position: relative;
 }
 
 /* 父分类容器 */
 .parentCategory {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
-  padding: 0.2rem 0;
-  height: 38px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+    padding: 0.2rem 0;
+    height: 38px;
 }
 
 .parentCategory:hover {
-  background-color: #f8fafc;
+    background-color: #f8fafc;
 }
 
 /* 展开/折叠按钮 */
 .toggleBtn {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #94a3b8;
-  flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    flex-shrink: 0;
 }
 
 .chevron {
-  font-size: 1rem;
-  transition: transform 0.3s ease;
+    font-size: 1rem;
+    transition: transform 0.3s ease;
 }
 
 /* 父分类链接 */
 .parentLink {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1;
-  text-decoration: none;
-  padding: 0.8rem 0.2rem;
-  color: #1e293b;
-  font-weight: 500;
-  font-size: 1rem;
-  height: 38px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    text-decoration: none;
+    padding: 0.8rem 0.2rem;
+    color: #1e293b;
+    font-weight: 500;
+    font-size: 1rem;
+    height: 38px;
 }
 
 .parentName {
-  flex: 1;
-  transition: color 0.2s ease;
+    flex: 1;
+    transition: color 0.2s ease;
 }
 
 .parentCategory:hover .parentName {
-  color: #3b82f6;
+    color: #3b82f6;
 }
 
 /* 父分类计数 */
 .parentCount {
-  background-color: #eff6ff;
-  color: #3b82f6;
-  font-size: 0.85rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 12px;
-  font-weight: 500;
-  margin-left: 0.5rem;
-  min-width: 24px;
-  text-align: center;
+    background-color: #eff6ff;
+    color: #3b82f6;
+    font-size: 0.85rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-weight: 500;
+    margin-left: 0.5rem;
+    min-width: 24px;
+    text-align: center;
 }
 
 /* 子分类容器（带动画） */
 .childrenContainer {
-  overflow: hidden;
-  transition: max-height 0.3s ease-out, opacity 0.2s ease-out, padding 0.3s ease-out;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.2s ease-out, padding 0.3s ease-out;
 }
 
 .collapsed {
-  max-height: 0;
-  opacity: 0;
-  padding: 0;
+    max-height: 0;
+    opacity: 0;
+    padding: 0;
 }
 
 .expanded {
-  max-height: 500px; /* 足够容纳子分类的高度 */
-  opacity: 1;
-  padding: 0.3rem 0 0.3rem 1.8rem; /* 左侧缩进形成层级 */
+    max-height: 500px;
+    /* 足够容纳子分类的高度 */
+    opacity: 1;
+    padding: 0.3rem 0 0.3rem 1.8rem;
+    /* 左侧缩进形成层级 */
 }
 
 /* 子分类列表 */
 .childrenList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  border-left: 1px dashed #e2e8f0; /* 虚线分隔层级 */
-  padding-left: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-left: 1px dashed #e2e8f0;
+    /* 虚线分隔层级 */
+    padding-left: 0.5rem;
 }
 
 /* 子分类项 */
 .childItem {
-  margin-bottom: 0.1rem;
+    margin-bottom: 0.1rem;
 }
 
 /* 子分类链接 */
 .childLink {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  text-decoration: none;
-  padding: 0.0rem 0.4rem;
-  color: #475569;
-  font-size: 0.95rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  height: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-decoration: none;
+    padding: 0.0rem 0.4rem;
+    color: #475569;
+    font-size: 0.95rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    height: 32px;
 }
 
 .childLink:hover {
-  background-color: #f1f5f9;
-  color: #3b82f6;
+    background-color: #f1f5f9;
+    color: #3b82f6;
 }
 
 .childName {
-  flex: 1;
+    flex: 1;
 }
 
 /* 子分类计数 */
 .childCount {
-  background-color: #f1f5f9;
-  color: #64748b;
-  font-size: 0.75rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: 10px;
-  margin-left: 0.5rem;
-  min-width: 20px;
-  text-align: center;
+    background-color: #f1f5f9;
+    color: #64748b;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    margin-left: 0.5rem;
+    min-width: 20px;
+    text-align: center;
 }
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-  .categoryPanel {
-    padding: 1.2rem;
-  }
-  
-  .panelTitle {
-    font-size: 1.2rem;
-  }
+    .categoryPanel {
+        padding: 1.2rem;
+    }
+
+    .panelTitle {
+        font-size: 1.2rem;
+    }
 }

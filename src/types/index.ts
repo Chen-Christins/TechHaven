@@ -1,11 +1,14 @@
 // 文章类型
 export interface Article {
   id: number;
+  author: string;
   title: string;
   summary: string;
   date: string; // 格式：YYYY-MM-DD
   category: string;
   tags: string[];
+  views: number;
+  praises: number;
 }
 
 // 统计数据类型

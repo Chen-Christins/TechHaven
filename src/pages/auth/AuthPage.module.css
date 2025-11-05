@@ -1,280 +1,273 @@
-/* 基础样式重置 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-}
-
 /* 页面容器 */
 .authPage {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4eaf1 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4eaf1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
 }
 
 /* 卡片容器 */
 .authCard {
-  width: 100%;
-  max-width: 480px;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  transition: all 0.3s ease;
+    width: 100%;
+    max-width: 480px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: all 0.3s ease;
 }
 
 .authCard:hover {
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
 /* 顶部装饰条 */
 .topBar {
-  height: 4px;
-  background: linear-gradient(90deg, #4285f4 0%, #34a853 50%, #fbbc05 100%);
+    height: 4px;
+    background: linear-gradient(90deg, #4285f4 0%, #34a853 50%, #fbbc05 100%);
 }
 
 /* 表单内容区 */
 .content {
-  padding: 30px;
+    padding: 30px;
 }
 
 /* 返回按钮 */
 .backButton {
-  display: flex;
-  align-items: center;
-  color: #6b7280;
-  background: none;
-  border: none;
-  padding: 0;
-  margin-bottom: 20px;
-  cursor: pointer;
-  transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    color: #6b7280;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: color 0.2s ease;
 }
 
 .backButton:hover {
-  color: #1f2937;
+    color: #1f2937;
 }
 
 .backButton svg {
-  margin-right: 5px;
+    margin-right: 5px;
 }
 
 /* 标题和描述 */
 .title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 8px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
 }
 
 .description {
-  color: #6b7280;
-  margin-bottom: 30px;
+    color: #6b7280;
+    margin-bottom: 30px;
 }
 
 /* 消息提示 */
 .message {
-  padding: 12px 16px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  font-size: 14px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
 }
 
 .messageSuccess {
-  background-color: #ecfdf5;
-  color: #059669;
+    background-color: #ecfdf5;
+    color: #059669;
 }
 
 .messageError {
-  background-color: #fee2e2;
-  color: #dc2626;
+    background-color: #fee2e2;
+    color: #dc2626;
 }
 
 .message svg {
-  margin-right: 8px;
+    margin-right: 8px;
 }
 
 /* 表单样式 */
 .form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
 }
 
 .formControl {
-  position: relative;
+    position: relative;
 }
 
 .input {
-  width: 100%;
-  padding: 12px 12px 12px 40px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 16px;
-  transition: all 0.2s ease;
-  background-color: #f9fafb;
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    background-color: #f9fafb;
 }
 
 .input:focus {
-  outline: none;
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+    outline: none;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
 }
 
 .inputError {
-  border-color: #ef4444;
+    border-color: #ef4444;
 }
 
 .inputError:focus {
-  border-color: #f87171;
-  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
+    border-color: #f87171;
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
 }
 
 .icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #9ca3af;
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
 }
 
 .actionButton {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: #9ca3af;
-  cursor: pointer;
-  transition: color 0.2s ease;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: color 0.2s ease;
 }
 
 .actionButton:hover {
-  color: #4b5563;
+    color: #4b5563;
 }
 
 .errorText {
-  font-size: 13px;
-  color: #ef4444;
-  display: flex;
-  align-items: center;
+    font-size: 13px;
+    color: #ef4444;
+    display: flex;
+    align-items: center;
 }
 
 .errorText svg {
-  margin-right: 4px;
-  font-size: 14px;
+    margin-right: 4px;
+    font-size: 14px;
 }
 
 /* 按钮样式 */
 .btn {
-  padding: 12px 20px;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
 }
 
 .primaryBtn {
-  background-color: #3b82f6;
-  color: white;
+    background-color: #3b82f6;
+    color: white;
 }
 
 .primaryBtn:hover {
-  background-color: #2563eb;
+    background-color: #2563eb;
 }
 
 .primaryBtn:disabled {
-  background-color: #93c5fd;
-  cursor: not-allowed;
+    background-color: #93c5fd;
+    cursor: not-allowed;
 }
 
 .textBtn {
-  background: none;
-  color: #3b82f6;
-  padding: 0;
-  font-size: 14px;
+    background: none;
+    color: #3b82f6;
+    padding: 0;
+    font-size: 14px;
 }
 
 .textBtn:hover {
-  color: #2563eb;
+    color: #2563eb;
 }
 
 /* 提交按钮加载状态 */
 .btnLoading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .loadingSpinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid white;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+    width: 18px;
+    height: 18px;
+    border: 2px solid white;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* 表单切换区域 */
 .formSwitch {
-  text-align: center;
-  font-size: 14px;
-  color: #6b7280;
-  margin-top: 10px;
+    text-align: center;
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 10px;
 }
 
 .formSwitch p {
-  margin-top: 10px;
+    margin-top: 10px;
 }
 
 /* 页脚 */
 .footer {
-  text-align: center;
-  font-size: 13px;
-  color: #6b7280;
-  margin-bottom: 15px;
+    text-align: center;
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 15px;
 }
 
 /* 响应式调整 */
 @media (max-width: 480px) {
-  .content {
-    padding: 20px;
-  }
-  
-  .title {
-    font-size: 20px;
-  }
-  
-  .input, .btn {
-    font-size: 15px;
-    padding: 10px;
-  }
+    .content {
+        padding: 20px;
+    }
+
+    .title {
+        font-size: 20px;
+    }
+
+    .input,
+    .btn {
+        font-size: 15px;
+        padding: 10px;
+    }
 }

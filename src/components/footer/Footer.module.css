@@ -1,141 +1,142 @@
 .footer {
-  background-color: #f8f9fa;
-  border-top: 1px solid #e9ecef;
-  padding: 24px 0;
-  margin-top: auto; /* 确保footer在内容不足时能保持在底部 */
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    padding: 24px 0;
+    margin-top: auto;
+    /* 确保footer在内容不足时能保持在底部 */
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 .content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  text-align: center;
-  flex-wrap: wrap;
-  flex-direction: column;
-  gap: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .copyright {
-  color: #6c757d;
-  font-size: 14px;
-  line-height: 1.5;
+    color: #6c757d;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .links {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
 }
 
 .link {
-  color: #6c757d;
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.2s ease;
-  position: relative;
+    color: #6c757d;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s ease;
+    position: relative;
 }
 
 .link:hover {
-  color: #1890ff;
+    color: #1890ff;
 }
 
 .link::after {
-  content: '';
-  position: absolute;
-  width: 0;
-  height: 1px;
-  bottom: -2px;
-  left: 0;
-  background-color: #1890ff;
-  transition: width 0.2s ease;
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: #1890ff;
+    transition: width 0.2s ease;
 }
 
 .link:hover::after {
-  width: 100%;
+    width: 100%;
 }
 
 .divider {
-  color: #dee2e6;
-  margin: 0 8px;
+    color: #dee2e6;
+    margin: 0 8px;
 }
 
 .socialLinks {
-  display: flex;
-  gap: 16px;
-  align-items: center;
+    display: flex;
+    gap: 16px;
+    align-items: center;
 }
 
 .socialIcon {
-  color: #6c757d;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-  background-color: transparent;
+    color: #6c757d;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    background-color: transparent;
 }
 
 .socialIcon:hover {
-  color: #1890ff;
-  background-color: rgba(24, 144, 255, 0.1);
-  transform: translateY(-1px);
+    color: #1890ff;
+    background-color: rgba(24, 144, 255, 0.1);
+    transform: translateY(-1px);
 }
 
 .bottomText {
-  text-align: center;
-  color: #adb5bd;
-  font-size: 12px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #e9ecef;
-  width: 100%;
+    text-align: center;
+    color: #adb5bd;
+    font-size: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e9ecef;
+    width: 100%;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .content {
-    flex-direction: column;
-    text-align: center;
-    gap: 20px;
-  }
-  
-  .links {
-    justify-content: center;
-    gap: 16px;
-  }
-  
-  .socialLinks {
-    justify-content: center;
-  }
-  
-  .copyright {
-    text-align: center;
-  }
+    .content {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .links {
+        justify-content: center;
+        gap: 16px;
+    }
+
+    .socialLinks {
+        justify-content: center;
+    }
+
+    .copyright {
+        text-align: center;
+    }
 }
 
 @media (max-width: 480px) {
-  .footer {
-    padding: 20px 0;
-  }
-  
-  .container {
-    padding: 0 16px;
-  }
-  
-  .links {
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .link {
-    padding: 4px 0;
-  }
+    .footer {
+        padding: 20px 0;
+    }
+
+    .container {
+        padding: 0 16px;
+    }
+
+    .links {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .link {
+        padding: 4px 0;
+    }
 }

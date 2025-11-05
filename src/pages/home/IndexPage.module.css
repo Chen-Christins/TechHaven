@@ -1,46 +1,51 @@
 .index {
-  min-height: 100vh;
-  background-color: #f5f7fa;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+    min-height: 100vh;
+    background-color: #f5f7fa;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
 .mainContent {
-  display: flex;
-  gap: 2rem;
-  min-width: 768px;
-  max-width: 1560px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-  padding-top: 48px;
+    display: flex;
+    gap: 2rem;
+    min-width: 640px;
+    max-width: 1560px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    padding-top: 48px;
 }
 
 .leftColumn {
-  flex: 2;
-  min-width: 400px;
+    flex: 2;
+    min-width: 768px;
 }
 
 .rightColumn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  max-width: 460px;
-  min-width: 320px;
-  gap: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 460px;
+    min-width: 320px;
+    gap: 1rem;
 }
 
 /* 响应式适配（移动端） */
-@media (max-width: 768px) {
-  .mainContent {
-    flex-direction: column;
-  }
-  .leftColumn {
-	flex: 2;
-	max-width: 768px;
-	min-width: 400px;
-  }
-  .rightColumn {
-	padding: 0 1rem;
-	max-width: 768px;
-	min-width: 400px;
-  }
+@media (max-width: 1164px) {
+    .mainContent {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .leftColumn {
+        flex: 2;
+        width: 100%;
+        max-width: 1164px;
+        min-width: 640px;
+    }
+
+    .rightColumn {
+        width: 100%;
+        padding: 0 1rem;
+        max-width: 1164px;
+        min-width: 640px;
+    }
 }
