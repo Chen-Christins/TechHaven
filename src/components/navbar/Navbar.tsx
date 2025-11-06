@@ -100,18 +100,6 @@ const Navbar: React.FC = () => {
 		);
 	};
 
-	const [searchValue, setSearchValue] = useState('');
-	const [searchResults, setSearchResults] = useState<string[]>([]);
-	const handleSearch = (value: string) => {
-		console.log('搜索:', value);
-		// 模拟搜索逻辑
-		setSearchResults([`结果1 (${value})`, `结果2 (${value})`, `结果3 (${value})`]);
-	};
-
-	const handleChange = (value: string) => {
-		setSearchValue(value);
-	};
-
 	return (
 		<header className={`${styles.navbar} ${isScrolled ? styles.navbarScrolled : ''}`}>
 			<div className={styles.container}>
@@ -137,7 +125,6 @@ const Navbar: React.FC = () => {
 					</button>
 				</div>
 
-				<SearchBox placeholder="搜索文章..." onSearch={handleSearch} onChange={handleChange} />
 				{/* 右侧用户区域 */}
 				<div className={styles.rightSection} ref={userMenuRef}>
 					<div className={styles.userArea} onClick={toggleUserMenu}>

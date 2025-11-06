@@ -9,6 +9,9 @@ const ExampleUsage: React.FC = () => {
 	const markdownContent = `
 这是一篇包含代码和数学公式的示例文章。
 
+## 行内代码示例
+这是一个行内代码 \`Hello World\` 
+
 ## 代码示例
 
 以下是一个 TypeScript 函数示例：
@@ -69,11 +72,19 @@ $$
   `;
 
 	return (
-		<>
+		<div>
             <Navbar />
-			<ArticleView content={markdownContent} />
+			<ArticleView 
+                title='标题'
+                pushlish_time='2025-10-26 19:19:19'
+                author='Christins'
+                views={0}
+                praises={0}
+                update_time='2025-10-26 19:19:19'
+                content={markdownContent}
+            />
 			<Footer companyName="TechBlog" startYear={2025} />
-		</>
+		</div>
 	);
 };
 

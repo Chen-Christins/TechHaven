@@ -33,3 +33,28 @@ export interface Tag {
   color: string; // 背景颜色
   name: string;
 }
+
+export interface SelectOption {
+  id: string | number;
+  name: string;
+  color?: string;
+  date?: string;
+  count?: number;
+}
+
+export interface CustomSelectProps {
+  name: string;
+  options: SelectOption[];
+  showDate?: boolean;
+  placeholder?: string;
+  value?: SelectOption | null;
+  onChange?: (selectedOption: SelectOption | null, selectedIndex: number, oldIndex: number) => void;
+  className?: string;
+}
+
+export interface SelectChangeEventDetail {
+  selectedOption: SelectOption | null;
+  selectedIndex: number;
+  oldIndex: number;
+  name: string;
+}

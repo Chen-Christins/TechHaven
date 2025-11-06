@@ -5,9 +5,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
 import 'katex/dist/katex.min.css';
-import 'highlight.js/styles/github-dark.css';
 import styles from './ArticleView.module.css';
 
 interface Heading {
@@ -17,8 +15,14 @@ interface Heading {
 }
 
 interface ArticleViewProps {
+    title: string;
     content: string;
     className?: string;
+    author: string;
+    views: number;
+    praises: number;
+    update_time: string;
+    pushlish_time: string;
 }
 
 interface CodeProps {
@@ -34,7 +38,16 @@ interface HeadingComponentProps extends React.HTMLAttributes<HTMLHeadingElement>
     node?: any;
 }
 
-const ArticleView: React.FC<ArticleViewProps> = ({ content, className = '' }) => {
+const ArticleView: React.FC<ArticleViewProps> = ({ 
+    title, 
+    author, 
+    views, 
+    praises, 
+    update_time, 
+    pushlish_time, 
+    content, 
+    className = '' 
+}) => {
     const [headings, setHeadings] = useState<Heading[]>([]);
     const [activeId, setActiveId] = useState<string>('');
     const contentRef = useRef<HTMLDivElement>(null);
@@ -136,21 +149,56 @@ const ArticleView: React.FC<ArticleViewProps> = ({ content, className = '' }) =>
         });
     }, []);
 
-    // 代码块组件
-    const CodeBlock: React.FC<CodeProps> = ({ inline, className, children }) => {
+    // 修复代码块组件 - 正确处理children和嵌套问题
+    const CodeBlock: React.FC<CodeProps> = ({ inline, className, children, node, ...props }) => {
+        // 正确处理children，将其转换为字符串
+        const getCodeString = (children: React.ReactNode): string => {
+            if (typeof children === 'string') {
+                return children;
+            }
+            if (Array.isArray(children)) {
+                return children.map(child => {
+                    if (typeof child === 'string') {
+                        return child;
+                    }
+                    // 添加类型检查
+                    if (React.isValidElement(child)) {
+                        const element = child as React.ReactElement<{ children?: React.ReactNode }>;
+                        if (typeof element.props.children === 'string') {
+                            return element.props.children;
+                        }
+                        // 递归处理嵌套的子元素
+                        return getCodeString(element.props.children);
+                    }
+                    return String(child);
+                }).join('');
+            }
+            // 添加类型检查
+            if (React.isValidElement(children)) {
+                const element = children as React.ReactElement<{ children?: React.ReactNode }>;
+                if (typeof element.props.children === 'string') {
+                    return element.props.children;
+                }
+                // 递归处理嵌套的子元素
+                return getCodeString(element.props.children);
+            }
+            return String(children);
+        };
+
+        const code = getCodeString(children).replace(/\n$/, '');
         const match = /language-(\w+)/.exec(className || '');
-        const code = String(children).replace(/\n$/, '');
         const language = match ? match[1] : '';
 
         if (inline) {
-            return <code className={styles.inlineCode}>{children}</code>;
+            // 修复行内代码：直接显示内容
+            return <code className={styles.inlineCode}>{code}</code>;
         }
 
         return (
-            <div className={styles.codeBlock}>
+            <div className={styles.codeBlockWrapper}>
                 {language && (
                     <div className={styles.codeHeader}>
-                        <span>{language}</span>
+                        <span className={styles.languageTag}>{language}</span>
                         <button
                             className={styles.copyButton}
                             onClick={() => handleCopyCode(code)}
@@ -164,6 +212,16 @@ const ArticleView: React.FC<ArticleViewProps> = ({ content, className = '' }) =>
                     language={language}
                     PreTag="div"
                     showLineNumbers
+                    customStyle={{
+                        margin: 0,
+                        borderRadius: language ? '0 0 8px 8px' : '8px',
+                        fontSize: '14px'
+                    }}
+                    codeTagProps={{
+                        style: {
+                            fontSize: 'inherit'
+                        }
+                    }}
                 >
                     {code}
                 </SyntaxHighlighter>
@@ -171,41 +229,48 @@ const ArticleView: React.FC<ArticleViewProps> = ({ content, className = '' }) =>
         );
     };
 
-    // 创建标题组件的简化版本
-    const Heading1: React.FC<HeadingComponentProps> = ({ children, ...props }) => {
-        const text = React.Children.toArray(children).join('');
-        const id = generateId(text);
-        return <h1 id={id} {...props}>{children}</h1>;
+    // 创建标题组件
+    const createHeadingComponent = (level: number) => {
+        return ({ children, ...props }: HeadingComponentProps) => {
+            const text = React.Children.toArray(children).join('');
+            const id = generateId(text);
+            
+            switch (level) {
+                case 1:
+                    return <h1 id={id} {...props}>{children}</h1>;
+                case 2:
+                    return <h2 id={id} {...props}>{children}</h2>;
+                case 3:
+                    return <h3 id={id} {...props}>{children}</h3>;
+                case 4:
+                    return <h4 id={id} {...props}>{children}</h4>;
+                case 5:
+                    return <h5 id={id} {...props}>{children}</h5>;
+                case 6:
+                    return <h6 id={id} {...props}>{children}</h6>;
+                default:
+                    return <h2 id={id} {...props}>{children}</h2>;
+            }
+        };
     };
 
-    const Heading2: React.FC<HeadingComponentProps> = ({ children, ...props }) => {
-        const text = React.Children.toArray(children).join('');
-        const id = generateId(text);
-        return <h2 id={id} {...props}>{children}</h2>;
-    };
+    // 自定义段落组件，处理代码块嵌套问题
+    const ParagraphComponent: React.FC<React.HTMLAttributes<HTMLParagraphElement> & { node?: any }> = 
+        ({ children, ...props }) => {
+        
+        // 检查子元素中是否包含代码块
+        const hasCodeBlock = React.Children.toArray(children).some(child => 
+            React.isValidElement(child) && 
+            typeof (child as React.ReactElement).type === 'function' &&
+            (child as React.ReactElement).type === CodeBlock
+        );
 
-    const Heading3: React.FC<HeadingComponentProps> = ({ children, ...props }) => {
-        const text = React.Children.toArray(children).join('');
-        const id = generateId(text);
-        return <h3 id={id} {...props}>{children}</h3>;
-    };
+        // 如果包含代码块，使用 div 代替 p
+        if (hasCodeBlock) {
+            return <div className={styles.codeParagraph} {...props}>{children}</div>;
+        }
 
-    const Heading4: React.FC<HeadingComponentProps> = ({ children, ...props }) => {
-        const text = React.Children.toArray(children).join('');
-        const id = generateId(text);
-        return <h4 id={id} {...props}>{children}</h4>;
-    };
-
-    const Heading5: React.FC<HeadingComponentProps> = ({ children, ...props }) => {
-        const text = React.Children.toArray(children).join('');
-        const id = generateId(text);
-        return <h5 id={id} {...props}>{children}</h5>;
-    };
-
-    const Heading6: React.FC<HeadingComponentProps> = ({ children, ...props }) => {
-        const text = React.Children.toArray(children).join('');
-        const id = generateId(text);
-        return <h6 id={id} {...props}>{children}</h6>;
+        return <p {...props}>{children}</p>;
     };
 
     const getTocItemClass = (level: number, id: string) => {
@@ -241,18 +306,27 @@ const ArticleView: React.FC<ArticleViewProps> = ({ content, className = '' }) =>
             )}
             <div className={styles.content}>
                 <article className={styles.article}>
+                    <h1 className={styles.title}>{title}</h1>
+                    <div className={styles.articleMeta}>
+                        <span>发布时间: {pushlish_time}</span>
+                        <span>作者: {author}</span>
+                        <span>阅读量: {views}</span>
+                        <span>点赞量: {praises}</span>
+                        <span>更新时间: {update_time}</span>
+                    </div>
                     <div className={styles.markdownBody}>
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm, remarkMath]}
-                            rehypePlugins={[rehypeHighlight, rehypeKatex]}
+                            rehypePlugins={[rehypeKatex]}
                             components={{
                                 code: CodeBlock,
-                                h1: Heading1,
-                                h2: Heading2,
-                                h3: Heading3,
-                                h4: Heading4,
-                                h5: Heading5,
-                                h6: Heading6,
+                                p: ParagraphComponent, // 添加自定义段落组件
+                                h1: createHeadingComponent(1),
+                                h2: createHeadingComponent(2),
+                                h3: createHeadingComponent(3),
+                                h4: createHeadingComponent(4),
+                                h5: createHeadingComponent(5),
+                                h6: createHeadingComponent(6),
                             }}
                         >
                             {content}

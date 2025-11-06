@@ -22,10 +22,31 @@
 .toc {
     position: sticky;
     top: 80px;
-    background: #f8f9fa;
+    /* background: #f8f9fa; */
+    background: #ffffff;
     border-radius: 8px;
     padding: 16px;
     border: 1px solid #e9ecef;
+}
+
+.title {
+    /* font-size: 16px; */
+    font-weight: 600;
+    color: #495057;
+    padding-bottom: 6px;
+}
+
+.articleMeta {
+    color: #6b7280;
+    font-size: 0.9rem;
+    padding-bottom: 0.6rem;
+    margin-bottom: 1.4rem;
+    border-bottom: 1px solid #eee;
+}
+
+.articleMeta span {
+    margin-right: 1.4rem;
+    color: #666;
 }
 
 .tocTitle {
@@ -349,4 +370,9 @@
     display: block;
     margin-left: auto;
     margin-right: auto;
+}
+
+/* 代码块样式调整 */
+.codeBlockWrapper {
+    position: relative;
 }

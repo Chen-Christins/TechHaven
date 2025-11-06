@@ -236,8 +236,8 @@ const AuthPage: React.FC = () => {
     };
 
     return (
-        <>
-            <div className={styles.authPage}>
+        <div className={styles.authPage}>
+            <div className={styles.mainContent}>
                 <div className={styles.authCard}>
                     {/* 顶部装饰条 */}
                     <div className={styles.topBar}></div>
@@ -711,7 +711,7 @@ const AuthPage: React.FC = () => {
                 </div>
             </div>
             <Footer companyName="TechBlog" startYear={2025} />
-        </>
+        </div>
     );
 };
 

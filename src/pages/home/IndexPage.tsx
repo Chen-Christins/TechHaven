@@ -8,6 +8,7 @@ import CategoryPanel from "../../components/categoryPanel/CategoryPanel";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import TagPanel from "../../components/tagPanel/TagPanel";
+import SearchPanel from "../../components/searchArticle/SearchArticle";
 
 const IndexPage: React.FC = () => {
 	const mockTags = [
@@ -37,6 +38,7 @@ const IndexPage: React.FC = () => {
 
 				{/* 右侧：侧边栏 */}
 				<div className={styles.rightColumn}>
+                    <SearchPanel />
 					<TagPanel tags={mockTags}/>
 					<SubscribeBox />
 					<CategoryPanel />
