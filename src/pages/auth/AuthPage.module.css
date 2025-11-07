@@ -1,7 +1,6 @@
 /* 页面容器 */
 .authPage {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e4eaf1 100%);
     display: flex;
     flex-direction: column;
 }
@@ -12,6 +11,7 @@
     justify-content: center;
     flex: 1; /* 关键：让主内容区域填充剩余空间 */
     padding: 20px; /* 可选：添加内边距 */
+    min-width: 480px;
 }
 
 /* 卡片容器 */
@@ -259,21 +259,4 @@
     font-size: 13px;
     color: #6b7280;
     margin-bottom: 15px;
-}
-
-/* 响应式调整 */
-@media (max-width: 480px) {
-    .content {
-        padding: 20px;
-    }
-
-    .title {
-        font-size: 20px;
-    }
-
-    .input,
-    .btn {
-        font-size: 15px;
-        padding: 10px;
-    }
 }

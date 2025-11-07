@@ -1,0 +1,494 @@
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css");
+
+:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3f37c9;
+    --accent-color: #4895ef;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+    --success-color: #4cc9f0;
+    --warning-color: #f72585;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s ease;
+}
+
+.container {
+    min-width: 100vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 30px;
+}
+
+.editorContainer {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 30px;
+    margin: 80px 20px 20px 20px;
+    transition: var(--transition);
+    width: 100%;
+    max-width: 1460px;
+    min-width: 640px;
+}
+
+.editorHeader {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.editorHeader h2 {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 28px;
+    margin: 0;
+}
+
+.editorHeader a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.editorHeader a:hover {
+    color: var(--secondary-color);
+}
+
+.formSection {
+    margin-bottom: 1.0rem;
+}
+
+.formSectionTitle {
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--dark-color);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.formSectionTitle i {
+    margin-right: 8px;
+    color: var(--primary-color);
+}
+
+.formControl {
+    padding: 12px 15px;
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
+    width: 100%;
+    font-size: 16px;
+    min-height: 46px;
+    color: #495057;
+    font-weight: 500;
+}
+
+.formControl:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    outline: none;
+}
+
+.radioGroup {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.radioItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.radioInput {
+    margin: 0;
+}
+
+.radioLabel {
+    margin: 0;
+    cursor: pointer;
+}
+
+.editorTabs {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 5px;
+}
+
+.editorTab {
+    padding: 8px 20px;
+    cursor: pointer;
+    background: rgba(67, 97, 238, 0.1);
+    color: var(--primary-color);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    font-weight: 500;
+    transition: var(--transition);
+    border: none;
+}
+
+.editorTab:hover {
+    background: rgba(67, 97, 238, 0.2);
+}
+
+.editorTab.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.editorRow {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.editorContent {
+    display: none;
+    height: 600px;
+    overflow-y: auto;
+}
+
+.editorContent.active {
+    display: block;
+}
+
+.editorColumn {
+    flex: 1;
+    min-width: 0;
+}
+
+.markdownEditor,
+.markdownPreview {
+    min-height: 100%;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius);
+    font-size: 15px;
+    line-height: 1.8;
+    background-color: white;
+    transition: var(--transition);
+}
+
+.markdownEditor {
+    width: 100%;
+    resize: none;
+    color: #2d3748;
+    border: 1px solid rgba(67, 97, 238, 0.3);
+    font-family: 'Fira Code', 'Courier New', monospace;
+}
+
+.markdownEditor:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+}
+
+.markdownPreview {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: white;
+    color: #2d3748;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.toolbarLeft {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.toolbarRight {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btnPrimary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.btnPrimary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.btnOutline {
+    background-color: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: var(--dark-color);
+}
+
+.btnOutline:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.15);
+    color: var(--dark-color);
+}
+
+.btnOutlinePrimary {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btnOutlinePrimary:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.fileInput {
+    display: none;
+}
+
+.tagsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.tagItem {
+    display: inline-flex;
+    align-items: center;
+    background-color: rgba(67, 97, 238, 0.1);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    color: var(--primary-color);
+    transition: var(--transition);
+}
+
+.tagItem:hover {
+    background-color: rgba(67, 97, 238, 0.2);
+}
+
+.removeTag {
+    cursor: pointer;
+    margin-left: 6px;
+    color: var(--primary-color);
+    opacity: 0.7;
+    font-size: 12px;
+    background: none;
+    border: none;
+}
+
+.removeTag:hover {
+    opacity: 1;
+    color: var(--warning-color);
+}
+
+.actionButtons {
+    margin-top: 30px;
+    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Markdown预览样式 */
+.markdownPreview h1,
+.markdownPreview h2,
+.markdownPreview h3,
+.markdownPreview h4,
+.markdownPreview h5,
+.markdownPreview h6 {
+    color: var(--primary-color);
+    margin-top: 1.5em;
+    margin-bottom: 0.8em;
+    font-weight: 600;
+}
+
+.markdownPreview h1 {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 0.3em;
+}
+
+.markdownPreview code {
+    color: #e83e8c;
+    border-radius: 4px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.85em;
+}
+
+.markdownPreview pre {
+    background-color: #f8f9fa;
+    border-radius: var(--border-radius);
+    padding: 1em;
+    overflow-x: auto;
+}
+
+.markdownPreview blockquote {
+    border-left: 4px solid var(--primary-color);
+    background-color: rgba(67, 97, 238, 0.05);
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    color: #4a5568;
+}
+
+.markdownPreview table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em auto;
+    overflow: auto;
+    display: table;
+    max-width: 100%;
+}
+
+.markdownPreview table th,
+.markdownPreview table td {
+    padding: 0.75em;
+    border: 1px solid #e2e8f0;
+    text-align: center !important;
+}
+
+.markdownPreview table th {
+    background-color: rgba(67, 97, 238, 0.1);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.markdownPreview table tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+.markdownPreview img {
+    max-width: 100%;
+    border-radius: var(--border-radius);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .editorContainer {
+        padding: 20px;
+    }
+
+    .editorContent {
+        height: 400px;
+    }
+
+    .actionButtons {
+        text-align: center;
+        flex-direction: column;
+    }
+
+    .actionButtons .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .editorRow {
+        flex-direction: column;
+    }
+
+    .toolbarLeft,
+    .toolbarRight {
+        justify-content: center;
+    }
+}
+
+/* 模态框样式 */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    max-width: 800px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modalHeader {
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modalTitle {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.modalClose {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6c757d;
+}
+
+.modalClose:hover {
+    color: var(--dark-color);
+}
+
+.modalBody {
+    padding: 20px;
+}
+
+.modalFooter {
+    padding: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    text-align: right;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    text-align: left;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}

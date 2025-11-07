@@ -4,6 +4,7 @@
     padding: 20px 0;
     margin-top: auto;
     flex-shrink: 0;
+    width: 100%;
     /* 确保footer在内容不足时能保持在底部 */
 }
 

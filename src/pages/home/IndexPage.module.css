@@ -6,11 +6,11 @@
 
 .mainContent {
     display: flex;
-    gap: 2rem;
+    gap: 1.5rem;
     min-width: 640px;
     max-width: 1560px;
     margin: 2rem auto;
-    padding: 0 1rem;
+    padding: 0 1.8rem;
     padding-top: 48px;
 }
 
@@ -44,7 +44,6 @@
 
     .rightColumn {
         width: 100%;
-        padding: 0 1rem;
         max-width: 1164px;
         min-width: 640px;
     }

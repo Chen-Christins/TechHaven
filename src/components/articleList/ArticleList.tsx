@@ -70,6 +70,17 @@ const mockArticles: Article[] = [
         views: 0,
         praises: 0,
     },
+    {
+        id: 7,
+        author: "admin",
+        title: "CSS Grid 布局完全指南",
+        summary: "全面解析CSS Grid布局的语法、属性和实战案例，掌握复杂页面的高效布局方案。",
+        date: "2024-05-10",
+        category: "CSS",
+        tags: ["CSS", "Grid", "布局"],
+        views: 0,
+        praises: 0,
+    },
 ];
 
 const ArticleList: React.FC = () => {
