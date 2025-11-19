@@ -93,9 +93,9 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	border: 2px solid #d9d9d9;
+	border: 2px solid var(--border-primary);
 	border-radius: 50%;
-	background-color: #fff;
+	background-color: var(--radio-bg);
 	transition: all 0.3s ease;
 	position: relative;
 	flex-shrink: 0;
@@ -103,8 +103,8 @@
 
 /* 选中状态 */
 .checked .radioIndicator {
-	border-color: #1890ff;
-	background-color: #1890ff;
+	border-color: var(--primary);
+	background-color: var(--primary);
 }
 
 /* 单选框圆点 */
@@ -112,7 +112,7 @@
 	width: 8px;
 	height: 8px;
 	border-radius: 50%;
-	background-color: #fff;
+	background-color: var(--text-inverse);
 	transform: scale(0);
 	transition: transform 0.3s ease;
 }
@@ -123,28 +123,28 @@
 
 /* 标签样式 */
 .radioLabel {
-	color: #333;
+	color: var(--text-primary);
 	font-weight: normal;
 	transition: color 0.3s ease;
 }
 
 .checked .radioLabel {
-	color: #1890ff;
+	color: var(--primary);
 	font-weight: 500;
 }
 
 /* 悬浮状态 */
 .radioWrapper:not(.disabled):hover .radioIndicator {
-	border-color: #1890ff;
+	border-color: var(--primary);
 }
 
 .radioWrapper:not(.disabled):hover .radioLabel {
-	color: #1890ff;
+	color: var(--primary);
 }
 
 /* 聚焦状态 */
 .radioInput:focus-visible+.radioIndicator {
-	outline: 2px solid #1890ff;
+	outline: 2px solid var(--primary);
 	outline-offset: 2px;
 }
 
@@ -155,24 +155,24 @@
 }
 
 .disabled .radioIndicator {
-	border-color: #d9d9d9;
-	background-color: #f5f5f5;
+	border-color: var(--border-disabled);
+	background-color: var(--radio-disabled-bg);
 }
 
 .disabled .radioLabel {
-	color: #999;
+	color: var(--text-disabled);
 }
 
 .disabled.checked .radioIndicator {
-	border-color: #d9d9d9;
-	background-color: #d9d9d9;
+	border-color: var(--border-disabled);
+	background-color: var(--border-disabled);
 }
 
 /* 禁用状态的悬浮效果 */
 .disabled:hover .radioIndicator {
-	border-color: #d9d9d9;
+	border-color: var(--border-disabled);
 }
 
 .disabled:hover .radioLabel {
-	color: #999;
+	color: var(--text-disabled);
 }

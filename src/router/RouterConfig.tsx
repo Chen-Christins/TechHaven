@@ -4,6 +4,7 @@ import AuthPage from '../pages/auth/AuthPage';
 import IndexPage from '../pages/home/IndexPage';
 import ArticleView from '../sample/ArticleView';
 import ArticleCreate from '../pages/articleCreate/ArticleCreate';
+import Profile from '../pages/profile/ProfilePage';
 
 const RouterConfig: React.FC = () => {
     return (
@@ -23,6 +24,7 @@ const RouterConfig: React.FC = () => {
             {/* 文章详情页 */}
             <Route path="/article/:id" element={<ArticleView />} />
 
+            <Route path="/profile/:id" element={<Profile />} />
 
             {/* 404 页面 */}
             <Route path="*" element={<div>页面不存在</div>} />

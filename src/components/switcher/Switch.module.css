@@ -67,39 +67,39 @@
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-color: var(--off-color, #ccc);
+	background-color: var(--switch-off);
 	border-radius: 100px;
 	transition: all 0.3s ease;
-	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--switch-shadow);
 }
 
 .checked .slider {
-	background-color: var(--on-color, #007bff);
+	background-color: var(--primary);
 }
 
 /* 滑块手柄 */
 .handle {
 	position: absolute;
 	top: 50%;
-	background-color: white;
+	background-color: var(--switch-handle);
 	border-radius: 50%;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+	box-shadow: var(--handle-shadow);
 	transition: all 0.3s ease;
 	transform: translateY(-50%);
 }
 
 /* 悬浮效果 */
 .switch:not(.disabled):hover .slider {
-	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+	box-shadow: var(--switch-shadow-hover);
 }
 
 .switch:not(.disabled):hover .handle {
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+	box-shadow: var(--handle-shadow-hover);
 }
 
 /* 聚焦状态 */
 .switch:focus-visible {
-	outline: 2px solid var(--on-color);
+	outline: 2px solid var(--primary);
 	outline-offset: 2px;
 }
 
@@ -110,13 +110,13 @@
 }
 
 .disabled .slider {
-	background-color: #f5f5f5;
-	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+	background-color: var(--switch-disabled);
+	box-shadow: var(--switch-shadow-disabled);
 }
 
 .disabled .handle {
-	background-color: #e8e8e8;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	background-color: var(--switch-handle-disabled);
+	box-shadow: var(--handle-shadow-disabled);
 }
 
 /* 加载动画 */

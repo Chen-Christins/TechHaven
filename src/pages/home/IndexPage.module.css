@@ -1,7 +1,8 @@
 .index {
     min-height: 100vh;
-    background-color: #f5f7fa;
+    background-color: var(--bg-primary);
     font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-primary);
 }
 
 .mainContent {

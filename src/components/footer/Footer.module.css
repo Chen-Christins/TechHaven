@@ -1,6 +1,6 @@
 .footer {
-    background-color: #f8f9fa;
-    border-top: 1px solid #e9ecef;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-primary);
     padding: 20px 0;
     margin-top: auto;
     flex-shrink: 0;
@@ -25,7 +25,7 @@
 }
 
 .copyright {
-    color: #6c757d;
+    color: var(--text-secondary);
     font-size: 14px;
     line-height: 1.5;
 }
@@ -37,7 +37,7 @@
 }
 
 .link {
-    color: #6c757d;
+    color: var(--text-secondary);
     text-decoration: none;
     font-size: 14px;
     transition: color 0.2s ease;
@@ -45,7 +45,7 @@
 }
 
 .link:hover {
-    color: #1890ff;
+    color: var(--primary);
 }
 
 .link::after {
@@ -55,7 +55,7 @@
     height: 1px;
     bottom: -2px;
     left: 0;
-    background-color: #1890ff;
+    background-color: var(--primary);
     transition: width 0.2s ease;
 }
 
@@ -64,7 +64,7 @@
 }
 
 .divider {
-    color: #dee2e6;
+    color: var(--text-tertiary);
     margin: 0 8px;
 }
 
@@ -75,7 +75,7 @@
 }
 
 .socialIcon {
-    color: #6c757d;
+    color: var(--text-secondary);
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
@@ -87,18 +87,18 @@
 }
 
 .socialIcon:hover {
-    color: #1890ff;
-    background-color: rgba(24, 144, 255, 0.1);
+    color: var(--primary);
+    background-color: rgba(59, 130, 246, 0.1);
     transform: translateY(-1px);
 }
 
 .bottomText {
     text-align: center;
-    color: #adb5bd;
+    color: var(--text-tertiary);
     font-size: 12px;
     margin-top: 16px;
     padding-top: 16px;
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid var(--border-primary);
     width: 100%;
 }
 

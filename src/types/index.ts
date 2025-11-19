@@ -1,5 +1,11 @@
+import type { ReactNode } from "react";
+
 // 文章类型
 export interface Article {
+    publishDate: ReactNode;
+    excerpt: ReactNode;
+    readTime: ReactNode;
+    likes: ReactNode;
     id: number | string;
     author: string;
     title: string;
@@ -9,6 +15,23 @@ export interface Article {
     tags: string[];
     views: number;
     praises: number;
+    publish_time: string;
+    comments: number;
+}
+
+export interface UserProfile {
+  id: number;
+  name: string;
+  avatar: string;
+  bio: string;
+  location: string;
+  website?: string;
+  joinDate: string;
+  stats: {
+    articles: number;
+    followers: number;
+    following: number;
+  };
 }
 
 // 统计数据类型

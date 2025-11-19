@@ -1,0 +1,39 @@
+.themeToggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: var(--text-secondary);
+}
+
+.themeToggle:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.themeToggle:active {
+  background-color: var(--bg-active);
+}
+
+.toggleContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.icon {
+  color: currentColor;
+  transition: transform 0.3s ease;
+}
+
+.themeToggle:hover .icon {
+  transform: scale(1.1);
+}

@@ -1,16 +1,17 @@
 .statsPanel {
-    background-color: white;
+    background-color: var(--card-bg);
     border-radius: 8px;
     padding: 1.2rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-primary);
     margin-bottom: 0.5rem;
 }
 
 .panelTitle {
     font-size: 1.2rem;
-    color: #2c3e50;
+    color: var(--text-primary);
     margin-bottom: 0.8rem;
-    border-bottom: 1px solid #ecf0f1;
+    border-bottom: 1px solid var(--border-primary);
     padding-bottom: 0.5rem;
 }
 
@@ -70,8 +71,9 @@
     align-items: center;
     gap: 0.8rem;
     padding: 0.8rem;
-    background-color: #f8f9fa;
+    background-color: var(--bg-secondary);
     border-radius: 6px;
+    border: 1px solid var(--border-light);
 }
 
 .statIcon {
@@ -86,10 +88,10 @@
 .statValue {
     font-size: 1.3rem;
     font-weight: bold;
-    color: #2c3e50;
+    color: var(--text-primary);
 }
 
 .statTitle {
     font-size: 0.9rem;
-    color: #7f8c8d;
+    color: var(--text-secondary);
 }

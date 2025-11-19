@@ -3,9 +3,9 @@
 	display: inline-flex;
 	align-items: center;
 	box-sizing: border-box;
-	border: 1px solid #d9d9d9;
+	border: 1px solid var(--border-primary);
 	border-radius: 6px;
-	background-color: #fff;
+	background-color: var(--input-bg);
 	transition: all 0.3s ease;
 	width: 100%;
 	/* 默认宽度100%，可由外部容器控制 */
@@ -13,19 +13,19 @@
 
 /* 悬浮状态 */
 .inputWrapper:not(.disabled):not(.loading):hover {
-	border-color: #40a9ff;
+	border-color: var(--primary-hover);
 }
 
 /* 聚焦状态 */
 .inputWrapper:focus-within {
-	border-color: #40a9ff;
-	box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+	border-color: var(--primary-hover);
+	box-shadow: var(--focus-ring);
 	outline: 0;
 }
 
 /* 禁用状态 */
 .disabled {
-	background-color: #f5f5f5;
+	background-color: var(--input-disabled-bg);
 	cursor: not-allowed;
 	opacity: 0.6;
 }
@@ -60,7 +60,7 @@
 	border: none;
 	outline: none;
 	background: transparent;
-	color: rgba(0, 0, 0, 0.85);
+	color: var(--text-primary);
 	padding: 0;
 	margin: 0;
 	width: 100%;
@@ -69,13 +69,13 @@
 
 /* 禁用状态下的输入框 */
 .input:disabled {
-	color: rgba(0, 0, 0, 0.25);
+	color: var(--text-disabled);
 	cursor: not-allowed;
 }
 
 /* 占位符文字颜色 */
 .input::placeholder {
-	color: #bfbfbf;
+	color: var(--text-placeholder);
 }
 
 /* 前缀样式 */
@@ -83,7 +83,7 @@
 	display: flex;
 	align-items: center;
 	margin-right: 4px;
-	color: rgba(0, 0, 0, 0.45);
+	color: var(--text-tertiary);
 }
 
 .withPrefix .input {
@@ -95,7 +95,7 @@
 	display: flex;
 	align-items: center;
 	margin-left: 4px;
-	color: rgba(0, 0, 0, 0.45);
+	color: var(--text-tertiary);
 }
 
 .withSuffix .input {
@@ -108,7 +108,7 @@
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
-	color: rgba(0, 0, 0, 0.25);
+	color: var(--text-disabled);
 	font-size: 14px;
 	width: 14px;
 	height: 14px;
@@ -117,8 +117,8 @@
 }
 
 .clearIcon:hover {
-	color: rgba(0, 0, 0, 0.45);
-	background-color: rgba(0, 0, 0, 0.06);
+	color: var(--text-tertiary);
+	background-color: var(--hover-bg);
 }
 
 /* 加载图标 */

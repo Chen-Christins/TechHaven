@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaHome, FaThList, FaPen, FaUser, FaBars, FaSignOutAlt, FaCog, FaUserCircle } from 'react-icons/fa';
 import styles from './Navbar.module.css';
 import SearchBox from '../searchBox/SearchBox';
+import ThemeToggle from '../themeToggle/ThemeToggle';
 
 // 用户信息类型
 interface User {
@@ -127,6 +128,9 @@ const Navbar: React.FC = () => {
 
 				{/* 右侧用户区域 */}
 				<div className={styles.rightSection} ref={userMenuRef}>
+					{/* 主题切换按钮 */}
+					<ThemeToggle />
+
 					<div className={styles.userArea} onClick={toggleUserMenu}>
 						{/* 用户头像 */}
 						<div className={styles.avatarContainer}>
@@ -150,7 +154,7 @@ const Navbar: React.FC = () => {
 					<div className={`${styles.userMenu} ${userMenuOpen ? styles.userMenuOpen : ''}`}>
 						<ul className={styles.menuItems}>
 							<li className={styles.menuItem}>
-								<a href="/profile" className={styles.menuLink}>
+								<a href="/profile/1" className={styles.menuLink}>
 									<FaUserCircle className={styles.menuIcon} />
 									<span>个人中心</span>
 								</a>

@@ -1,18 +1,19 @@
 /* 面板容器 */
 .categoryPanel {
-    background-color: white;
+    background-color: var(--card-bg);
     border-radius: 8px;
     padding: 1.2rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-primary);
     margin-bottom: 0.5rem;
 }
 
 /* 面板标题 */
 .panelTitle {
     font-size: 1.2rem;
-    color: #2c3e50;
+    color: var(--text-primary);
     margin-bottom: 0.8rem;
-    border-bottom: 1px solid #ecf0f1;
+    border-bottom: 1px solid var(--border-primary);
     padding-bottom: 0.5rem;
 }
 
@@ -41,7 +42,7 @@
 }
 
 .parentCategory:hover {
-    background-color: #f8fafc;
+    background-color: var(--bg-hover);
 }
 
 /* 展开/折叠按钮 */
@@ -51,7 +52,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #94a3b8;
+    color: var(--text-tertiary);
     flex-shrink: 0;
 }
 
@@ -68,7 +69,7 @@
     flex: 1;
     text-decoration: none;
     padding: 0.8rem 0.2rem;
-    color: #1e293b;
+    color: var(--text-primary);
     font-weight: 500;
     font-size: 1rem;
     height: 38px;
@@ -80,13 +81,13 @@
 }
 
 .parentCategory:hover .parentName {
-    color: #3b82f6;
+    color: var(--primary);
 }
 
 /* 父分类计数 */
 .parentCount {
-    background-color: #eff6ff;
-    color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--primary);
     font-size: 0.85rem;
     padding: 0.2rem 0.6rem;
     border-radius: 12px;
@@ -121,7 +122,7 @@
     list-style: none;
     padding: 0;
     margin: 0;
-    border-left: 1px dashed #e2e8f0;
+    border-left: 1px dashed var(--border-primary);
     /* 虚线分隔层级 */
     padding-left: 0.5rem;
 }
@@ -138,7 +139,7 @@
     align-items: center;
     text-decoration: none;
     padding: 0.0rem 0.4rem;
-    color: #475569;
+    color: var(--text-secondary);
     font-size: 0.95rem;
     border-radius: 6px;
     transition: all 0.2s ease;
@@ -146,8 +147,8 @@
 }
 
 .childLink:hover {
-    background-color: #f1f5f9;
-    color: #3b82f6;
+    background-color: var(--bg-hover);
+    color: var(--primary);
 }
 
 .childName {
@@ -156,8 +157,8 @@
 
 /* 子分类计数 */
 .childCount {
-    background-color: #f1f5f9;
-    color: #64748b;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
     font-size: 0.75rem;
     padding: 0.15rem 0.5rem;
     border-radius: 10px;

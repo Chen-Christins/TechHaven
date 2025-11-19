@@ -1,16 +1,17 @@
 .calendar {
-	background-color: white;
+	background-color: var(--card-bg);
     border-radius: 8px;
     padding: 1.2rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-primary);
     margin-bottom: 0.5rem;
 }
 
 .panelTitle {
 	font-size: 1.2rem;
-	color: #2c3e50;
+	color: var(--text-primary);
 	margin-bottom: 0.8rem;
-	border-bottom: 1px solid #ecf0f1;
+	border-bottom: 1px solid var(--border-primary);
 	padding-bottom: 0.5rem;
 }
 
@@ -24,7 +25,7 @@
 .monthBtn {
 	background: none;
 	border: none;
-	color: #3498db;
+	color: var(--primary);
 	font-size: 1.2rem;
 	cursor: pointer;
 	padding: 0.2rem 0.5rem;
@@ -33,13 +34,13 @@
 }
 
 .monthBtn:hover {
-	background-color: #f1f5f9;
+	background-color: var(--bg-hover);
 }
 
 .monthYear {
 	font-size: 1rem;
 	font-weight: 500;
-	color: #2c3e50;
+	color: var(--text-primary);
 }
 
 .weekDays {
@@ -52,7 +53,7 @@
 .weekDay {
 	text-align: center;
 	font-size: 0.9rem;
-	color: #7f8c8d;
+	color: var(--text-secondary);
 	padding: 0.3rem 0;
 }
 
@@ -69,18 +70,19 @@
 	position: relative;
 	cursor: pointer;
 	transition: background-color 0.3s;
+	color: var(--text-primary);
 }
 
 .calendarDay:hover {
-	background-color: #f1f5f9;
+	background-color: var(--bg-hover);
 }
 
 .otherMonth {
-	color: #bdc3c7;
+	color: var(--text-tertiary);
 }
 
 .hasArticle {
-	color: #3498db;
+	color: var(--primary);
 	font-weight: 500;
 }
 
@@ -91,6 +93,6 @@
 	transform: translateX(-50%);
 	width: 6px;
 	height: 6px;
-	background-color: #3498db;
+	background-color: var(--primary);
 	border-radius: 50%;
 }

@@ -35,8 +35,8 @@
   gap: 12px;
   padding: 12px 16px;
   border-radius: 4px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-md);
   transition: all 0.3s ease;
   animation: fadeIn 0.3s ease;
   max-width: 380px;
@@ -44,19 +44,19 @@
 
 /* 消息类型样式 */
 .success {
-  border-left: 4px solid #52c41a;
+  border-left: 4px solid var(--success);
 }
 
 .warn {
-  border-left: 4px solid #faad14;
+  border-left: 4px solid var(--warning);
 }
 
 .error {
-  border-left: 4px solid #f5222d;
+  border-left: 4px solid var(--error);
 }
 
 .info {
-  border-left: 4px solid #1890ff;
+  border-left: 4px solid var(--info);
 }
 
 /* 图标样式 */
@@ -77,14 +77,14 @@
   border: none;
   cursor: pointer;
   font-size: 16px;
-  color: #999;
+  color: var(--text-tertiary);
   padding: 0;
   margin-left: 8px;
   transition: color 0.2s;
 }
 
 .closeBtn:hover {
-  color: #333;
+  color: var(--text-primary);
 }
 
 /* 动画 */

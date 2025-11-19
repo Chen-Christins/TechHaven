@@ -5,20 +5,21 @@
     left: 0;
     right: 0;
     height: 56px;
-    /* background-color: #0f172a; */
-    background-color: #ffffff;
-    color: #f8fafc;
+    background-color: var(--navbar-bg);
+    color: var(--text-primary);
     z-index: 1000;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
+    border-bottom: 1px solid var(--navbar-border);
 }
 
 /* 滚动时导航栏样式变化 */
 .navbarScrolled {
-    background-color: rgba(15, 23, 42, 0.95);
+    background-color: var(--navbar-bg);
     /* 半透明效果 */
     backdrop-filter: blur(8px);
     height: 60px;
+    box-shadow: var(--shadow-lg);
 }
 
 .container {
@@ -83,7 +84,7 @@
     justify-content: center;
     gap: 0.5rem;
     padding: 0.6rem 1rem;
-    color: #94a3b8;
+    color: var(--text-secondary);
     text-decoration: none;
     font-weight: 500;
     border-radius: 5px;
@@ -92,12 +93,13 @@
 }
 
 .navLink:hover {
-    background-color: rgba(148, 163, 184, 0.1);
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
 }
 
 /* 活跃状态链接 */
 .navLink[data-active="true"] {
-    color: #3b82f6;
+    color: var(--primary);
     background-color: rgba(59, 130, 246, 0.1);
 }
 
@@ -108,7 +110,7 @@
     left: 0;
     width: 100%;
     height: 2px;
-    background-color: #3b82f6;
+    background-color: var(--primary);
     border-radius: 2px;
 }
 
@@ -139,7 +141,7 @@
 }
 
 .userArea:hover {
-    background-color: rgba(148, 163, 184, 0.1);
+    background-color: var(--bg-hover);
 }
 
 /* 用户头像 */
@@ -171,8 +173,8 @@
     right: 0;
     width: 12px;
     height: 12px;
-    background-color: #10b981;
-    border: 2px solid #0f172a;
+    background-color: var(--success);
+    border: 2px solid var(--navbar-bg);
     border-radius: 50%;
 }
 
@@ -190,12 +192,12 @@
 .userName {
     font-weight: 600;
     font-size: 0.95rem;
-    color: #02274d;
+    color: var(--text-primary);
 }
 
 .userRole {
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: var(--text-secondary);
     text-transform: lowercase;
 }
 
@@ -205,10 +207,10 @@
     top: calc(100% + 8px);
     right: 0;
     width: 135px;
-    background-color: #1e293b;
-    /* background-color: #ffffff; */
+    background-color: var(--card-bg);
     border-radius: 5px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border-primary);
     padding: 0.5rem 0;
     opacity: 0;
     visibility: hidden;
@@ -239,31 +241,31 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 1.25rem;
-    color: #e2e8f0;
+    color: var(--text-primary);
     text-decoration: none;
     font-size: 0.9rem;
     transition: all 0.2s ease;
 }
 
 .menuLink:hover {
-    background-color: #334155;
-    color: #f8fafc;
+    background-color: var(--bg-hover);
+    color: var(--primary);
 }
 
 .menuIcon {
     font-size: 1.1rem;
     width: 20px;
     text-align: center;
-    color: #94a3b8;
+    color: var(--text-secondary);
 }
 
 .menuLink:hover .menuIcon {
-    color: #3b82f6;
+    color: var(--primary);
 }
 
 .menuDivider {
     height: 1px;
-    background-color: #334155;
+    background-color: var(--border-primary);
 }
 
 /* 移动端菜单按钮 */
@@ -273,7 +275,7 @@
     justify-content: center;
     background: none;
     border: none;
-    color: #f8fafc;
+    color: var(--text-primary);
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 6px;
@@ -281,7 +283,7 @@
 }
 
 .mobileMenuBtn:hover {
-    background-color: rgba(148, 163, 184, 0.1);
+    background-color: var(--bg-hover);
 }
 
 .menuIcon {
@@ -294,8 +296,9 @@
     top: 56px;
     left: 0;
     right: 0;
-    background-color: #1e293b;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    background-color: var(--card-bg);
+    box-shadow: var(--shadow-lg);
+    border-top: 1px solid var(--border-primary);
     transform: translateY(-100%);
     opacity: 0;
     visibility: hidden;
@@ -325,15 +328,15 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem 1.5rem;
-    color: #e2e8f0;
+    color: var(--text-primary);
     text-decoration: none;
     font-size: 1rem;
     transition: all 0.2s ease;
 }
 
 .mobileNavLink:hover {
-    background-color: #334155;
-    color: #3b82f6;
+    background-color: var(--bg-hover);
+    color: var(--primary);
 }
 
 .mobileLinkIcon {

@@ -39,75 +39,75 @@
 
 /* ========== 实心变体 (Solid) ========== */
 .btn__primary.btn__solid {
-	background-color: #007bff;
-	color: white;
-	border: 1px solid #007bff;
+	background-color: var(--primary);
+	color: var(--text-inverse);
+	border: 1px solid var(--primary);
 }
 
 .btn__primary.btn__solid:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: #0056b3;
-	border-color: #0056b3;
+	background-color: var(--primary-hover);
+	border-color: var(--primary-hover);
 	transform: translateY(-1px);
-	box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+	box-shadow: var(--shadow-md);
 }
 
 .btn__secondary.btn__solid {
-	background-color: #6c757d;
-	color: white;
-	border: 1px solid #6c757d;
+	background-color: var(--secondary);
+	color: var(--text-inverse);
+	border: 1px solid var(--secondary);
 }
 
 .btn__secondary.btn__solid:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: #545b62;
-	border-color: #545b62;
+	background-color: var(--secondary-hover);
+	border-color: var(--secondary-hover);
 	transform: translateY(-1px);
 }
 
 .btn__success.btn__solid {
-	background-color: #28a745;
-	color: white;
-	border: 1px solid #28a745;
+	background-color: var(--success);
+	color: var(--text-inverse);
+	border: 1px solid var(--success);
 }
 
 .btn__success.btn__solid:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: #1e7e34;
-	border-color: #1e7e34;
+	background-color: var(--success-hover);
+	border-color: var(--success-hover);
 	transform: translateY(-1px);
 }
 
 .btn__warning.btn__solid {
-	background-color: #ffc107;
-	color: #212529;
-	border: 1px solid #ffc107;
+	background-color: var(--warning);
+	color: var(--text-warning);
+	border: 1px solid var(--warning);
 }
 
 .btn__warning.btn__solid:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: #e0a800;
-	border-color: #e0a800;
+	background-color: var(--warning-hover);
+	border-color: var(--warning-hover);
 	transform: translateY(-1px);
 }
 
 .btn__error.btn__solid {
-	background-color: #dc3545;
-	color: white;
-	border: 1px solid #dc3545;
+	background-color: var(--error);
+	color: var(--text-inverse);
+	border: 1px solid var(--error);
 }
 
 .btn__error.btn__solid:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: #c82333;
-	border-color: #c82333;
+	background-color: var(--error-hover);
+	border-color: var(--error-hover);
 	transform: translateY(-1px);
 }
 
 .btn__info.btn__solid {
-	background-color: #17a2b8;
-	color: white;
-	border: 1px solid #17a2b8;
+	background-color: var(--info);
+	color: var(--text-inverse);
+	border: 1px solid var(--info);
 }
 
 .btn__info.btn__solid:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: #138496;
-	border-color: #138496;
+	background-color: var(--info-hover);
+	border-color: var(--info-hover);
 	transform: translateY(-1px);
 }
 
@@ -118,63 +118,63 @@
 }
 
 .btn__outline.btn__primary {
-	color: #007bff;
-	border-color: #007bff;
+	color: var(--primary);
+	border-color: var(--primary);
 }
 
 .btn__outline.btn__primary:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: #007bff;
-	color: white;
+	background-color: var(--primary);
+	color: var(--text-inverse);
 }
 
 .btn__outline.btn__secondary {
-	color: #6c757d;
-	border-color: #6c757d;
+	color: var(--secondary);
+	border-color: var(--secondary);
 }
 
 .btn__outline.btn__secondary:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: #6c757d;
-	color: white;
+	background-color: var(--secondary);
+	color: var(--text-inverse);
 }
 
 .btn__outline.btn__success {
-	color: #28a745;
-	border-color: #28a745;
+	color: var(--success);
+	border-color: var(--success);
 }
 
 .btn__outline.btn__success:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: #28a745;
-	color: white;
+	background-color: var(--success);
+	color: var(--text-inverse);
 }
 
 .btn__outline.btn__warning {
-	color: #ffc107;
-	border-color: #ffc107;
+	color: var(--warning);
+	border-color: var(--warning);
 }
 
 .btn__outline.btn__warning:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: #ffc107;
-	color: #212529;
+	background-color: var(--warning);
+	color: var(--text-warning);
 }
 
 .btn__outline.btn__error {
-	color: #dc3545;
-	border-color: #dc3545;
+	color: var(--error);
+	border-color: var(--error);
 }
 
 .btn__outline.btn__error:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: #dc3545;
-	color: white;
+	background-color: var(--error);
+	color: var(--text-inverse);
 }
 
 .btn__outline.btn__info {
-	color: #17a2b8;
-	border-color: #17a2b8;
+	color: var(--info);
+	border-color: var(--info);
 }
 
 .btn__outline.btn__info:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: #17a2b8;
-	color: white;
+	background-color: var(--info);
+	color: var(--text-inverse);
 }
 
 /* ========== 幽灵变体 (Ghost) ========== */
@@ -184,51 +184,51 @@
 }
 
 .btn__ghost.btn__primary {
-	color: #007bff;
+	color: var(--primary);
 }
 
 .btn__ghost.btn__primary:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: rgba(0, 123, 255, 0.1);
+	background-color: var(--primary-bg-hover);
 }
 
 .btn__ghost.btn__secondary {
-	color: #6c757d;
+	color: var(--secondary);
 }
 
 .btn__ghost.btn__secondary:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: rgba(108, 117, 125, 0.1);
+	background-color: var(--secondary-bg-hover);
 }
 
 .btn__ghost.btn__success {
-	color: #28a745;
+	color: var(--success);
 }
 
 .btn__ghost.btn__success:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: rgba(40, 167, 69, 0.1);
+	background-color: var(--success-bg-hover);
 }
 
 .btn__ghost.btn__warning {
-	color: #ffc107;
+	color: var(--warning);
 }
 
 .btn__ghost.btn__warning:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: rgba(255, 193, 7, 0.1);
+	background-color: var(--warning-bg-hover);
 }
 
 .btn__ghost.btn__error {
-	color: #dc3545;
+	color: var(--error);
 }
 
 .btn__ghost.btn__error:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: rgba(220, 53, 69, 0.1);
+	background-color: var(--error-bg-hover);
 }
 
 .btn__ghost.btn__info {
-	color: #17a2b8;
+	color: var(--info);
 }
 
 .btn__ghost.btn__info:hover:not(.btn--disabled):not(.btn--loading) {
-	background-color: rgba(23, 162, 184, 0.1);
+	background-color: var(--info-bg-hover);
 }
 
 /* ========== 状态样式 ========== */
@@ -241,19 +241,19 @@
 }
 
 .btn--disabled.btn__solid {
-	background-color: #6c757d;
-	color: white;
-	border-color: #6c757d;
+	background-color: var(--disabled);
+	color: var(--text-inverse);
+	border-color: var(--disabled);
 }
 
 .btn--disabled.btn__outline {
-	color: #6c757d;
-	border-color: #6c757d;
+	color: var(--disabled);
+	border-color: var(--disabled);
 	background-color: transparent;
 }
 
 .btn--disabled.btn__ghost {
-	color: #6c757d;
+	color: var(--disabled);
 	background-color: transparent;
 }
 
@@ -285,27 +285,27 @@
 
 /* ========== 焦点和激活状态 ========== */
 .btn:focus {
-	box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+	box-shadow: var(--focus-ring);
 }
 
 .btn__secondary:focus {
-	box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.25);
+	box-shadow: var(--focus-ring-secondary);
 }
 
 .btn__success:focus {
-	box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25);
+	box-shadow: var(--focus-ring-success);
 }
 
 .btn__warning:focus {
-	box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.25);
+	box-shadow: var(--focus-ring-warning);
 }
 
 .btn__error:focus {
-	box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+	box-shadow: var(--focus-ring-error);
 }
 
 .btn__info:focus {
-	box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.25);
+	box-shadow: var(--focus-ring-info);
 }
 
 .btn:active:not(.btn--disabled):not(.btn--loading) {
