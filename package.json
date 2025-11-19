@@ -10,11 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@uiw/react-markdown-preview": "^5.1.5",
     "antd": "^5.28.0",
     "axios": "^1.13.1",
     "highlight.js": "^11.11.1",
     "katex": "^0.16.25",
     "lucide-react": "^0.552.0",
+    "markdown-it": "^14.1.0",
     "prop-types": "^15.8.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -24,6 +26,7 @@
     "react-syntax-highlighter": "^16.1.0",
     "rehype-highlight": "^7.0.2",
     "rehype-katex": "^7.0.1",
+    "rehype-raw": "^7.0.0",
     "remark": "^15.0.1",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",

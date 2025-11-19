@@ -168,13 +168,12 @@
     max-width: min(100%, 100% - 64px); /* 考虑内边距 */
 }
 
-.markdownBody code {
-    background-color: var(--code-bg);
-    border-radius: 6px;
-    padding: 0.2em 0.4em;
-    font-size: 0.85em;
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+/* 只处理块级代码，行内代码由 .inlineCode 类处理 */
+.markdownBody pre code {
+    background: none;
+    padding: 0;
 }
+
 
 .markdownBody pre {
     background-color: var(--code-block-bg);
@@ -270,12 +269,45 @@
     background: var(--code-button-hover-bg);
 }
 
+/* 美化行内代码样式 */
 .inlineCode {
-    background-color: var(--code-bg);
-    border-radius: 6px;
-    padding: 0.2em 0.4em;
-    font-size: 0.85em;
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    background: linear-gradient(135deg, var(--code-bg), rgba(59, 130, 246, 0.1)) !important;
+    color: var(--primary) !important;
+    border-radius: 6px !important;
+    padding: 0.2em 0.4em !important;
+    font-size: 0.85em !important;
+    font-family: 'SFMono-Regular', Consolas, 'Monaco', 'Liberation Mono', 'Menlo', monospace !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    display: inline !important;
+    white-space: nowrap !important;
+    line-height: 1.5 !important;
+    margin: 0 2px !important;
+    box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2) !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+}
+
+/* 行内代码悬停效果 */
+.markdownBody .inlineCode:hover {
+    background: linear-gradient(135deg, var(--code-bg), rgba(59, 130, 246, 0.15)) !important;
+    border-color: rgba(59, 130, 246, 0.5) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* 暗色主题下的行内代码样式 */
+[data-theme="dark"] .inlineCode {
+    background: linear-gradient(135deg, var(--code-bg), rgba(96, 165, 250, 0.15)) !important;
+    color: var(--primary) !important;
+    border-color: rgba(96, 165, 250, 0.4) !important;
+    box-shadow: 0 1px 3px rgba(96, 165, 250, 0.3) !important;
+}
+
+[data-theme="dark"] .markdownBody .inlineCode:hover {
+    background: linear-gradient(135deg, var(--code-bg), rgba(96, 165, 250, 0.2)) !important;
+    border-color: rgba(96, 165, 250, 0.6) !important;
+    box-shadow: 0 2px 6px rgba(96, 165, 250, 0.4) !important;
 }
 
 /* 响应式设计 */
@@ -376,4 +408,15 @@
 /* 代码块样式调整 */
 .codeBlockWrapper {
     position: relative;
+}
+
+.languageTag {
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 11px;
+}
+
+.codeBlock {
+    margin: 16px 0;
+    overflow: auto;
 }

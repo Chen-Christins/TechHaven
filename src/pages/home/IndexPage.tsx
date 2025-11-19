@@ -9,6 +9,7 @@ import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import TagPanel from "../../components/tagPanel/TagPanel";
 import SearchPanel from "../../components/searchArticle/SearchArticle";
+import BackToTop from "../../components/backToTop/BackToTop";
 
 const IndexPage: React.FC = () => {
 	const mockTags = [
@@ -47,6 +48,7 @@ const IndexPage: React.FC = () => {
 				</div>
 			</div>
 			<Footer companyName="TechBlog" startYear={2025} />
+			<BackToTop />
 		</div>
 	)
 };

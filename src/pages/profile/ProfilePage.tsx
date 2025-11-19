@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import styles from './ProfilePage.module.css';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
+import BackToTop from '../../components/backToTop/BackToTop';
 import {
   MapPin, Calendar, Globe,
   FileText, Users, Heart, MessageSquare,
   Eye, Clock, Hash, TrendingUp,
-  Activity, Edit, Share2, BookOpen,
-  ArrowUp
+  Activity, Edit, Share2, BookOpen
 } from 'lucide-react';
 import type { Article, UserProfile } from '../../types/index';
 
@@ -194,33 +194,8 @@ const recentActivities = [
 ];
 
 const Profile: React.FC = () => {
-  const [showBackToTop, setShowBackToTop] = useState(false);
 
-  // 监听滚动事件，决定是否显示回到顶部按钮
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      setShowBackToTop(scrollTop > 100); // 滚动超过100px时显示按钮
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // 回到顶部功能
-  const scrollToTop = () => {
-    console.log('回到顶部按钮被点击了');
-    // 先尝试这种方法
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-    // 如果上面不行，再用这种方法
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'smooth'
-    });
-  };
-
+  
   return (
     <div className={styles.profile}>
       {/* 顶部导航栏 */}
@@ -403,31 +378,8 @@ const Profile: React.FC = () => {
         </div>
       </div>
 
-      {/* 回到顶部按钮 */}
-      {showBackToTop ? (
-        <button
-          className={styles.backToTop}
-          onClick={scrollToTop}
-          aria-label="回到顶部"
-        >
-          <ArrowUp size={20} />
-        </button>
-      ) : (
-        // 临时调试：始终显示按钮进行测试
-        <button
-          className={styles.backToTop}
-          onClick={(e) => {
-            e.preventDefault();
-            console.log('按钮被直接点击了');
-            scrollToTop();
-          }}
-          aria-label="回到顶部"
-        >
-          <ArrowUp size={20} />
-        </button>
-      )}
-
       <Footer companyName="TechBlog" startYear={2025} />
+      <BackToTop />
     </div>
   );
 };

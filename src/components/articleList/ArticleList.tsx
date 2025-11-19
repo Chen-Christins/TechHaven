@@ -14,6 +14,12 @@ const mockArticles: Article[] = [
         tags: ["React", "TypeScript", "前端"],
         views: 0,
         praises: 0,
+        publishDate: undefined,
+        excerpt: undefined,
+        readTime: undefined,
+        likes: undefined,
+        publish_time: '',
+        comments: 0
     },
     {
         id: 2,
@@ -25,6 +31,12 @@ const mockArticles: Article[] = [
         tags: ["TypeScript", "类型编程", "前端工程化"],
         views: 0,
         praises: 0,
+        publishDate: undefined,
+        excerpt: undefined,
+        readTime: undefined,
+        likes: undefined,
+        publish_time: '',
+        comments: 0
     },
     {
         id: 3,
@@ -36,6 +48,12 @@ const mockArticles: Article[] = [
         tags: ["CSS", "Grid", "布局"],
         views: 0,
         praises: 0,
+        publishDate: undefined,
+        excerpt: undefined,
+        readTime: undefined,
+        likes: undefined,
+        publish_time: '',
+        comments: 0
     },
     {
         id: 4,
@@ -47,6 +65,12 @@ const mockArticles: Article[] = [
         tags: ["CSS", "Grid", "布局"],
         views: 0,
         praises: 0,
+        publishDate: undefined,
+        excerpt: undefined,
+        readTime: undefined,
+        likes: undefined,
+        publish_time: '',
+        comments: 0
     },
     {
         id: 5,
@@ -58,6 +82,12 @@ const mockArticles: Article[] = [
         tags: ["CSS", "Grid", "布局"],
         views: 0,
         praises: 0,
+        publishDate: undefined,
+        excerpt: undefined,
+        readTime: undefined,
+        likes: undefined,
+        publish_time: '',
+        comments: 0
     },
     {
         id: 6,
@@ -69,6 +99,12 @@ const mockArticles: Article[] = [
         tags: ["CSS", "Grid", "布局"],
         views: 0,
         praises: 0,
+        publishDate: undefined,
+        excerpt: undefined,
+        readTime: undefined,
+        likes: undefined,
+        publish_time: '',
+        comments: 0
     },
     {
         id: 7,
@@ -80,6 +116,12 @@ const mockArticles: Article[] = [
         tags: ["CSS", "Grid", "布局"],
         views: 0,
         praises: 0,
+        publishDate: undefined,
+        excerpt: undefined,
+        readTime: undefined,
+        likes: undefined,
+        publish_time: '',
+        comments: 0
     },
 ];
 

@@ -39,8 +39,14 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   });
 
   useEffect(() => {
-    // 更新 DOM 上的 data-theme 属性
+    // 立即更新 DOM 上的 data-theme 属性和 class
     document.documentElement.setAttribute('data-theme', theme);
+
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
 
     // 保存到 localStorage
     localStorage.setItem('theme', theme);

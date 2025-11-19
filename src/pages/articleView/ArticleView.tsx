@@ -25,12 +25,6 @@ interface ArticleViewProps {
     pushlish_time: string;
 }
 
-interface CodeProps {
-    node?: any;
-    inline?: boolean;
-    className?: string;
-    children?: React.ReactNode;
-}
 
 // 使用 react-markdown 期望的标题属性类型
 interface HeadingComponentProps extends React.HTMLAttributes<HTMLHeadingElement> {
@@ -38,15 +32,15 @@ interface HeadingComponentProps extends React.HTMLAttributes<HTMLHeadingElement>
     node?: any;
 }
 
-const ArticleView: React.FC<ArticleViewProps> = ({ 
-    title, 
-    author, 
-    views, 
-    praises, 
-    update_time, 
-    pushlish_time, 
-    content, 
-    className = '' 
+const ArticleView: React.FC<ArticleViewProps> = ({
+    title,
+    author,
+    views,
+    praises,
+    update_time,
+    pushlish_time,
+    content,
+    className = ''
 }) => {
     const [headings, setHeadings] = useState<Heading[]>([]);
     const [activeId, setActiveId] = useState<string>('');
@@ -149,92 +143,13 @@ const ArticleView: React.FC<ArticleViewProps> = ({
         });
     }, []);
 
-    // 修复代码块组件 - 正确处理children和嵌套问题
-    const CodeBlock: React.FC<CodeProps> = ({ inline, className, children, node, ...props }) => {
-        // 正确处理children，将其转换为字符串
-        const getCodeString = (children: React.ReactNode): string => {
-            if (typeof children === 'string') {
-                return children;
-            }
-            if (Array.isArray(children)) {
-                return children.map(child => {
-                    if (typeof child === 'string') {
-                        return child;
-                    }
-                    // 添加类型检查
-                    if (React.isValidElement(child)) {
-                        const element = child as React.ReactElement<{ children?: React.ReactNode }>;
-                        if (typeof element.props.children === 'string') {
-                            return element.props.children;
-                        }
-                        // 递归处理嵌套的子元素
-                        return getCodeString(element.props.children);
-                    }
-                    return String(child);
-                }).join('');
-            }
-            // 添加类型检查
-            if (React.isValidElement(children)) {
-                const element = children as React.ReactElement<{ children?: React.ReactNode }>;
-                if (typeof element.props.children === 'string') {
-                    return element.props.children;
-                }
-                // 递归处理嵌套的子元素
-                return getCodeString(element.props.children);
-            }
-            return String(children);
-        };
-
-        const code = getCodeString(children).replace(/\n$/, '');
-        const match = /language-(\w+)/.exec(className || '');
-        const language = match ? match[1] : '';
-
-        if (inline) {
-            // 修复行内代码：直接显示内容
-            return <code className={styles.inlineCode}>{code}</code>;
-        }
-
-        return (
-            <div className={styles.codeBlockWrapper}>
-                {language && (
-                    <div className={styles.codeHeader}>
-                        <span className={styles.languageTag}>{language}</span>
-                        <button
-                            className={styles.copyButton}
-                            onClick={() => handleCopyCode(code)}
-                        >
-                            复制
-                        </button>
-                    </div>
-                )}
-                <SyntaxHighlighter
-                    style={vscDarkPlus}
-                    language={language}
-                    PreTag="div"
-                    showLineNumbers
-                    customStyle={{
-                        margin: 0,
-                        borderRadius: language ? '0 0 8px 8px' : '8px',
-                        fontSize: '14px'
-                    }}
-                    codeTagProps={{
-                        style: {
-                            fontSize: 'inherit'
-                        }
-                    }}
-                >
-                    {code}
-                </SyntaxHighlighter>
-            </div>
-        );
-    };
-
+    
     // 创建标题组件
     const createHeadingComponent = (level: number) => {
         return ({ children, ...props }: HeadingComponentProps) => {
             const text = React.Children.toArray(children).join('');
             const id = generateId(text);
-            
+
             switch (level) {
                 case 1:
                     return <h1 id={id} {...props}>{children}</h1>;
@@ -254,22 +169,9 @@ const ArticleView: React.FC<ArticleViewProps> = ({
         };
     };
 
-    // 自定义段落组件，处理代码块嵌套问题
-    const ParagraphComponent: React.FC<React.HTMLAttributes<HTMLParagraphElement> & { node?: any }> = 
+    // 简化段落组件 - 不要干预代码块处理
+    const ParagraphComponent: React.FC<React.HTMLAttributes<HTMLParagraphElement> & { node?: any }> =
         ({ children, ...props }) => {
-        
-        // 检查子元素中是否包含代码块
-        const hasCodeBlock = React.Children.toArray(children).some(child => 
-            React.isValidElement(child) && 
-            typeof (child as React.ReactElement).type === 'function' &&
-            (child as React.ReactElement).type === CodeBlock
-        );
-
-        // 如果包含代码块，使用 div 代替 p
-        if (hasCodeBlock) {
-            return <div className={styles.codeParagraph} {...props}>{children}</div>;
-        }
-
         return <p {...props}>{children}</p>;
     };
 
@@ -319,15 +221,56 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                             remarkPlugins={[remarkGfm, remarkMath]}
                             rehypePlugins={[rehypeKatex]}
                             components={{
-                                code: CodeBlock,
-                                p: ParagraphComponent, // 添加自定义段落组件
+                                // 暂时移除自定义 code 组件，使用默认处理
+                                // code: CodeBlock,
+                                p: ParagraphComponent,
                                 h1: createHeadingComponent(1),
                                 h2: createHeadingComponent(2),
                                 h3: createHeadingComponent(3),
                                 h4: createHeadingComponent(4),
                                 h5: createHeadingComponent(5),
                                 h6: createHeadingComponent(6),
+                                // 只对代码块进行自定义处理
+                                code: ({ className, children }) => {
+                                    const codeContent = String(children || '');
+                                    const language = className?.replace('language-', '') || '';
+
+                                    // 如果没有语言标识，认为是行内代码
+                                    if (!className) {
+                                        return <code className={styles.inlineCode}>{codeContent}</code>;
+                                    }
+
+                                    // 有语言标识的是块级代码
+                                    return (
+                                        <div className={styles.codeBlockWrapper}>
+                                            <div className={styles.codeHeader}>
+                                                <span className={styles.languageTag}>{language}</span>
+                                                <button
+                                                    className={styles.copyButton}
+                                                    onClick={() => handleCopyCode(codeContent)}
+                                                >
+                                                    复制
+                                                </button>
+                                            </div>
+                                            <SyntaxHighlighter
+                                                style={vscDarkPlus}
+                                                language={language}
+                                                PreTag="div"
+                                                showLineNumbers={true}
+                                                customStyle={{
+                                                    margin: 0,
+                                                    borderRadius: '0 0 8px 8px',
+                                                    fontSize: '14px'
+                                                }}
+                                            >
+                                                {codeContent}
+                                            </SyntaxHighlighter>
+                                        </div>
+                                    );
+                                }
                             }}
+                            skipHtml={false}
+                            unwrapDisallowed={false}
                         >
                             {content}
                         </ReactMarkdown>

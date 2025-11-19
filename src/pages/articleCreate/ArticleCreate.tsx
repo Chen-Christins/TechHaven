@@ -5,6 +5,7 @@ import styles from './ArticleCreate.module.css';
 import Footer from '../../components/footer/Footer';
 import Navbar from '../../components/navbar/Navbar';
 import CustomSelect from '../../components/customSelect/CustomSelect';
+import BackToTop from '../../components/backToTop/BackToTop';
 
 // 模拟数据
 const categories: SelectOption[] = [
@@ -390,9 +391,10 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                         </div>
                     </div>
                 )}
-                
+  
             </div>
             <Footer companyName="TechBlog" startYear={2025} />
+            <BackToTop />
         </>
     );
 };

@@ -3,6 +3,7 @@ import React from 'react';
 import ArticleView from '../pages/articleView/ArticleView';
 import Footer from '../components/footer/Footer';
 import Navbar from '../components/navbar/Navbar';
+import BackToTop from '../components/backToTop/BackToTop';
 
 const ExampleUsage: React.FC = () => {
 	// 示例Markdown内容，包含代码和公式
@@ -10,7 +11,11 @@ const ExampleUsage: React.FC = () => {
 这是一篇包含代码和数学公式的示例文章。
 
 ## 行内代码示例
-这是一个行内代码 \`Hello World\` 
+这是一个行内代码 \`Hello World\`，还有一些其他的代码如 \`console.log()\`、\`document.getElementById()\` 和 \`fetch()\`。
+
+在代码中，我们经常使用变量名如 \`count\`、\`user\`、\`data\` 等。还有一些方法如 \`map()\`、\`filter()\`、\`reduce()\` 等数组方法。
+
+简单的代码测试：\`x\`、\`i\`、\`n\`。
 
 ## 代码示例
 
@@ -84,6 +89,7 @@ $$
                 content={markdownContent}
             />
 			<Footer companyName="TechBlog" startYear={2025} />
+			<BackToTop />
 		</div>
 	);
 };
