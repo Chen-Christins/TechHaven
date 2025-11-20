@@ -6,6 +6,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import 'katex/dist/katex.min.css';
+import mermaid from 'mermaid';
 import styles from './ArticleView.module.css';
 
 interface Heading {
@@ -25,6 +26,53 @@ interface ArticleViewProps {
     pushlish_time: string;
 }
 
+// 初始化 Mermaid 配置
+mermaid.initialize({
+    startOnLoad: false,
+    theme: 'default',
+    securityLevel: 'loose',
+    fontFamily: 'monospace',
+    fontSize: 14,
+    flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true,
+        curve: 'basis'
+    }
+});
+
+// Mermaid 图表组件
+const MermaidComponent: React.FC<{ code: string }> = ({ code }) => {
+    const elementRef = useRef<HTMLDivElement>(null);
+    const [error, setError] = useState<string>('');
+
+    useEffect(() => {
+        if (elementRef.current) {
+            try {
+                const id = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                mermaid.render(id, code).then(({ svg }) => {
+                    if (elementRef.current) {
+                        elementRef.current.innerHTML = svg;
+                    }
+                }).catch((err) => {
+                    setError(`Mermaid 渲染错误: ${err.message}`);
+                });
+            } catch (err: any) {
+                setError(`Mermaid 渲染错误: ${err.message}`);
+            }
+        }
+    }, [code]);
+
+    if (error) {
+        return (
+            <div className={styles.mermaidError}>
+                <div className={styles.errorMessage}>{error}</div>
+                <pre className={styles.errorCode}>{code}</pre>
+            </div>
+        );
+    }
+
+    return <div ref={elementRef} className={styles.mermaidDiagram} />;
+};
 
 // 使用 react-markdown 期望的标题属性类型
 interface HeadingComponentProps extends React.HTMLAttributes<HTMLHeadingElement> {
@@ -253,7 +301,25 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                                         return <code className={styles.inlineCode}>{codeContent}</code>;
                                     }
 
-                                    // 有语言标识的是块级代码
+                                    // 如果是 Mermaid 代码，使用 MermaidComponent
+                                    if (language === 'mermaid') {
+                                        return (
+                                            <div className={styles.mermaidWrapper}>
+                                                <div className={styles.codeHeader}>
+                                                    <span className={styles.languageTag}>Mermaid 图表</span>
+                                                    <button
+                                                        className={styles.copyButton}
+                                                        onClick={() => handleCopyCode(codeContent.trim())}
+                                                    >
+                                                        复制
+                                                    </button>
+                                                </div>
+                                                <MermaidComponent code={codeContent.trim()} />
+                                            </div>
+                                        );
+                                    }
+
+                                    // 其他语言标识的是块级代码
                                     return (
                                         <div className={styles.codeBlockWrapper}>
                                             <div className={styles.codeHeader}>

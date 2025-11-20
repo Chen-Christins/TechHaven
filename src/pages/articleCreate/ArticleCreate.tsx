@@ -1,5 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import remarkGfm from 'remark-gfm';
+import mermaid from 'mermaid';
+import 'katex/dist/katex.min.css';
 import type { ArticleCreateProps, ArticleFormData, Category, SelectOption, Tag } from '../../types/index';
 import { FaEdit, FaEye, FaFileImport, FaInfoCircle, FaSave, FaFly, FaDivide } from 'react-icons/fa';
 import styles from './ArticleCreate.module.css';
@@ -36,7 +42,56 @@ const markdownHelpData = [
     { element: '引用', syntax: '> 引用内容', example: '> 这是引用内容' },
     { element: '数学公式(行内)', syntax: '$公式$', example: '勾股定理: $a^2 + b^2 = c^2$' },
     { element: '数学公式(块级)', syntax: '$$公式$$', example: '$$\n\\int_a^b f(x)dx = F(b) - F(a)\n$$' },
+    { element: 'Mermaid图表', syntax: '```mermaid\n图表代码\n```', example: '```mermaid\ngraph TD\n    A[开始] --> B{条件判断}\n    B -->|是| C[执行操作]\n    B -->|否| D[结束]\n    C --> D\n```' },
 ];
+
+// 初始化 Mermaid
+mermaid.initialize({
+    startOnLoad: false,
+    theme: 'default',
+    securityLevel: 'loose',
+    fontFamily: 'monospace',
+    fontSize: 14,
+    flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true,
+        curve: 'basis'
+    }
+});
+
+// Mermaid 图表组件
+const MermaidComponent: React.FC<{ code: string }> = ({ code }) => {
+    const elementRef = useRef<HTMLDivElement>(null);
+    const [error, setError] = useState<string>('');
+
+    useEffect(() => {
+        if (elementRef.current) {
+            try {
+                const id = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                mermaid.render(id, code).then(({ svg }) => {
+                    if (elementRef.current) {
+                        elementRef.current.innerHTML = svg;
+                    }
+                }).catch((err) => {
+                    setError(`Mermaid 渲染错误: ${err.message}`);
+                });
+            } catch (err: any) {
+                setError(`Mermaid 渲染错误: ${err.message}`);
+            }
+        }
+    }, [code]);
+
+    if (error) {
+        return (
+            <div className={styles.mermaidError}>
+                <div className={styles.errorMessage}>{error}</div>
+                <pre className={styles.errorCode}>{code}</pre>
+            </div>
+        );
+    }
+
+    return <div ref={elementRef} className={styles.mermaidDiagram} />;
+};
 
 const ArticleCreate: React.FC<ArticleCreateProps> = ({
     className = '',
@@ -52,6 +107,40 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
         content: '',
         ...initialData
     });
+
+    // 复制成功状态管理
+    const [copySuccess, setCopySuccess] = useState<string>('');
+    const copyTimeoutRef = useRef<number | null>(null);
+
+    // 处理复制功能
+    const handleCopy = async (text: string, type: string = '代码') => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopySuccess(`${type}已复制到剪贴板`);
+
+            // 清除之前的定时器
+            if (copyTimeoutRef.current) {
+                clearTimeout(copyTimeoutRef.current);
+            }
+
+            // 3秒后清除提示
+            copyTimeoutRef.current = setTimeout(() => {
+                setCopySuccess('');
+            }, 3000);
+        } catch (err) {
+            setCopySuccess('复制失败，请手动复制');
+            setTimeout(() => setCopySuccess(''), 3000);
+        }
+    };
+
+    // 清理定时器
+    useEffect(() => {
+        return () => {
+            if (copyTimeoutRef.current) {
+                clearTimeout(copyTimeoutRef.current);
+            }
+        };
+    }, []);
 
     const [viewMode, setViewMode] = useState<'editor' | 'preview' | 'both'>('both');
     const [showHelpModal, setShowHelpModal] = useState(false);
@@ -164,25 +253,35 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
         console.log('发布文章:', formData);
     };
 
-    const renderMarkdownPreview = (content: string) => {
-        // 简单的Markdown预览渲染
-        return content.split('\n').map((line, index) => {
-            if (line.startsWith('# ')) {
-                return <h1 key={index}>{line.substring(2)}</h1>;
-            } else if (line.startsWith('## ')) {
-                return <h2 key={index}>{line.substring(3)}</h2>;
-            } else if (line.startsWith('### ')) {
-                return <h3 key={index}>{line.substring(4)}</h3>;
-            } else if (line.startsWith('> ')) {
-                return <blockquote key={index}>{line.substring(2)}</blockquote>;
-            } else if (line.startsWith('- ')) {
-                return <li key={index}>{line.substring(2)}</li>;
-            } else if (line.startsWith('```')) {
-                return <pre key={index}><code>{line}</code></pre>;
-            } else {
-                return <p key={index}>{line}</p>;
+    // 创建标题组件工厂函数
+    const createHeadingComponent = (level: number) => {
+        return ({ children, ...props }: any) => {
+            const text = React.Children.toArray(children).join('');
+            const id = text.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5\s-]/g, '').replace(/\s+/g, '-');
+
+            switch (level) {
+                case 1:
+                    return <h1 id={id} {...props}>{children}</h1>;
+                case 2:
+                    return <h2 id={id} {...props}>{children}</h2>;
+                case 3:
+                    return <h3 id={id} {...props}>{children}</h3>;
+                case 4:
+                    return <h4 id={id} {...props}>{children}</h4>;
+                case 5:
+                    return <h5 id={id} {...props}>{children}</h5>;
+                case 6:
+                    return <h6 id={id} {...props}>{children}</h6>;
+                default:
+                    return <h2 id={id} {...props}>{children}</h2>;
             }
-        });
+        };
+    };
+
+    // 简化段落组件
+    const ParagraphComponent: React.FC<React.HTMLAttributes<HTMLParagraphElement> & { node?: any }> =
+        ({ children, ...props }) => {
+            return <p {...props}>{children}</p>;
     };
 
     return (
@@ -363,7 +462,66 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                             {(viewMode === 'preview' || viewMode === 'both') && (
                                 <div className={styles.editorColumn}>
                                     <div className={`${styles.markdownPreview} ${styles.editorContent} ${styles.active}`}>
-                                        {renderMarkdownPreview(formData.content)}
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm, remarkMath]}
+                                            rehypePlugins={[rehypeKatex]}
+                                            components={{
+                                                p: ParagraphComponent,
+                                                h1: createHeadingComponent(1),
+                                                h2: createHeadingComponent(2),
+                                                h3: createHeadingComponent(3),
+                                                h4: createHeadingComponent(4),
+                                                h5: createHeadingComponent(5),
+                                                h6: createHeadingComponent(6),
+                                                code: ({ className, children }) => {
+                                                    const codeContent = String(children || '');
+                                                    const language = className?.replace('language-', '') || '';
+
+                                                    // 如果没有语言标识，认为是行内代码
+                                                    if (!className) {
+                                                        return <code className={styles.inlineCode}>{codeContent}</code>;
+                                                    }
+
+                                                    // 如果是 Mermaid 代码，使用 MermaidComponent
+                                                    if (language === 'mermaid') {
+                                                        return (
+                                                            <div className={styles.mermaidWrapper}>
+                                                                <div className={styles.codeHeader}>
+                                                                    <span className={styles.languageTag}>Mermaid 图表</span>
+                                                                    <button
+                                                                        className={styles.copyButton}
+                                                                        onClick={() => navigator.clipboard.writeText(codeContent)}
+                                                                    >
+                                                                        复制代码
+                                                                    </button>
+                                                                </div>
+                                                                <MermaidComponent code={codeContent.trim()} />
+                                                            </div>
+                                                        );
+                                                    }
+
+                                                    // 其他语言标识的是块级代码
+                                                    return (
+                                                        <div className={styles.codeBlockWrapper}>
+                                                            <div className={styles.codeHeader}>
+                                                                <span className={styles.languageTag}>{language}</span>
+                                                                <button
+                                                                    className={styles.copyButton}
+                                                                    onClick={() => navigator.clipboard.writeText(codeContent)}
+                                                                >
+                                                                    复制
+                                                                </button>
+                                                            </div>
+                                                            <pre className={styles.codeBlock}>
+                                                                <code>{codeContent}</code>
+                                                            </pre>
+                                                        </div>
+                                                    );
+                                                }
+                                            }}
+                                        >
+                                            {formData.content}
+                                        </ReactMarkdown>
                                     </div>
                                 </div>
                             )}
@@ -414,13 +572,81 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                                             <tr key={index}>
                                                 <td>{item.element}</td>
                                                 <td style={{ whiteSpace: 'pre-line' }}>{item.syntax}</td>
-                                                <td style={{ whiteSpace: 'pre-line' }}>{item.example}</td>
+                                                <td className={styles.exampleCell}>
+                                                    <div className={styles.markdownExample}>
+                                                        <ReactMarkdown
+                                                            remarkPlugins={[remarkGfm, remarkMath]}
+                                                            rehypePlugins={[rehypeKatex]}
+                                                            components={{
+                                                                p: ParagraphComponent,
+                                                                h1: createHeadingComponent(1),
+                                                                h2: createHeadingComponent(2),
+                                                                h3: createHeadingComponent(3),
+                                                                h4: createHeadingComponent(4),
+                                                                h5: createHeadingComponent(5),
+                                                                h6: createHeadingComponent(6),
+                                                                code: ({ className, children }) => {
+                                                                    const codeContent = String(children || '');
+                                                                    const language = className?.replace('language-', '') || '';
+
+                                                                    // 如果没有语言标识，认为是行内代码
+                                                                    if (!className) {
+                                                                        return <code className={styles.inlineCode}>{codeContent}</code>;
+                                                                    }
+
+                                                                    // 如果是 Mermaid 代码，使用 MermaidComponent
+                                                                    if (language === 'mermaid') {
+                                                                        return (
+                                                                            <div className={styles.mermaidWrapper}>
+                                                                                <div className={styles.codeHeader}>
+                                                                                    <span className={styles.languageTag}>Mermaid 图表</span>
+                                                                                    <button
+                                                                                        className={styles.copyButton}
+                                                                                        onClick={() => handleCopy(codeContent.trim(), 'Mermaid代码')}
+                                                                                    >
+                                                                                        复制代码
+                                                                                    </button>
+                                                                                </div>
+                                                                                <MermaidComponent code={codeContent.trim()} />
+                                                                            </div>
+                                                                        );
+                                                                    }
+
+                                                                    // 其他语言标识的是块级代码
+                                                                    return (
+                                                                        <div className={styles.codeBlockWrapper}>
+                                                                            <div className={styles.codeHeader}>
+                                                                                <span className={styles.languageTag}>{language}</span>
+                                                                                <button
+                                                                                    className={styles.copyButton}
+                                                                                    onClick={() => handleCopy(codeContent, `${language}代码`)}
+                                                                                >
+                                                                                    复制
+                                                                                </button>
+                                                                            </div>
+                                                                            <pre className={styles.codeBlock}>
+                                                                                <code>{codeContent}</code>
+                                                                            </pre>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                            }}
+                                                        >
+                                                            {item.example}
+                                                        </ReactMarkdown>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
                             <div className={styles.modalFooter}>
+                                {copySuccess && (
+                                    <div className={styles.copySuccessMessage}>
+                                        {copySuccess}
+                                    </div>
+                                )}
                                 <button
                                     className={`${styles.btn} ${styles.btnPrimary}`}
                                     onClick={() => setShowHelpModal(false)}
