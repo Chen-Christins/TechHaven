@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { FaHome, FaThList, FaPen, FaUser, FaBars, FaSignOutAlt, FaCog, FaUserCircle, FaStar, FaExternalLinkAlt } from 'react-icons/fa';
 import styles from './Navbar.module.css';
 import SearchBox from '../searchBox/SearchBox';
@@ -38,22 +39,20 @@ const Navbar: React.FC = () => {
 	// 推荐网站数据
 	const recommendations = [
 		{
-			title: "网站A",
-			description: "优质的前端学习资源",
-			url: "https://example-a.com",
-			category: "学习"
+			title: "MDN Web Docs",
+			url: "https://developer.mozilla.org",
 		},
 		{
-			title: "网站B",
-			description: "开发者必备的工具集合",
-			url: "https://example-b.com",
-			category: "工具"
+			title: "GitHub",
+			url: "https://github.com",
 		},
 		{
-			title: "网站C",
-			description: "最新的技术资讯",
-			url: "https://example-c.com",
-			category: "资讯"
+			title: "Stack Overflow",
+			url: "https://stackoverflow.com",
+		},
+		{
+			title: "CodePen",
+			url: "https://codepen.io",
 		},
 	];
 
@@ -93,20 +92,21 @@ const Navbar: React.FC = () => {
 	// 渲染推荐下拉菜单
 	const renderRecommendMenu = () => {
 		return (
-			<div className={styles.navItem}>
+			<div className={styles.navItem} ref={recommendMenuRef}>
 				<button
 					className={styles.recommendButton}
-					onClick={toggleRecommendMenu}
+					onClick={(e) => {
+						e.stopPropagation();
+						toggleRecommendMenu();
+					}}
 					title="推荐网站"
+					data-active={recommendMenuOpen}
 				>
 					<FaStar className={styles.linkIcon} />
 					<span className={styles.linkText}>推荐</span>
 				</button>
 				{recommendMenuOpen && (
-					<div className={styles.recommendDropdown} ref={recommendMenuRef}>
-						<div className={styles.dropdownHeader}>
-							<span className={styles.dropdownTitle}>推荐网站</span>
-						</div>
+					<div className={styles.recommendDropdown}>
 						<div className={styles.dropdownContent}>
 							{recommendations.map((item, index) => (
 								<a
@@ -115,13 +115,13 @@ const Navbar: React.FC = () => {
 									target="_blank"
 									rel="noopener noreferrer"
 									className={styles.recommendItem}
+									onClick={(e) => {
+										e.stopPropagation();
+										setRecommendMenuOpen(false);
+									}}
 								>
-									<div className={styles.itemMain}>
-										<span className={styles.itemTitle}>{item.title}</span>
-										<FaExternalLinkAlt className={styles.externalIcon} size={12} />
-									</div>
-									<span className={styles.itemDescription}>{item.description}</span>
-									<span className={styles.itemCategory}>{item.category}</span>
+									<span className={styles.itemTitle}>{item.title}</span>
+									<FaExternalLinkAlt className={styles.externalIcon} size={12} />
 								</a>
 							))}
 						</div>
@@ -170,6 +170,38 @@ const Navbar: React.FC = () => {
 							</a>
 						</li>
 					))}
+					{/* 移动端推荐选项 */}
+					<li className={styles.mobileNavItem}>
+						<div className={styles.mobileRecommendSection}>
+							<button
+								className={styles.mobileRecommendButton}
+								onClick={() => setRecommendMenuOpen(!recommendMenuOpen)}
+							>
+								<FaStar className={styles.mobileLinkIcon} />
+								<span className={styles.mobileLinkText}>推荐</span>
+							</button>
+							{recommendMenuOpen && (
+								<div className={styles.mobileRecommendDropdown}>
+									{recommendations.map((item, index) => (
+										<a
+											key={index}
+											href={item.url}
+											target="_blank"
+											rel="noopener noreferrer"
+											className={styles.mobileRecommendItem}
+											onClick={() => {
+												setMobileMenuOpen(false);
+												setRecommendMenuOpen(false);
+											}}
+										>
+											<span className={styles.mobileItemTitle}>{item.title}</span>
+											<FaExternalLinkAlt className={styles.mobileExternalIcon} size={12} />
+										</a>
+									))}
+								</div>
+							)}
+						</div>
+					</li>
 				</ul>
 			</div>
 		);
@@ -181,9 +213,9 @@ const Navbar: React.FC = () => {
 				{/* 左侧Logo和导航 */}
 				<div className={styles.leftSection}>
 					{/* Logo */}
-					<a href="/" className={styles.logo}>
+					<Link to="/" className={styles.logo}>
 						<span className={styles.logoText}>TechBlog</span>
-					</a>
+					</Link>
 
 					{/* 桌面端导航链接 */}
 					<div className={styles.desktopNav}>
@@ -228,17 +260,17 @@ const Navbar: React.FC = () => {
 					<div className={`${styles.userMenu} ${userMenuOpen ? styles.userMenuOpen : ''}`}>
 						<ul className={styles.menuItems}>
 							<li className={styles.menuItem}>
-								<a href="/profile/1" className={styles.menuLink}>
+								<Link to="/profile/1" className={styles.menuLink}>
 									<FaUserCircle className={styles.menuIcon} />
 									<span>个人中心</span>
-								</a>
+								</Link>
 							</li>
 							<li className={styles.menuDivider}></li>
                             <li className={styles.menuItem}>
-								<a href="/article/create" className={styles.menuLink}>
+								<Link to="/article/create" className={styles.menuLink}>
 									<FaPen className={styles.menuIcon} />
 									<span>撰写文章</span>
-								</a>
+								</Link>
 							</li>
 							<li className={styles.menuDivider}></li>
 							<li className={styles.menuItem}>

@@ -44,6 +44,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
 }) => {
     const [headings, setHeadings] = useState<Heading[]>([]);
     const [activeId, setActiveId] = useState<string>('');
+    const [isContentReady, setIsContentReady] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
     const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -75,7 +76,13 @@ const ArticleView: React.FC<ArticleViewProps> = ({
             return matches;
         };
 
-        setHeadings(extractHeadings(content));
+        const extractedHeadings = extractHeadings(content);
+        setHeadings(extractedHeadings);
+
+        // 延迟设置内容准备就绪，确保 DOM 已经渲染
+        setTimeout(() => {
+            setIsContentReady(true);
+        }, 100);
     }, [content]);
 
     // 设置 Intersection Observer 来跟踪活跃标题
@@ -186,7 +193,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     };
 
     return (
-        <div className={`${styles.container} ${className}`} ref={contentRef}>
+        <div className={`${styles.container} ${className} ${!isContentReady ? styles.loading : styles.ready}`} ref={contentRef}>
             {headings.length > 0 && (
                 <aside className={styles.sidebar}>
                     <nav className={styles.toc}>
@@ -216,7 +223,13 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                         <span>点赞量: {praises}</span>
                         <span>更新时间: {update_time}</span>
                     </div>
-                    <div className={styles.markdownBody}>
+                    <div className={`${styles.markdownBody} ${!isContentReady ? styles.contentLoading : styles.contentReady}`}>
+                        {!isContentReady && (
+                            <div className={styles.loadingIndicator}>
+                                <div className={styles.spinner}></div>
+                                <span>正在渲染文章内容...</span>
+                            </div>
+                        )}
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm, remarkMath]}
                             rehypePlugins={[rehypeKatex]}

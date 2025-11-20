@@ -9,6 +9,54 @@
     padding-top: 80px;
 }
 
+/* 加载状态样式 */
+.loading {
+    opacity: 0.3;
+}
+
+.ready {
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+
+/* 内容加载状态 */
+.contentLoading {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.contentReady {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+}
+
+/* 加载指示器 */
+.loadingIndicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-primary);
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 12px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 .content {
     flex: 1;
     min-width: 0;

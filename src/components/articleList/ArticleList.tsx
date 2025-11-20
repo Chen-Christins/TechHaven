@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import type { Article } from '../../types/index';
 import styles from './ArticleList.module.css';
 
@@ -139,12 +140,12 @@ const ArticleList: React.FC = () => {
                             <span>阅读量：{article.views}</span>
                         </div>
                         <p className={styles.articleSummary}>{article.summary}</p>
-                        <a
-                            href={`/article/${article.id}`}
+                        <Link
+                            to={`/article/${article.id}`}
                             className={styles.readMoreBtn}
                         >
                             阅读全文 →
-                        </a>
+                        </Link>
                     </div>
                 ))}
             </div>

@@ -1,0 +1,30 @@
+/* 添加按钮样式 */
+.addButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-left: 8px;
+    font-size: 10px;
+    padding: 0;
+}
+
+.addButton:hover {
+    background-color: var(--primary-dark);
+    transform: scale(1.1);
+}
+
+.addButton:active {
+    transform: scale(0.95);
+}
+
+.addIcon {
+    font-size: 10px;
+}

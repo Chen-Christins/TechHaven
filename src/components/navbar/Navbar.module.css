@@ -345,6 +345,89 @@
     text-align: center;
 }
 
+/* 移动端推荐功能 */
+.mobileRecommendSection {
+    width: 100%;
+}
+
+.mobileRecommendButton {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    color: var(--text-primary);
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mobileRecommendButton:hover {
+    background-color: var(--bg-hover);
+    color: var(--primary);
+}
+
+.mobileRecommendDropdown {
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-secondary);
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mobileDropdownHeader {
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid var(--border-secondary);
+}
+
+.mobileDropdownTitle {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.mobileRecommendItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-secondary);
+    transition: all 0.2s ease;
+}
+
+.mobileRecommendItem:last-child {
+    border-bottom: none;
+}
+
+.mobileRecommendItem:hover {
+    background-color: var(--bg-hover);
+}
+
+.mobileItemTitle {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.mobileExternalIcon {
+    color: var(--text-tertiary);
+    opacity: 0.7;
+}
+
 /* 响应式调整 */
 @media (max-width: 1164px) {
     .desktopNav {
@@ -357,6 +440,12 @@
 
     .logoText {
         font-size: 1.25rem;
+    }
+
+    .mobileNavLinks {
+      list-style: none;
+      margin: 0;
+      padding: 0.2rem 0;
     }
 }
 
@@ -372,23 +461,44 @@
 
 /* 推荐下拉菜单样式 */
 .recommendButton {
+    position: relative;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    color: var(--text-primary);
+    padding: 0.6rem 1rem;
+    color: var(--text-secondary);
     background: none;
     border: none;
-    border-radius: 8px;
+    border-radius: 5px;
     cursor: pointer;
+    font-weight: 500;
     font-size: 1rem;
     transition: all 0.2s ease;
     text-decoration: none;
+    height: 56px;
 }
 
 .recommendButton:hover {
     background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* 推荐按钮活跃状态（当下拉菜单打开时） */
+.recommendButton[data-active="true"] {
     color: var(--primary);
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.recommendButton[data-active="true"]::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--primary);
+    border-radius: 2px;
 }
 
 .recommendDropdown {
@@ -399,8 +509,8 @@
     border: 1px solid var(--border-primary);
     border-radius: 12px;
     box-shadow: var(--shadow-lg);
-    min-width: 280px;
-    max-width: 320px;
+    min-width: 200px;
+    max-width: 240px;
     z-index: 1000;
     overflow: hidden;
     animation: dropdownIn 0.2s ease;
@@ -434,7 +544,9 @@
 }
 
 .recommendItem {
-    display: block;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 0.8rem 1rem;
     color: var(--text-primary);
     text-decoration: none;
@@ -448,13 +560,6 @@
     border-color: var(--border-secondary);
 }
 
-.itemMain {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.3rem;
-}
-
 .itemTitle {
     font-weight: 500;
     color: var(--text-primary);
@@ -464,22 +569,4 @@
 .externalIcon {
     color: var(--text-tertiary);
     opacity: 0.7;
-}
-
-.itemDescription {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    line-height: 1.4;
-    margin-bottom: 0.3rem;
-}
-
-.itemCategory {
-    display: inline-block;
-    font-size: 0.7rem;
-    color: var(--primary);
-    background-color: var(--primary-bg);
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    font-weight: 500;
 }

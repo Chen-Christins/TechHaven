@@ -1,21 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import type { ArticleCreateProps, ArticleFormData, Category, SelectOption, Tag } from '../../types/index';
 import { FaEdit, FaEye, FaFileImport, FaInfoCircle, FaSave, FaFly, FaDivide } from 'react-icons/fa';
 import styles from './ArticleCreate.module.css';
 import Footer from '../../components/footer/Footer';
 import Navbar from '../../components/navbar/Navbar';
 import CustomSelect from '../../components/customSelect/CustomSelect';
+import AddButton from '../../components/addButton/AddButton';
 import BackToTop from '../../components/backToTop/BackToTop';
 
 // 模拟数据
-const categories: SelectOption[] = [
+const initialCategories: SelectOption[] = [
     { id: 1, name: '技术', color: '#4361ee' },
     { id: 2, name: '生活', color: '#3a0ca3' },
     { id: 3, name: '旅行', color: '#7209b7' },
     { id: 4, name: '美食', color: '#f72585' },
   ];
 
-const mockTags: Tag[] = [
+const initialTags: Tag[] = [
     { id: 1, name: 'React', color: '#61dafb' },
     { id: 2, name: 'TypeScript', color: '#3178c6' },
     { id: 3, name: 'JavaScript', color: '#f7df1e' },
@@ -57,6 +59,8 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
     const [isCategoryOpen, setIsCategoryOpen] = useState(false);
     const [isTagsOpen, setIsTagsOpen] = useState(false);
+    const [categories, setCategories] = useState(initialCategories);
+    const [tags, setTags] = useState(initialTags);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const categoryRef = useRef<HTMLDivElement>(null);
@@ -126,6 +130,28 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
         setFormData(prev => ({ ...prev, tags: newTags }));
     };
 
+    const handleAddCategory = (newCategory: SelectOption) => {
+        setCategories(prev => [...prev, newCategory]);
+        // 自动选择新添加的分类
+        setSelectedCategory(newCategory);
+        setFormData(prev => ({ ...prev, category: newCategory }));
+    };
+
+    const handleAddTag = (newTag: SelectOption) => {
+        setTags(prev => [...prev, newTag]);
+        // 自动选择新添加的标签
+        const tagToAdd: Tag = {
+            id: newTag.id,
+            name: newTag.name,
+            color: newTag.color || '#61dafb'
+        };
+        if (!selectedTags.find(t => t.id === tagToAdd.id)) {
+            const newTags = [...selectedTags, tagToAdd];
+            setSelectedTags(newTags);
+            setFormData(prev => ({ ...prev, tags: newTags }));
+        }
+    };
+
     const handleSaveDraft = () => {
         onSaveDraft?.(formData);
         // 这里可以添加保存草稿的API调用
@@ -168,9 +194,9 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                     {/* 头部 */}
                     <div className={styles.editorHeader}>
                         <h2>
-                            <a href="/" className={styles.editorHeaderLink}>
+                            <Link to="/" className={styles.editorHeaderLink}>
                                 创建新文章
-                            </a>
+                            </Link>
                         </h2>
                     </div>
 
@@ -226,9 +252,16 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                         <div className={styles.formSectionTitle}>
                             <i className="bi bi-folder"></i>
                             文章分类
+                            <AddButton
+                                name="分类"
+                                onAdd={handleAddCategory}
+                            />
                         </div>
                         <div ref={categoryRef} style={{ position: 'relative' }}>
-                            <CustomSelect name={'分类'} options={categories} />
+                            <CustomSelect
+                                name={'分类'}
+                                options={categories}
+                            />
                         </div>
                     </div>
 
@@ -237,9 +270,16 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                         <div className={styles.formSectionTitle}>
                             <i className="bi bi-tags"></i>
                             文章标签
+                            <AddButton
+                                name="标签"
+                                onAdd={handleAddTag}
+                            />
                         </div>
                         <div ref={tagsRef} style={{ position: 'relative' }}>
-                            <CustomSelect name={'标签'} options={categories} />
+                            <CustomSelect
+                                name={'标签'}
+                                options={tags}
+                            />
                         </div>
                         <div className={styles.tagsContainer}>
                             {selectedTags.map(tag => (
