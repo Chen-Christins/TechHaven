@@ -266,6 +266,7 @@
   background: var(--bg-secondary);
   padding: 4px;
   border-radius: 8px;
+  border: 1px solid var(--border-secondary) !important;
 }
 
 .activeView, .inactiveView {
@@ -670,5 +671,82 @@
     right: 20px;
     width: 45px;
     height: 45px;
+  }
+}
+
+/* 列表/网格视图样式 */
+.listView {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gridView {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.listCard {
+  /* 保持原有的列表卡片样式 */
+  padding: 24px;
+}
+
+.gridCard {
+  /* 网格卡片样式 */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 280px;
+}
+
+.gridCard .articleTitle {
+  font-size: 1rem;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.gridCard .articleExcerpt {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-grow: 1;
+  margin-bottom: 16px;
+}
+
+.gridCard .articleFooter {
+  margin-top: auto;
+}
+
+.gridCard .tags {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.gridCard .tag {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+}
+
+.gridCard .articleStats {
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+/* 响应式网格调整 */
+@media (max-width: 768px) {
+  .gridView {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  .gridView {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

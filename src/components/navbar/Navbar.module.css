@@ -369,3 +369,117 @@
         display: none;
     }
 }
+
+/* 推荐下拉菜单样式 */
+.recommendButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: var(--text-primary);
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.recommendButton:hover {
+    background-color: var(--bg-hover);
+    color: var(--primary);
+}
+
+.recommendDropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    min-width: 280px;
+    max-width: 320px;
+    z-index: 1000;
+    overflow: hidden;
+    animation: dropdownIn 0.2s ease;
+}
+
+@keyframes dropdownIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdownHeader {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--border-secondary);
+    background-color: var(--bg-secondary);
+}
+
+.dropdownTitle {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.dropdownContent {
+    padding: 0.5rem;
+}
+
+.recommendItem {
+    display: block;
+    padding: 0.8rem 1rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.recommendItem:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-secondary);
+}
+
+.itemMain {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.3rem;
+}
+
+.itemTitle {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.externalIcon {
+    color: var(--text-tertiary);
+    opacity: 0.7;
+}
+
+.itemDescription {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-bottom: 0.3rem;
+}
+
+.itemCategory {
+    display: inline-block;
+    font-size: 0.7rem;
+    color: var(--primary);
+    background-color: var(--primary-bg);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+}

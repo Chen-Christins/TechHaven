@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './ProfilePage.module.css';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
@@ -194,8 +194,13 @@ const recentActivities = [
 ];
 
 const Profile: React.FC = () => {
+  // 视图模式状态管理
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
-  
+  const handleViewToggle = (mode: 'list' | 'grid') => {
+    setViewMode(mode);
+  };
+
   return (
     <div className={styles.profile}>
       {/* 顶部导航栏 */}
@@ -281,13 +286,23 @@ const Profile: React.FC = () => {
                 <h2 className={styles.sectionTitle}>我的文章</h2>
               </div>
               <div className={styles.viewToggle}>
-                <button className={styles.activeView}>列表</button>
-                <button className={styles.inactiveView}>网格</button>
+                <button
+                  className={viewMode === 'list' ? styles.activeView : styles.inactiveView}
+                  onClick={() => handleViewToggle('list')}
+                >
+                  列表
+                </button>
+                <button
+                  className={viewMode === 'grid' ? styles.activeView : styles.inactiveView}
+                  onClick={() => handleViewToggle('grid')}
+                >
+                  网格
+                </button>
               </div>
             </div>
-            <div className={styles.articlesList}>
+            <div className={`${styles.articlesList} ${viewMode === 'grid' ? styles.gridView : styles.listView}`}>
               {mockArticles.map(article => (
-                <article key={article.id} className={styles.articleCard}>
+                <article key={article.id} className={`${styles.articleCard} ${viewMode === 'grid' ? styles.gridCard : styles.listCard}`}>
                   <div className={styles.articleHeader}>
                     <div className={styles.articleCategory}>{article.category}</div>
                     <span className={styles.articleDate}>{article.publishDate}</span>

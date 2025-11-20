@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaHome, FaThList, FaPen, FaUser, FaBars, FaSignOutAlt, FaCog, FaUserCircle } from 'react-icons/fa';
+import { FaHome, FaThList, FaPen, FaUser, FaBars, FaSignOutAlt, FaCog, FaUserCircle, FaStar, FaExternalLinkAlt } from 'react-icons/fa';
 import styles from './Navbar.module.css';
 import SearchBox from '../searchBox/SearchBox';
 import ThemeToggle from '../themeToggle/ThemeToggle';
@@ -16,7 +16,9 @@ const Navbar: React.FC = () => {
 	const [isScrolled, setIsScrolled] = useState(false); // 滚动状态（控制导航栏样式变化）
 	const [userMenuOpen, setUserMenuOpen] = useState(false); // 用户下拉菜单状态
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // 移动端菜单状态
+	const [recommendMenuOpen, setRecommendMenuOpen] = useState(false); // 推荐下拉菜单状态
 	const userMenuRef = useRef<HTMLDivElement>(null); // 用户菜单DOM引用
+	const recommendMenuRef = useRef<HTMLDivElement>(null); // 推荐菜单DOM引用
 
 	// 模拟用户数据
 	const currentUser: User = {
@@ -31,6 +33,28 @@ const Navbar: React.FC = () => {
 		{ label: "登录", icon: <FaThList />, path: "/auth" },
 		// { label: "标签", icon: <FaTags />, path: "/tags" },
 		// { label: "关于", icon: <FaUser />, path: "/about" },
+	];
+
+	// 推荐网站数据
+	const recommendations = [
+		{
+			title: "网站A",
+			description: "优质的前端学习资源",
+			url: "https://example-a.com",
+			category: "学习"
+		},
+		{
+			title: "网站B",
+			description: "开发者必备的工具集合",
+			url: "https://example-b.com",
+			category: "工具"
+		},
+		{
+			title: "网站C",
+			description: "最新的技术资讯",
+			url: "https://example-c.com",
+			category: "资讯"
+		},
 	];
 
 	// 监听滚动事件，改变导航栏样式
@@ -48,6 +72,9 @@ const Navbar: React.FC = () => {
 			if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
 				setUserMenuOpen(false);
 			}
+			if (recommendMenuRef.current && !recommendMenuRef.current.contains(event.target as Node)) {
+				setRecommendMenuOpen(false);
+			}
 		};
 		document.addEventListener('mousedown', handleClickOutside);
 		return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -56,6 +83,52 @@ const Navbar: React.FC = () => {
 	// 切换用户菜单
 	const toggleUserMenu = () => {
 		setUserMenuOpen(!userMenuOpen);
+	};
+
+	// 切换推荐菜单
+	const toggleRecommendMenu = () => {
+		setRecommendMenuOpen(!recommendMenuOpen);
+	};
+
+	// 渲染推荐下拉菜单
+	const renderRecommendMenu = () => {
+		return (
+			<div className={styles.navItem}>
+				<button
+					className={styles.recommendButton}
+					onClick={toggleRecommendMenu}
+					title="推荐网站"
+				>
+					<FaStar className={styles.linkIcon} />
+					<span className={styles.linkText}>推荐</span>
+				</button>
+				{recommendMenuOpen && (
+					<div className={styles.recommendDropdown} ref={recommendMenuRef}>
+						<div className={styles.dropdownHeader}>
+							<span className={styles.dropdownTitle}>推荐网站</span>
+						</div>
+						<div className={styles.dropdownContent}>
+							{recommendations.map((item, index) => (
+								<a
+									key={index}
+									href={item.url}
+									target="_blank"
+									rel="noopener noreferrer"
+									className={styles.recommendItem}
+								>
+									<div className={styles.itemMain}>
+										<span className={styles.itemTitle}>{item.title}</span>
+										<FaExternalLinkAlt className={styles.externalIcon} size={12} />
+									</div>
+									<span className={styles.itemDescription}>{item.description}</span>
+									<span className={styles.itemCategory}>{item.category}</span>
+								</a>
+							))}
+						</div>
+					</div>
+				)}
+			</div>
+		);
 	};
 
 	// 渲染导航链接（桌面端）
@@ -75,6 +148,7 @@ const Navbar: React.FC = () => {
 						</a>
 					</li>
 				))}
+				{renderRecommendMenu()}
 			</ul>
 		);
 	};
