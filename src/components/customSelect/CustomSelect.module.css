@@ -154,6 +154,20 @@
     margin-top: 0.5rem;
 }
 
+/* 管理员页面专用样式 - 隐藏badge */
+.adminCustomSelect .badge {
+    display: none;
+}
+
+/* 增强优先级 - 确保隐藏badge */
+.container.adminCustomSelect .badge {
+    display: none;
+}
+
+div.adminCustomSelect .badge {
+    display: none;
+}
+
 .closeBtn {
     margin-left: 0.5rem;
     cursor: pointer;

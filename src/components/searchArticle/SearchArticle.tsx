@@ -1,18 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styles from './SearchArticle.module.css';
 import SearchBox from '../searchBox/SearchBox';
 
 const SearchPanel: React.FC = () => {
-    const [searchValue, setSearchValue] = useState('');
-    const [searchResults, setSearchResults] = useState<string[]>([]);
     const handleSearch = (value: string) => {
         console.log('搜索:', value);
         // 模拟搜索逻辑
-        setSearchResults([`结果1 (${value})`, `结果2 (${value})`, `结果3 (${value})`]);
     };
 
     const handleChange = (value: string) => {
-        setSearchValue(value);
+        console.log('输入变化:', value);
     };
 
     return (

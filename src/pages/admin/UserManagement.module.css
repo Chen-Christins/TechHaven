@@ -1,0 +1,509 @@
+.userManagement {
+    max-width: 100%;
+}
+
+/* 页面头部 */
+.pageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.pageTitle {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.pageDescription {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.headerActions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* 统计卡片 */
+.statsContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.statCard {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.2s ease;
+}
+
+.statCard:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.statIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.statIcon.primary {
+    background-color: var(--primary-light);
+    color: var(--primary);
+}
+
+.statIcon.success {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.statIcon.warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.statIcon.error {
+    background-color: var(--error-light);
+    color: var(--error);
+}
+
+.statValue {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.statLabel {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* 筛选和搜索区域 */
+.filterSection {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.filterHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.filterTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filterActions {
+    display: flex;
+    gap: 8px;
+}
+
+.filterForm {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: end;
+}
+
+.filterGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filterLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.filterInput,
+.filterSelect {
+    padding: 8px 12px;
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.filterInput:focus,
+.filterSelect:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: var(--focus-ring);
+}
+
+/* 用户表格 */
+.tableContainer {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.tableHeader {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tableTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.tableActions {
+    display: flex;
+    gap: 8px;
+}
+
+.usersTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.usersTable thead {
+    background-color: var(--bg-secondary);
+}
+
+.usersTable th {
+    padding: 12px 16px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-primary);
+    white-space: nowrap;
+}
+
+.usersTable tbody tr {
+    border-bottom: 1px solid var(--border-primary);
+    transition: background-color 0.2s ease;
+}
+
+.usersTable tbody tr:hover {
+    background-color: var(--bg-hover);
+}
+
+.usersTable td {
+    padding: 16px;
+    font-size: 14px;
+    color: var(--text-primary);
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* 用户信息列居中 */
+.usersTable td:nth-child(1) {
+    justify-content: center;
+}
+
+/* 用户信息单元格 */
+.userInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+}
+
+.userAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-primary);
+}
+
+.userDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.userName {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.userEmail {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* 状态标签 */
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.statusBadge.active {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.statusBadge.inactive {
+    background-color: var(--error-light);
+    color: var(--error);
+}
+
+.statusBadge.pending {
+    background-color: var(--primary-light);
+    color: var(--primary);
+}
+
+.statusIndicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+/* 角色标签 */
+.roleBadge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.roleBadge.admin {
+    background-color: var(--error-light);
+    color: var(--error);
+}
+
+.roleBadge.moderator {
+    background-color: var(--warning);
+    color: white;
+}
+
+.roleBadge.user {
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+/* 操作按钮 */
+.actionButtons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.actionButton {
+    padding: 6px 8px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.actionButton:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.actionButton.edit:hover {
+    color: var(--primary);
+}
+
+.actionButton.delete:hover {
+    color: var(--error);
+}
+
+/* 分页 */
+.paginationContainer {
+    padding: 20px;
+    border-top: 1px solid var(--border-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.paginationInfo {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.paginationControls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.paginationButton {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.paginationButton:hover:not(:disabled) {
+    background-color: var(--bg-hover);
+    border-color: var(--primary);
+}
+
+.paginationButton.active {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.paginationButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.paginationEllipsis {
+    padding: 0 8px;
+    color: var(--text-tertiary);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .pageHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .headerActions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .statsContainer {
+        grid-template-columns: 1fr;
+    }
+
+    .filterForm {
+        grid-template-columns: 1fr;
+    }
+
+    .tableContainer {
+        overflow-x: auto;
+    }
+
+    .usersTable {
+        min-width: 600px;
+    }
+
+    .paginationContainer {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .actionButtons {
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+
+/* 通用按钮样式 */
+.btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btnPrimary {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btnPrimary:hover {
+    background-color: var(--primary-hover);
+}
+
+.btnSecondary {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+}
+
+.btnSecondary:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-secondary);
+}
+
+.btnOutline {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-primary);
+}
+
+.btnOutline:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.btnSm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.btnIcon {
+    padding: 8px;
+    border-radius: 50%;
+}

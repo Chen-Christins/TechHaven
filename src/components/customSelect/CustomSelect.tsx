@@ -9,7 +9,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     placeholder = `请选择${name}...`,
     value,
     onChange,
-    className = ''
+    className = '',
+    hideBadge = false
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedOption, setSelectedOption] = useState<SelectOption | null>(value || null);
@@ -162,7 +163,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             </div>
 
             {/* 选中标签 */}
-            {selectedOption && (
+            {selectedOption && !hideBadge && (
                 <div className={styles.badge}>
                     <span>{selectedOption.name}</span>
                     <span

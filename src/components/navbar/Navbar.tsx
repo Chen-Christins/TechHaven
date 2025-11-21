@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FaHome, FaThList, FaPen, FaUser, FaBars, FaSignOutAlt, FaCog, FaUserCircle, FaStar, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaHome, FaThList, FaPen, FaBars, FaSignOutAlt, FaCog, FaUserCircle, FaStar, FaExternalLinkAlt } from 'react-icons/fa';
 import styles from './Navbar.module.css';
-import SearchBox from '../searchBox/SearchBox';
 import ThemeToggle from '../themeToggle/ThemeToggle';
 
 // 用户信息类型
@@ -32,6 +31,7 @@ const Navbar: React.FC = () => {
 	const navLinks = [
 		{ label: "首页", icon: <FaHome />, path: "/" },
 		{ label: "登录", icon: <FaThList />, path: "/auth" },
+		{ label: "管理", icon: <FaCog />, path: "/admin" },
 		// { label: "标签", icon: <FaTags />, path: "/tags" },
 		// { label: "关于", icon: <FaUser />, path: "/about" },
 	];

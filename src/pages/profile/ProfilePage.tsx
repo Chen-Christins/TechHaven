@@ -129,24 +129,7 @@ const mockArticles: Article[] = [
       excerpt: '从单体应用到微前端的迁移过程，分享qiankun框架的使用经验和坑点总结...',
       readTime: '15',
       likes: 56
-  },
-  {
-      id: 7,
-      title: '微前端架构的落地实践',
-      summary: '从单体应用到微前端的迁移过程，分享qiankun框架的使用经验和坑点总结，助力企业级应用拆分。',
-      publish_time: '2024-01-05',
-      category: "架构设计",
-      views: 892,
-      tags: ['微前端', 'qiankun', '架构'],
-      praises: 56,
-      comments: 18,
-      author: mockUser.name,
-      date: '2024-01-05',
-      publishDate: '2024-01-05',
-      excerpt: '从单体应用到微前端的迁移过程，分享qiankun框架的使用经验和坑点总结...',
-      readTime: '15',
-      likes: 56
-  },
+  }
 ];
 
 const popularTags = [

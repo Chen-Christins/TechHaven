@@ -1,0 +1,638 @@
+.adminLayout {
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.adminContainer {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* 侧边栏样式 */
+.adminSidebar {
+    width: 240px;
+    background-color: var(--card-bg);
+    border-right: 1px solid var(--border-primary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 1000;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.adminSidebar.collapsed {
+    width: 80px;
+}
+
+.adminSidebarHeader {
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 64px;
+    transition: padding 0.3s ease;
+}
+
+.adminSidebar.collapsed .adminSidebarHeader {
+    padding: 16px 8px;
+    justify-content: center;
+    position: relative;
+}
+
+.adminLogo {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.adminLogo:hover {
+    color: var(--primary-hover);
+}
+
+.adminSidebar.collapsed .adminLogo {
+    justify-content: center;
+}
+
+.adminLogoIcon {
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    color: white;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.adminSidebar.collapsed .adminLogoIcon {
+    width: 40px;
+    height: 40px;
+    font-size: 28px;
+}
+
+.adminLogoText {
+    transition: all 0.3s ease;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.adminSidebar.collapsed .adminLogoText {
+    opacity: 0;
+    width: 0;
+    margin: 0;
+}
+
+.toggleSidebarBtn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+.toggleSidebarBtn:hover {
+    background-color: var(--bg-hover);
+    color: var(--primary);
+    transform: scale(1.05);
+}
+
+.adminSidebar.collapsed .toggleSidebarBtn {
+    position: absolute;
+    top: 50%;
+    right: -14px;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.adminSidebar.collapsed .toggleSidebarBtn:hover {
+    transform: translateY(-50%) scale(1.1);
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* 导航菜单样式 */
+.adminNavMenu {
+    padding: 16px 0;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* 自定义滚动条样式 */
+.adminNavMenu::-webkit-scrollbar {
+    width: 4px;
+}
+
+.adminNavMenu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.adminNavMenu::-webkit-scrollbar-thumb {
+    background-color: var(--border-secondary);
+    border-radius: 2px;
+}
+
+.adminNavMenu::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-tertiary);
+}
+
+/* 收缩状态下隐藏滚动条 */
+.adminSidebar.collapsed .adminNavMenu {
+    overflow-y: hidden;
+}
+
+.adminNavSection {
+    margin-bottom: 24px;
+}
+
+.adminSectionTitle {
+    padding: 0 20px;
+    margin-bottom: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    letter-spacing: 0.8px;
+    transition: all 0.3s ease;
+    opacity: 1;
+}
+
+.adminSidebar.collapsed .adminSectionTitle {
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.adminNavItem {
+    margin-bottom: 2px;
+    position: relative;
+}
+
+.adminNavLink {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    position: relative;
+    gap: 12px;
+    border-radius: 0;
+    margin: 0 8px;
+}
+
+.adminNavLink:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+    transform: translateX(2px);
+}
+
+.adminNavLink.active {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.adminNavLink.active::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 24px;
+    background-color: var(--primary);
+    border-radius: 0 4px 4px 0;
+}
+
+.adminNavIcon {
+    font-size: 18px;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.adminNavLink:hover .adminNavIcon {
+    transform: scale(1.1);
+}
+
+.adminNavText {
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.adminSidebar.collapsed .adminNavText {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+}
+
+.adminSidebar.collapsed .adminNavLink {
+    justify-content: center;
+    padding: 16px;
+    margin: 0 8px 4px 8px;
+    border-radius: 12px;
+    position: relative;
+    min-height: 48px;
+}
+
+.adminSidebar.collapsed .adminNavLink:hover {
+    transform: scale(1.02);
+    background-color: var(--primary-light);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.adminSidebar.collapsed .adminNavLink.active {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.adminSidebar.collapsed .adminNavLink.active::before {
+    display: none;
+}
+
+.adminSidebar.collapsed .adminNavIcon {
+    font-size: 22px;
+    min-width: 22px;
+    height: 22px;
+}
+
+/* 工具提示样式 */
+.adminNavLink::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 12px;
+    padding: 8px 12px;
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 1000;
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    max-width: 200px;
+    text-align: center;
+}
+
+.adminSidebar.collapsed .adminNavLink::after {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-50%) translateX(-8px);
+}
+
+.adminSidebar.collapsed .adminNavLink:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(8px);
+}
+
+/* 暗色主题下的工具提示 */
+[data-theme="dark"] .adminNavLink::after {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+}
+
+/* 侧边栏底部装饰 */
+.adminSidebar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+
+.adminSidebar.collapsed::after {
+    background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+}
+
+/* 主内容区域 */
+.adminMainContent {
+    flex: 1;
+    margin-left: 240px;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 100vh;
+}
+
+.adminMainContent.expanded {
+    margin-left: 80px;
+}
+
+/* 顶部栏样式 */
+.adminTopBar {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-primary);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.adminBreadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.breadcrumbSeparator {
+    color: var(--text-tertiary);
+}
+
+.breadcrumbLink {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.breadcrumbLink:hover {
+    color: var(--primary);
+}
+
+.breadcrumbActive {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.adminTopBarActions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* 页面内容区域 */
+.adminPageContent {
+    padding: 24px;
+    background-color: var(--bg-primary);
+}
+
+.adminPageHeader {
+    margin-bottom: 24px;
+}
+
+.adminPageTitle {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.adminPageDescription {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 900px) {
+    .adminSidebar {
+        transform: translateX(-100%);
+        width: 280px;
+        box-shadow: 2px 0 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .adminSidebar.mobileOpen {
+        transform: translateX(0);
+    }
+
+    .adminMainContent {
+        margin-left: 0;
+    }
+
+    .adminMainContent.expanded {
+        margin-left: 0;
+    }
+
+    /* 移动端禁用收缩状态 */
+    .adminSidebar.collapsed {
+        width: 280px;
+    }
+
+    .adminSidebar.collapsed .adminLogoText,
+    .adminSidebar.collapsed .adminNavText {
+        opacity: 1;
+        width: auto;
+        margin: initial;
+    }
+
+    .adminSidebar.collapsed .adminSectionTitle {
+        opacity: 1;
+        height: auto;
+        margin: 0 20px 8px 20px;
+        padding: 0;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-tertiary);
+        letter-spacing: 0.8px;
+    }
+
+    .adminSidebar.collapsed .adminNavLink {
+        padding: 12px 20px;
+        justify-content: flex-start;
+        margin: 0 20px 2px 20px;
+        border-radius: 8px;
+        min-height: 44px;
+    }
+
+    .adminSidebar.collapsed .adminNavIcon {
+        font-size: 18px;
+        min-width: 18px;
+        height: 18px;
+    }
+
+    .adminSidebar.collapsed .adminLogoIcon {
+        width: 32px;
+        height: 32px;
+        font-size: 24px;
+    }
+
+    .adminSidebar.collapsed .toggleSidebarBtn {
+        position: static;
+        transform: none;
+        width: 28px;
+        height: 28px;
+        background: none;
+        border: none;
+        box-shadow: none;
+        color: var(--text-secondary);
+    }
+
+    .adminSidebar.collapsed .toggleSidebarBtn:hover {
+        background-color: var(--bg-hover);
+        color: var(--primary);
+        transform: scale(1.05);
+    }
+
+    /* 移动端导航菜单优化 */
+    .adminNavMenu {
+        padding: 20px 0;
+    }
+
+    .adminNavSection {
+        margin-bottom: 32px;
+    }
+
+    .mobileMenuOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .mobileMenuOverlay.show {
+        display: block;
+        opacity: 1;
+    }
+
+    .mobileMenuBtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: 1px solid var(--border-primary);
+        color: var(--text-primary);
+        font-size: 18px;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .mobileMenuBtn:hover {
+        background-color: var(--bg-hover);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .adminTopBar {
+        padding: 12px 16px;
+    }
+
+    .adminPageContent {
+        padding: 16px;
+    }
+
+    .adminBreadcrumb {
+        font-size: 13px;
+    }
+}
+
+/* 中等屏幕优化 (包含875px) */
+@media (max-width: 1024px) {
+    .adminSidebar.collapsed .toggleSidebarBtn {
+        right: -16px;  /* 增加偏移确保完全显示 */
+        width: 30px;
+        height: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .adminSidebar {
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .adminPageContent {
+        padding: 12px;
+    }
+
+    .adminTopBar {
+        padding: 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .adminTopBarActions {
+        gap: 8px;
+    }
+}
+
+@media (min-width: 901px) {
+    .mobileMenuBtn {
+        display: none !important;
+    }
+
+    .mobileMenuOverlay {
+        display: none !important;
+    }
+}
+
+/* 动画效果 */
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.adminSidebar {
+    animation: slideIn 0.3s ease-out;
+}

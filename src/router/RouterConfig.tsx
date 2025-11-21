@@ -5,6 +5,9 @@ import IndexPage from '../pages/home/IndexPage';
 import ArticleView from '../sample/ArticleView';
 import ArticleCreate from '../pages/articleCreate/ArticleCreate';
 import Profile from '../pages/profile/ProfilePage';
+import AdminLayout from '../pages/admin/AdminLayout';
+import Dashboard from '../pages/admin/Dashboard';
+import UserManagement from '../pages/admin/UserManagement';
 
 const RouterConfig: React.FC = () => {
     return (
@@ -17,7 +20,7 @@ const RouterConfig: React.FC = () => {
 
             {/* 登录页 */}
             <Route path="/auth" element={<AuthPage />} />
-            
+
             {/* 文章创建页 */}
             <Route path='/article/create' element={<ArticleCreate />} />
 
@@ -25,6 +28,21 @@ const RouterConfig: React.FC = () => {
             <Route path="/article/:id" element={<ArticleView />} />
 
             <Route path="/profile/:id" element={<Profile />} />
+
+            {/* 管理中心路由 */}
+            <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="users" element={<UserManagement />} />
+                {/* 其他管理页面可以在这里添加 */}
+                <Route path="articles" element={<div>文章管理页面（待开发）</div>} />
+                <Route path="comments" element={<div>评论管理页面（待开发）</div>} />
+                <Route path="categories" element={<div>分类管理页面（待开发）</div>} />
+                <Route path="media" element={<div>媒体库页面（待开发）</div>} />
+                <Route path="database" element={<div>数据管理页面（待开发）</div>} />
+                <Route path="analytics" element={<div>统计分析页面（待开发）</div>} />
+                <Route path="settings" element={<div>系统设置页面（待开发）</div>} />
+                <Route path="permissions" element={<div>权限管理页面（待开发）</div>} />
+            </Route>
 
             {/* 404 页面 */}
             <Route path="*" element={<div>页面不存在</div>} />
