@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import * as echarts from 'echarts';
 import {
     FaUsers,
     FaFileAlt,
@@ -17,6 +18,34 @@ import {
 import styles from './Dashboard.module.css';
 
 const Dashboard: React.FC = () => {
+    // 访问趋势mock数据
+    const [selectedPeriod, setSelectedPeriod] = React.useState('7天');
+    const chartRef = useRef<HTMLDivElement>(null);
+    const chartInstance = useRef<echarts.ECharts | null>(null);
+
+    const visitTrendData = {
+        '7天': [
+            { day: '周一', visits: 820, date: '11-15' },
+            { day: '周二', visits: 932, date: '11-16' },
+            { day: '周三', visits: 901, date: '11-17' },
+            { day: '周四', visits: 934, date: '11-18' },
+            { day: '周五', visits: 1290, date: '11-19' },
+            { day: '周六', visits: 1330, date: '11-20' },
+            { day: '周日', visits: 892, date: '11-21' }
+        ],
+        '30天': [
+            { day: '第1周', visits: 5800, date: '10-22~10-28' },
+            { day: '第2周', visits: 6200, date: '10-29~11-04' },
+            { day: '第3周', visits: 7100, date: '11-05~11-11' },
+            { day: '第4周', visits: 6892, date: '11-12~11-21' }
+        ],
+        '90天': [
+            { day: '9月', visits: 19800, date: '2024-09' },
+            { day: '10月', visits: 25900, date: '2024-10' },
+            { day: '11月', visits: 19892, date: '2024-11' }
+        ]
+    };
+
     // 模拟统计数据
     const stats = [
         {
@@ -178,6 +207,209 @@ const Dashboard: React.FC = () => {
         return `${styles.activityIcon} ${styles[type]}`;
     };
 
+    // 初始化和更新ECharts图表
+    useEffect(() => {
+        if (!chartRef.current) return;
+
+        // 初始化图表
+        if (!chartInstance.current) {
+            chartInstance.current = echarts.init(chartRef.current, 'light', {
+                renderer: 'canvas'
+            });
+        }
+
+        const chart = chartInstance.current;
+        const data = visitTrendData[selectedPeriod as keyof typeof visitTrendData];
+
+        // ECharts配置
+        const option = {
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: '#ffffff',
+                borderColor: '#e1e5e9',
+                borderWidth: 1,
+                borderRadius: 6,
+                padding: [8, 12],
+                textStyle: {
+                    color: '#333333',
+                    fontSize: 12
+                },
+                formatter: (params: any) => {
+                    const point = params[0];
+                    const dataIndex = point.dataIndex;
+                    const item = data[dataIndex];
+                    return `
+                        <div style="padding: 4px 0;">
+                            <div style="font-weight: 600; margin-bottom: 4px; color: #333;">${point.name}</div>
+                            <div style="color: #4361ee; font-weight: 500;">访问量: ${point.value.toLocaleString()}</div>
+                            <div style="font-size: 11px; color: #666666; margin-top: 2px;">${item.date}</div>
+                        </div>
+                    `;
+                }
+            },
+            grid: {
+                left: '2%',
+                right: '3%',
+                bottom: '12%',
+                top: '8%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: data.map(item => item.day),
+                axisLine: {
+                    lineStyle: {
+                        color: '#e1e5e9',
+                        width: 1
+                    }
+                },
+                axisTick: {
+                    show: false
+                },
+                axisLabel: {
+                    color: '#666666',
+                    fontSize: 11,
+                    interval: 0,
+                    rotate: 0,
+                    margin: 8
+                }
+            },
+            yAxis: {
+                type: 'value',
+                axisLine: {
+                    show: false
+                },
+                axisTick: {
+                    show: false
+                },
+                axisLabel: {
+                    color: '#999999',
+                    fontSize: 10,
+                    margin: 4,
+                    formatter: (value: number) => {
+                        if (value >= 1000) {
+                            return (value / 1000).toFixed(1) + 'k';
+                        }
+                        return value.toString();
+                    }
+                },
+                splitLine: {
+                    lineStyle: {
+                        color: '#f0f0f0',
+                        type: 'dashed',
+                        width: 1,
+                        opacity: 0.6
+                    }
+                }
+            },
+            series: [{
+                name: '访问量',
+                type: 'line',
+                data: data.map(item => item.visits),
+                smooth: true,
+                symbol: 'circle',
+                symbolSize: 5,
+                sampling: 'average',
+                lineStyle: {
+                    width: 2.5,
+                    color: '#4361ee',
+                    shadowColor: 'rgba(67, 97, 238, 0.3)',
+                    shadowBlur: 8,
+                    shadowOffsetY: 3
+                },
+                itemStyle: {
+                    color: '#4361ee',
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    shadowColor: 'rgba(67, 97, 238, 0.5)',
+                    shadowBlur: 6
+                },
+                areaStyle: {
+                    color: {
+                        type: 'linear',
+                        x: 0,
+                        y: 0,
+                        x2: 0,
+                        y2: 1,
+                        colorStops: [{
+                            offset: 0,
+                            color: '#4361ee',
+                            opacity: 0.25
+                        }, {
+                            offset: 0.6,
+                            color: '#4361ee',
+                            opacity: 0.08
+                        }, {
+                            offset: 1,
+                            color: '#4361ee',
+                            opacity: 0.01
+                        }]
+                    }
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: '#4361ee',
+                        borderColor: '#ffffff',
+                        borderWidth: 3,
+                        shadowColor: 'rgba(67, 97, 238, 0.8)',
+                        shadowBlur: 10
+                    },
+                    lineStyle: {
+                        width: 3,
+                        shadowBlur: 12
+                    }
+                }
+            }]
+        };
+
+        chart.setOption(option);
+
+        // 响应式处理
+        const handleResize = () => {
+            chart.resize();
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [selectedPeriod, visitTrendData]);
+
+    // 渲染访问趋势图表
+    const renderVisitTrendChart = () => {
+        const data = visitTrendData[selectedPeriod as keyof typeof visitTrendData];
+        const totalVisits = data.reduce((sum, item) => sum + item.visits, 0);
+        const avgVisits = Math.round(totalVisits / data.length);
+        const maxVisits = Math.max(...data.map(d => d.visits));
+
+        return (
+            <div className={styles.visitTrendChart}>
+                <div className={styles.echartContainer} ref={chartRef} />
+                <div className={styles.chartSummary}>
+                    <div className={styles.summaryItem}>
+                        <span className={styles.summaryLabel}>总访问量</span>
+                        <span className={styles.summaryValue}>
+                            {totalVisits.toLocaleString()}
+                        </span>
+                    </div>
+                    <div className={styles.summaryItem}>
+                        <span className={styles.summaryLabel}>日均访问</span>
+                        <span className={styles.summaryValue}>
+                            {avgVisits.toLocaleString()}
+                        </span>
+                    </div>
+                    <div className={styles.summaryItem}>
+                        <span className={styles.summaryLabel}>峰值</span>
+                        <span className={styles.summaryValue}>
+                            {maxVisits.toLocaleString()}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className={styles.dashboard}>
             {/* 页面头部 */}
@@ -211,19 +443,28 @@ const Dashboard: React.FC = () => {
                     <div className={styles.chartHeader}>
                         <h3 className={styles.chartTitle}>访问趋势</h3>
                         <div className={styles.chartActions}>
-                            <button className={`${styles.btn} ${styles.btnOutline} ${styles.btnSm}`}>
+                            <button
+                                className={`${styles.btn} ${styles.btnOutline} ${styles.btnSm} ${selectedPeriod === '7天' ? styles.active : ''}`}
+                                onClick={() => setSelectedPeriod('7天')}
+                            >
                                 7天
                             </button>
-                            <button className={`${styles.btn} ${styles.btnOutline} ${styles.btnSm}`}>
+                            <button
+                                className={`${styles.btn} ${styles.btnOutline} ${styles.btnSm} ${selectedPeriod === '30天' ? styles.active : ''}`}
+                                onClick={() => setSelectedPeriod('30天')}
+                            >
                                 30天
                             </button>
-                            <button className={`${styles.btn} ${styles.btnOutline} ${styles.btnSm}`}>
+                            <button
+                                className={`${styles.btn} ${styles.btnOutline} ${styles.btnSm} ${selectedPeriod === '90天' ? styles.active : ''}`}
+                                onClick={() => setSelectedPeriod('90天')}
+                            >
                                 90天
                             </button>
                         </div>
                     </div>
                     <div className={styles.chartContainer}>
-                        📊 图表组件占位符（可集成 Chart.js 或其他图表库）
+                        {renderVisitTrendChart()}
                     </div>
                 </div>
 

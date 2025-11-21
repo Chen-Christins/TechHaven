@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fa';
 import styles from './AdminLayout.module.css';
 import ThemeToggle from '../../components/themeToggle/ThemeToggle';
+import Footer from '../../components/footer/Footer';
 
 interface NavItem {
     id: string;
@@ -192,6 +193,9 @@ const AdminLayout: React.FC = () => {
                     <div className={styles.adminPageContent}>
                         <Outlet />
                     </div>
+
+                    {/* Footer */}
+                    <Footer companyName="TechBlog" />
                 </main>
             </div>
         </div>

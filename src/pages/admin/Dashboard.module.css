@@ -170,14 +170,10 @@
 }
 
 .chartContainer {
-    height: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    min-height: 300px;
     background-color: var(--bg-secondary);
     border-radius: 8px;
-    color: var(--text-secondary);
-    font-size: 14px;
+    overflow: hidden;
 }
 
 /* 快速操作卡片 */
@@ -467,4 +463,56 @@
 .btnSm {
     padding: 6px 12px;
     font-size: 13px;
+}
+
+/* 访问趋势图表样式 */
+.visitTrendChart {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* ECharts容器 */
+.echartContainer {
+    flex: 1;
+    height: 280px;
+    width: 100%;
+    min-height: 280px;
+    margin-bottom: -8px;
+}
+
+.chartSummary {
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0 8px 0;
+    border-top: 1px solid var(--border-primary);
+    margin-top: 4px;
+}
+
+.summaryItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.summaryLabel {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.summaryValue {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* 活跃按钮状态 */
+.active {
+    background-color: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
 }
