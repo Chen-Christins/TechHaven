@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import {
     FaHome,
@@ -12,7 +12,9 @@ import {
     FaComments,
     FaTags,
     FaImages,
-    FaDatabase
+    FaDatabase,
+    FaUserCircle,
+    FaChevronDown
 } from 'react-icons/fa';
 import styles from './AdminLayout.module.css';
 import ThemeToggle from '../../components/themeToggle/ThemeToggle';
@@ -29,7 +31,16 @@ interface NavItem {
 const AdminLayout: React.FC = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
     const location = useLocation();
+
+    // 模拟当前用户数据
+    const currentUser = {
+        name: '管理员',
+        avatar: 'https://i.pravatar.cc/150?img=12',
+        role: '超级管理员',
+        email: 'admin@techblog.com'
+    };
 
     // 导航菜单配置
     const navSections: { title: string; items: NavItem[] }[] = [
@@ -75,6 +86,16 @@ const AdminLayout: React.FC = () => {
         setMobileMenuOpen(false);
     };
 
+    // 切换用户菜单
+    const toggleUserMenu = () => {
+        setUserMenuOpen(!userMenuOpen);
+    };
+
+    // 关闭用户菜单
+    const closeUserMenu = () => {
+        setUserMenuOpen(false);
+    };
+
     // 获取面包屑导航
     const getBreadcrumbs = () => {
         const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -99,6 +120,24 @@ const AdminLayout: React.FC = () => {
     };
 
     const breadcrumbs = getBreadcrumbs();
+
+    // 点击外部关闭用户菜单
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Element;
+            if (!target.closest(`.${styles.userInfoSection}`)) {
+                closeUserMenu();
+            }
+        };
+
+        if (userMenuOpen) {
+            document.addEventListener('click', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [userMenuOpen]);
 
     return (
         <div className={styles.adminLayout}>
@@ -185,7 +224,58 @@ const AdminLayout: React.FC = () => {
                         {/* 顶部操作区域 */}
                         <div className={styles.adminTopBarActions}>
                             <ThemeToggle />
-                            {/* 可以在这里添加用户菜单、通知等 */}
+
+                            {/* 用户信息区域 */}
+                            <div className={styles.userInfoSection}>
+                                <div className={styles.userDisplay} onClick={toggleUserMenu}>
+                                    <img
+                                        src={currentUser.avatar}
+                                        alt={currentUser.name}
+                                        className={styles.userAvatar}
+                                    />
+                                    <div className={styles.userDetails}>
+                                        <div className={styles.userName}>{currentUser.name}</div>
+                                        <div className={styles.userRole}>{currentUser.role}</div>
+                                    </div>
+                                    <FaChevronDown className={`${styles.userMenuArrow} ${userMenuOpen ? styles.open : ''}`} />
+                                </div>
+
+                                {/* 用户下拉菜单 */}
+                                {userMenuOpen && (
+                                    <div className={styles.userDropdown}>
+                                        <div className={styles.dropdownHeader}>
+                                            <img
+                                                src={currentUser.avatar}
+                                                alt={currentUser.name}
+                                                className={styles.dropdownAvatar}
+                                            />
+                                            <div className={styles.dropdownUserInfo}>
+                                                <div className={styles.dropdownUserName}>{currentUser.name}</div>
+                                                <div className={styles.dropdownUserEmail}>{currentUser.email}</div>
+                                            </div>
+                                        </div>
+                                        <div className={styles.dropdownDivider}></div>
+                                        <div className={styles.dropdownMenu}>
+                                            <Link to="/admin/profile" className={styles.dropdownItem} onClick={closeUserMenu}>
+                                                <FaUserCircle />
+                                                个人资料
+                                            </Link>
+                                            <Link to="/admin/settings" className={styles.dropdownItem} onClick={closeUserMenu}>
+                                                <FaCog />
+                                                账户设置
+                                            </Link>
+                                            <div className={styles.dropdownDivider}></div>
+                                            <button className={styles.dropdownItem} onClick={() => {
+                                                closeUserMenu();
+                                                // 处理退出登录
+                                                console.log('退出登录');
+                                            }}>
+                                                退出登录
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </header>
 
