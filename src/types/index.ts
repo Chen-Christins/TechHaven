@@ -20,18 +20,18 @@ export interface Article {
 }
 
 export interface UserProfile {
-  id: number;
-  name: string;
-  avatar: string;
-  bio: string;
-  location: string;
-  website?: string;
-  joinDate: string;
-  stats: {
-    articles: number;
-    followers: number;
-    following: number;
-  };
+    id: number;
+    name: string;
+    avatar: string;
+    bio: string;
+    location: string;
+    website?: string;
+    joinDate: string;
+    stats: {
+        articles: number;
+        followers: number;
+        following: number;
+    };
 }
 
 // 统计数据类型

@@ -98,9 +98,9 @@ const AuthPage: React.FC = () => {
 
     // 页面加载时检查cookies状态
     useEffect(() => {
-        console.log('📄 AuthPage加载，检查当前Cookies状态...');
-        CookieHelper.debugCookies();
-        console.log('🔍 是否有认证相关Cookies:', CookieHelper.hasAuthCookies());
+        // console.log('📄 AuthPage加载，检查当前Cookies状态...');
+        // CookieHelper.debugCookies();
+        // console.log('🔍 是否有认证相关Cookies:', CookieHelper.hasAuthCookies());
     }, []);
 
     // 状态管理
@@ -232,7 +232,7 @@ const AuthPage: React.FC = () => {
                 setMessage({ text: '注册成功，请登录', type: 'success' });
                 console.log('注册成功:', formData);
                 // 注册成功后切换到登录表单
-                setTimeout(() => setFormType('login'), 1500);
+                setTimeout(() => setFormType('login'), 500);
             } else if (formType === 'forgotPassword') {
                 // 密码重置逻辑（这里需要根据实际后台API调整）
                 console.log('密码重置请求:', {
@@ -242,7 +242,7 @@ const AuthPage: React.FC = () => {
                 });
                 setMessage({ text: '密码重置成功，请登录', type: 'success' });
                 // 重置成功后切换到登录表单
-                setTimeout(() => setFormType('login'), 1500);
+                setTimeout(() => setFormType('login'), 500);
             }
         } catch (error: any) {
             console.error(`${formType}失败:`, error);

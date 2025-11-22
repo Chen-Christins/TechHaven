@@ -212,7 +212,7 @@ const Navbar: React.FC = () => {
 									onClick={() => setMobileMenuOpen(false)}
 								>
 									<FaSignInAlt className={styles.mobileLinkIcon} />
-									<span className={styles.mobileLinkText}>登录/注册</span>
+									<span className={styles.mobileLinkText}>登录 | 注册</span>
 								</Link>
 							</div>
 						</li>
