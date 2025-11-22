@@ -10,6 +10,7 @@ import Dashboard from '../pages/admin/Dashboard';
 import UserManagement from '../pages/admin/UserManagement';
 import ArticleManagement from '../pages/admin/ArticleManagement';
 import CategoryManagement from '../pages/admin/CategoryManagement';
+import PermissionManagement from '../pages/admin/PermissionManagement';
 import Analytics from '../pages/admin/Analytics';
 import Settings from '../pages/admin/Settings';
 
@@ -44,7 +45,7 @@ const RouterConfig: React.FC = () => {
                 <Route path="database" element={<div>数据管理页面（待开发）</div>} />
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="settings" element={<Settings />} />
-                <Route path="permissions" element={<div>权限管理页面（待开发）</div>} />
+                <Route path="permissions" element={<PermissionManagement />} />
             </Route>
 
             {/* 404 页面 */}
