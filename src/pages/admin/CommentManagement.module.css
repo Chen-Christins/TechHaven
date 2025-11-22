@@ -1,0 +1,678 @@
+.commentManagement {
+    max-width: 100%;
+}
+
+/* 页面头部 */
+.pageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.pageTitle {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.pageDescription {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.headerActions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* 筛选区域 */
+.filterSection {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.filterHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.filterTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filterActions {
+    display: flex;
+    gap: 8px;
+}
+
+.filterForm {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    align-items: end;
+}
+
+.filterGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filterLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* 批量操作栏 */
+.batchActions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--primary-light);
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+}
+
+.batchInfo {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.batchButtons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* 评论容器 */
+.commentsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 评论卡片 */
+.commentCard {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.2s ease;
+}
+
+.commentCard:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-secondary);
+}
+
+/* 评论头部 */
+.commentHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.commentMeta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.commentCheckbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.authorInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.authorAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-secondary);
+    border: 2px solid var(--border-primary);
+    color: var(--text-secondary);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.authorAvatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.authorDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.authorName {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.authorEmail {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.commentInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* 状态标签 */
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.statusBadge.approved {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.statusBadge.pending {
+    background-color: var(--warning);
+    color: white;
+}
+
+.statusBadge.rejected {
+    background-color: var(--error-light);
+    color: var(--error);
+}
+
+.statusBadge.spam {
+    background-color: rgba(255, 0, 0, 0.1);
+    color: #d32f2f;
+}
+
+.statusBadge.small {
+    font-size: 11px;
+    padding: 2px 6px;
+}
+
+/* 举报标签 */
+.reportedBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.commentTime {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* 操作按钮 */
+.commentActions {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.actionButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: var(--text-secondary);
+    background-color: transparent;
+}
+
+.actionButton:hover {
+    background-color: var(--bg-hover);
+}
+
+.actionButton.approve:hover {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.actionButton.reject:hover {
+    background-color: var(--warning);
+    color: white;
+}
+
+.actionButton.spam:hover {
+    background-color: var(--error-light);
+    color: var(--error);
+}
+
+.actionButton.delete:hover {
+    background-color: var(--error-light);
+    color: var(--error);
+}
+
+.actionButton.small {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+}
+
+/* 评论内容 */
+.commentContent {
+    margin-left: 52px;
+}
+
+.articleLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    padding: 4px 8px;
+    background-color: var(--bg-secondary);
+    border-radius: 4px;
+    width: fit-content;
+}
+
+.contentText {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    word-wrap: break-word;
+}
+
+.commentStats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.statItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.2s ease;
+    border: none;
+    background: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.statItem:hover {
+    color: var(--primary);
+    background-color: var(--bg-hover);
+}
+
+/* 回复列表 */
+.repliesList {
+    margin-top: 16px;
+    padding-left: 20px;
+    border-left: 2px solid var(--border-primary);
+}
+
+.replyItem {
+    background-color: var(--bg-secondary);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+}
+
+.replyItem:last-child {
+    margin-bottom: 0;
+}
+
+.replyHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.replyAuthor {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.replyAvatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    color: var(--text-secondary);
+    overflow: hidden;
+    font-size: 12px;
+}
+
+.replyAvatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.replyInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.replyName {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.replyTime {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.replyActions {
+    display: flex;
+    gap: 4px;
+}
+
+.replyContent {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    margin-left: 36px;
+}
+
+/* 分页 */
+.paginationContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding: 20px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.paginationInfo {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.paginationControls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.paginationButton {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.paginationButton:hover:not(:disabled) {
+    background-color: var(--bg-hover);
+    border-color: var(--primary);
+}
+
+.paginationButton.active {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.paginationButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.paginationEllipsis {
+    padding: 0 8px;
+    color: var(--text-tertiary);
+}
+
+/* 通用按钮样式 */
+.btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btnPrimary {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btnPrimary:hover {
+    background-color: var(--primary-hover);
+}
+
+.btnSecondary {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+}
+
+.btnSecondary:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-secondary);
+}
+
+.btnOutline {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-primary);
+}
+
+.btnOutline:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.btnSuccess {
+    background-color: var(--success);
+    color: white;
+}
+
+.btnSuccess:hover {
+    background-color: #2e7d32;
+}
+
+.btnWarning {
+    background-color: var(--warning);
+    color: white;
+}
+
+.btnWarning:hover {
+    background-color: #f57c00;
+}
+
+.btnDanger {
+    background-color: var(--error);
+    color: white;
+}
+
+.btnDanger:hover {
+    background-color: #d32f2f;
+}
+
+.btnSm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .pageHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .headerActions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .filterForm {
+        grid-template-columns: 1fr;
+    }
+
+    .commentMeta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .commentActions {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 8px;
+    }
+
+    .batchActions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .batchButtons {
+        justify-content: center;
+    }
+
+    .commentContent {
+        margin-left: 0;
+    }
+
+    .repliesList {
+        margin-left: 0;
+        padding-left: 16px;
+    }
+
+    .replyContent {
+        margin-left: 0;
+        margin-top: 8px;
+    }
+
+    .paginationContainer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .paginationControls {
+        justify-content: center;
+    }
+
+    .statItem {
+        font-size: 11px;
+        padding: 2px 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .commentCard {
+        padding: 16px;
+    }
+
+    .batchButtons {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btnSm {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+
+    .commentInfo {
+        gap: 6px;
+    }
+
+    .statusBadge,
+    .reportedBadge {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+}

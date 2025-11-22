@@ -112,7 +112,7 @@
 .tabsContainer {
     background: var(--card-bg);
     border-radius: 16px;
-    padding: 18px 22px;
+    padding: 18px;
     margin-bottom: 32px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--border-primary);
