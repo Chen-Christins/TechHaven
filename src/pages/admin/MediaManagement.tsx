@@ -32,6 +32,7 @@ import {
 } from 'react-icons/fa';
 import CustomSelect from '../../components/customSelect/CustomSelect';
 import Input from '../../components/input/Input';
+import Loading from '../../components/loading/Loading';
 import { confirm } from '../../components/confirm/Confirm';
 import type { SelectOption } from '../../types/index';
 import styles from './MediaManagement.module.css';
@@ -690,9 +691,7 @@ const MediaManagement: React.FC = () => {
     if (loading) {
         return (
             <div className={styles.mediaManagement}>
-                <div style={{ textAlign: 'center', padding: '40px' }}>
-                    <p>加载媒体库中...</p>
-                </div>
+                <Loading text="加载媒体库中..." size="large" />
             </div>
         );
     }

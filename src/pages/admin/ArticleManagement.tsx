@@ -29,6 +29,7 @@ import {
 import CustomSelect from '../../components/customSelect/CustomSelect';
 import Input from '../../components/input/Input';
 import Button from '../../components/button/Button';
+import Loading from '../../components/loading/Loading';
 import { confirm } from '../../components/confirm/Confirm';
 import type { SelectOption } from '../../types/index';
 import styles from './ArticleManagement.module.css';
@@ -474,9 +475,7 @@ const ArticleManagement: React.FC = () => {
     if (loading) {
         return (
             <div className={styles.articleManagement}>
-                <div style={{ textAlign: 'center', padding: '40px' }}>
-                    <p>加载文章数据中...</p>
-                </div>
+                <Loading text="加载文章数据中..." size="large" />
             </div>
         );
     }

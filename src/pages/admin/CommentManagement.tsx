@@ -22,6 +22,7 @@ import {
 } from 'react-icons/fa';
 import CustomSelect from '../../components/customSelect/CustomSelect';
 import Input from '../../components/input/Input';
+import Loading from '../../components/loading/Loading';
 import { confirm } from '../../components/confirm/Confirm';
 import type { SelectOption } from '../../types/index';
 import styles from './CommentManagement.module.css';
@@ -887,9 +888,7 @@ const CommentManagement: React.FC = () => {
     if (loading) {
         return (
             <div className={styles.commentManagement}>
-                <div style={{ textAlign: 'center', padding: '40px' }}>
-                    <p>加载评论管理中...</p>
-                </div>
+                <Loading text="加载评论管理中..." size="large" />
             </div>
         );
     }

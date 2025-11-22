@@ -9,6 +9,7 @@ interface User {
 	name: string;
 	avatar: string;
 	role: string; // 用于显示用户身份（如博主/访客）
+	email: string; // 邮箱地址
 }
 
 const Navbar: React.FC = () => {
@@ -24,7 +25,8 @@ const Navbar: React.FC = () => {
 	const currentUser: User = {
 		name: "Admin",
 		avatar: "https://picsum.photos/id/64/200", // 占位头像
-		role: "管理员"
+		role: "管理员",
+		email: "admin@techblog.com"
 	};
 
 	// 导航链接数据（包含图标和路径）
@@ -257,30 +259,41 @@ const Navbar: React.FC = () => {
 					</div>
 
 					{/* 用户下拉菜单 */}
-					<div className={`${styles.userMenu} ${userMenuOpen ? styles.userMenuOpen : ''}`}>
-						<ul className={styles.menuItems}>
-							<li className={styles.menuItem}>
-								<Link to="/profile/1" className={styles.menuLink}>
-									<FaUserCircle className={styles.menuIcon} />
-									<span>个人中心</span>
+					{userMenuOpen && (
+						<div className={styles.userDropdown}>
+							<div className={styles.dropdownHeader}>
+								<img
+									src={currentUser.avatar}
+									alt={currentUser.name}
+									className={styles.dropdownAvatar}
+								/>
+								<div className={styles.dropdownUserInfo}>
+									<div className={styles.dropdownUserName}>{currentUser.name}</div>
+									<div className={styles.dropdownUserEmail}>{currentUser.email}</div>
+								</div>
+							</div>
+							<div className={styles.dropdownDivider}></div>
+							<div className={styles.dropdownMenu}>
+								<Link to="/profile/1" className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}>
+									<FaUserCircle />
+									个人中心
 								</Link>
-							</li>
-							<li className={styles.menuDivider}></li>
-                            <li className={styles.menuItem}>
-								<Link to="/article/create" className={styles.menuLink}>
-									<FaPen className={styles.menuIcon} />
-									<span>撰写文章</span>
+								<Link to="/article/create" className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}>
+									<FaPen />
+									撰写文章
 								</Link>
-							</li>
-							<li className={styles.menuDivider}></li>
-							<li className={styles.menuItem}>
-								<a href="/logout" className={styles.menuLink} style={{ color: '#ef4444' }}>
-									<FaSignOutAlt className={styles.menuIcon} />
-									<span>退出登录</span>
-								</a>
-							</li>
-						</ul>
-					</div>
+								<div className={styles.dropdownDivider}></div>
+								<button className={styles.dropdownItem} onClick={() => {
+									setUserMenuOpen(false);
+									// 处理退出登录
+									console.log('退出登录');
+								}}>
+									<FaSignOutAlt />
+									退出登录
+								</button>
+							</div>
+						</div>
+					)}
 				</div>
 			</div>
 

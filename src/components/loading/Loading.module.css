@@ -1,0 +1,145 @@
+/* 加载容器 */
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 40px 20px;
+}
+
+/* 尺寸变体 */
+.loadingContainer.small {
+    gap: 8px;
+    padding: 20px 16px;
+}
+
+.loadingContainer.medium {
+    gap: 16px;
+    padding: 40px 20px;
+}
+
+.loadingContainer.large {
+    gap: 24px;
+    padding: 60px 20px;
+}
+
+/* 旋转动画 */
+.spinner {
+    position: relative;
+    width: 40px;
+    height: 40px;
+}
+
+.loadingContainer.small .spinner {
+    width: 24px;
+    height: 24px;
+}
+
+.loadingContainer.medium .spinner {
+    width: 40px;
+    height: 40px;
+}
+
+.loadingContainer.large .spinner {
+    width: 56px;
+    height: 56px;
+}
+
+/* 旋转圆圈 */
+.spinnerCircle {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 3px solid transparent;
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.loadingContainer.small .spinnerCircle {
+    border-width: 2px;
+}
+
+.loadingContainer.large .spinnerCircle {
+    border-width: 4px;
+}
+
+.spinnerCircle:nth-child(1) {
+    animation-delay: -0.45s;
+}
+
+.spinnerCircle:nth-child(2) {
+    animation-delay: -0.3s;
+}
+
+.spinnerCircle:nth-child(3) {
+    animation-delay: -0.15s;
+}
+
+/* 旋转动画 */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* 加载文字 */
+.loadingText {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.loadingContainer.small .loadingText {
+    font-size: 12px;
+}
+
+.loadingContainer.large .loadingText {
+    font-size: 16px;
+}
+
+/* 遮罩层样式 */
+.loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* 暗色主题适配 */
+@media (prefers-color-scheme: dark) {
+    .loadingOverlay {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .loadingContainer {
+        padding: 30px 16px;
+    }
+
+    .loadingContainer.large {
+        padding: 40px 16px;
+    }
+
+    .loadingText {
+        font-size: 13px;
+    }
+
+    .loadingContainer.large .loadingText {
+        font-size: 15px;
+    }
+}

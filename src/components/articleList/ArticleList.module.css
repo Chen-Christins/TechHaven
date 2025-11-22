@@ -14,6 +14,13 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    min-height: 1350px; /* 固定最小高度，确保分页位置稳定 */
+}
+
+/* 当文章数量少于每页数量时，用占位空间填充 */
+.articles::after {
+    content: '';
+    flex-grow: 1;
 }
 
 .articleItem {
@@ -60,4 +67,114 @@
 
 .readMoreBtn:hover {
     color: var(--link-hover);
+}
+
+/* 分页样式 */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-primary);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.paginationInfo {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.paginationControls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.paginationButton {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.paginationButton:hover:not(:disabled) {
+    background-color: var(--bg-hover);
+    border-color: var(--primary);
+}
+
+.paginationButton.active {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.paginationButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.paginationEllipsis {
+    padding: 0 8px;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+}
+
+/* 响应式分页 */
+@media (max-width: 768px) {
+    .pagination {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .paginationControls {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .paginationButton {
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .paginationInfo {
+        font-size: 0.8rem;
+    }
+
+    .articles {
+        min-height: 0; /* 调整最小高度以适应移动设备 */
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination {
+        padding: 1rem;
+    }
+
+    .paginationButton {
+        min-width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+        padding: 0 6px;
+    }
+
+    .paginationEllipsis {
+        font-size: 0.8rem;
+        padding: 0 6px;
+    }
 }

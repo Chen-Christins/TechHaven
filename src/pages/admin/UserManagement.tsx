@@ -3,6 +3,7 @@ import { FaFilter, FaPlus, FaEdit, FaTrash, FaEye, FaChevronLeft, FaChevronRight
 import CustomSelect from '../../components/customSelect/CustomSelect';
 import Input from '../../components/input/Input';
 import Button from '../../components/button/Button';
+import Loading from '../../components/loading/Loading';
 import type { SelectOption } from '../../types/index';
 import styles from './UserManagement.module.css';
 
@@ -262,9 +263,7 @@ const UserManagement: React.FC = () => {
     if (loading) {
         return (
             <div className={styles.userManagement}>
-                <div style={{ textAlign: 'center', padding: '40px' }}>
-                    <p>加载用户数据中...</p>
-                </div>
+                <Loading text="加载用户数据中..." size="large" />
             </div>
         );
     }
