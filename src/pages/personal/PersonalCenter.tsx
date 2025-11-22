@@ -19,11 +19,11 @@ import {
     FaPenFancy
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import Loading from '../components/loading/Loading';
-import ThemeToggle from '../components/themeToggle/ThemeToggle';
-import UserDropdown from '../components/userDropdown/UserDropdown';
-import CustomSelect from '../components/customSelect/CustomSelect';
-import Footer from '../components/footer/Footer';
+import Loading from '../../components/loading/Loading';
+import ThemeToggle from '../../components/themeToggle/ThemeToggle';
+import UserDropdown from '../../components/userDropdown/UserDropdown';
+import CustomSelect from '../../components/customSelect/CustomSelect';
+import Footer from '../../components/footer/Footer';
 import type { SelectOption } from '../../types/index';
 import styles from './PersonalCenter.module.css';
 

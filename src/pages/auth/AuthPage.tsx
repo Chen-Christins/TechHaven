@@ -11,6 +11,11 @@ import {
 } from 'lucide-react';
 import styles from './AuthPage.module.css'; // 导入 CSS Modules
 import Footer from "../../components/footer/Footer";
+import { useAuth } from '../../contexts/AuthContext';
+import { AuthService } from '../../services/authService';
+import { CodeType } from '../../utils/http';
+import { CookieHelper } from '../../utils/cookieHelper';
+
 
 // 定义表单类型
 type FormType = 'login' | 'register' | 'forgotPassword';
@@ -29,10 +34,10 @@ const validateForm = (type: FormType, formData: any) => {
             errors.password = '密码长度至少6位';
         }
     } else if (type === 'register') {
-        if (!formData.username) {
-            errors.username = '请输入用户名';
-        } else if (formData.username.length < 3) {
-            errors.username = '用户名长度至少3位';
+        if (!formData.account) {
+            errors.account = '请输入账号';
+        } else if (formData.account.length < 3) {
+            errors.account = '账号长度至少3位';
         }
 
         if (!formData.email) {
@@ -41,10 +46,10 @@ const validateForm = (type: FormType, formData: any) => {
             errors.email = '请输入有效的邮箱地址';
         }
 
-        if (!formData.code) {
-            errors.code = '请输入验证码';
-        } else if (formData.code.length !== 6) {
-            errors.code = '验证码长度为6位';
+        if (!formData.auth_code) {
+            errors.auth_code = '请输入验证码';
+        } else if (formData.auth_code.length !== 8) {
+            errors.auth_code = '验证码长度为8位';
         }
 
         if (!formData.password) {
@@ -67,8 +72,8 @@ const validateForm = (type: FormType, formData: any) => {
 
         if (!formData.code) {
             errors.code = '请输入验证码';
-        } else if (formData.code.length !== 6) {
-            errors.code = '验证码长度为6位';
+        } else if (formData.code.length !== 8) {
+            errors.code = '验证码长度为8位';
         }
 
         if (!formData.newPassword) {
@@ -88,13 +93,24 @@ const validateForm = (type: FormType, formData: any) => {
 };
 
 const AuthPage: React.FC = () => {
+    // 获取认证状态
+    const { login } = useAuth();
+
+    // 页面加载时检查cookies状态
+    useEffect(() => {
+        console.log('📄 AuthPage加载，检查当前Cookies状态...');
+        CookieHelper.debugCookies();
+        console.log('🔍 是否有认证相关Cookies:', CookieHelper.hasAuthCookies());
+    }, []);
+
     // 状态管理
     const [formType, setFormType] = useState<FormType>('login');
     const [formData, setFormData] = useState({
         usernameOrEmail: '',
-        username: '',
+        account: '',
         email: '',
-        code: '',
+        auth_code: '',
+        code: '', // 保留用于密码重置
         password: '',
         confirmPassword: '',
         newPassword: '',
@@ -125,7 +141,7 @@ const AuthPage: React.FC = () => {
     };
 
     // 发送验证码
-    const handleSendCode = () => {
+    const handleSendCode = async () => {
         const email = formData.email;
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             setErrors(prev => ({ ...prev, email: '请输入有效的邮箱地址' }));
@@ -141,10 +157,30 @@ const AuthPage: React.FC = () => {
             });
         }
 
-        // 模拟发送验证码请求
-        console.log(`发送验证码到邮箱: ${email}`);
-        setCountdown(60);
-        setMessage({ text: '验证码已发送，请注意查收', type: 'success' });
+        try {
+            setIsSubmitting(true);
+
+            // 根据表单类型选择验证码类型
+            let codeType: CodeType;
+            if (formType === 'register') {
+                codeType = CodeType.REGISTER;
+                await AuthService.sendRegisterCode(email);
+            } else if (formType === 'forgotPassword') {
+                codeType = CodeType.PASSWORD_RESET;
+                await AuthService.sendPasswordResetCode(email);
+            } else {
+                throw new Error('不支持的验证码类型');
+            }
+
+            setCountdown(60);
+            setMessage({ text: '验证码已发送，请注意查收', type: 'success' });
+            console.log(`验证码已发送到邮箱: ${email}, 类型: ${codeType}`);
+        } catch (error: any) {
+            console.error('发送验证码失败:', error);
+            setMessage({ text: error.message || '验证码发送失败', type: 'error' });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     // 倒计时效果
@@ -156,7 +192,7 @@ const AuthPage: React.FC = () => {
     }, [countdown]);
 
     // 处理表单提交
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // 验证表单
@@ -169,25 +205,51 @@ const AuthPage: React.FC = () => {
         setIsSubmitting(true);
         setMessage(null);
 
-        // 模拟API请求
-        setTimeout(() => {
+        try {
             if (formType === 'login') {
-                console.log('登录成功', formData);
+                // 登录逻辑
+                await login(formData.usernameOrEmail, formData.password);
+
+                // 调试：检查登录后的cookies状态
+                console.log('🔐 登录成功，检查Cookies状态...');
+                CookieHelper.debugCookies();
+                console.log('🔍 是否有认证相关Cookies:', CookieHelper.hasAuthCookies());
+
                 setMessage({ text: '登录成功，正在跳转...', type: 'success' });
-                // 实际项目中这里应该跳转到首页或其他页面
+                // 登录成功后，AuthContext会自动处理状态更新
+                // 跳转前再次检查cookies
+                console.log('🔄 页面跳转前检查Cookies...');
+                CookieHelper.debugCookies();
+                window.location.href = '/index';
             } else if (formType === 'register') {
-                console.log('注册成功', formData);
+                // 注册逻辑
+                await AuthService.register({
+                    account: formData.account,
+                    email: formData.email,
+                    passwd: formData.password,  // AuthService 内部会进行 MD5 加密
+                    auth_code: formData.auth_code
+                });
                 setMessage({ text: '注册成功，请登录', type: 'success' });
+                console.log('注册成功:', formData);
                 // 注册成功后切换到登录表单
                 setTimeout(() => setFormType('login'), 1500);
             } else if (formType === 'forgotPassword') {
-                console.log('密码重置成功', formData);
+                // 密码重置逻辑（这里需要根据实际后台API调整）
+                console.log('密码重置请求:', {
+                    email: formData.email,
+                    code: formData.code,
+                    newPassword: formData.newPassword
+                });
                 setMessage({ text: '密码重置成功，请登录', type: 'success' });
                 // 重置成功后切换到登录表单
                 setTimeout(() => setFormType('login'), 1500);
             }
+        } catch (error: any) {
+            console.error(`${formType}失败:`, error);
+            setMessage({ text: error.message || `${formType === 'login' ? '登录' : formType === 'register' ? '注册' : '重置密码'}失败`, type: 'error' });
+        } finally {
             setIsSubmitting(false);
-        }, 1500);
+        }
     };
 
     // 切换表单视图
@@ -198,6 +260,7 @@ const AuthPage: React.FC = () => {
         // 重置相关表单字段
         setFormData(prev => ({
             ...prev,
+            auth_code: '',
             code: '',
             password: '',
             confirmPassword: '',
@@ -344,27 +407,27 @@ const AuthPage: React.FC = () => {
                                 <>
                                     <div className={styles.formGroup}>
                                         <label
-                                            htmlFor="username"
+                                            htmlFor="account"
                                             className={styles.label}
                                         >
-                                            用户名
+                                            账号
                                         </label>
                                         <div className={styles.formControl}>
                                             <User size={18} className={styles.icon} />
                                             <input
                                                 type="text"
-                                                id="username"
-                                                name="username"
-                                                value={formData.username}
+                                                id="account"
+                                                name="account"
+                                                value={formData.account}
                                                 onChange={handleInputChange}
-                                                className={`${styles.input} ${errors.username ? styles.inputError : ''}`}
-                                                placeholder="请输入用户名"
+                                                className={`${styles.input} ${errors.account ? styles.inputError : ''}`}
+                                                placeholder="请输入账号"
                                             />
                                         </div>
-                                        {errors.username && (
+                                        {errors.account && (
                                             <p className={styles.errorText}>
                                                 <AlertCircle size={14} />
-                                                {errors.username}
+                                                {errors.account}
                                             </p>
                                         )}
                                     </div>
@@ -398,7 +461,7 @@ const AuthPage: React.FC = () => {
 
                                     <div className={styles.formGroup}>
                                         <label
-                                            htmlFor="code"
+                                            htmlFor="auth_code"
                                             className={styles.label}
                                         >
                                             验证码
@@ -407,11 +470,11 @@ const AuthPage: React.FC = () => {
                                             <Mail size={18} className={styles.icon} />
                                             <input
                                                 type="text"
-                                                id="code"
-                                                name="code"
-                                                value={formData.code}
+                                                id="auth_code"
+                                                name="auth_code"
+                                                value={formData.auth_code}
                                                 onChange={handleInputChange}
-                                                className={`${styles.input} ${errors.code ? styles.inputError : ''}`}
+                                                className={`${styles.input} ${errors.auth_code ? styles.inputError : ''}`}
                                                 placeholder="请输入验证码"
                                             />
                                             <button
@@ -423,10 +486,10 @@ const AuthPage: React.FC = () => {
                                                 {countdown > 0 ? `${countdown}s后重发` : '获取验证码'}
                                             </button>
                                         </div>
-                                        {errors.code && (
+                                        {errors.auth_code && (
                                             <p className={styles.errorText}>
                                                 <AlertCircle size={14} />
-                                                {errors.code}
+                                                {errors.auth_code}
                                             </p>
                                         )}
                                     </div>
@@ -645,7 +708,7 @@ const AuthPage: React.FC = () => {
                                 {isSubmitting ? (
                                     <div className={styles.btnLoading}>
                                         <div className={styles.loadingSpinner}></div>
-                                        <span>处理中...</span>
+                                        <span>{formType === 'login' ? '登录中...' : formType === 'register' ? '注册中...' : '重置中...'}</span>
                                     </div>
                                 ) : formType === 'login' ? '登录' : formType === 'register' ? '注册' : '重置密码'}
                             </button>

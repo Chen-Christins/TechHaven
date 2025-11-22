@@ -5,7 +5,7 @@ import IndexPage from '../pages/home/IndexPage';
 import ArticleView from '../sample/ArticleView';
 import ArticleCreate from '../pages/articleCreate/ArticleCreate';
 import Profile from '../pages/profile/ProfilePage';
-import PersonalCenter from '../pages/PersonalCenter';
+import PersonalCenter from '../pages/personal/PersonalCenter';
 import AdminLayout from '../pages/admin/AdminLayout';
 import Dashboard from '../pages/admin/Dashboard';
 import UserManagement from '../pages/admin/UserManagement';
