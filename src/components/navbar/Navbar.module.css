@@ -559,7 +559,6 @@
 .dropdownHeader {
     padding: 1rem 1.2rem;
     border-bottom: 1px solid var(--border-secondary);
-    background-color: var(--bg-secondary);
 }
 
 .dropdownTitle {

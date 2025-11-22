@@ -14,7 +14,8 @@ import {
     FaImages,
     FaDatabase,
     FaUserCircle,
-    FaChevronDown
+    FaChevronDown,
+    FaSignOutAlt
 } from 'react-icons/fa';
 import styles from './AdminLayout.module.css';
 import ThemeToggle from '../../components/themeToggle/ThemeToggle';
@@ -36,7 +37,7 @@ const AdminLayout: React.FC = () => {
 
     // 模拟当前用户数据
     const currentUser = {
-        name: '管理员',
+        name: 'Admin',
         avatar: 'https://i.pravatar.cc/150?img=12',
         role: '超级管理员',
         email: 'admin@techblog.com'
@@ -270,6 +271,7 @@ const AdminLayout: React.FC = () => {
                                                 // 处理退出登录
                                                 console.log('退出登录');
                                             }}>
+                                                <FaSignOutAlt />
                                                 退出登录
                                             </button>
                                         </div>
