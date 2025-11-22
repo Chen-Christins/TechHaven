@@ -5,6 +5,7 @@ import IndexPage from '../pages/home/IndexPage';
 import ArticleView from '../sample/ArticleView';
 import ArticleCreate from '../pages/articleCreate/ArticleCreate';
 import Profile from '../pages/profile/ProfilePage';
+import PersonalCenter from '../pages/PersonalCenter';
 import AdminLayout from '../pages/admin/AdminLayout';
 import Dashboard from '../pages/admin/Dashboard';
 import UserManagement from '../pages/admin/UserManagement';
@@ -36,6 +37,9 @@ const RouterConfig: React.FC = () => {
             <Route path="/article/:id" element={<ArticleView />} />
 
             <Route path="/profile/:id" element={<Profile />} />
+
+            {/* 个人管理中心 */}
+            <Route path="/personal" element={<PersonalCenter />} />
 
             {/* 管理中心路由 */}
             <Route path="/admin" element={<AdminLayout />}>

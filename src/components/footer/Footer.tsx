@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import styles from './Footer.module.css';
 
 export interface FooterLink {
@@ -66,7 +67,7 @@ const Footer: React.FC<FooterProps> = ({
                     <div className={styles.copyright}>
                         {copyrightText || (
                             <>
-                                © {yearText} {companyName} Inc. All rights reversed.
+                                © {yearText} <Link to="/" className={styles.companyLink}>{companyName}</Link> Inc. All rights reversed.
                             </>
                         )}
                     </div>

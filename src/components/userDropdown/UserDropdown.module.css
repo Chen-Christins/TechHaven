@@ -1,0 +1,206 @@
+/* 用户下拉框容器 */
+.userDropdown {
+    position: relative;
+}
+
+/* 用户显示区域 */
+.userDisplay {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.userDisplay:hover {
+    background-color: var(--bg-hover);
+}
+
+.userAvatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-primary);
+}
+
+.userDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.userName {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.userRole {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.2;
+}
+
+/* 下拉箭头 */
+.dropdownArrow {
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dropdownArrow.open {
+    transform: rotate(180deg);
+}
+
+/* 下拉菜单 */
+.dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    min-width: 220px;
+    z-index: 1000;
+    overflow: hidden;
+    animation: dropdownSlide 0.2s ease-out;
+}
+
+@keyframes dropdownSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 下拉头部 */
+.dropdownHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.dropdownAvatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-primary);
+}
+
+.dropdownUserInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.dropdownUserName {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.dropdownUserEmail {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* 分割线 */
+.dropdownDivider {
+    height: 1px;
+    background-color: var(--border-primary);
+}
+
+/* 下拉菜单项 */
+.dropdownMenu {
+    padding: 8px 0;
+}
+
+.dropdownItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
+}
+
+.dropdownItem:hover {
+    background-color: var(--bg-hover);
+}
+
+.dropdownItem svg {
+    color: var(--text-secondary);
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .userDetails {
+        display: none;
+    }
+
+    .userDisplay {
+        padding: 8px;
+    }
+
+    .dropdown {
+        min-width: 240px;
+    }
+
+    .dropdownHeader {
+        padding: 12px;
+    }
+
+    .dropdownAvatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    .dropdownUserName {
+        font-size: 14px;
+    }
+
+    .dropdownUserEmail {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dropdown {
+        min-width: 200px;
+        right: -8px;
+    }
+
+    .dropdownHeader {
+        padding: 10px;
+    }
+
+    .dropdownItem {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+}

@@ -48,6 +48,16 @@
     color: var(--primary);
 }
 
+.companyLink {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.companyLink:hover {
+    color: var(--primary);
+}
+
 .link::after {
     content: '';
     position: absolute;

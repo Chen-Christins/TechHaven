@@ -274,7 +274,7 @@ const Navbar: React.FC = () => {
 							</div>
 							<div className={styles.dropdownDivider}></div>
 							<div className={styles.dropdownMenu}>
-								<Link to="/profile/1" className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}>
+								<Link to="/personal" className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}>
 									<FaUserCircle />
 									个人中心
 								</Link>

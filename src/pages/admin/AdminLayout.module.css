@@ -417,7 +417,7 @@
 .adminTopBarActions {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
 }
 
 /* 用户信息区域 */
