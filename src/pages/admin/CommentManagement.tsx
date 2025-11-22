@@ -1036,7 +1036,7 @@ const CommentManagement: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className={styles.commentInfo}>
-                                        <span className={styles.statusBadge} className={`${styles.statusBadge} ${styles[comment.status]}`}>
+                                        <span className={`${styles.statusBadge} ${styles[comment.status]}`}>
                                             {comment.status === 'approved' && '已通过'}
                                             {comment.status === 'pending' && '待审核'}
                                             {comment.status === 'rejected' && '已拒绝'}

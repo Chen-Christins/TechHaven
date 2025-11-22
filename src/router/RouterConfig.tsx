@@ -11,6 +11,7 @@ import UserManagement from '../pages/admin/UserManagement';
 import ArticleManagement from '../pages/admin/ArticleManagement';
 import CategoryManagement from '../pages/admin/CategoryManagement';
 import CommentManagement from '../pages/admin/CommentManagement';
+import MediaManagement from '../pages/admin/MediaManagement';
 import PermissionManagement from '../pages/admin/PermissionManagement';
 import DataManagement from '../pages/admin/DataManagement';
 import Analytics from '../pages/admin/Analytics';
@@ -43,7 +44,7 @@ const RouterConfig: React.FC = () => {
                 <Route path="articles" element={<ArticleManagement />} />
                 <Route path="comments" element={<CommentManagement />} />
                 <Route path="categories" element={<CategoryManagement />} />
-                <Route path="media" element={<div>媒体库页面（待开发）</div>} />
+                <Route path="media" element={<MediaManagement />} />
                 <Route path="database" element={<DataManagement />} />
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="settings" element={<Settings />} />
