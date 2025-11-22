@@ -8,7 +8,7 @@ import Profile from '../pages/profile/ProfilePage';
 import AdminLayout from '../pages/admin/AdminLayout';
 import Dashboard from '../pages/admin/Dashboard';
 import UserManagement from '../pages/admin/UserManagement';
-// import ArticleManagement from '../pages/admin/ArticleManagement';
+import ArticleManagement from '../pages/admin/ArticleManagement';
 import CategoryManagement from '../pages/admin/CategoryManagement';
 import Analytics from '../pages/admin/Analytics';
 import Settings from '../pages/admin/Settings';
@@ -37,8 +37,7 @@ const RouterConfig: React.FC = () => {
             <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="users" element={<UserManagement />} />
-                {/* 其他管理页面可以在这里添加 */}
-                <Route path="articles" element={<div>文章管理界面（待开发）</div>} />
+                <Route path="articles" element={<ArticleManagement />} />
                 <Route path="comments" element={<div>评论管理页面（待开发）</div>} />
                 <Route path="categories" element={<CategoryManagement />} />
                 <Route path="media" element={<div>媒体库页面（待开发）</div>} />
