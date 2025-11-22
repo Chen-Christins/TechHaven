@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { FaFilter, FaPlus, FaEdit, FaTrash, FaEye, FaChevronLeft, FaChevronRight, FaAngleDoubleLeft, FaAngleDoubleRight, FaUsers } from 'react-icons/fa';
 import CustomSelect from '../../components/customSelect/CustomSelect';
 import Input from '../../components/input/Input';
+import Button from '../../components/button/Button';
 import type { SelectOption } from '../../types/index';
 import styles from './UserManagement.module.css';
 
@@ -455,13 +456,16 @@ const UserManagement: React.FC = () => {
                                         >
                                             <FaEye />
                                         </button>
-                                        <button
-                                            className={`${styles.actionButton} ${styles.delete}`}
-                                            title="删除用户"
+                                        <Button
+                                            color="error"
+                                            variant="ghost"
+                                            size="small"
                                             onClick={() => deleteUser(user.id)}
+                                            className={styles.actionButton}
+                                            aria-label="删除用户"
                                         >
                                             <FaTrash />
-                                        </button>
+                                        </Button>
                                     </div>
                                 </td>
                             </tr>

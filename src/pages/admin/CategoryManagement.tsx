@@ -15,6 +15,7 @@ import {
 import styles from './CategoryManagement.module.css';
 import CustomSelect from '../../components/customSelect/CustomSelect';
 import SearchBox from '../../components/searchBox/SearchBox';
+import Button from '../../components/button/Button';
 import { confirm } from '../../components/confirm/Confirm';
 
 interface Category {
@@ -370,6 +371,34 @@ const CategoryManagement: React.FC = () => {
         }
     };
 
+    // 删除单个分类
+    const deleteCategory = async (category: Category) => {
+        await confirm({
+            title: '确认删除分类',
+            content: (
+                <div>
+                    <p>确定要删除分类 "<strong>{category.name}</strong>" 吗？</p>
+                    <p style={{ color: 'var(--danger-color)', fontWeight: 500 }}>
+                        注意：删除分类不会删除相关文章，但文章将失去分类归属。
+                    </p>
+                </div>
+            ),
+            confirmText: '确认删除',
+            cancelText: '取消',
+            onConfirm: async () => {
+                setIsLoading(true);
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    setCategories(prev => prev.filter(cat => cat.id !== category.id));
+                } catch (error) {
+                    console.error('删除分类失败:', error);
+                } finally {
+                    setIsLoading(false);
+                }
+            }
+        });
+    };
+
     // 排序和过滤分类
     const filteredAndSortedCategories = categories
         .filter(category =>
@@ -465,56 +494,61 @@ const CategoryManagement: React.FC = () => {
 
             {/* 工具栏 */}
             <div className={styles.toolbar}>
-                <div className={styles.searchWrapper}>
-                    <SearchBox
-                        placeholder="搜索分类名称或描述..."
-                        value={searchTerm}
-                        onChange={(value) => setSearchTerm(value)}
-                        onSearch={(value) => setSearchTerm(value)}
-                        size="medium"
-                        variant="default"
-                    />
-                </div>
-
-                <div className={styles.filterGroup}>
-                    <span className={styles.filterLabel}>排序：</span>
-                    <CustomSelect
-                        name="排序方式"
-                        value={sortOptions.find(option => option.id === sortBy) || null}
-                        onChange={(selectedOption) => setSortBy(selectedOption?.id as any)}
-                        options={sortOptions}
-                        hideBadge={true}
-                        placeholder="选择排序方式"
-                        className={styles.sortSelect}
-                    />
-                    <button
-                        className={styles.sortButton}
-                        onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                    >
-                        {sortOrder === 'asc' ? <FaArrowUp /> : <FaArrowDown />}
-                    </button>
-                </div>
-
-                <div className={styles.statsInfo}>
-                    <div className={styles.stat}>
-                        <span className={styles.statLabel}>总计</span>
-                        <span className={styles.statValue}>{filteredAndSortedCategories.length}</span>
+                <div className={styles.toolbarLeft}>
+                    <div className={styles.searchWrapper}>
+                        <SearchBox
+                            placeholder="搜索分类名称或描述..."
+                            value={searchTerm}
+                            onChange={(value) => setSearchTerm(value)}
+                            onSearch={(value) => setSearchTerm(value)}
+                            size="medium"
+                            variant="default"
+                        />
                     </div>
-                    <div className={styles.stat}>
-                        <span className={styles.statLabel}>已选</span>
-                        <span className={styles.statValue}>{selectedCategories.length}</span>
+
+                    <div className={styles.filterGroup}>
+                        <span className={styles.filterLabel}>排序：</span>
+                        <CustomSelect
+                            name="排序方式"
+                            value={sortOptions.find(option => option.id === sortBy) || null}
+                            onChange={(selectedOption) => setSortBy(selectedOption?.id as any)}
+                            options={sortOptions}
+                            hideBadge={true}
+                            placeholder="选择排序方式"
+                            className={styles.sortSelect}
+                        />
+                        <button
+                            className={styles.sortButton}
+                            onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                        >
+                            {sortOrder === 'asc' ? <FaArrowUp /> : <FaArrowDown />}
+                        </button>
+                    </div>
+
+                    <div className={styles.statsInfo}>
+                        <div className={styles.stat}>
+                            <span className={styles.statLabel}>总计</span>
+                            <span className={styles.statValue}>{filteredAndSortedCategories.length}</span>
+                        </div>
+                        <div className={styles.stat}>
+                            <span className={styles.statLabel}>已选</span>
+                            <span className={styles.statValue}>{selectedCategories.length}</span>
+                        </div>
                     </div>
                 </div>
 
-                {selectedCategories.length > 0 && (
-                    <button
-                        className={styles.deleteButton}
-                        onClick={deleteCategories}
-                    >
-                        <FaTrash />
-                        删除 ({selectedCategories.length})
-                    </button>
-                )}
+                <div className={styles.toolbarRight}>
+                    {selectedCategories.length > 0 && (
+                        <Button
+                            className={styles.deleteButton}
+                            onClick={deleteCategories}
+                            color='error'
+                        >
+                            <FaTrash />
+                            删除 ({selectedCategories.length})
+                        </Button>
+                    )}
+                </div>
             </div>
 
             {/* 分类列表 */}
@@ -570,20 +604,38 @@ const CategoryManagement: React.FC = () => {
                                 </div>
 
                                 <div className={styles.categoryActions}>
-                                    <button
-                                        className={styles.actionButton}
-                                        onClick={() => openModal(category)}
-                                        title="编辑分类"
-                                    >
-                                        <FaEdit />
-                                    </button>
-                                    <button
-                                        className={styles.actionButton}
-                                        onClick={() => toggleCategoryStatus(category)}
-                                        title={category.status === 'active' ? '停用分类' : '启用分类'}
-                                    >
-                                        {category.status === 'active' ? <FaTimes /> : <FaCheckCircle />}
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <Button
+                                            color="primary"
+                                            variant="ghost"
+                                            size="small"
+                                            onClick={() => openModal(category)}
+                                            className={styles.actionButton}
+                                            aria-label="编辑分类"
+                                        >
+                                            <FaEdit />
+                                        </Button>
+                                        <Button
+                                            color="warning"
+                                            variant="ghost"
+                                            size="small"
+                                            onClick={() => toggleCategoryStatus(category)}
+                                            className={styles.actionButton}
+                                            aria-label={category.status === 'active' ? '停用分类' : '启用分类'}
+                                        >
+                                            {category.status === 'active' ? <FaTimes /> : <FaCheckCircle />}
+                                        </Button>
+                                        <Button
+                                            color="error"
+                                            variant="ghost"
+                                            size="small"
+                                            onClick={() => deleteCategory(category)}
+                                            className={styles.actionButton}
+                                            aria-label="删除分类"
+                                        >
+                                            <FaTrash />
+                                        </Button>
+                                    </div>
                                     <input
                                         type="checkbox"
                                         className={styles.checkbox}

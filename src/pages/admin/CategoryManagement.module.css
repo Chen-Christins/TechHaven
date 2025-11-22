@@ -121,13 +121,29 @@
 .toolbar {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 16px;
     margin-bottom: 24px;
     background: var(--bg-secondary);
     padding: 16px 20px;
     border-radius: 12px;
     border: 1px solid var(--border-color);
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+}
+
+.toolbarLeft {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.toolbarRight {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
 }
 
 /* 搜索框包装器 */
@@ -214,23 +230,10 @@
     color: var(--text-primary);
 }
 
+/* 分类管理页面的删除按钮样式 */
 .deleteButton {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    background: var(--danger-color);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.deleteButton:hover {
-    background: #dc2626;
+    /* 覆盖Button组件的默认error颜色hover效果 */
+    --error-hover: #dc2626 !important;
 }
 
 /* 分类列表 */
@@ -382,6 +385,7 @@
     margin-bottom: 16px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
