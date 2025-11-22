@@ -32,6 +32,16 @@ const AdminLayout: React.FC = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const location = useLocation();
 
+    // 清理tooltip
+    useEffect(() => {
+        return () => {
+            const tooltip = document.getElementById('admin-sidebar-tooltip');
+            if (tooltip && tooltip.parentNode) {
+                tooltip.parentNode.removeChild(tooltip);
+            }
+        };
+    }, []);
+
     // 模拟当前用户数据
     const currentUser = {
         name: 'Admin',
@@ -88,6 +98,60 @@ const AdminLayout: React.FC = () => {
     // 关闭移动端菜单
     const closeMobileMenu = () => {
         setMobileMenuOpen(false);
+    };
+
+    // 显示工具提示
+    const showTooltip = (event: React.MouseEvent, text: string) => {
+        if (sidebarCollapsed) {
+            // 创建或显示tooltip
+            let tooltip = document.getElementById('admin-sidebar-tooltip');
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.id = 'admin-sidebar-tooltip';
+                tooltip.style.cssText = `
+                    position: fixed;
+                    padding: 8px 12px;
+                    background-color: var(--text-primary);
+                    color: var(--bg-primary);
+                    font-size: 13px;
+                    font-weight: 500;
+                    border-radius: 8px;
+                    white-space: nowrap;
+                    z-index: 10000;
+                    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+                    pointer-events: none;
+                    opacity: 0;
+                    transition: opacity 0.2s ease;
+                    max-width: 200px;
+                    text-align: center;
+                `;
+                document.body.appendChild(tooltip);
+            }
+
+            tooltip.textContent = text;
+            const rect = event.currentTarget.getBoundingClientRect();
+            tooltip.style.left = `${rect.right + 12}px`;
+            tooltip.style.top = `${rect.top + rect.height / 2}px`;
+            tooltip.style.transform = 'translateY(-50%)';
+
+            // 显示tooltip
+            setTimeout(() => {
+                if (tooltip) tooltip.style.opacity = '1';
+            }, 10);
+        }
+    };
+
+    // 隐藏工具提示
+    const hideTooltip = () => {
+        const tooltip = document.getElementById('admin-sidebar-tooltip');
+        if (tooltip) {
+            tooltip.style.opacity = '0';
+            setTimeout(() => {
+                if (tooltip.parentNode) {
+                    tooltip.parentNode.removeChild(tooltip);
+                }
+            }, 200);
+        }
     };
 
     
@@ -155,7 +219,8 @@ const AdminLayout: React.FC = () => {
                                             to={item.path}
                                             className={`${styles.adminNavLink} ${location.pathname === item.path ? styles.active : ''}`}
                                             onClick={closeMobileMenu}
-                                            data-tooltip={item.label}
+                                            onMouseEnter={(e) => showTooltip(e, item.label)}
+                                            onMouseLeave={hideTooltip}
                                         >
                                             <span className={styles.adminNavIcon}>{item.icon}</span>
                                             <span className={styles.adminNavText}>{item.label}</span>

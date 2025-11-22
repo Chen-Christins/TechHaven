@@ -370,6 +370,14 @@ const PersonalCenter: React.FC = () => {
             setStats(calculatedStats);
             setLoading(false);
         }, 800);
+
+        // 清理tooltip
+        return () => {
+            const tooltip = document.getElementById('sidebar-tooltip');
+            if (tooltip && tooltip.parentNode) {
+                tooltip.parentNode.removeChild(tooltip);
+            }
+        };
     }, []);
 
     // 切换侧边栏
@@ -500,6 +508,58 @@ const PersonalCenter: React.FC = () => {
         }
     };
 
+    // 显示工具提示
+    const showTooltip = (event: React.MouseEvent, text: string) => {
+        if (sidebarCollapsed) {
+            // 创建或显示tooltip
+            let tooltip = document.getElementById('sidebar-tooltip');
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.id = 'sidebar-tooltip';
+                tooltip.style.cssText = `
+                    position: fixed;
+                    padding: 6px 12px;
+                    background-color: var(--card-bg);
+                    border: 1px solid var(--border-primary);
+                    border-radius: 6px;
+                    color: var(--text-primary);
+                    font-size: 12px;
+                    white-space: nowrap;
+                    z-index: 10000;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    pointer-events: none;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                `;
+                document.body.appendChild(tooltip);
+            }
+
+            tooltip.textContent = text;
+            const rect = event.currentTarget.getBoundingClientRect();
+            tooltip.style.left = `${rect.right + 8}px`;
+            tooltip.style.top = `${rect.top + rect.height / 2}px`;
+            tooltip.style.transform = 'translateY(-50%)';
+
+            // 显示tooltip
+            setTimeout(() => {
+                if (tooltip) tooltip.style.opacity = '1';
+            }, 10);
+        }
+    };
+
+    // 隐藏工具提示
+    const hideTooltip = () => {
+        const tooltip = document.getElementById('sidebar-tooltip');
+        if (tooltip) {
+            tooltip.style.opacity = '0';
+            setTimeout(() => {
+                if (tooltip.parentNode) {
+                    tooltip.parentNode.removeChild(tooltip);
+                }
+            }, 300);
+        }
+    };
+
     // 编辑标签
     const handleEditTag = (tag: PersonalTag) => {
         setEditingTag(tag);
@@ -553,7 +613,7 @@ const PersonalCenter: React.FC = () => {
 
                     {/* 导航菜单 */}
                     <nav className={styles.adminNavMenu}>
-                        {navItems.map((item) => (
+                        {navItems.map((item, index) => (
                             <div key={item.id} className={styles.adminNavItem}>
                                 <button
                                     className={`${styles.adminNavLink} ${activeTab === item.id ? styles.active : ''}`}
@@ -561,7 +621,8 @@ const PersonalCenter: React.FC = () => {
                                         setActiveTab(item.id as any);
                                         closeMobileMenu();
                                     }}
-                                    data-tooltip={item.label}
+                                    onMouseEnter={(e) => showTooltip(e, item.label)}
+                                    onMouseLeave={hideTooltip}
                                 >
                                     <span className={styles.adminNavIcon}>{item.icon}</span>
                                     <span className={styles.adminNavText}>{item.label}</span>

@@ -28,6 +28,7 @@
 
 .adminSidebar.collapsed {
     width: 80px;
+    overflow: visible;
 }
 
 .adminSidebarHeader {
@@ -301,49 +302,6 @@
     height: 22px;
 }
 
-/* 工具提示样式 */
-.adminNavLink::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    left: 100%;
-    top: 50%;
-    transform: translateY(-50%);
-    margin-left: 12px;
-    padding: 8px 12px;
-    background-color: var(--text-primary);
-    color: var(--bg-primary);
-    font-size: 13px;
-    font-weight: 500;
-    border-radius: 8px;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.2s ease;
-    z-index: 1000;
-    pointer-events: none;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    max-width: 200px;
-    text-align: center;
-}
-
-.adminSidebar.collapsed .adminNavLink::after {
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-50%) translateX(-8px);
-}
-
-.adminSidebar.collapsed .adminNavLink:hover::after {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(-50%) translateX(8px);
-}
-
-/* 暗色主题下的工具提示 */
-[data-theme="dark"] .adminNavLink::after {
-    background-color: var(--card-bg);
-    color: var(--text-primary);
-    border: 1px solid var(--border-primary);
-}
 
 /* 侧边栏底部装饰 */
 .adminSidebar::after {
