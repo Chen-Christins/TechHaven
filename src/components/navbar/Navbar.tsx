@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, use } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FaHome, FaPen, FaBars, FaSignOutAlt, FaCog, FaUserCircle, FaStar, FaExternalLinkAlt, FaSignInAlt } from 'react-icons/fa';
 import styles from './Navbar.module.css';

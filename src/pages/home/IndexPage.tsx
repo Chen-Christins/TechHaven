@@ -1,5 +1,4 @@
 import type React from "react";
-import { useEffect } from 'react';
 import styles from './IndexPage.module.css';
 import ArticleList from "../../components/articleList/ArticleList";
 import StatsPanel from "../../components/StatsPanel/StatsPanel";
@@ -13,7 +12,6 @@ import SearchPanel from "../../components/searchArticle/SearchArticle";
 import BackToTop from "../../components/backToTop/BackToTop";
 // import { CookieHelper } from "../../utils/cookieHelper";
 import { useAuth } from "../../contexts/AuthContext";
-import { AuthService } from "../../services/authService";
 
 const IndexPage: React.FC = () => {
 	useAuth();

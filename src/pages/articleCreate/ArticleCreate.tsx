@@ -7,7 +7,7 @@ import remarkGfm from 'remark-gfm';
 import mermaid from 'mermaid';
 import 'katex/dist/katex.min.css';
 import type { ArticleCreateProps, ArticleFormData, Category, SelectOption, Tag } from '../../types/index';
-import { FaEdit, FaEye, FaFileImport, FaInfoCircle, FaSave, FaFly, FaDivide } from 'react-icons/fa';
+import { FaEdit, FaEye, FaFileImport, FaInfoCircle, FaSave, FaFly } from 'react-icons/fa';
 import styles from './ArticleCreate.module.css';
 import Footer from '../../components/footer/Footer';
 import Navbar from '../../components/navbar/Navbar';
@@ -144,32 +144,13 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
 
     const [viewMode, setViewMode] = useState<'editor' | 'preview' | 'both'>('both');
     const [showHelpModal, setShowHelpModal] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-    const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-    const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-    const [isTagsOpen, setIsTagsOpen] = useState(false);
-    const [categories, setCategories] = useState(initialCategories);
+        const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+        const [categories, setCategories] = useState(initialCategories);
     const [tags, setTags] = useState(initialTags);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const categoryRef = useRef<HTMLDivElement>(null);
-    const tagsRef = useRef<HTMLDivElement>(null);
 
-    // 点击外部关闭下拉框
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
-                setIsCategoryOpen(false);
-            }
-            if (tagsRef.current && !tagsRef.current.contains(event.target as Node)) {
-                setIsTagsOpen(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
+    
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData(prev => ({ ...prev, title: e.target.value }));
     };
@@ -198,21 +179,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
         }
     };
 
-    const handleCategorySelect = (category: Category) => {
-        setSelectedCategory(category);
-        setFormData(prev => ({ ...prev, category }));
-        setIsCategoryOpen(false);
-    };
-
-    const handleTagSelect = (tag: Tag) => {
-        if (!selectedTags.find(t => t.id === tag.id)) {
-            const newTags = [...selectedTags, tag];
-            setSelectedTags(newTags);
-            setFormData(prev => ({ ...prev, tags: newTags }));
-        }
-        setIsTagsOpen(false);
-    };
-
+    
     const handleRemoveTag = (tagId: string | number) => {
         const newTags = selectedTags.filter(tag => tag.id !== tagId);
         setSelectedTags(newTags);
@@ -221,19 +188,23 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
 
     const handleAddCategory = (newCategory: SelectOption) => {
         setCategories(prev => [...prev, newCategory]);
-        // 自动选择新添加的分类
-        setSelectedCategory(newCategory);
-        setFormData(prev => ({ ...prev, category: newCategory }));
+        // 转换为 Category 类型，确保有必需的 color 属性
+        const category: Category = {
+            id: newCategory.id,
+            name: newCategory.name,
+            color: newCategory.color || '#3B82F6' // 提供默认颜色
+        };
+        setFormData(prev => ({ ...prev, category }));
     };
 
     const handleAddTag = (newTag: SelectOption) => {
-        setTags(prev => [...prev, newTag]);
-        // 自动选择新添加的标签
+        // 转换为 Tag 类型，确保有必需的 color 属性
         const tagToAdd: Tag = {
             id: newTag.id,
             name: newTag.name,
             color: newTag.color || '#61dafb'
         };
+        setTags(prev => [...prev, tagToAdd]);
         if (!selectedTags.find(t => t.id === tagToAdd.id)) {
             const newTags = [...selectedTags, tagToAdd];
             setSelectedTags(newTags);
@@ -356,7 +327,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                                 onAdd={handleAddCategory}
                             />
                         </div>
-                        <div ref={categoryRef} style={{ position: 'relative' }}>
+                        <div style={{ position: 'relative' }}>
                             <CustomSelect
                                 name={'分类'}
                                 options={categories}
@@ -374,7 +345,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                                 onAdd={handleAddTag}
                             />
                         </div>
-                        <div ref={tagsRef} style={{ position: 'relative' }}>
+                        <div style={{ position: 'relative' }}>
                             <CustomSelect
                                 name={'标签'}
                                 options={tags}
