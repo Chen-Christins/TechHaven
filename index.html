@@ -12,32 +12,11 @@
             const savedTheme = localStorage.getItem('theme');
             const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             const theme = savedTheme || (systemDark ? 'dark' : 'light');
-
-            // 立即设置主题到HTML元素
             document.documentElement.setAttribute('data-theme', theme);
             if (theme === 'dark') {
                 document.documentElement.classList.add('dark');
             } else {
                 document.documentElement.classList.remove('dark');
-            }
-
-            // 立即设置背景色，防止FOUC
-            const bgColor = theme === 'dark' ? '#0f1419' : '#ffffff';
-            const textColor = theme === 'dark' ? '#f7fafc' : '#1e293b';
-
-            document.documentElement.style.backgroundColor = bgColor;
-            document.documentElement.style.color = textColor;
-
-            // 安全地设置body样式（body可能还未加载）
-            if (document.body) {
-                document.body.style.backgroundColor = bgColor;
-                document.body.style.color = textColor;
-            } else {
-                // 如果body还未加载，等待DOM加载完成
-                document.addEventListener('DOMContentLoaded', function() {
-                    document.body.style.backgroundColor = bgColor;
-                    document.body.style.color = textColor;
-                });
             }
         })();
     </script>

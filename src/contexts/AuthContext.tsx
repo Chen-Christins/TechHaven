@@ -55,6 +55,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
                         if (userResponse.data && userResponse.code === '200') {
                             const userData = userResponse.data;
+                            if (userData.role === 'admin') {
+                                userData.role = '管理员';
+                            }
                             setUser(userData);
                         } else {
                             // console.warn('⚠️ 无法恢复用户信息，清除无效token:', userResponse);
@@ -114,6 +117,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
                     if (userResponse.data && userResponse.code === '200') {
                         const updatedUser = userResponse.data;
+                        if (updatedUser.role === 'admin') {
+                            updatedUser.role = '管理员';
+                        }
                         setUser(updatedUser);
                     } else {
                         console.warn('⚠️ 用户信息接口返回异常:', userResponse);

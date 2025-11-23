@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaHome, FaPen, FaBars, FaSignOutAlt, FaCog, FaUserCircle, FaStar, FaExternalLinkAlt, FaSignInAlt } from 'react-icons/fa';
 import styles from './Navbar.module.css';
 import ThemeToggle from '../themeToggle/ThemeToggle';
@@ -7,6 +7,7 @@ import AuthButtons from '../authButtons/AuthButtons';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
+    const navigate = useNavigate();
 	// 获取认证状态
 	const { user, isAuthenticated, logout, token } = useAuth();
 
@@ -289,14 +290,14 @@ const Navbar: React.FC = () => {
 									</div>
 									<div className={styles.dropdownDivider}></div>
 									<div className={styles.dropdownMenu}>
-										<Link to="/personal" className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}>
+										<div className={styles.dropdownItem} onClick={() => {setUserMenuOpen(false); navigate('/profile');}}>
 											<FaUserCircle />
 											个人中心
-										</Link>
-										<Link to="/article/create" className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}>
+										</div>
+										<div className={styles.dropdownItem} onClick={() => {setUserMenuOpen(false); navigate('/article/create');}}>
 											<FaPen />
 											撰写文章
-										</Link>
+										</div>
 										<div className={styles.dropdownDivider}></div>
 										<button className={styles.dropdownItem} onClick={() => {
 											setUserMenuOpen(false);

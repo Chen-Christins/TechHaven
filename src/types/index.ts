@@ -79,7 +79,7 @@ export interface Tag {
 export interface SelectOption {
     id: string | number;
     name: string;
-    color?: string;
+    color: string;
     date?: string;
     count?: number;
 }

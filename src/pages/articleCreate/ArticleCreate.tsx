@@ -1,3 +1,6 @@
+import ArticleService from '../../services/articleService';
+import CategoryService from '../../services/categoryService';
+import LabelService from '../../services/labelService';
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
@@ -14,22 +17,14 @@ import Navbar from '../../components/navbar/Navbar';
 import CustomSelect from '../../components/customSelect/CustomSelect';
 import AddButton from '../../components/addButton/AddButton';
 import BackToTop from '../../components/backToTop/BackToTop';
+import { useAuth } from '../../contexts/AuthContext';
 
 // 模拟数据
 const initialCategories: SelectOption[] = [
-    { id: 1, name: '技术', color: '#4361ee' },
-    { id: 2, name: '生活', color: '#3a0ca3' },
-    { id: 3, name: '旅行', color: '#7209b7' },
-    { id: 4, name: '美食', color: '#f72585' },
-  ];
+]; // 不再使用 mock 数据
 
 const initialTags: Tag[] = [
-    { id: 1, name: 'React', color: '#61dafb' },
-    { id: 2, name: 'TypeScript', color: '#3178c6' },
-    { id: 3, name: 'JavaScript', color: '#f7df1e' },
-    { id: 4, name: 'CSS', color: '#1572b6' },
-    { id: 5, name: 'Node.js', color: '#339933' },
-];
+]; // 不再使用 mock 数据
 
 const markdownHelpData = [
     { element: '标题', syntax: '# H1\n## H2\n### H3', example: '# 一级标题' },
@@ -99,6 +94,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
     onPublish,
     initialData
 }) => {
+    const { user } = useAuth();
     const [formData, setFormData] = useState<ArticleFormData>({
         title: '',
         articleType: 'original',
@@ -144,13 +140,39 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
 
     const [viewMode, setViewMode] = useState<'editor' | 'preview' | 'both'>('both');
     const [showHelpModal, setShowHelpModal] = useState(false);
-        const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-        const [categories, setCategories] = useState(initialCategories);
-    const [tags, setTags] = useState(initialTags);
+    const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+    const [categories, setCategories] = useState<SelectOption[]>([]);
+    const [tags, setTags] = useState<Tag[]>([]);
+    // 页面加载时获取分类和标签列表（async/await风格）
+    useEffect(() => {
+        const fetchData = async () => {
+            if (user?.id) {
+                try {
+                    // 获取所有分类，保证每项都有 color 字段
+                    const categoryData = await CategoryService.queryCategory({ ids: '', user_id: user.id });
+                    setCategories(categoryData.map(cat => ({
+                        id: cat.id,
+                        name: cat.name,
+                        color: cat.color || '#3B82F6'
+                    })));
+                } catch (err) {
+                    console.error('获取分类失败:', err);
+                }
+                try {
+                    // 获取所有标签，使用当前用户id
+                    const tagData = await LabelService.queryLabel({ ids: '', user_id: user.id });
+                    setTags(tagData.map(tag => ({ id: tag.id, name: tag.name, color: tag.color || '#61dafb' })));
+                } catch (err) {
+                    console.error('获取标签失败:', err);
+                }
+            }
+        };
+        fetchData();
+    }, [user]);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    
+
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData(prev => ({ ...prev, title: e.target.value }));
     };
@@ -179,49 +201,106 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
         }
     };
 
-    
+
     const handleRemoveTag = (tagId: string | number) => {
         const newTags = selectedTags.filter(tag => tag.id !== tagId);
         setSelectedTags(newTags);
         setFormData(prev => ({ ...prev, tags: newTags }));
     };
 
-    const handleAddCategory = (newCategory: SelectOption) => {
-        setCategories(prev => [...prev, newCategory]);
-        // 转换为 Category 类型，确保有必需的 color 属性
-        const category: Category = {
-            id: newCategory.id,
-            name: newCategory.name,
-            color: newCategory.color || '#3B82F6' // 提供默认颜色
-        };
-        setFormData(prev => ({ ...prev, category }));
-    };
-
-    const handleAddTag = (newTag: SelectOption) => {
-        // 转换为 Tag 类型，确保有必需的 color 属性
-        const tagToAdd: Tag = {
-            id: newTag.id,
-            name: newTag.name,
-            color: newTag.color || '#61dafb'
-        };
-        setTags(prev => [...prev, tagToAdd]);
-        if (!selectedTags.find(t => t.id === tagToAdd.id)) {
-            const newTags = [...selectedTags, tagToAdd];
-            setSelectedTags(newTags);
-            setFormData(prev => ({ ...prev, tags: newTags }));
+    const handleAddCategory = async (newCategory: SelectOption) => {
+        try {
+            // 调用后端API创建分类
+            const created = await CategoryService.createCategory({
+                name: newCategory.name,
+                color: newCategory.color || '#3B82F6'
+            });
+            // 更新分类列表
+            const categoryToAdd = {
+                id: created.id,
+                name: created.name,
+                color: created.color || '#3B82F6',
+            };
+            setCategories(prev => [...prev, categoryToAdd]);
+            setFormData(prev => ({ ...prev, category: categoryToAdd }));
+        } catch (err) {
+            console.error('分类创建失败:', err);
         }
     };
 
-    const handleSaveDraft = () => {
-        onSaveDraft?.(formData);
-        // 这里可以添加保存草稿的API调用
-        console.log('保存草稿:', formData);
+    const handleAddTag = async (newTag: SelectOption) => {
+        // 创建标签到后端
+        try {
+            const created = await LabelService.createLabel({
+                name: newTag.name,
+                color: newTag.color || '#61dafb'
+            });
+            // 更新标签列表
+            const tagToAdd: Tag = {
+                id: created.id,
+                name: created.name,
+                color: created.color
+            };
+            setTags(prev => [...prev, tagToAdd]);
+            if (!selectedTags.find(t => t.id === tagToAdd.id)) {
+                const newTags = [...selectedTags, tagToAdd];
+                setSelectedTags(newTags);
+                setFormData(prev => ({ ...prev, tags: newTags }));
+            }
+        } catch (err) {
+            console.error('标签创建失败:', err);
+        }
     };
 
-    const handlePublish = () => {
+    // 保存草稿：只创建文章
+    const handleSaveDraft = async () => {
+        onSaveDraft?.(formData);
+        try {
+            const labelIds = selectedTags.length > 0 ? selectedTags.map(t => t.id).join(',') : '';
+            const categoryId = formData.category?.id ? String(formData.category.id) : '';
+            const res = await ArticleService.createArticle({
+                title: formData.title,
+                content: formData.content,
+                type: formData.articleType === 'original' ? '1' : '2',
+                label: labelIds,
+                category: categoryId
+            });
+            console.log('保存草稿成功:', res);
+            // 可根据 res.id 做后续处理
+        } catch (err) {
+            console.error('保存草稿失败:', err);
+        }
+    };
+
+    // 发布文章：先创建再发布
+    const handlePublish = async () => {
         onPublish?.(formData);
-        // 这里可以添加发布文章的API调用
-        console.log('发布文章:', formData);
+        try {
+            // 选中的标签id
+            const labelIds = selectedTags.length > 0 ? selectedTags.map(t => t.id).join(',') : '';
+            // 选中的分类id
+            const categoryId = formData.category?.id ? String(formData.category.id) : '';
+            const createRes = await ArticleService.createArticle({
+                title: formData.title,
+                content: formData.content,
+                type: formData.articleType === 'original' ? '1' : '2',
+                label: labelIds,
+                category: categoryId
+            });
+            if (createRes.id) {
+                // 当前时间戳（秒），uint64
+                const timestamp = Math.floor(Date.now() / 1000);
+                const publishRes = await ArticleService.publishArticle({
+                    id: createRes.id,
+                    publish_time: timestamp
+                });
+                console.log('发布文章成功:', publishRes);
+            } else {
+                console.error('创建文章失败，无法发布');
+            }
+        } catch (err) {
+            console.error('发布文章失败:', err);
+        }
     };
 
     // 创建标题组件工厂函数
@@ -253,7 +332,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
     const ParagraphComponent: React.FC<React.HTMLAttributes<HTMLParagraphElement> & { node?: any }> =
         ({ children, ...props }) => {
             return <p {...props}>{children}</p>;
-    };
+        };
 
     return (
         <>
@@ -331,6 +410,10 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                             <CustomSelect
                                 name={'分类'}
                                 options={categories}
+                                value={formData.category}
+                                onChange={(selected, _idx) => {
+                                    setFormData(prev => ({ ...prev, category: selected }));
+                                }}
                             />
                         </div>
                     </div>
@@ -348,7 +431,18 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                         <div style={{ position: 'relative' }}>
                             <CustomSelect
                                 name={'标签'}
-                                options={tags}
+                                options={tags.filter(tag => !selectedTags.find(t => t.id === tag.id))}
+                                value={null}
+                                onChange={(selected, _idx) => {
+                                    if (selected) {
+                                        // 多选逻辑，添加到 selectedTags
+                                        if (!selectedTags.find(t => t.id === selected.id)) {
+                                            const newTags = [...selectedTags, selected];
+                                            setSelectedTags(newTags);
+                                            setFormData(prev => ({ ...prev, tags: newTags }));
+                                        }
+                                    }
+                                }}
                             />
                         </div>
                         <div className={styles.tagsContainer}>
@@ -511,7 +605,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                             className={`${styles.btn} ${styles.btnPrimary}`}
                             onClick={handlePublish}
                         >
-                            <FaFly /> 发布文章  
+                            <FaFly /> 发布文章
                         </button>
                     </div>
                 </div>
@@ -628,7 +722,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                         </div>
                     </div>
                 )}
-  
+
             </div>
             <Footer companyName="TechBlog" startYear={2025} />
             <BackToTop />
