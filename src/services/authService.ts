@@ -33,15 +33,7 @@ export class AuthService {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                withCredentials: import.meta.env.VITE_REQUIRE_CREDENTIALS === 'true',
             });
-
-            // 登录成功，保存token和用户信息
-            if (response.data && response.data.data) {
-                const { token, user } = response.data.data;
-                localStorage.setItem('token', token);
-                localStorage.setItem('user', JSON.stringify(user));
-            }
 
             return response;
         } catch (error) {
@@ -76,7 +68,6 @@ export class AuthService {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            withCredentials: import.meta.env.VITE_REQUIRE_CREDENTIALS === 'true',
         });
     }
 
@@ -141,7 +132,6 @@ export class AuthService {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            withCredentials: import.meta.env.VITE_REQUIRE_CREDENTIALS === 'true',
         });
     }
 
@@ -149,43 +139,18 @@ export class AuthService {
      * 用户登出
      */
     static logout() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        // 可以调用后端的登出接口
-        return http.post('/user/logout', {}, {
-            withCredentials: import.meta.env.VITE_REQUIRE_CREDENTIALS === 'true',
-        });
+        // 调用后端的登出接口
+        return http.post('/user/logout', {}, {});
     }
 
     /**
-     * 检查登录状态
-     * @returns 是否已登录
+     * 获取用户信息
+     * @param userId 可选，用户ID。不传则获取当前用户信息
+     * @returns 用户信息
      */
-    static isLoggedIn(): boolean {
-        const token = localStorage.getItem('token');
-        const user = localStorage.getItem('user');
-        return !!(token && user);
-    }
-
-    /**
-     * 获取当前用户信息
-     * @returns 用户信息或null
-     */
-    static getCurrentUser() {
-        try {
-            const userStr = localStorage.getItem('user');
-            return userStr ? JSON.parse(userStr) : null;
-        } catch {
-            return null;
-        }
-    }
-
-    /**
-     * 获取当前token
-     * @returns token或null
-     */
-    static getToken(): string | null {
-        return localStorage.getItem('token');
+    static async getUserInfo(userId?: number) {
+        const url = userId ? `/user/info?id=${userId}` : '/user/info';
+        return http.get(url);
     }
 
     /**
@@ -211,7 +176,7 @@ export class AuthService {
         }>('/user/refresh');
 
         if (response.data.data?.token) {
-            localStorage.setItem('token', response.data.data.token);
+            // 返回新token，由调用方管理状态
             return response.data.data.token;
         }
 

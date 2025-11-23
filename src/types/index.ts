@@ -24,6 +24,9 @@ export interface UserProfile {
     name: string;
     avatar: string;
     bio: string;
+    account: string;
+    email: string;
+    role: 'admin' | 'editor' | 'user';
     location: string;
     website?: string;
     joinDate: string;

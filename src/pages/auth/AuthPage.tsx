@@ -9,6 +9,7 @@ import {
     Check,
     AlertCircle
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import styles from './AuthPage.module.css'; // 导入 CSS Modules
 import Footer from "../../components/footer/Footer";
 import { useAuth } from '../../contexts/AuthContext';
@@ -95,13 +96,7 @@ const validateForm = (type: FormType, formData: any) => {
 const AuthPage: React.FC = () => {
     // 获取认证状态
     const { login } = useAuth();
-
-    // 页面加载时检查cookies状态
-    useEffect(() => {
-        // console.log('📄 AuthPage加载，检查当前Cookies状态...');
-        // CookieHelper.debugCookies();
-        // console.log('🔍 是否有认证相关Cookies:', CookieHelper.hasAuthCookies());
-    }, []);
+    const navigate = useNavigate();
 
     // 状态管理
     const [formType, setFormType] = useState<FormType>('login');
@@ -216,11 +211,11 @@ const AuthPage: React.FC = () => {
                 console.log('🔍 是否有认证相关Cookies:', CookieHelper.hasAuthCookies());
 
                 setMessage({ text: '登录成功，正在跳转...', type: 'success' });
-                // 登录成功后，AuthContext会自动处理状态更新
-                // 跳转前再次检查cookies
-                console.log('🔄 页面跳转前检查Cookies...');
-                CookieHelper.debugCookies();
-                window.location.href = '/index';
+
+                // 延迟跳转，让用户看到成功消息
+                setTimeout(() => {
+                    navigate('/index');
+                }, 500);
             } else if (formType === 'register') {
                 // 注册逻辑
                 await AuthService.register({

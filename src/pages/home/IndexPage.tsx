@@ -11,15 +11,19 @@ import Footer from "../../components/footer/Footer";
 import TagPanel from "../../components/tagPanel/TagPanel";
 import SearchPanel from "../../components/searchArticle/SearchArticle";
 import BackToTop from "../../components/backToTop/BackToTop";
-import { CookieHelper } from "../../utils/cookieHelper";
+// import { CookieHelper } from "../../utils/cookieHelper";
+import { useAuth } from "../../contexts/AuthContext";
+import { AuthService } from "../../services/authService";
 
 const IndexPage: React.FC = () => {
+	useAuth();
+
 	// 页面加载时检查cookies状态（用于调试登录后cookies是否保持）
-	useEffect(() => {
-		console.log('🏠 主页面加载，检查Cookies状态...');
-		CookieHelper.debugCookies();
-		console.log('🔍 是否有认证相关Cookies:', CookieHelper.hasAuthCookies());
-	}, []);
+	// useEffect(() => {
+	// 	console.log('🏠 主页面加载，检查Cookies状态...');
+	// 	CookieHelper.debugCookies();
+	// 	console.log('🔍 是否有认证相关Cookies:', CookieHelper.hasAuthCookies());
+	// }, []);
 
 	const mockTags = [
 		{ id: '1', color: '#3b82f6', name: 'React' },

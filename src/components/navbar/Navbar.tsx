@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, use } from 'react';
 import { Link } from 'react-router-dom';
 import { FaHome, FaPen, FaBars, FaSignOutAlt, FaCog, FaUserCircle, FaStar, FaExternalLinkAlt, FaSignInAlt } from 'react-icons/fa';
 import styles from './Navbar.module.css';
@@ -8,7 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
 	// 获取认证状态
-	const { user, isAuthenticated, logout } = useAuth();
+	const { user, isAuthenticated, logout, token } = useAuth();
 
 	// 状态管理
 	const [isScrolled, setIsScrolled] = useState(false); // 滚动状态（控制导航栏样式变化）
@@ -20,9 +20,9 @@ const Navbar: React.FC = () => {
 
 	// 用户数据（从认证上下文获取）
 	const currentUser = user ? {
-		name: user.name,
+		name: user.name || user.account || '用户',
 		avatar: user.avatar || "https://picsum.photos/id/64/200", // 默认头像
-		role: user.role,
+		role: user.role || '用户',
 		email: user.email
 	} : null;
 
@@ -56,14 +56,14 @@ const Navbar: React.FC = () => {
 		},
 	];
 
-	// 监听滚动事件，改变导航栏样式
+	// 监听滚动事件和用户状态变化
 	useEffect(() => {
 		const handleScroll = () => {
 			setIsScrolled(window.scrollY > 10);
 		};
 		window.addEventListener('scroll', handleScroll);
 		return () => window.removeEventListener('scroll', handleScroll);
-	}, []);
+	}, [user, isAuthenticated, token]);
 
 	// 点击外部关闭用户菜单
 	useEffect(() => {

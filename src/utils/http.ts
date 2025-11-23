@@ -11,6 +11,78 @@ export interface HttpResponse<T = any> {
 }
 
 /**
+ * Token 管理器 - 使用内存存储，避免 localStorage 安全风险
+ */
+class TokenManager {
+    private token: string | null = null;
+    private listeners: ((token: string | null) => void)[] = [];
+
+    /**
+     * 设置 token
+     */
+    setToken(token: string | null) {
+        this.token = token;
+        this.notifyListeners();
+    }
+
+    /**
+     * 获取 token
+     */
+    getToken(): string | null {
+        return this.token;
+    }
+
+    /**
+     * 清除 token
+     */
+    clearToken() {
+        this.token = null;
+        this.notifyListeners();
+    }
+
+    /**
+     * 添加 token 变化监听器
+     */
+    addListener(listener: (token: string | null) => void) {
+        this.listeners.push(listener);
+    }
+
+    /**
+     * 移除 token 变化监听器
+     */
+    removeListener(listener: (token: string | null) => void) {
+        const index = this.listeners.indexOf(listener);
+        if (index > -1) {
+            this.listeners.splice(index, 1);
+        }
+    }
+
+    /**
+     * 通知所有监听器
+     */
+    private notifyListeners() {
+        this.listeners.forEach(listener => listener(this.token));
+    }
+}
+
+/**
+ * 从Cookie中提取S_TOKEN
+ */
+export const getTokenFromCookie = (): string | null => {
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'S_TOKEN') {
+            return decodeURIComponent(value);
+        }
+    }
+    return null;
+};
+
+// 创建全局 token 管理器实例
+export const tokenManager = new TokenManager();
+
+/**
  * 登录请求参数
  */
 export interface LoginParams {
@@ -103,7 +175,7 @@ class HttpClient {
         const useProxy = import.meta.env.VITE_USE_PROXY === 'true';
         const requireCredentials = import.meta.env.VITE_REQUIRE_CREDENTIALS === 'true';
 
-        this.baseURL = config.baseURL || (useProxy ? '/api' : `${import.meta.env.VITE_API_BASE_URL}/api`);
+        this.baseURL = config.baseURL || (useProxy ? '/api' : `${import.meta.env.VITE_API_BASE_URL}`);
         this.timeout = config.timeout || 10000;
 
         this.instance = axios.create({
@@ -115,6 +187,14 @@ class HttpClient {
             },
         });
 
+        // 调试：输出HTTP配置信息
+        // console.log('🔗 HTTP实例配置:', {
+        //     baseURL: this.baseURL,
+        //     withCredentials: requireCredentials,
+        //     useProxy,
+        //     environment: import.meta.env.MODE
+        // });
+
         this.setupInterceptors();
     }
 
@@ -125,17 +205,27 @@ class HttpClient {
         // 请求拦截器
         this.instance.interceptors.request.use(
             (config) => {
-                // 在发送请求之前做些什么
-                const token = localStorage.getItem('token');
-                if (token && config.headers) {
-                    config.headers.Authorization = `Bearer ${token}`;
+                // 调试：输出请求信息
+                const fullURL = `${config.baseURL}${config.url}`;
+                // console.log('🚀 发送请求:', {
+                //     url: config.url,
+                //     method: config.method,
+                //     baseURL: config.baseURL,
+                //     fullURL: fullURL,
+                //     withCredentials: config.withCredentials
+                // });
+
+                // 额外调试：检查路径是否正确
+                if (import.meta.env.VITE_USE_PROXY === 'true' && fullURL.includes('/api/')) {
+                    console.log('✅ 代理路径正确:', fullURL);
+                } else if (import.meta.env.VITE_USE_PROXY === 'true') {
+                    console.warn('⚠️ 代理路径可能有问题:', fullURL);
                 }
 
-                // 添加请求时间戳
-                if (config.params) {
-                    config.params._t = Date.now();
-                } else {
-                    config.params = { _t: Date.now() };
+                // 在发送请求之前添加 token
+                const token = tokenManager.getToken();
+                if (token && config.headers) {
+                    config.headers.Authorization = `Bearer ${token}`;
                 }
 
                 return config;
@@ -149,9 +239,46 @@ class HttpClient {
         // 响应拦截器
         this.instance.interceptors.response.use(
             (response: AxiosResponse<HttpResponse>) => {
+                // 调试：输出响应信息
+                // console.log('📥 收到响应:', {
+                //     status: response.status,
+                //     statusText: response.statusText,
+                //     url: response.config.url,
+                //     baseURL: response.config.baseURL,
+                //     data: response.data,
+                //     headers: response.headers
+                // });
+
+                // 检查登录接口的响应headers中的token（从Cookie中提取S_TOKEN）
+                if (response.config.url?.includes('/login') && response.status === 200) {
+                    const setCookieHeader = response.headers['set-cookie'];
+                    if (setCookieHeader) {
+                        // 从Set-Cookie header中提取S_TOKEN
+                        const cookies = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader];
+                        let sToken = null;
+
+                        for (const cookie of cookies) {
+                            const tokenMatch = cookie.match(/S_TOKEN=([^;]+)/);
+                            if (tokenMatch) {
+                                sToken = tokenMatch[1];
+                                break;
+                            }
+                        }
+
+                        if (sToken) {
+                            // console.log('🔑 从Cookie中获取到S_TOKEN:', sToken);
+                            // 将token添加到响应数据中，方便后续处理
+                            (response.data as any).token = sToken;
+                        } else {
+                            console.log('🍪 未在Cookie中找到S_TOKEN，完整Cookie:', cookies);
+                        }
+                    } else {
+                        console.log('📥 响应中没有Set-Cookie header');
+                    }
+                }
+
                 // 对响应数据做点什么
                 const { data } = response;
-                console.log('🌐 HTTP响应拦截器:', response);
                 // 检查HTTP状态码
                 if (response.status === 200) {
                     // HTTP 200 成功，进一步检查业务状态码
@@ -177,6 +304,17 @@ class HttpClient {
                 return response;
             },
             (error: AxiosError) => {
+                // 调试：输出错误信息
+                console.error('❌ 请求错误:', {
+                    message: error.message,
+                    code: error.code,
+                    status: error.response?.status,
+                    statusText: error.response?.statusText,
+                    url: error.config?.url,
+                    baseURL: error.config?.baseURL,
+                    withCredentials: error.config?.withCredentials
+                });
+
                 // 对响应错误做点什么
                 let message = '网络错误';
                 let code = 500;
@@ -275,7 +413,7 @@ class HttpClient {
      * 处理未授权错误
      */
     private handleUnauthorized(): void {
-        localStorage.removeItem('token');
+        tokenManager.clearToken();
         // 可以在这里添加跳转到登录页的逻辑
         // window.location.href = '/login';
     }
@@ -372,9 +510,8 @@ class HttpClient {
     }
 }
 
-// 创建默认实例
+// 创建默认实例 - 自动使用代理配置
 export const http = new HttpClient({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8088',
     timeout: 10000,
 });
 
