@@ -298,10 +298,10 @@ const PersonalCenter: React.FC = () => {
 
     // 状态筛选选项
     const statusOptions: SelectOption[] = [
-        { id: 'all', name: '全部状态' },
-        { id: 'published', name: '已发布' },
-        { id: 'draft', name: '草稿' },
-        { id: 'private', name: '私密' }
+        { id: 'all', name: '全部状态', color: '#6c757d' },
+        { id: 'published', name: '已发布', color: '#28a745' },
+        { id: 'draft', name: '草稿', color: '#ffc107' },
+        { id: 'private', name: '私密', color: '#dc3545' }
     ];
 
     // 当前选中的状态选项
@@ -334,7 +334,7 @@ const PersonalCenter: React.FC = () => {
 
     // 处理退出登录
     const handleLogout = () => {
-        console.log('用户退出登录');
+        // console.log('用户退出登录');
         // 这里可以添加实际的退出逻辑，比如清除token、跳转登录页等
     };
 

@@ -221,7 +221,7 @@ export class AuthService {
             passwd: newPassword,
             auth_code: authCode
         };
-        console.log('忘记密码重置参数:', params);
+        // console.log('忘记密码重置参数:', params);
 
         // 使用form-urlencoded格式发送请求，与其他认证接口保持一致
         const formData = new URLSearchParams();

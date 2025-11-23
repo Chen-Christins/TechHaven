@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { FaPlus } from 'react-icons/fa';
 import { confirm } from '../confirm/Confirm';
 import type { SelectOption } from '../../types/index';
@@ -89,7 +89,6 @@ const AddButton: React.FC<AddButtonProps> = ({
             );
         }
         // 显示确认框
-        let colorValue = '#4361ee';
         await confirm({
             title: `添加新${name}`,
             content: <ColorContent />,

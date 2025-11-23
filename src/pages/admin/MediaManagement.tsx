@@ -511,20 +511,21 @@ const MediaManagement: React.FC = () => {
 
     // 筛选选项数据
     const typeOptions: SelectOption[] = [
-        { id: '', name: '全部类型' },
-        { id: 'image', name: '图片' },
-        { id: 'video', name: '视频' },
-        { id: 'audio', name: '音频' },
-        { id: 'document', name: '文档' },
-        { id: 'archive', name: '压缩包' },
-        { id: 'other', name: '其他' }
+        { id: '', name: '全部类型', color: '#6c757d' },
+        { id: 'image', name: '图片', color: '#007bff' },
+        { id: 'video', name: '视频', color: '#dc3545' },
+        { id: 'audio', name: '音频', color: '#28a745' },
+        { id: 'document', name: '文档', color: '#17a2b8' },
+        { id: 'archive', name: '压缩包', color: '#6c757d' },
+        { id: 'other', name: '其他', color: '#6c757d' }
     ];
 
     const folderOptions: SelectOption[] = [
-        { id: '', name: '全部文件夹' },
+        { id: '', name: '全部文件夹', color: '#6c757d' },
         ...mockFolders.map(folder => ({
             id: folder.path,
-            name: `${folder.name} (${folder.fileCount}个文件)`
+            name: `${folder.name} (${folder.fileCount}个文件)`,
+            color: '#007bff'
         }))
     ];
 

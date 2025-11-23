@@ -13,7 +13,7 @@ const ExampleConfirm: React.FC = () => {
     
     if (confirmed) {
       // 执行删除操作
-      console.log('执行删除操作');
+      // console.log('执行删除操作');
     }
   };
 
@@ -37,7 +37,7 @@ const ExampleConfirm: React.FC = () => {
     });
     
     if (confirmed) {
-      console.log('提交成功');
+      // console.log('提交成功');
     }
   };
 

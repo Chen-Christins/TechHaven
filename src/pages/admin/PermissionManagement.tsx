@@ -313,15 +313,15 @@ const PermissionManagement: React.FC = () => {
 
     // 筛选选项数据
     const typeOptions: SelectOption[] = [
-        { id: 'all', name: '全部类型' },
-        { id: 'system', name: '系统角色' },
-        { id: 'custom', name: '自定义角色' }
+        { id: 'all', name: '全部类型', color: '#6c757d' },
+        { id: 'system', name: '系统角色', color: '#dc3545' },
+        { id: 'custom', name: '自定义角色', color: '#007bff' }
     ];
 
     const statusOptions: SelectOption[] = [
-        { id: '', name: '全部状态' },
-        { id: 'active', name: '活跃' },
-        { id: 'inactive', name: '非活跃' }
+        { id: '', name: '全部状态', color: '#6c757d' },
+        { id: 'active', name: '活跃', color: '#28a745' },
+        { id: 'inactive', name: '非活跃', color: '#dc3545' }
     ];
 
     // 处理选择变化

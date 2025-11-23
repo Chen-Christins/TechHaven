@@ -18,9 +18,9 @@ const IndexPage: React.FC = () => {
 
 	// 页面加载时检查cookies状态（用于调试登录后cookies是否保持）
 	// useEffect(() => {
-	// 	console.log('🏠 主页面加载，检查Cookies状态...');
+	// 	// console.log('🏠 主页面加载，检查Cookies状态...');
 	// 	CookieHelper.debugCookies();
-	// 	console.log('🔍 是否有认证相关Cookies:', CookieHelper.hasAuthCookies());
+	// 	// console.log('🔍 是否有认证相关Cookies:', CookieHelper.hasAuthCookies());
 	// }, []);
 
 	const mockTags = [

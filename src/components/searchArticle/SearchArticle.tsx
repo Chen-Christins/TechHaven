@@ -3,13 +3,13 @@ import styles from './SearchArticle.module.css';
 import SearchBox from '../searchBox/SearchBox';
 
 const SearchPanel: React.FC = () => {
-    const handleSearch = (value: string) => {
-        console.log('搜索:', value);
+    const handleSearch = (_value: string) => {
+        // console.log('搜索:', value);
         // 模拟搜索逻辑
     };
 
-    const handleChange = (value: string) => {
-        console.log('输入变化:', value);
+    const handleChange = (_value: string) => {
+        // console.log('输入变化:', value);
     };
 
     return (

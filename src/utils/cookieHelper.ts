@@ -76,13 +76,13 @@ export class CookieHelper {
    */
   static debugCookies(): void {
     const cookies = this.getAllCookies();
-    console.log('🍪 当前Cookies状态:');
-    console.log('总数:', Object.keys(cookies).length);
-    Object.entries(cookies).forEach(([name, value]) => {
-      console.log(`  ${name}: ${value}`);
+    // console.log('🍪 当前Cookies状态:');
+    // console.log('总数:', Object.keys(cookies).length);
+    Object.entries(cookies).forEach(([_name, _value]) => {
+      // console.log(`  ${name}: ${value}`);
     });
     if (Object.keys(cookies).length === 0) {
-      console.log('  (无cookies)');
+      // console.log('  (无cookies)');
     }
   }
 
@@ -106,7 +106,7 @@ export class CookieHelper {
     const intervalId = setInterval(() => {
       const currentCookies = JSON.stringify(this.getAllCookies());
       if (previousCookies !== currentCookies) {
-        console.log('🍪 Cookies发生变化:');
+        // console.log('🍪 Cookies发生变化:');
         this.debugCookies();
         previousCookies = currentCookies;
       }

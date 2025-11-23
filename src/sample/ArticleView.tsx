@@ -11,7 +11,7 @@ const ExampleUsage: React.FC = () => {
 这是一篇包含代码和数学公式的示例文章。
 
 ## 行内代码示例
-这是一个行内代码 \`Hello World\`，还有一些其他的代码如 \`console.log()\`、\`document.getElementById()\` 和 \`fetch()\`。
+这是一个行内代码 \`Hello World\`，还有一些其他的代码如 \`// console.log()\`、\`document.getElementById()\` 和 \`fetch()\`。
 
 在代码中，我们经常使用变量名如 \`count\`、\`user\`、\`data\` 等。还有一些方法如 \`map()\`、\`filter()\`、\`reduce()\` 等数组方法。
 
@@ -29,7 +29,7 @@ function calculateArea(radius: number): number {
 
 // 使用示例
 const area = calculateArea(5);
-console.log(\`半径为5的圆面积是: \${area.toFixed(2)}\`);
+// console.log(\`半径为5的圆面积是: \${area.toFixed(2)}\`);
 \`\`\`
 
 ## 数学公式
@@ -105,3 +105,4 @@ graph TD;
 };
 
 export default ExampleUsage;
+

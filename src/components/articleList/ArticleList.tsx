@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     FaChevronLeft,
@@ -28,12 +28,12 @@ const ArticleList: React.FC = () => {
             setLoadingIds(true);
             try {
                 const res = await ArticleService.listArticlesByUserIdPages({
-                    user_id: 1,
+                    // user_id: 1,
                     page_from: currentPage,
                     page_size: itemsPerPage,
                 });
-                console.log('获取文章ID列表成功:', res.total, res.ids);
-                console.log('准备设置 articleIds:', res.ids);
+                // // console.log('获取文章ID列表成功:', res.total, res.ids);
+                // // console.log('准备设置 articleIds:', res.ids);
                 setTotalArticles(res.total);
                 setArticleIds(res.ids);
             } finally {
@@ -46,24 +46,21 @@ const ArticleList: React.FC = () => {
     // 根据 id 列表获取文章详情
     useEffect(() => {
         const fetchDetails = async () => {
-            console.log('fetchDetails 开始执行 - articleIds:', articleIds);
+            // // console.log('fetchDetails 开始执行 - articleIds:', articleIds);
 
             if (!Array.isArray(articleIds) || articleIds.length === 0) {
-                console.log('articleIds 为空，清空文章列表');
+                // // console.log('articleIds 为空，清空文章列表');
                 setArticles([]);
                 return;
             }
 
-            console.log('开始加载文章详情...');
+            // // console.log('开始加载文章详情...');
             setLoadingDetails(true);
 
             try {
                 const detailsList = await Promise.all(
                     articleIds.map(id => ArticleService.getArticleDetails({ id, type: 0 }))
                 );
-                detailsList.forEach((article, _index) => {
-                    article.publish_time = article.publish_time ? formatToChinaTime(Number(article.publish_time)) : '未知日期';
-                });
                 setArticles(detailsList);
             } catch (err) {
                 console.error('fetchDetails 异常:', err);
@@ -124,10 +121,9 @@ const ArticleList: React.FC = () => {
                             <div key={article.id} className={styles.articleItem}>
                                 <h3 className={styles.articleTitle}>{article.title || '无标题'}</h3>
                                 <div className={styles.articleMeta}>
-                                    <span>日期：{article.publish_time || '-'}</span>
-                                    <span>作者：{article.author || '-'}</span>
+                                    <span>日期：{formatToChinaTime(Number(article.publish_time))}</span>
+                                    <span>作者：{article.author}</span>
                                     <span>阅读量：{article.views ?? 0}</span>
-                                    <span>id: {article.id ?? 0}</span>
                                 </div>
                                 <p className={styles.articleSummary}>{article.content.substring(0, 80) || '无摘要'}</p>
                                 <div

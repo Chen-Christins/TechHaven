@@ -290,7 +290,7 @@ const Navbar: React.FC = () => {
 									</div>
 									<div className={styles.dropdownDivider}></div>
 									<div className={styles.dropdownMenu}>
-										<div className={styles.dropdownItem} onClick={() => {setUserMenuOpen(false); navigate('/profile');}}>
+										<div className={styles.dropdownItem} onClick={() => {setUserMenuOpen(false); navigate('/personal');}}>
 											<FaUserCircle />
 											个人中心
 										</div>

@@ -249,37 +249,37 @@ const ArticleManagement: React.FC = () => {
 
     // 筛选选项数据
     const statusOptions: SelectOption[] = [
-        { id: '', name: '全部状态' },
-        { id: 'pending', name: '待审核' },
-        { id: 'approved', name: '已通过' },
-        { id: 'published', name: '已发布' },
-        { id: 'rejected', name: '已拒绝' },
-        { id: 'draft', name: '草稿' },
-        { id: 'private', name: '私密' }
+        { id: '', name: '全部状态', color: '#6c757d' },
+        { id: 'pending', name: '待审核', color: '#ffc107' },
+        { id: 'approved', name: '已通过', color: '#28a745' },
+        { id: 'published', name: '已发布', color: '#007bff' },
+        { id: 'rejected', name: '已拒绝', color: '#dc3545' },
+        { id: 'draft', name: '草稿', color: '#6c757d' },
+        { id: 'private', name: '私密', color: '#343a40' }
     ];
 
     const categoryOptions: SelectOption[] = [
-        { id: '', name: '全部分类' },
-        { id: '前端开发', name: '前端开发' },
-        { id: '后端技术', name: '后端技术' },
-        { id: '开发工具', name: '开发工具' },
-        { id: '设计相关', name: '设计相关' },
-        { id: '其他', name: '其他' }
+        { id: '', name: '全部分类', color: '#6c757d' },
+        { id: '前端开发', name: '前端开发', color: '#007bff' },
+        { id: '后端技术', name: '后端技术', color: '#28a745' },
+        { id: '开发工具', name: '开发工具', color: '#fd7e14' },
+        { id: '设计相关', name: '设计相关', color: '#e83e8c' },
+        { id: '其他', name: '其他', color: '#6c757d' }
     ];
 
     const authorRoleOptions: SelectOption[] = [
-        { id: '', name: '全部角色' },
-        { id: 'admin', name: '管理员' },
-        { id: 'editor', name: '编辑' },
-        { id: 'writer', name: '作者' },
-        { id: 'user', name: '普通用户' }
+        { id: '', name: '全部角色', color: '#6c757d' },
+        { id: 'admin', name: '管理员', color: '#dc3545' },
+        { id: 'editor', name: '编辑', color: '#28a745' },
+        { id: 'writer', name: '作者', color: '#007bff' },
+        { id: 'user', name: '普通用户', color: '#6c757d' }
     ];
 
     const dateRangeOptions: SelectOption[] = [
-        { id: '', name: '全部时间' },
-        { id: '7days', name: '最近7天' },
-        { id: '30days', name: '最近30天' },
-        { id: '90days', name: '最近90天' }
+        { id: '', name: '全部时间', color: '#6c757d' },
+        { id: '7days', name: '最近7天', color: '#17a2b8' },
+        { id: '30days', name: '最近30天', color: '#17a2b8' },
+        { id: '90days', name: '最近90天', color: '#17a2b8' }
     ];
 
     // 处理CustomSelect选择

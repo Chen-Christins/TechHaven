@@ -9,7 +9,7 @@ import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import mermaid from 'mermaid';
 import 'katex/dist/katex.min.css';
-import type { ArticleCreateProps, ArticleFormData, Category, SelectOption, Tag } from '../../types/index';
+import type { ArticleCreateProps, ArticleFormData, SelectOption, Tag } from '../../types/index';
 import { FaEdit, FaEye, FaFileImport, FaInfoCircle, FaSave, FaFly } from 'react-icons/fa';
 import styles from './ArticleCreate.module.css';
 import Footer from '../../components/footer/Footer';
@@ -19,12 +19,7 @@ import AddButton from '../../components/addButton/AddButton';
 import BackToTop from '../../components/backToTop/BackToTop';
 import { useAuth } from '../../contexts/AuthContext';
 
-// 模拟数据
-const initialCategories: SelectOption[] = [
-]; // 不再使用 mock 数据
-
-const initialTags: Tag[] = [
-]; // 不再使用 mock 数据
+// 模拟数据（已移除）
 
 const markdownHelpData = [
     { element: '标题', syntax: '# H1\n## H2\n### H3', example: '# 一级标题' },
@@ -33,7 +28,7 @@ const markdownHelpData = [
     { element: '链接', syntax: '[文本](URL)', example: '[百度](https://www.baidu.com)' },
     { element: '图片', syntax: '![alt文本](图片URL)', example: '![logo](https://example.com/logo.png)' },
     { element: '列表', syntax: '- 项目1\n- 项目2', example: '- 第一项\n- 第二项' },
-    { element: '代码块', syntax: '```语言\n代码\n```', example: '```javascript\nconsole.log("Hello");\n```' },
+    { element: '代码块', syntax: '```语言\n代码\n```', example: '```javascript\n// console.log("Hello");\n```' },
     { element: '引用', syntax: '> 引用内容', example: '> 这是引用内容' },
     { element: '数学公式(行内)', syntax: '$公式$', example: '勾股定理: $a^2 + b^2 = c^2$' },
     { element: '数学公式(块级)', syntax: '$$公式$$', example: '$$\n\\int_a^b f(x)dx = F(b) - F(a)\n$$' },
@@ -258,14 +253,14 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
         try {
             const labelIds = selectedTags.length > 0 ? selectedTags.map(t => t.id).join(',') : '';
             const categoryId = formData.category?.id ? String(formData.category.id) : '';
-            const res = await ArticleService.createArticle({
+            await ArticleService.createArticle({
                 title: formData.title,
                 content: formData.content,
                 type: formData.articleType === 'original' ? '1' : '2',
                 label: labelIds,
                 category: categoryId
             });
-            console.log('保存草稿成功:', res);
+            // console.log('保存草稿成功:', res);
             // 可根据 res.id 做后续处理
         } catch (err) {
             console.error('保存草稿失败:', err);
@@ -290,11 +285,11 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
             if (createRes.id) {
                 // 当前时间戳（秒），uint64
                 const timestamp = Math.floor(Date.now() / 1000);
-                const publishRes = await ArticleService.publishArticle({
+                await ArticleService.publishArticle({
                     id: createRes.id,
                     publish_time: timestamp
                 });
-                console.log('发布文章成功:', publishRes);
+                // console.log('发布文章成功:', publishRes);
             } else {
                 console.error('创建文章失败，无法发布');
             }

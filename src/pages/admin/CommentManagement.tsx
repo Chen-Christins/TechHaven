@@ -699,17 +699,17 @@ const CommentManagement: React.FC = () => {
 
     // 筛选选项数据
     const statusOptions: SelectOption[] = [
-        { id: '', name: '全部状态' },
-        { id: 'approved', name: '已通过' },
-        { id: 'pending', name: '待审核' },
-        { id: 'rejected', name: '已拒绝' },
-        { id: 'spam', name: '垃圾评论' }
+        { id: '', name: '全部状态', color: '#6c757d' },
+        { id: 'approved', name: '已通过', color: '#28a745' },
+        { id: 'pending', name: '待审核', color: '#ffc107' },
+        { id: 'rejected', name: '已拒绝', color: '#dc3545' },
+        { id: 'spam', name: '垃圾评论', color: '#dc3545' }
     ];
 
     const reportedOptions: SelectOption[] = [
-        { id: '', name: '全部' },
-        { id: 'true', name: '被举报' },
-        { id: 'false', name: '正常' }
+        { id: '', name: '全部', color: '#6c757d' },
+        { id: 'true', name: '被举报', color: '#dc3545' },
+        { id: 'false', name: '正常', color: '#28a745' }
     ];
 
     // 处理选择变化

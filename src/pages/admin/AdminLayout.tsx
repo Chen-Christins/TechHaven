@@ -52,7 +52,7 @@ const AdminLayout: React.FC = () => {
 
     // 处理退出登录
     const handleLogout = () => {
-        console.log('管理员退出登录');
+        // console.log('管理员退出登录');
         // 这里可以添加实际的退出逻辑，比如清除token、跳转登录页等
     };
 
