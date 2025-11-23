@@ -42,11 +42,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             try {
                 // 检查Cookie中是否有有效的认证信息
                 const cookieToken = getTokenFromCookie();
-                console.log('🔍 检查Cookie中的token:', cookieToken);
+                // console.log('🔍 检查Cookie中的token:', cookieToken);
 
                 if (cookieToken) {
                     // 有token，尝试恢复用户信息
-                    console.log('🔄 发现token，正在恢复用户信息...');
+                    // console.log('🔄 发现token，正在恢复用户信息...');
                     setToken(cookieToken);
                     tokenManager.setToken(cookieToken);
 
@@ -57,17 +57,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                             const userData = userResponse.data;
                             setUser(userData);
                         } else {
-                            console.warn('⚠️ 无法恢复用户信息，清除无效token:', userResponse);
+                            // console.warn('⚠️ 无法恢复用户信息，清除无效token:', userResponse);
                             setToken(null);
                             tokenManager.clearToken();
                         }
                     } catch (userError) {
-                        console.warn('⚠️ 获取用户信息失败，清除无效token:', userError);
+                        // console.warn('⚠️ 获取用户信息失败，清除无效token:', userError);
                         setToken(null);
                         tokenManager.clearToken();
                     }
                 } else {
-                    console.log('📋 认证上下文已初始化，未发现有效token');
+                    // console.log('📋 认证上下文已初始化，未发现有效token');
                 }
             } finally {
                 setLoading(false);
@@ -85,12 +85,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             const response = await AuthService.login(authId, password);
 
-            console.log('登录响应:', response);
+            // console.log('登录响应:', response);
 
             if (response.code === '200') {
-                console.log('🔍 登录成功，开始处理token和用户信息');
-                console.log('📋 完整响应数据:', response);
-
                 // 设置token到状态和tokenManager（优先从响应数据获取，备选从Cookie获取）
                 let userToken = (response as any)?.token || (response.data as any)?.token;
 
@@ -98,36 +95,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     // 如果响应中没有token，尝试从Cookie中获取
                     userToken = getTokenFromCookie();
                     if (userToken) {
-                        console.log('🍪 从Cookie中获取到token:', userToken);
+                        // console.log('🍪 从Cookie中获取到token:', userToken);
                     }
                 }
 
                 if (userToken) {
                     setToken(userToken);
                     tokenManager.setToken(userToken);
-                    console.log('✅ Token已设置:', userToken);
+                    // console.log('✅ Token已设置:', userToken);
                 } else {
-                    console.warn('⚠️ 未找到token，检查响应headers和Cookie:', (response as any).headers);
-                    console.log('🍪 当前页面Cookie:', document.cookie);
+                    // console.warn('⚠️ 未找到token，检查响应headers和Cookie:', (response as any).headers);
+                    // console.log('🍪 当前页面Cookie:', document.cookie);
                 }
 
                 // 获取最新的用户信息
                 try {
-                    console.log('🔄 正在获取最新用户信息...');
                     const userResponse = await AuthService.getUserInfo();
-                    console.log('📤 用户信息响应:', userResponse);
 
                     if (userResponse.data && userResponse.code === '200') {
                         const updatedUser = userResponse.data;
-                        console.log('✅ 获取到最新用户信息:', updatedUser);
                         setUser(updatedUser);
-                        console.log('🎉 用户登录成功:', updatedUser);
-                        console.log('🔐 当前认证状态:', { token: userToken, user: updatedUser });
                     } else {
                         console.warn('⚠️ 用户信息接口返回异常:', userResponse);
                     }
                 } catch (userError) {
-                    console.warn('⚠️ 获取最新用户信息失败，使用登录返回的用户信息:', userError);
+                    // console.warn('⚠️ 获取最新用户信息失败，使用登录返回的用户信息:', userError);
                     // 如果获取用户信息失败，使用登录响应中的用户信息
                     if ((response.data as any)?.user) {
                         const fallbackUserData = (response.data as any).user;
@@ -139,8 +131,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                             status: fallbackUserData.status || 'active'
                         };
                         setUser(fallbackUser);
-                        console.log('🔄 使用登录响应的用户信息:', fallbackUser);
-                        console.log('🔐 当前认证状态:', { token: userToken, user: fallbackUser });
+                        // console.log('🔄 使用登录响应的用户信息:', fallbackUser);
+                        // console.log('🔐 当前认证状态:', { token: userToken, user: fallbackUser });
                     }
                 }
             } else {

@@ -14,8 +14,6 @@ import styles from './AuthPage.module.css'; // 导入 CSS Modules
 import Footer from "../../components/footer/Footer";
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthService } from '../../services/authService';
-import { CodeType } from '../../utils/http';
-import { CookieHelper } from '../../utils/cookieHelper';
 
 
 // 定义表单类型
@@ -155,13 +153,10 @@ const AuthPage: React.FC = () => {
         try {
             setIsSubmitting(true);
 
-            // 根据表单类型选择验证码类型
-            let codeType: CodeType;
+            // 根据表单类型发送对应的验证码
             if (formType === 'register') {
-                codeType = CodeType.REGISTER;
                 await AuthService.sendRegisterCode(email);
             } else if (formType === 'forgotPassword') {
-                codeType = CodeType.PASSWORD_RESET;
                 await AuthService.sendPasswordResetCode(email);
             } else {
                 throw new Error('不支持的验证码类型');
@@ -169,10 +164,9 @@ const AuthPage: React.FC = () => {
 
             setCountdown(60);
             setMessage({ text: '验证码已发送，请注意查收', type: 'success' });
-            console.log(`验证码已发送到邮箱: ${email}, 类型: ${codeType}`);
         } catch (error: any) {
             console.error('发送验证码失败:', error);
-            setMessage({ text: error.message || '验证码发送失败', type: 'error' });
+            setMessage({ text: error.msg || error.message || '验证码发送失败', type: 'error' });
         } finally {
             setIsSubmitting(false);
         }
@@ -202,22 +196,10 @@ const AuthPage: React.FC = () => {
 
         try {
             if (formType === 'login') {
-                // 登录逻辑
                 await login(formData.usernameOrEmail, formData.password);
-
-                // 调试：检查登录后的cookies状态
-                console.log('🔐 登录成功，检查Cookies状态...');
-                CookieHelper.debugCookies();
-                console.log('🔍 是否有认证相关Cookies:', CookieHelper.hasAuthCookies());
-
                 setMessage({ text: '登录成功，正在跳转...', type: 'success' });
-
-                // 延迟跳转，让用户看到成功消息
-                setTimeout(() => {
-                    navigate('/index');
-                }, 500);
+                setTimeout(() => { navigate('/index'); }, 200);
             } else if (formType === 'register') {
-                // 注册逻辑
                 await AuthService.register({
                     account: formData.account,
                     email: formData.email,
@@ -225,23 +207,14 @@ const AuthPage: React.FC = () => {
                     auth_code: formData.auth_code
                 });
                 setMessage({ text: '注册成功，请登录', type: 'success' });
-                console.log('注册成功:', formData);
-                // 注册成功后切换到登录表单
-                setTimeout(() => setFormType('login'), 500);
+                setTimeout(() => setFormType('login'), 200);
             } else if (formType === 'forgotPassword') {
-                // 密码重置逻辑（这里需要根据实际后台API调整）
-                console.log('密码重置请求:', {
-                    email: formData.email,
-                    code: formData.code,
-                    newPassword: formData.newPassword
-                });
+                await AuthService.forgetPassword(formData.email, formData.newPassword, formData.code);
                 setMessage({ text: '密码重置成功，请登录', type: 'success' });
-                // 重置成功后切换到登录表单
-                setTimeout(() => setFormType('login'), 500);
+                setTimeout(() => setFormType('login'), 200);
             }
         } catch (error: any) {
-            console.error(`${formType}失败:`, error);
-            setMessage({ text: error.message || `${formType === 'login' ? '登录' : formType === 'register' ? '注册' : '重置密码'}失败`, type: 'error' });
+            setMessage({ text: error.msg || error.message || `${formType === 'login' ? '登录' : formType === 'register' ? '注册' : '重置密码'}失败`, type: 'error' });
         } finally {
             setIsSubmitting(false);
         }
@@ -378,6 +351,7 @@ const AuthPage: React.FC = () => {
                                                 onChange={handleInputChange}
                                                 className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
                                                 placeholder="请输入密码"
+                                                autoComplete="current-password"
                                             />
                                             <button
                                                 type="button"
@@ -506,6 +480,7 @@ const AuthPage: React.FC = () => {
                                                 onChange={handleInputChange}
                                                 className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
                                                 placeholder="请输入密码"
+                                                autoComplete="new-password"
                                             />
                                             <button
                                                 type="button"
@@ -540,6 +515,7 @@ const AuthPage: React.FC = () => {
                                                 onChange={handleInputChange}
                                                 className={`${styles.input} ${errors.confirmPassword ? styles.inputError : ''}`}
                                                 placeholder="请确认密码"
+                                                autoComplete="new-password"
                                             />
                                             <button
                                                 type="button"
@@ -641,6 +617,7 @@ const AuthPage: React.FC = () => {
                                                 onChange={handleInputChange}
                                                 className={`${styles.input} ${errors.newPassword ? styles.inputError : ''}`}
                                                 placeholder="请输入新密码"
+                                                autoComplete="new-password"
                                             />
                                             <button
                                                 type="button"
@@ -675,6 +652,7 @@ const AuthPage: React.FC = () => {
                                                 onChange={handleInputChange}
                                                 className={`${styles.input} ${errors.confirmNewPassword ? styles.inputError : ''}`}
                                                 placeholder="请确认新密码"
+                                                autoComplete="new-password"
                                             />
                                             <button
                                                 type="button"

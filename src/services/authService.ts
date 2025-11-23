@@ -2,6 +2,7 @@ import http, {
     type LoginParams,
     type LoginResponse,
     type RegisterParams,
+    type ForgetPasswordParams,
     type SendCodeParams,
     CodeType
 } from '../utils/http';
@@ -196,14 +197,6 @@ export class AuthService {
     }
 
     /**
-     * 忘记密码
-     * @param email 邮箱
-     */
-    static async forgotPassword(email: string) {
-        return http.post('/user/forgot-password', { email });
-    }
-
-    /**
      * 重置密码
      * @param token 重置token
      * @param newPassword 新密码
@@ -212,6 +205,34 @@ export class AuthService {
         return http.post('/user/reset-password', {
             token,
             new_passwd: newPassword
+        });
+    }
+
+    /**
+     * 忘记密码重置 - 使用邮箱、新密码和验证码直接重置
+     * @param email 邮箱地址
+     * @param newPassword 新密码
+     * @param authCode 验证码
+     * @returns 重置结果
+     */
+    static async forgetPassword(email: string, newPassword: string, authCode: string) {
+        const params: ForgetPasswordParams = {
+            email,
+            passwd: newPassword,
+            auth_code: authCode
+        };
+        console.log('忘记密码重置参数:', params);
+
+        // 使用form-urlencoded格式发送请求，与其他认证接口保持一致
+        const formData = new URLSearchParams();
+        formData.append('email', params.email);
+        formData.append('passwd', params.passwd);
+        formData.append('auth_code', params.auth_code);
+
+        return http.post('/user/forget_passwd', formData.toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
         });
     }
 }

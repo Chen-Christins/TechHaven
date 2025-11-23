@@ -118,6 +118,15 @@ export interface RegisterParams {
 }
 
 /**
+ * 重置密码请求参数
+ */
+export interface ForgetPasswordParams {
+    email: string;     // 邮箱
+    passwd: string;    // 新密码
+    auth_code: string; // 验证码
+}
+
+/**
  * 发送验证码请求参数
  */
 export interface SendCodeParams {
@@ -153,12 +162,14 @@ export interface HttpRequestConfig extends AxiosRequestConfig {
 export class HttpError extends Error {
     code: number;
     config: HttpRequestConfig;
+    msg: string;
 
     constructor(message: string, code: number, config: HttpRequestConfig) {
         super(message);
         this.name = 'HttpError';
         this.code = code;
         this.config = config;
+        this.msg = message; // 添加 msg 属性，与 message 保持一致
     }
 }
 
@@ -217,9 +228,9 @@ class HttpClient {
 
                 // 额外调试：检查路径是否正确
                 if (import.meta.env.VITE_USE_PROXY === 'true' && fullURL.includes('/api/')) {
-                    console.log('✅ 代理路径正确:', fullURL);
+                    // console.log('✅ 代理路径正确:', fullURL);
                 } else if (import.meta.env.VITE_USE_PROXY === 'true') {
-                    console.warn('⚠️ 代理路径可能有问题:', fullURL);
+                    // console.warn('⚠️ 代理路径可能有问题:', fullURL);
                 }
 
                 // 在发送请求之前添加 token
@@ -270,10 +281,10 @@ class HttpClient {
                             // 将token添加到响应数据中，方便后续处理
                             (response.data as any).token = sToken;
                         } else {
-                            console.log('🍪 未在Cookie中找到S_TOKEN，完整Cookie:', cookies);
+                            // console.log('🍪 未在Cookie中找到S_TOKEN，完整Cookie:', cookies);
                         }
                     } else {
-                        console.log('📥 响应中没有Set-Cookie header');
+                        // console.log('📥 响应中没有Set-Cookie header');
                     }
                 }
 
@@ -287,10 +298,88 @@ class HttpClient {
                         if (data.code === 200 || data.code === '200' || data.success || data.code === 1 || data.code === '1') {
                             return response;
                         } else {
-                            // 业务错误，支持 message 和 msg 字段
+                            // 业务错误，需要根据业务状态码进行错误映射
+                            const businessCode = Number(data.code);
+                            const errorMsg = (data as any)?.msg || '请求失败';
+                            let mappedMessage = errorMsg;
+                            // console.log('⚠️ 业务错误响应:', {
+                            //     businessCode,
+                            //     errorMsg,
+                            //     url: response.config.url,
+                            //     data: response.data
+                            // });
+                            // 根据业务状态码映射错误信息
+                            switch (businessCode) {
+                                case 400:
+                                    if (errorMsg.includes('param account passwd empty')) {
+                                        mappedMessage = '账号和密码不能为空';
+                                    } else if (errorMsg.includes('no param')) {
+                                        mappedMessage = '缺少必要参数';
+                                    }
+                                    break;
+                                case 401:
+                                    if (errorMsg.includes('email exists')) {
+                                        mappedMessage = '邮箱已被注册';
+                                    } else if (errorMsg.includes('account exists')) {
+                                        mappedMessage = '账号已被注册';
+                                    } else {
+                                        mappedMessage = '未授权，请重新登录';
+                                        this.handleUnauthorized();
+                                    }
+                                    break;
+                                case 402:
+                                    if (errorMsg.includes('invalid auth_id')) {
+                                        mappedMessage = '账号或邮箱格式不正确';
+                                    } else {
+                                        mappedMessage = '账号或邮箱格式不正确';
+                                    }
+                                    break;
+                                case 403:
+                                    if (errorMsg.includes('invalid auth_id')) {
+                                        mappedMessage = '账号或邮箱不存在';
+                                    } else if (errorMsg.includes('invalid auth_code')) {
+                                        mappedMessage = '验证码无效或已过期';
+                                    } else {
+                                        mappedMessage = '账号状态异常';
+                                    }
+                                    break;
+                                case 405:
+                                    if (errorMsg.includes('invalid passwd')) {
+                                        mappedMessage = '密码错误，请重新输入';
+                                    }
+                                    break;
+                                case 406:
+                                    if (errorMsg.includes('invalid state')) {
+                                        mappedMessage = '账号状态异常，请联系管理员';
+                                    }
+                                    break;
+                                case 410:
+                                    if (errorMsg.includes('account invalid state')) {
+                                        mappedMessage = '账号状态异常，请联系管理员';
+                                    } else if (errorMsg.includes('already login')) {
+                                        mappedMessage = '账号已在其他设备登录';
+                                    } else if (errorMsg.includes('invalid passwd')) {
+                                        mappedMessage = '密码错误，请重新输入';
+                                    } else if (errorMsg.includes('invalid state')) {
+                                        mappedMessage = '账号状态异常，请联系管理员';
+                                    } else {
+                                        mappedMessage = '账号状态异常';
+                                    }
+                                    break;
+                                case 500:
+                                    mappedMessage = '服务器内部错误，请联系管理员';
+                                    break;
+                                case 501:
+                                    mappedMessage = '服务器内部错误，请联系管理员';
+                                    break;
+                                default:
+                                    // 保持原始错误信息
+                                    break;
+                            }
+
                             throw new HttpError(
-                                (data as any).message || (data as any).msg || '请求失败',
-                                data.code.toString().includes('200') ? 500 : Number(data.code),
+                                mappedMessage,
+                                businessCode,
                                 response.config as HttpRequestConfig
                             );
                         }
@@ -304,6 +393,11 @@ class HttpClient {
                 return response;
             },
             (error: AxiosError) => {
+                // 如果已经是 HttpError，直接传递
+                if (error instanceof HttpError) {
+                    return Promise.reject(error);
+                }
+
                 // 调试：输出错误信息
                 console.error('❌ 请求错误:', {
                     message: error.message,
@@ -327,9 +421,11 @@ class HttpClient {
                     switch (status) {
                         case 400:
                             // 根据上下文判断具体错误类型
-                            const errorMsg = (data as any)?.message || '请求参数错误';
+                            const errorMsg = (data as any)?.msg || '请求参数错误';
                             if (errorMsg.includes('param account passwd empty')) {
                                 message = '账号和密码不能为空';
+                            } else if (errorMsg.includes('no param')) {
+                                message = '缺少必要参数';
                             } else if (errorMsg.includes('invalid email format')) {
                                 message = '邮箱格式不正确';
                             } else {
@@ -338,7 +434,7 @@ class HttpClient {
                             break;
                         case 401:
                             // 根据上下文判断具体错误类型
-                            const authErrorMsg = (data as any)?.message || '认证失败';
+                            const authErrorMsg = (data as any)?.msg || '认证失败';
                             if (authErrorMsg.includes('email exists')) {
                                 message = '邮箱已被注册';
                             } else if (authErrorMsg.includes('account exists')) {
@@ -349,13 +445,25 @@ class HttpClient {
                             }
                             break;
                         case 402:
-                            message = '账号不存在或格式错误';
+                            // 根据上下文判断具体错误类型
+                            const formatErrorMsg = (data as any)?.msg || '格式错误';
+                            if (formatErrorMsg.includes('invalid account')) {
+                                message = '账号格式不正确';
+                            } else if (formatErrorMsg.includes('invalid email format')) {
+                                message = '邮箱格式不正确';
+                            } else if (formatErrorMsg.includes('invalid auth_id')) {
+                                message = '账号或邮箱格式不正确';
+                            } else {
+                                message = '账号或邮箱格式不正确';
+                            }
                             break;
                         case 403:
                             // 根据上下文判断具体错误类型
-                            const invalidMsg = (data as any)?.message || '账号状态异常';
+                            const invalidMsg = (data as any)?.msg || '账号状态异常';
                             if (invalidMsg.includes('invalid auth_code')) {
                                 message = '验证码无效或已过期';
+                            } else if (invalidMsg.includes('invalid auth_id')) {
+                                message = '账号或邮箱不存在';
                             } else {
                                 message = '账号状态异常';
                             }
@@ -365,22 +473,27 @@ class HttpClient {
                             break;
                         case 410:
                             // 根据后端返回的具体错误信息判断
-                            const statusErrorMsg = (data as any)?.message || '账号状态异常';
-                            if (statusErrorMsg.includes('invalid state')) {
+                            const statusErrorMsg = (data as any)?.msg || '账号状态异常';
+                            if (statusErrorMsg.includes('account invalid state')) {
                                 message = '账号状态异常，请联系管理员';
                             } else if (statusErrorMsg.includes('already login')) {
                                 message = '账号已在其他设备登录';
                             } else if (statusErrorMsg.includes('invalid passwd')) {
                                 message = '密码错误，请重新输入';
+                            } else if (statusErrorMsg.includes('invalid state')) {
+                                message = '账号状态异常，请联系管理员';
                             } else {
-                                message = statusErrorMsg;
+                                message = '账号状态异常';
                             }
                             break;
                         case 500:
-                            message = '服务器内部错误，请稍后重试';
+                            message = '服务器内部错误，请联系管理员';
                             break;
                         case 502:
                             message = '网关错误';
+                            break;
+                        case 501:
+                            message = '服务器内部错误，请联系管理员';
                             break;
                         case 503:
                             message = '服务不可用';
@@ -389,7 +502,7 @@ class HttpClient {
                             message = '网关超时';
                             break;
                         default:
-                            message = (data as any)?.message || `请求失败 (${status})`;
+                            message = (data as any)?.msg || `请求失败 (${status})`;
                     }
                 } else if (error.request) {
                     // 请求已发出，但没有收到响应
@@ -414,8 +527,6 @@ class HttpClient {
      */
     private handleUnauthorized(): void {
         tokenManager.clearToken();
-        // 可以在这里添加跳转到登录页的逻辑
-        // window.location.href = '/login';
     }
 
     /**
