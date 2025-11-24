@@ -155,7 +155,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                 }
                 try {
                     // 获取所有标签，使用当前用户id
-                    const tagData = await LabelService.queryLabel({ ids: '', user_id: user.id });
+                    const tagData = await LabelService.queryLabel({ user_id: user.id });
                     setTags(tagData.map(tag => ({ id: tag.id, name: tag.name, color: tag.color || '#61dafb' })));
                 } catch (err) {
                     console.error('获取标签失败:', err);

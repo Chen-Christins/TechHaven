@@ -15,6 +15,80 @@
     padding-top: 48px;
 }
 
+/* 导航栏骨架屏样式 */
+.navbarSkeleton {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    z-index: 1000;
+}
+
+/* 导航栏实际容器 */
+.navbarActual {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.navbarVisible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.navbarHidden {
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.navbarSkeleton .navContainer {
+    max-width: 1560px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbarSkeleton .navActions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+
+/* 内容显示/隐藏过渡动画 */
+.contentHidden {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.contentVisible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+/* 暗色主题下的导航栏骨架屏 */
+@media (prefers-color-scheme: dark) {
+    .navbarSkeleton {
+        background: rgba(26, 26, 26, 0.95);
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+}
+
 .leftColumn {
     flex: 2;
     min-width: 768px;
