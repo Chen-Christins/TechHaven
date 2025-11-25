@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import { useLocation, Outlet, useNavigate } from 'react-router-dom';
 import {
     FaHome,
     FaUsers,
@@ -18,6 +18,7 @@ import styles from './AdminLayout.module.css';
 import ThemeToggle from '../../components/themeToggle/ThemeToggle';
 import UserDropdown from '../../components/userDropdown/UserDropdown';
 import Footer from '../../components/footer/Footer';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface NavItem {
     id: string;
@@ -28,32 +29,41 @@ interface NavItem {
 }
 
 const AdminLayout: React.FC = () => {
+    const navigate = useNavigate();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const location = useLocation();
+    const { user, logout, isAuthenticated, loading } = useAuth();
 
-    // 清理tooltip
-    useEffect(() => {
-        return () => {
-            const tooltip = document.getElementById('admin-sidebar-tooltip');
-            if (tooltip && tooltip.parentNode) {
-                tooltip.parentNode.removeChild(tooltip);
-            }
-        };
-    }, []);
+    // 如果正在加载认证状态，显示加载中
+    if (loading) {
+        return (
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '100vh',
+                fontSize: '16px',
+                color: 'var(--text-secondary)'
+            }}>
+                加载中...
+            </div>
+        );
+    }
 
-    // 模拟当前用户数据
-    const currentUser = {
-        name: 'Admin',
-        avatar: 'https://i.pravatar.cc/150?img=12',
-        role: '超级管理员',
-        email: 'admin@techblog.com'
-    };
+    // 如果用户未登录，重定向到登录页面
+    if (!isAuthenticated || !user) {
+        navigate('/auth');
+        return null;
+    }
+
+    if (!user.avatar) {
+        user.avatar = "https://picsum.photos/id/64/200"; // 默认头像
+    }
 
     // 处理退出登录
     const handleLogout = () => {
-        // console.log('管理员退出登录');
-        // 这里可以添加实际的退出逻辑，比如清除token、跳转登录页等
+        logout();
     };
 
     // 导航菜单配置
@@ -195,10 +205,10 @@ const AdminLayout: React.FC = () => {
                 >
                     {/* Logo区域 */}
                     <div className={styles.adminSidebarHeader}>
-                        <Link to="/admin" className={styles.adminLogo}>
+                        <div onClick={() => { navigate('/admin'); }} className={styles.adminLogo}>
                             <span className={styles.adminLogoIcon}>⚡</span>
                             <span className={styles.adminLogoText}>管理后台</span>
-                        </Link>
+                        </div>
                         <button
                             className={styles.toggleSidebarBtn}
                             onClick={toggleSidebar}
@@ -215,16 +225,15 @@ const AdminLayout: React.FC = () => {
                                 <h3 className={styles.adminSectionTitle}>{section.title}</h3>
                                 {section.items.map((item) => (
                                     <div key={item.id} className={styles.adminNavItem}>
-                                        <Link
-                                            to={item.path}
+                                        <div
+                                            onClick={() => { navigate(item.path); closeMobileMenu(); }}
                                             className={`${styles.adminNavLink} ${location.pathname === item.path ? styles.active : ''}`}
-                                            onClick={closeMobileMenu}
                                             onMouseEnter={(e) => showTooltip(e, item.label)}
                                             onMouseLeave={hideTooltip}
                                         >
                                             <span className={styles.adminNavIcon}>{item.icon}</span>
                                             <span className={styles.adminNavText}>{item.label}</span>
-                                        </Link>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -254,9 +263,9 @@ const AdminLayout: React.FC = () => {
                                         {index === breadcrumbs.length - 1 ? (
                                             <span className={styles.breadcrumbActive}>{crumb.label}</span>
                                         ) : (
-                                            <Link to={crumb.path} className={styles.breadcrumbLink}>
+                                            <div onClick={() => navigate(crumb.path)} className={styles.breadcrumbLink}>
                                                 {crumb.label}
-                                            </Link>
+                                            </div>
                                         )}
                                     </React.Fragment>
                                 ))}
@@ -269,7 +278,7 @@ const AdminLayout: React.FC = () => {
 
                             {/* 用户信息区域 */}
                             <UserDropdown
-                                user={currentUser}
+                                user={user}
                                 onLogout={handleLogout}
                                 showAdminLink={false}
                             />

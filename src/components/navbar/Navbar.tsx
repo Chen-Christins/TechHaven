@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FaHome, FaPen, FaBars, FaSignOutAlt, FaCog, FaUserCircle, FaStar, FaExternalLinkAlt, FaSignInAlt } from 'react-icons/fa';
 import styles from './Navbar.module.css';
 import ThemeToggle from '../themeToggle/ThemeToggle';
@@ -138,15 +138,15 @@ const Navbar: React.FC = () => {
 			<ul className={styles.navLinks}>
 				{navLinks.map((link, index) => (
 					<li key={index} className={styles.navItem}>
-						<a
-							href={link.path}
+						<div
+							onClick={() => { navigate(link.path); }}
 							className={styles.navLink}
 							// 假设首页为当前活跃页
 							data-active={link.path === "/"}
 						>
 							<span className={styles.linkIcon}>{link.icon}</span>
 							<span className={styles.linkText}>{link.label}</span>
-						</a>
+						</div>
 					</li>
 				))}
 				{renderRecommendMenu()}
@@ -207,14 +207,13 @@ const Navbar: React.FC = () => {
 					{!isAuthenticated && (
 						<li className={styles.mobileNavItem}>
 							<div className={styles.mobileAuthSection}>
-								<Link
-									to="/auth"
+								<div
 									className={styles.mobileAuthButton}
-									onClick={() => setMobileMenuOpen(false)}
+									onClick={() => { setMobileMenuOpen(false); navigate('/login'); }}
 								>
 									<FaSignInAlt className={styles.mobileLinkIcon} />
 									<span className={styles.mobileLinkText}>登录 | 注册</span>
-								</Link>
+								</div>
 							</div>
 						</li>
 					)}
@@ -229,9 +228,9 @@ const Navbar: React.FC = () => {
 				{/* 左侧Logo和导航 */}
 				<div className={styles.leftSection}>
 					{/* Logo */}
-					<Link to="/" className={styles.logo}>
+					<div className={styles.logo} onClick={() => navigate('/')}>
 						<span className={styles.logoText}>TechBlog</span>
-					</Link>
+					</div>
 
 					{/* 桌面端导航链接 */}
 					<div className={styles.desktopNav}>

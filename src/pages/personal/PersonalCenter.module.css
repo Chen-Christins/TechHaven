@@ -644,6 +644,16 @@
     color: #9ca3af;
 }
 
+.statusBadge.reviewing {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.statusBadge.unallowed {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
 /* 数据单元格 */
 .dataCell {
     display: flex;

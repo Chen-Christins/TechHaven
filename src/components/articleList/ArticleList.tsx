@@ -17,15 +17,10 @@ const ArticleList: React.FC = () => {
     const [totalArticles, setTotalArticles] = useState(0);
     const [articleIds, setArticleIds] = useState<(string | number)[]>([]);
     const [articles, setArticles] = useState<Article[]>([]);
-    const [loadingIds, setLoadingIds] = useState(false);
-    const [loadingDetails, setLoadingDetails] = useState(false);
     const navigate = useNavigate();
-    // 统一的 loading 状态
-    const loading = loadingIds || loadingDetails;
 
     useEffect(() => {
         const fetchIds = async () => {
-            setLoadingIds(true);
             try {
                 const res = await ArticleService.listArticlesByUserIdPages({
                     // user_id: 1,
@@ -36,8 +31,9 @@ const ArticleList: React.FC = () => {
                 // // console.log('准备设置 articleIds:', res.ids);
                 setTotalArticles(res.total);
                 setArticleIds(res.ids);
-            } finally {
-                setLoadingIds(false);
+            } catch (err) {
+                console.error('获取文章ID列表失败:', err);
+                setArticleIds([]);
             }
         };
         fetchIds();
@@ -54,9 +50,6 @@ const ArticleList: React.FC = () => {
                 return;
             }
 
-            // // console.log('开始加载文章详情...');
-            setLoadingDetails(true);
-
             try {
                 const detailsList = await Promise.all(
                     articleIds.map(id => ArticleService.getArticleDetails({ id, type: 0 }))
@@ -65,13 +58,11 @@ const ArticleList: React.FC = () => {
             } catch (err) {
                 console.error('fetchDetails 异常:', err);
                 setArticles([]);
-                } finally {
-                    setLoadingDetails(false);
-                }
-            };
+            }
+        };
 
-            fetchDetails();
-        }, [articleIds]);
+        fetchDetails();
+    }, [articleIds]);
 
     const totalPages = Math.ceil(totalArticles / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -107,16 +98,10 @@ const ArticleList: React.FC = () => {
         <div className={styles.articleList}>
             <h2 className={styles.title}>最新文章</h2>
             <div className={styles.articles}>
-                {(() => {
-                    if (loading) {
-                        return <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>加载中...</div>;
-                    }
-
-                    if (articles.length === 0) {
-                        return <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>暂无文章</div>;
-                    }
-
-                    return articles.map((article, _index) => {
+                {articles.length === 0 ? (
+                    <></>
+                ) : (
+                    articles.map((article, _index) => {
                         return (
                             <div key={article.id} className={styles.articleItem}>
                                 <h3 className={styles.articleTitle}>{article.title || '无标题'}</h3>
@@ -134,8 +119,8 @@ const ArticleList: React.FC = () => {
                                 </div>
                             </div>
                         );
-                    });
-                })()}
+                    })
+                )}
             </div>
 
             {/* 分页 */}
@@ -149,14 +134,14 @@ const ArticleList: React.FC = () => {
                         <button
                             className={styles.paginationButton}
                             onClick={() => setCurrentPage(1)}
-                            disabled={currentPage === 1 || loading}
+                            disabled={currentPage === 1}
                         >
                             <FaAngleDoubleLeft />
                         </button>
                         <button
                             className={styles.paginationButton}
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            disabled={currentPage === 1 || loading}
+                            disabled={currentPage === 1}
                         >
                             <FaChevronLeft />
                         </button>
@@ -169,7 +154,6 @@ const ArticleList: React.FC = () => {
                                     <button
                                         className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
                                         onClick={() => setCurrentPage(page as number)}
-                                        disabled={loading}
                                     >
                                         {page}
                                     </button>
@@ -180,14 +164,14 @@ const ArticleList: React.FC = () => {
                         <button
                             className={styles.paginationButton}
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                            disabled={currentPage === totalPages || loading}
+                            disabled={currentPage === totalPages}
                         >
                             <FaChevronRight />
                         </button>
                         <button
                             className={styles.paginationButton}
                             onClick={() => setCurrentPage(totalPages)}
-                            disabled={currentPage === totalPages || loading}
+                            disabled={currentPage === totalPages}
                         >
                             <FaAngleDoubleRight />
                         </button>
