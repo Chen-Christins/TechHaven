@@ -12,7 +12,8 @@ stages:
     displayName: 构建
     strategy: naturally
     trigger: auto
-    executor: []
+    executor:
+      - Chen-Christins
     steps:
       - step: build@nodejs
         name: build_nodejs
@@ -38,7 +39,8 @@ stages:
     displayName: 部署
     strategy: naturally
     trigger: auto
-    executor: []
+    executor:
+      - Chen-Christins
     steps:
       - step: deploy@agent
         name: deploy_agent
