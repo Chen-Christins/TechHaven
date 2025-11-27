@@ -1,48 +1,54 @@
 version: '1.0'
 name: cd-frontend-centos
 displayName: Frontend CD for CentOS
-
+triggers:
+  trigger: auto
+  push:
+    tags:
+      include:
+        - v\d+\.\d+\.\d+
 stages:
-  - name: checkout
-    displayName: 检出代码
-    steps:
-      - name: checkout_code
-        displayName: 检出代码
-        type: checkout
-        branch: master
-        depth: 1    # 浅克隆，只拉取最近一次提交
-        clean: true # 每次构建前清理工作区
-
-  - name: build
-    displayName: 构建
+  - name: compile
+    displayName: 编译
     strategy: naturally
     trigger: auto
-    executor:
-      - admin
     steps:
       - step: build@nodejs
         name: build_nodejs
         displayName: Nodejs 构建
         nodeVersion: 23.11.1
         commands:
-          - npm install && npm run build
+          - npm install && rm -rf ./dist && npm run build
         artifacts:
           - name: BUILD_ARTIFACT
             path:
               - ./dist
-        caches:
-          - ~/.npm
-          - ~/.yarn
-        notify: []
-        strategy:
-          retry: '0'
-
-  - name: deploy
+        strategy: {}
+      - step: publish@general_artifacts
+        name: publish_general_artifacts
+        displayName: 上传制品
+        dependArtifact: BUILD_ARTIFACT
+        artifactName: output
+        strategy: {}
+        dependsOn: build_nodejs
+  - name: release
+    displayName: 发布
+    strategy: naturally
+    trigger: auto
+    steps:
+      - step: publish@release_artifacts
+        name: publish_release_artifacts
+        displayName: 发布
+        dependArtifact: output
+        version: 1.0.0.0
+        autoIncrement: true
+        strategy: {}
+  - name: stage-73b278a9
     displayName: 部署
     strategy: naturally
     trigger: auto
     executor:
-      - admin
+      - Chen-Christins
     steps:
       - step: deploy@agent
         name: deploy_agent
@@ -59,10 +65,9 @@ stages:
             artifactName: output
             artifactVersion: latest
         script:
-          - mkdir -p /home/admin/test-ci
-          - rm -rf /home/admin/test-ci/*
-          - tar zxvf ~/gitee_go/deploy/output.tar.gz -C /home/admin/test-ci
-          - echo 'Hello Gitee Go!'
+          - mkdir -p /home/chen/app
+          - tar zxvf ~/gitee_go/deploy/output.tar.gz -C /home/chen/app
+          - echo 'Deployment completed !!!'
         notify: []
         strategy:
           retry: '0'
