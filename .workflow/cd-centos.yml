@@ -1,0 +1,68 @@
+version: '1.0'
+name: cd-frontend-centos
+displayName: Frontend CD for CentOS
+
+stages:
+  - name: checkout
+    displayName: 检出代码
+    steps:
+      - name: checkout_code
+        displayName: 检出代码
+        type: checkout
+        branch: master
+        depth: 1    # 浅克隆，只拉取最近一次提交
+        clean: true # 每次构建前清理工作区
+
+  - name: build
+    displayName: 构建
+    strategy: naturally
+    trigger: auto
+    executor:
+      - admin
+    steps:
+      - step: build@nodejs
+        name: build_nodejs
+        displayName: Nodejs 构建
+        nodeVersion: 23.11.1
+        commands:
+          - npm install && npm run build
+        artifacts:
+          - name: BUILD_ARTIFACT
+            path:
+              - ./dist
+        caches:
+          - ~/.npm
+          - ~/.yarn
+        notify: []
+        strategy:
+          retry: '0'
+
+  - name: deploy
+    displayName: 部署
+    strategy: naturally
+    trigger: auto
+    executor:
+      - admin
+    steps:
+      - step: deploy@agent
+        name: deploy_agent
+        displayName: 主机部署
+        hostGroupID:
+          ID: test-ci
+          hostID:
+            - 528124f7-2a4e-49bb-a674-070dd7f66ed4
+        deployArtifact:
+          - source: artifact
+            name: output
+            target: ~/gitee_go/deploy
+            artifactRepository: default
+            artifactName: output
+            artifactVersion: latest
+        script:
+          - mkdir -p /home/admin/test-ci
+          - rm -rf /home/admin/test-ci/*
+          - tar zxvf ~/gitee_go/deploy/output.tar.gz -C /home/admin/test-ci
+          - echo 'Hello Gitee Go!'
+        notify: []
+        strategy:
+          retry: '0'
