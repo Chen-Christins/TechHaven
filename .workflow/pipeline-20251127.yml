@@ -46,9 +46,9 @@ stages:
         name: deploy_agent
         displayName: 主机部署
         hostGroupID:
-          ID: CentOS
+          ID: test-ci
           hostID:
-            - ebbb74ad-c6fc-4ea1-9ad7-85b2a6f3d166
+            - 528124f7-2a4e-49bb-a674-070dd7f66ed4
         deployArtifact:
           - source: artifact
             name: output
