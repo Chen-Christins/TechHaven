@@ -69,3 +69,5 @@ stages:
         notify: []
         strategy:
           retry: '0'
+strategy:
+  cloneDepth: 1
