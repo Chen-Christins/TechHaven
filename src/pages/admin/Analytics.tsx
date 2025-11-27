@@ -9,7 +9,6 @@ import {
     FaArrowDown,
     FaMinus,
     FaChartBar,
-    FaChartLine,
     FaChartPie,
     FaDownload,
     FaCalendarAlt,
@@ -451,7 +450,7 @@ const Analytics: React.FC = () => {
                         <CustomSelect
                             name="时间范围"
                             value={periodOptions.find(option => option.id === selectedPeriod) || null}
-                            onChange={(selectedOption) => setSelectedPeriod(selectedOption?.id || '7天')}
+                            onChange={(selectedOption) => setSelectedPeriod(String(selectedOption?.id || '7天'))}
                             options={periodOptions}
                             hideBadge={true}
                             placeholder="选择时间范围"
@@ -462,7 +461,7 @@ const Analytics: React.FC = () => {
                         <CustomSelect
                             name="指标类型"
                             value={metricOptions.find(option => option.id === selectedMetric) || null}
-                            onChange={(selectedOption) => setSelectedMetric(selectedOption?.id || 'visits')}
+                            onChange={(selectedOption) => setSelectedMetric(String(selectedOption?.id || 'visits'))}
                             options={metricOptions}
                             hideBadge={true}
                             placeholder="选择指标类型"

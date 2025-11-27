@@ -9,43 +9,47 @@ const mockCategories: Category[] = [
 		id: 1,
 		name: "前端开发",
 		count: 86,
+		color: "#EF4444",
 		children: [
-			{ id: 11, name: "框架", count: 32 },
-			{ id: 12, name: "CSS", count: 18 },
-			{ id: 13, name: "JavaScript", count: 36 }
+			{ id: 11, name: "框架", count: 32, color: "#3B82F6" },
+			{ id: 12, name: "CSS", count: 18, color: "#10B981" },
+			{ id: 13, name: "JavaScript", count: 36, color: "#F59E0B" }
 		]
 	},
 	{
 		id: 2,
 		name: "后端开发",
 		count: 54,
+		color: "#8B5CF6",
 		children: [
-			{ id: 21, name: "Node.js", count: 28 },
-			{ id: 22, name: "Java", count: 26 }
+			{ id: 21, name: "Node.js", count: 28, color: "#06B6D4" },
+			{ id: 22, name: "Java", count: 26, color: "#F97316" }
 		]
 	},
 	{
 		id: 3,
 		name: "工程化",
 		count: 29,
+		color: "#10B981",
 		children: [
-			{ id: 31, name: "构建工具", count: 15 },
-			{ id: 32, name: "CI/CD", count: 14 }
+			{ id: 31, name: "构建工具", count: 15, color: "#6366F1" },
+			{ id: 32, name: "CI/CD", count: 14, color: "#EC4899" }
 		]
 	},
 	{
 		id: 4,
 		name: "性能优化",
-		count: 12
+		count: 12,
+		color: "#F59E0B"
 	}
 ];
 
 const CategoryPanel: React.FC = () => {
-	const [expanded, setExpanded] = useState<Record<number, boolean>>({
-		1: false // 默认展开第一个分类
+	const [expanded, setExpanded] = useState<Record<string, boolean>>({
+		"1": false // 默认展开第一个分类
 	});
 
-	const toggleExpand = (categoryId: number) => {
+	const toggleExpand = (categoryId: string | number) => {
 		setExpanded(prev => ({
 			...prev,
 			[categoryId]: !prev[categoryId]

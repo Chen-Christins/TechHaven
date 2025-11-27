@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
     FaFilter,
-    FaUpload,
-    FaTrash,
+        FaTrash,
     FaEdit,
     FaEye,
     FaDownload,
@@ -90,9 +89,7 @@ interface FilterOptions {
 const MediaManagement: React.FC = () => {
     // 状态管理
     const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
-    const [folders, setFolders] = useState<Folder[]>([]);
-    const [currentFolder, setCurrentFolder] = useState<string>('/');
-    const [filters, setFilters] = useState<FilterOptions>({
+        const [filters, setFilters] = useState<FilterOptions>({
         search: '',
         type: '',
         folder: '',
@@ -103,8 +100,7 @@ const MediaManagement: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
-    const [showUploadModal, setShowUploadModal] = useState(false);
-    const [showPreviewModal, setShowPreviewModal] = useState(false);
+        const [showPreviewModal, setShowPreviewModal] = useState(false);
     const [previewFile, setPreviewFile] = useState<MediaFile | null>(null);
 
     const itemsPerPage = 5;
@@ -470,7 +466,6 @@ const MediaManagement: React.FC = () => {
         setLoading(true);
         setTimeout(() => {
             setMediaFiles(mockMediaFiles);
-            setFolders(mockFolders);
             setLoading(false);
         }, 800);
     }, []);
@@ -706,22 +701,13 @@ const MediaManagement: React.FC = () => {
                         管理图片、视频、文档等媒体文件
                     </p>
                 </div>
-                <div className={styles.headerActions}>
-                    <button
-                        className={`${styles.btn} ${styles.btnPrimary}`}
-                        onClick={() => setShowUploadModal(true)}
-                    >
-                        <FaUpload />
-                        上传文件
-                    </button>
-                </div>
-            </div>
+                            </div>
 
             {/* 文件夹导航 */}
             <div className={styles.folderNavigation}>
                 <div className={styles.breadcrumb}>
                     <FaFolder />
-                    <span className={styles.currentPath}>{currentFolder}</span>
+                    <span className={styles.currentPath}>/</span>
                 </div>
                 <div className={styles.folderGrid}>
                     {mockFolders.map(folder => (

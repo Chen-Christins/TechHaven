@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-    FaComments,
     FaFilter,
-    FaPlus,
     FaReply,
     FaTrash,
     FaBan,
@@ -744,14 +742,7 @@ const CommentManagement: React.FC = () => {
     };
 
     // 批量操作
-    const handleSelectAll = (checked: boolean) => {
-        if (checked) {
-            setSelectedComments(currentItems.map(comment => comment.id));
-        } else {
-            setSelectedComments([]);
-        }
-    };
-
+    
     const handleSelectComment = (commentId: string, checked: boolean) => {
         if (checked) {
             setSelectedComments(prev => [...prev, commentId]);

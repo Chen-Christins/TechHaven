@@ -5,25 +5,21 @@ import {
     FaPlus,
     FaEye,
     FaSearch,
-    FaFilter,
     FaTag,
     FaFileAlt,
     FaChartBar,
     FaCalendarAlt,
     FaThumbsUp,
     FaComment,
-    FaHome,
     FaBars,
-    FaTimes,
-    FaFolderOpen,
-    FaPenFancy
+    FaTimes
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import Loading from '../components/loading/Loading';
-import ThemeToggle from '../components/themeToggle/ThemeToggle';
-import UserDropdown from '../components/userDropdown/UserDropdown';
-import CustomSelect from '../components/customSelect/CustomSelect';
-import Footer from '../components/footer/Footer';
+import Loading from '../../components/loading/Loading';
+import ThemeToggle from '../../components/themeToggle/ThemeToggle';
+import UserDropdown from '../../components/userDropdown/UserDropdown';
+import CustomSelect from '../../components/customSelect/CustomSelect';
+import Footer from '../../components/footer/Footer';
 import type { SelectOption } from '../../types/index';
 import styles from './PersonalCenter.module.css';
 
@@ -396,7 +392,7 @@ const PersonalCenter: React.FC = () => {
     };
 
     // 处理状态筛选变化
-    const handleStatusChange = (selectedOption: SelectOption | null, selectedIndex: number, oldIndex: number) => {
+    const handleStatusChange = (selectedOption: SelectOption | null) => {
         setSelectedStatus(selectedOption);
         if (selectedOption) {
             setStatusFilter(selectedOption.id as 'all' | 'published' | 'draft' | 'private');
@@ -613,7 +609,7 @@ const PersonalCenter: React.FC = () => {
 
                     {/* 导航菜单 */}
                     <nav className={styles.adminNavMenu}>
-                        {navItems.map((item, index) => (
+                        {navItems.map((item) => (
                             <div key={item.id} className={styles.adminNavItem}>
                                 <button
                                     className={`${styles.adminNavLink} ${activeTab === item.id ? styles.active : ''}`}

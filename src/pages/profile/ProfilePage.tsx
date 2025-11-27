@@ -13,18 +13,21 @@ import type { Article, UserProfile } from '../../types/index';
 
 // 模拟数据
 const mockUser: UserProfile = {
-  id: 1,
-  name: '张明',
-  avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-  bio: '全栈开发者 | 技术博客作者 | 开源爱好者。热爱分享技术心得，专注于React、Node.js和云计算领域。',
-  location: '北京',
-  website: 'https://zhangming.dev',
-  joinDate: '2020年3月',
-  stats: {
-    articles: 24,
-    followers: 1284,
-    following: 342
-  }
+    id: 1,
+    name: '张明',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    bio: '全栈开发者 | 技术博客作者 | 开源爱好者。热爱分享技术心得，专注于React、Node.js和云计算领域。',
+    location: '北京',
+    website: 'https://zhangming.dev',
+    joinDate: '2020年3月',
+    stats: {
+        articles: 24,
+        followers: 1284,
+        following: 342
+    },
+    account: '',
+    email: '',
+    role: 'admin'
 };
 
 const mockArticles: Article[] = [

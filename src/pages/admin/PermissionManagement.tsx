@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-    FaUserShield,
     FaPlus,
     FaFilter,
     FaEdit,
@@ -16,15 +15,10 @@ import {
     FaLock,
     FaUnlock,
     FaUserCog,
-    FaUserTag,
-    FaCrown,
-    FaUserSecret,
-    FaCheck,
-    FaTimes
+    FaUserTag
 } from 'react-icons/fa';
 import CustomSelect from '../../components/customSelect/CustomSelect';
 import Input from '../../components/input/Input';
-import Button from '../../components/button/Button';
 import Loading from '../../components/loading/Loading';
 import { confirm } from '../../components/confirm/Confirm';
 import type { SelectOption } from '../../types/index';
@@ -88,8 +82,7 @@ const PermissionManagement: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'roles' | 'users'>('roles');
     const [roles, setRoles] = useState<Role[]>([]);
     const [userPermissions, setUserPermissions] = useState<UserPermission[]>([]);
-    const [permissions, setPermissions] = useState<Permission[]>([]);
-    const [stats, setStats] = useState<PermissionStats>({
+        const [stats, setStats] = useState<PermissionStats>({
         totalRoles: 0,
         totalUsers: 0,
         activePermissions: 0,
@@ -246,7 +239,6 @@ const PermissionManagement: React.FC = () => {
         setTimeout(() => {
             setRoles(mockRoles);
             setUserPermissions(mockUserPermissions);
-            setPermissions(mockPermissions);
 
             // 计算统计数据
             const totalRoles = mockRoles.length;
@@ -304,7 +296,15 @@ const PermissionManagement: React.FC = () => {
     const totalPages = Math.ceil(currentData.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const currentItems = currentData.slice(startIndex, endIndex);
+    const currentRoles = useMemo(() =>
+        filteredRoles.slice(startIndex, endIndex),
+        [filteredRoles, startIndex, endIndex]
+    );
+
+    const currentUserPermissions = useMemo(() =>
+        filteredUserPermissions.slice(startIndex, endIndex),
+        [filteredUserPermissions, startIndex, endIndex]
+    );
 
     // 重置页码
     useEffect(() => {
@@ -597,7 +597,7 @@ const PermissionManagement: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {currentItems.map((role) => (
+                            {currentRoles.map((role) => (
                                 <tr key={role.id}>
                                     <td>
                                         <div className={styles.roleInfo}>
@@ -671,7 +671,7 @@ const PermissionManagement: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {currentItems.map((userPermission) => (
+                            {currentUserPermissions.map((userPermission) => (
                                 <tr key={userPermission.id}>
                                     <td>
                                         <div className={styles.userInfo}>

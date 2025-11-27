@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { FaHome, FaThList, FaPen, FaBars, FaSignOutAlt, FaCog, FaUserCircle, FaStar, FaExternalLinkAlt } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaHome, FaPen, FaBars, FaSignOutAlt, FaCog, FaUserCircle, FaStar, FaExternalLinkAlt, FaSignInAlt } from 'react-icons/fa';
 import styles from './Navbar.module.css';
 import ThemeToggle from '../themeToggle/ThemeToggle';
-
-// 用户信息类型
-interface User {
-	name: string;
-	avatar: string;
-	role: string; // 用于显示用户身份（如博主/访客）
-	email: string; // 邮箱地址
-}
+import AuthButtons from '../authButtons/AuthButtons';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
+    const navigate = useNavigate();
+	// 获取认证状态
+	const { user, isAuthenticated, logout, token } = useAuth();
+
 	// 状态管理
 	const [isScrolled, setIsScrolled] = useState(false); // 滚动状态（控制导航栏样式变化）
 	const [userMenuOpen, setUserMenuOpen] = useState(false); // 用户下拉菜单状态
@@ -21,19 +19,20 @@ const Navbar: React.FC = () => {
 	const userMenuRef = useRef<HTMLDivElement>(null); // 用户菜单DOM引用
 	const recommendMenuRef = useRef<HTMLDivElement>(null); // 推荐菜单DOM引用
 
-	// 模拟用户数据
-	const currentUser: User = {
-		name: "Admin",
-		avatar: "https://picsum.photos/id/64/200", // 占位头像
-		role: "管理员",
-		email: "admin@techblog.com"
-	};
+	// 用户数据（从认证上下文获取）
+	const currentUser = user ? {
+		name: user.name || user.account || '用户',
+		avatar: user.avatar || "https://picsum.photos/id/64/200", // 默认头像
+		role: user.role || '用户',
+		email: user.email
+	} : null;
 
 	// 导航链接数据（包含图标和路径）
 	const navLinks = [
 		{ label: "首页", icon: <FaHome />, path: "/" },
-		{ label: "登录", icon: <FaThList />, path: "/auth" },
-		{ label: "管理", icon: <FaCog />, path: "/admin" },
+		...(isAuthenticated ? [
+			{ label: "管理", icon: <FaCog />, path: "/admin" },
+		] : []),
 		// { label: "标签", icon: <FaTags />, path: "/tags" },
 		// { label: "关于", icon: <FaUser />, path: "/about" },
 	];
@@ -58,14 +57,14 @@ const Navbar: React.FC = () => {
 		},
 	];
 
-	// 监听滚动事件，改变导航栏样式
+	// 监听滚动事件和用户状态变化
 	useEffect(() => {
 		const handleScroll = () => {
 			setIsScrolled(window.scrollY > 10);
 		};
 		window.addEventListener('scroll', handleScroll);
 		return () => window.removeEventListener('scroll', handleScroll);
-	}, []);
+	}, [user, isAuthenticated, token]);
 
 	// 点击外部关闭用户菜单
 	useEffect(() => {
@@ -204,6 +203,21 @@ const Navbar: React.FC = () => {
 							)}
 						</div>
 					</li>
+					{/* 移动端认证区域 */}
+					{!isAuthenticated && (
+						<li className={styles.mobileNavItem}>
+							<div className={styles.mobileAuthSection}>
+								<Link
+									to="/auth"
+									className={styles.mobileAuthButton}
+									onClick={() => setMobileMenuOpen(false)}
+								>
+									<FaSignInAlt className={styles.mobileLinkIcon} />
+									<span className={styles.mobileLinkText}>登录 | 注册</span>
+								</Link>
+							</div>
+						</li>
+					)}
 				</ul>
 			</div>
 		);
@@ -239,60 +253,71 @@ const Navbar: React.FC = () => {
 					{/* 主题切换按钮 */}
 					<ThemeToggle />
 
-					<div className={styles.userArea} onClick={toggleUserMenu}>
-						{/* 用户头像 */}
-						<div className={styles.avatarContainer}>
-							<img
-								src={currentUser.avatar}
-								alt={currentUser.name}
-								className={styles.avatar}
-							/>
-							{/* 在线状态指示器 */}
-							<span className={styles.statusIndicator}></span>
-						</div>
+					{isAuthenticated && currentUser ? (
+						<>
+							<div className={styles.userArea} onClick={toggleUserMenu}>
+								{/* 用户头像 */}
+								<div className={styles.avatarContainer}>
+									<img
+										src={currentUser.avatar}
+										alt={currentUser.name}
+										className={styles.avatar}
+									/>
+									{/* 在线状态指示器 */}
+									<span className={styles.statusIndicator}></span>
+								</div>
 
-						{/* 用户信息（桌面端显示） */}
-						<div className={styles.userInfo}>
-							<div className={styles.userName}>{currentUser.name}</div>
-							<div className={styles.userRole}>{currentUser.role}</div>
-						</div>
-					</div>
-
-					{/* 用户下拉菜单 */}
-					{userMenuOpen && (
-						<div className={styles.userDropdown}>
-							<div className={styles.dropdownHeader}>
-								<img
-									src={currentUser.avatar}
-									alt={currentUser.name}
-									className={styles.dropdownAvatar}
-								/>
-								<div className={styles.dropdownUserInfo}>
-									<div className={styles.dropdownUserName}>{currentUser.name}</div>
-									<div className={styles.dropdownUserEmail}>{currentUser.email}</div>
+								{/* 用户信息（桌面端显示） */}
+								<div className={styles.userInfo}>
+									<div className={styles.userName}>{currentUser.name}</div>
+									<div className={styles.userRole}>{currentUser.role}</div>
 								</div>
 							</div>
-							<div className={styles.dropdownDivider}></div>
-							<div className={styles.dropdownMenu}>
-								<Link to="/personal" className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}>
-									<FaUserCircle />
-									个人中心
-								</Link>
-								<Link to="/article/create" className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}>
-									<FaPen />
-									撰写文章
-								</Link>
-								<div className={styles.dropdownDivider}></div>
-								<button className={styles.dropdownItem} onClick={() => {
-									setUserMenuOpen(false);
-									// 处理退出登录
-									console.log('退出登录');
-								}}>
-									<FaSignOutAlt />
-									退出登录
-								</button>
-							</div>
-						</div>
+
+							{/* 用户下拉菜单 */}
+							{userMenuOpen && (
+								<div className={styles.userDropdown}>
+									<div className={styles.dropdownHeader}>
+										<img
+											src={currentUser.avatar}
+											alt={currentUser.name}
+											className={styles.dropdownAvatar}
+										/>
+										<div className={styles.dropdownUserInfo}>
+											<div className={styles.dropdownUserName}>{currentUser.name}</div>
+											<div className={styles.dropdownUserEmail}>{currentUser.email}</div>
+										</div>
+									</div>
+									<div className={styles.dropdownDivider}></div>
+									<div className={styles.dropdownMenu}>
+										<div className={styles.dropdownItem} onClick={() => {setUserMenuOpen(false); navigate('/profile');}}>
+											<FaUserCircle />
+											个人中心
+										</div>
+										<div className={styles.dropdownItem} onClick={() => {setUserMenuOpen(false); navigate('/article/create');}}>
+											<FaPen />
+											撰写文章
+										</div>
+										<div className={styles.dropdownDivider}></div>
+										<button className={styles.dropdownItem} onClick={() => {
+											setUserMenuOpen(false);
+											logout();
+										}}>
+											<FaSignOutAlt />
+											退出登录
+										</button>
+									</div>
+								</div>
+							)}
+						</>
+					) : (
+						/* 未登录状态：显示登录/注册按钮 */
+						<AuthButtons onButtonClick={() => {
+							// 关闭可能打开的移动端菜单
+							if (mobileMenuOpen) {
+								setMobileMenuOpen(false);
+							}
+						}} />
 					)}
 				</div>
 			</div>

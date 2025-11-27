@@ -1,0 +1,113 @@
+.authButtons {
+  display: flex;
+  align-items: center;
+}
+
+.authButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+  border-color: rgba(59, 130, 246, 0.3);
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+}
+
+.authButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s;
+}
+
+.authButton:hover::before {
+  left: 100%;
+}
+
+.buttonIcon {
+  font-size: 16px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.buttonText {
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+.authButton:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
+  border-color: rgba(59, 130, 246, 0.6);
+  color: var(--accent-color);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.25);
+}
+
+.authButton:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+/* 发光动画效果 */
+@keyframes glow {
+  0% {
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+  }
+  50% {
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15), 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+  100% {
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+  }
+}
+
+.authButton {
+  animation: glow 3s ease-in-out infinite;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .authButton {
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 10px;
+    gap: 6px;
+  }
+
+  .buttonIcon {
+    font-size: 14px;
+  }
+
+  .buttonText {
+    font-size: 12px;
+  }
+}
+
+/* 暗色主题适配 */
+@media (prefers-color-scheme: dark) {
+  .authButton {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.15));
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+  }
+
+  .authButton:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(147, 51, 234, 0.25));
+    border-color: rgba(59, 130, 246, 0.7);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+  }
+}

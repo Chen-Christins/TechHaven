@@ -28,7 +28,6 @@ import {
 } from 'react-icons/fa';
 import CustomSelect from '../../components/customSelect/CustomSelect';
 import Input from '../../components/input/Input';
-import Button from '../../components/button/Button';
 import Loading from '../../components/loading/Loading';
 import { confirm } from '../../components/confirm/Confirm';
 import type { SelectOption } from '../../types/index';
@@ -422,14 +421,7 @@ const ArticleManagement: React.FC = () => {
     };
 
     // 切换置顶状态
-    const toggleFeatured = (article: Article) => {
-        setArticles(prev => prev.map(a =>
-            a.id === article.id
-                ? { ...a, featured: !a.featured, updatedAt: new Date().toISOString().split('T')[0] }
-                : a
-        ));
-    };
-
+    
     // 格式化日期
     const formatDate = (dateString: string) => {
         if (!dateString) return '-';
