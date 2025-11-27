@@ -12,9 +12,9 @@ const SampleCustomSelect: React.FC = () => {
     { id: 4, name: '美食', color: '#f72585' },
   ];
 
-  const handleCategoryChange = (selectedOption: SelectOption | null, selectedIndex: number, oldIndex: number) => {
+  const handleCategoryChange = (selectedOption: SelectOption | null, _selectedIndex: number, _oldIndex: number) => {
     setSelectedCategory(selectedOption);
-    console.log('选择变化:', { selectedOption, selectedIndex, oldIndex });
+    // console.log('选择变化:', { selectedOption, selectedIndex, oldIndex });
   };
 
   return (

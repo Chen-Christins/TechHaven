@@ -11,7 +11,7 @@ function SampleInput() {
 		setIsLoading(true);
 		// 模拟异步操作
 		setTimeout(() => setIsLoading(false), 2000);
-		console.log('搜索:', searchText);
+		// console.log('搜索:', searchText);
 	};
 
 	return (

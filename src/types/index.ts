@@ -1,22 +1,21 @@
-import type { ReactNode } from "react";
 
 // 文章类型
 export interface Article {
-    publishDate: ReactNode;
-    excerpt: ReactNode;
-    readTime: ReactNode;
-    likes: ReactNode;
-    id: number | string;
     author: string;
     title: string;
-    summary: string;
-    date: string; // 格式：YYYY-MM-DD
-    category: string;
-    tags: string[];
+    content: string;
+    id: string | number;
+    user_id: string | number;
+    favorites: number;
+    praise: number;
     views: number;
-    praises: number;
     publish_time: string;
-    comments: number;
+    update_time: string;
+    type: number;
+    state: number;
+    is_deleted: boolean;
+    labels?: Array<string | number>;
+    categorys?: Array<string | number>;
 }
 
 export interface UserProfile {

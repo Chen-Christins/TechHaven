@@ -199,7 +199,7 @@ class HttpClient {
         });
 
         // 调试：输出HTTP配置信息
-        // console.log('🔗 HTTP实例配置:', {
+        // // console.log('🔗 HTTP实例配置:', {
         //     baseURL: this.baseURL,
         //     withCredentials: requireCredentials,
         //     useProxy,
@@ -218,7 +218,7 @@ class HttpClient {
             (config) => {
                 // 调试：输出请求信息
                 const fullURL = `${config.baseURL}${config.url}`;
-                // console.log('🚀 发送请求:', {
+                // // console.log('🚀 发送请求:', {
                 //     url: config.url,
                 //     method: config.method,
                 //     baseURL: config.baseURL,
@@ -228,7 +228,7 @@ class HttpClient {
 
                 // 额外调试：检查路径是否正确
                 if (import.meta.env.VITE_USE_PROXY === 'true' && fullURL.includes('/api/')) {
-                    // console.log('✅ 代理路径正确:', fullURL);
+                    // // console.log('✅ 代理路径正确:', fullURL);
                 } else if (import.meta.env.VITE_USE_PROXY === 'true') {
                     // console.warn('⚠️ 代理路径可能有问题:', fullURL);
                 }
@@ -251,7 +251,7 @@ class HttpClient {
         this.instance.interceptors.response.use(
             (response: AxiosResponse<HttpResponse>) => {
                 // 调试：输出响应信息
-                // console.log('📥 收到响应:', {
+                // // console.log('📥 收到响应:', {
                 //     status: response.status,
                 //     statusText: response.statusText,
                 //     url: response.config.url,
@@ -277,14 +277,14 @@ class HttpClient {
                         }
 
                         if (sToken) {
-                            // console.log('🔑 从Cookie中获取到S_TOKEN:', sToken);
+                            // // console.log('🔑 从Cookie中获取到S_TOKEN:', sToken);
                             // 将token添加到响应数据中，方便后续处理
                             (response.data as any).token = sToken;
                         } else {
-                            // console.log('🍪 未在Cookie中找到S_TOKEN，完整Cookie:', cookies);
+                            // // console.log('🍪 未在Cookie中找到S_TOKEN，完整Cookie:', cookies);
                         }
                     } else {
-                        // console.log('📥 响应中没有Set-Cookie header');
+                        // // console.log('📥 响应中没有Set-Cookie header');
                     }
                 }
 
@@ -302,7 +302,7 @@ class HttpClient {
                             const businessCode = Number(data.code);
                             const errorMsg = (data as any)?.msg || '请求失败';
                             let mappedMessage = errorMsg;
-                            // console.log('⚠️ 业务错误响应:', {
+                            // // console.log('⚠️ 业务错误响应:', {
                             //     businessCode,
                             //     errorMsg,
                             //     url: response.config.url,

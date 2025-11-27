@@ -2,7 +2,7 @@
  * 文章分页查询请求参数类型
  */
 export interface ListArticlesParams {
-    user_id: string | number;
+    user_id?: string | number;
     page_from: number;
     page_size?: number;
     state?: number;
@@ -58,7 +58,8 @@ export interface ArticleDetailsResponse {
     views: number;
     praise: number;
     favorites: number;
-    labels?: Array<string>;
+    labels?: Array<string | number>;
+    categorys?: Array<string | number>;
 }
 /**
  * 删除文章请求参数类型
@@ -105,11 +106,13 @@ export class ArticleService {
      */
     static async listArticlesByUserIdPages(params: ListArticlesParams): Promise<ListArticlesResponse> {
         const formData = new URLSearchParams();
-        formData.append('user_id', String(params.user_id));
+        if (params.user_id !== undefined && params.user_id !== null && params.user_id !== '') {
+            formData.append('user_id', String(params.user_id));
+        }
         formData.append('page_from', String(params.page_from));
         formData.append('page_size', String(params.page_size ?? 6));
         formData.append('state', String(params.state ?? 0));
-        const response = await http.post<ListArticlesResponse>('/article/list', formData.toString(), {
+        const response = await http.post<ListArticlesResponse>('/article/query', formData.toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
@@ -145,7 +148,7 @@ export class ArticleService {
         const formData = new URLSearchParams();
         formData.append('id', String(params.id));
         formData.append('type', String(params.type));
-        const response = await http.post<ArticleDetailsResponse>('/article/details', formData.toString(), {
+        const response = await http.post<ArticleDetailsResponse>('/article/detail', formData.toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },

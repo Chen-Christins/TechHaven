@@ -14,38 +14,49 @@ import {
     FaBars,
     FaTimes
 } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Loading from '../../components/loading/Loading';
 import ThemeToggle from '../../components/themeToggle/ThemeToggle';
 import UserDropdown from '../../components/userDropdown/UserDropdown';
 import CustomSelect from '../../components/customSelect/CustomSelect';
 import Footer from '../../components/footer/Footer';
+import { confirm } from '../../components/confirm/Confirm';
+import { useAuth } from '../../contexts/AuthContext';
 import type { SelectOption } from '../../types/index';
+import ArticleService from '../../services/articleService';
+import LabelService from '../../services/labelService';
+import type { ArticleDetailsResponse } from '../../services/articleService';
+import { formatToChinaTime } from '../../utils/utils';
 import styles from './PersonalCenter.module.css';
 
-// 个人文章类型
+// 个人文章类型 - 基于API数据结构
 interface PersonalArticle {
-    id: number;
+    id: string | number;
     title: string;
-    summary: string;
+    content: string;
+    author: string;
+    publish_time: string;
+    update_time: string;
+    state: number;
+    views: number;
+    praise: number;
+    favorites: number;
+    labels?: Array<string | number>;
+    categorys?: Array<string | number>;
+    // 计算字段，用于UI显示
+    status: 'published' | 'draft' | 'private' | 'unallowed' | 'reviewing';
     category: string;
     tags: string[];
-    date: string;
-    views: number;
-    likes: number;
-    comments: number;
-    status: 'published' | 'draft' | 'private';
-    publishTime?: string;
 }
 
 // 个人标签类型
 interface PersonalTag {
     id: number;
     name: string;
-    description: string;
-    articleCount: number;
+    description?: string | '暂无';
+    articleCount?: number | 0;
     color: string;
-    createTime: string;
+    createTime?: string | '未知时间';
 }
 
 // 个人统计类型
@@ -59,221 +70,44 @@ interface PersonalStats {
     totalTags: number;
 }
 
-// 模拟个人文章数据
-const mockPersonalArticles: PersonalArticle[] = [
-    {
-        id: 1,
-        title: "React 18 新特性详解",
-        summary: "本文详细介绍React 18的自动批处理、并发渲染、Transitions等核心新特性，帮助开发者快速上手。",
-        category: "前端框架",
-        tags: ["React", "TypeScript", "前端"],
-        date: "2024-05-20",
-        views: 1250,
-        likes: 45,
-        comments: 12,
-        status: "published",
-        publishTime: "2024-05-20 10:30"
-    },
-    {
-        id: 2,
-        title: "TypeScript 类型编程实战",
-        summary: "从基础到进阶，讲解TypeScript泛型、条件类型、工具类型的实战用法，解决实际开发中的类型问题。",
-        category: "TypeScript",
-        tags: ["TypeScript", "类型编程", "前端工程化"],
-        date: "2024-05-15",
-        views: 980,
-        likes: 32,
-        comments: 8,
-        status: "published",
-        publishTime: "2024-05-15 14:20"
-    },
-    {
-        id: 3,
-        title: "CSS Grid 布局完全指南（草稿）",
-        summary: "全面解析CSS Grid布局的语法、属性和实战案例，掌握复杂页面的高效布局方案。",
-        category: "CSS",
-        tags: ["CSS", "Grid", "布局"],
-        date: "2024-05-10",
-        views: 0,
-        likes: 0,
-        comments: 0,
-        status: "draft"
-    },
-    {
-        id: 4,
-        title: "Vue 3 Composition API 实战",
-        summary: "深入讲解Vue 3的Composition API，包括响应式系统、生命周期钩子、自定义组合等高级特性。",
-        category: "Vue",
-        tags: ["Vue", "Composition API", "前端框架"],
-        date: "2024-05-05",
-        views: 750,
-        likes: 28,
-        comments: 5,
-        status: "published",
-        publishTime: "2024-05-05 16:45"
-    },
-    {
-        id: 5,
-        title: "前端性能优化最佳实践",
-        summary: "从网络优化、资源压缩、代码分割等方面，全面介绍前端性能优化的实用技巧和工具。",
-        category: "性能优化",
-        tags: ["性能", "优化", "最佳实践"],
-        date: "2024-04-30",
-        views: 1100,
-        likes: 38,
-        comments: 10,
-        status: "published",
-        publishTime: "2024-04-30 09:15"
-    },
-    {
-        id: 6,
-        title: "Vue 3 Composition API 详解",
-        summary: "深入解析Vue 3的Composition API，包括setup函数、响应式系统、生命周期等核心概念。",
-        category: "Vue",
-        tags: ["Vue", "Composition API", "JavaScript"],
-        date: "2024-04-25",
-        views: 890,
-        likes: 28,
-        comments: 6,
-        status: "published",
-        publishTime: "2024-04-25 16:45"
-    },
-    {
-        id: 7,
-        title: "微前端架构设计与实践",
-        summary: "介绍微前端架构的设计理念、技术选型、实施方案以及在大型项目中的应用案例。",
-        category: "架构设计",
-        tags: ["微前端", "架构", "qiankun"],
-        date: "2024-04-20",
-        views: 750,
-        likes: 22,
-        comments: 4,
-        status: "draft",
-        publishTime: ""
-    },
-    {
-        id: 8,
-        title: "Node.js 服务端开发入门",
-        summary: "从零开始学习Node.js服务端开发，包括Express框架、数据库操作、API设计等内容。",
-        category: "Node.js",
-        tags: ["Node.js", "Express", "后端"],
-        date: "2024-04-15",
-        views: 680,
-        likes: 18,
-        comments: 3,
-        status: "published",
-        publishTime: "2024-04-15 10:20"
-    },
-    {
-        id: 9,
-        title: "Webpack 5 配置详解",
-        summary: "详细介绍Webpack 5的配置方法，包括loader、plugin、优化策略等高级特性。",
-        category: "工程化",
-        tags: ["Webpack", "构建工具", "工程化"],
-        date: "2024-04-10",
-        views: 920,
-        likes: 35,
-        comments: 8,
-        status: "published",
-        publishTime: "2024-04-10 14:30"
-    },
-    {
-        id: 10,
-        title: "JavaScript 异步编程完全指南",
-        summary: "从回调函数到Promise，再到async/await，全面掌握JavaScript异步编程的各种模式。",
-        category: "JavaScript",
-        tags: ["JavaScript", "异步编程", "Promise"],
-        date: "2024-04-05",
-        views: 1150,
-        likes: 42,
-        comments: 11,
-        status: "published",
-        publishTime: "2024-04-05 11:15"
-    },
-    {
-        id: 11,
-        title: "React Hooks 最佳实践",
-        summary: "总结React Hooks的使用技巧、性能优化、自定义Hooks开发等最佳实践经验。",
-        category: "React",
-        tags: ["React", "Hooks", "最佳实践"],
-        date: "2024-03-30",
-        views: 1380,
-        likes: 56,
-        comments: 15,
-        status: "published",
-        publishTime: "2024-03-30 09:45"
-    },
-    {
-        id: 12,
-        title: "CSS-in-JS 方案对比分析",
-        summary: "对比分析styled-components、emotion、jss等CSS-in-JS方案的优缺点和适用场景。",
-        category: "CSS",
-        tags: ["CSS", "CSS-in-JS", "样式方案"],
-        date: "2024-03-25",
-        views: 720,
-        likes: 24,
-        comments: 5,
-        status: "private",
-        publishTime: ""
-    },
-    {
-        id: 13,
-        title: "前端监控体系搭建",
-        summary: "介绍如何搭建完整的前端监控体系，包括性能监控、错误监控、用户行为监控等。",
-        category: "监控",
-        tags: ["监控", "性能", "错误追踪"],
-        date: "2024-03-20",
-        views: 890,
-        likes: 31,
-        comments: 7,
-        status: "draft",
-        publishTime: ""
-    },
-];
-
-// 模拟个人标签数据
-const mockPersonalTags: PersonalTag[] = [
-    {
-        id: 1,
-        name: "React",
-        description: "React相关技术文章",
-        articleCount: 3,
-        color: "#61dafb",
-        createTime: "2024-01-15"
-    },
-    {
-        id: 2,
-        name: "TypeScript",
-        description: "TypeScript类型系统与编程",
-        articleCount: 2,
-        color: "#3178c6",
-        createTime: "2024-01-20"
-    },
-    {
-        id: 3,
-        name: "CSS",
-        description: "CSS样式与布局技术",
-        articleCount: 4,
-        color: "#1572b6",
-        createTime: "2024-01-25"
-    },
-    {
-        id: 4,
-        name: "Vue",
-        description: "Vue框架开发相关",
-        articleCount: 2,
-        color: "#4fc08d",
-        createTime: "2024-02-01"
-    },
-    {
-        id: 5,
-        name: "性能优化",
-        description: "前端性能优化技巧",
-        articleCount: 1,
-        color: "#ff6b6b",
-        createTime: "2024-02-10"
+// 辅助函数：将API文章数据转换为PersonalArticle格式
+const convertToPersonalArticle = (article: ArticleDetailsResponse): PersonalArticle => {
+    // 根据state字段确定文章状态
+    let status: 'published' | 'draft' | 'private' | 'unallowed' | 'reviewing' = 'draft';
+    if (article.state === 1) {
+        status = 'reviewing';
+    } else if (article.state === 2) {
+        status = 'published';
+    } else if (article.state === 3) {
+        status = 'unallowed';
+    } else if (article.state === 4) {
+        status = 'draft';
+    } else if (article.state === 5) {
+        status = 'private';
     }
-];
+
+    return {
+        id: article.id,
+        title: article.title || '无标题',
+        content: article.content || '',
+        author: article.author || '未知作者',
+        publish_time: article.publish_time,
+        update_time: article.update_time,
+        state: article.state,
+        views: article.views || 0,
+        praise: article.praise || 0,
+        favorites: article.favorites || 0,
+        labels: article.labels || [],
+        categorys: article.categorys || [],
+        // 计算字段
+        status,
+        category: article.categorys && article.categorys.length > 0 ? String(article.categorys[0]) : '未分类',
+        tags: article.labels ? article.labels.map(label => String(label)) : []
+    };
+};
+
+// 标签数据暂时为空，后续可根据需要实现标签管理
+const mockPersonalTags: PersonalTag[] = [];
 
 interface NavItem {
     id: string;
@@ -283,6 +117,8 @@ interface NavItem {
 }
 
 const PersonalCenter: React.FC = () => {
+    const navigate = useNavigate();
+    const { user, isAuthenticated, logout } = useAuth();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'articles' | 'tags' | 'stats'>('articles');
@@ -291,17 +127,21 @@ const PersonalCenter: React.FC = () => {
     // 文章管理状态
     const [articles, setArticles] = useState<PersonalArticle[]>([]);
     const [filteredArticles, setFilteredArticles] = useState<PersonalArticle[]>([]);
+    const [articleIds, setArticleIds] = useState<(string | number)[]>([]);
+    const [totalArticles, setTotalArticles] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft' | 'private'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft' | 'private' | 'unallowed' | 'reviewing'>('all');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
     // 状态筛选选项
     const statusOptions: SelectOption[] = [
-        { id: 'all', name: '全部状态' },
-        { id: 'published', name: '已发布' },
-        { id: 'draft', name: '草稿' },
-        { id: 'private', name: '私密' }
+        { id: 'all', name: '全部状态', color: '#6c757d' },
+        { id: 'published', name: '已发布', color: '#28a745' },
+        { id: 'draft', name: '草稿', color: '#ffc107' },
+        { id: 'private', name: '私密', color: '#dc3545' },
+        { id: 'unallowed', name: '未通过', color: '#1474e2ff' },
+        { id: 'reviewing', name: '审核中', color: '#17a2b8' },
     ];
 
     // 当前选中的状态选项
@@ -309,9 +149,11 @@ const PersonalCenter: React.FC = () => {
 
     // 标签管理状态
     const [tags, setTags] = useState<PersonalTag[]>([]);
+    const [tagsLoading, setTagsLoading] = useState(false);
     const [showTagModal, setShowTagModal] = useState(false);
     const [editingTag, setEditingTag] = useState<PersonalTag | null>(null);
     const [tagForm, setTagForm] = useState({ name: '', description: '', color: '#61dafb' });
+    const [savingTag, setSavingTag] = useState(false);
 
     // 统计数据状态
     const [stats, setStats] = useState<PersonalStats>({
@@ -324,18 +166,22 @@ const PersonalCenter: React.FC = () => {
         totalTags: 0
     });
 
-    // 模拟当前用户数据
-    const currentUser = {
-        name: 'Admin',
-        avatar: 'https://i.pravatar.cc/150?img=12',
-        role: '管理员',
-        email: 'admin@techblog.com'
-    };
+    // 用户数据（从认证上下文获取，与导航栏保持一致）
+    const currentUser = user ? {
+        name: user.name || user.account || '用户',
+        avatar: user.avatar || "https://picsum.photos/id/64/200", // 默认头像
+        role: user.role || '用户',
+        email: user.email
+    } : null;
 
     // 处理退出登录
     const handleLogout = () => {
-        console.log('用户退出登录');
-        // 这里可以添加实际的退出逻辑，比如清除token、跳转登录页等
+        logout();
+    };
+
+    // 处理登录跳转
+    const handleLoginRedirect = () => {
+        navigate("/auth");
     };
 
     // 导航菜单配置
@@ -345,29 +191,109 @@ const PersonalCenter: React.FC = () => {
         { id: 'stats', label: '数据统计', icon: <FaChartBar />, path: '/personal/stats' },
     ];
 
-    // 初始化数据
+    // 获取文章ID列表
     useEffect(() => {
-        setLoading(true);
-        setTimeout(() => {
-            setArticles(mockPersonalArticles);
-            setFilteredArticles(mockPersonalArticles);
-            setTags(mockPersonalTags);
+        const fetchArticleIds = async () => {
+            if (!user?.id) return;
 
-            // 计算统计数据
-            const calculatedStats: PersonalStats = {
-                totalArticles: mockPersonalArticles.length,
-                publishedArticles: mockPersonalArticles.filter(a => a.status === 'published').length,
-                draftArticles: mockPersonalArticles.filter(a => a.status === 'draft').length,
-                totalViews: mockPersonalArticles.reduce((sum, a) => sum + a.views, 0),
-                totalLikes: mockPersonalArticles.reduce((sum, a) => sum + a.likes, 0),
-                totalComments: mockPersonalArticles.reduce((sum, a) => sum + a.comments, 0),
-                totalTags: mockPersonalTags.length
-            };
-            setStats(calculatedStats);
-            setLoading(false);
-        }, 800);
+            try {
+                setLoading(true);
+                const res = await ArticleService.listArticlesByUserIdPages({
+                    user_id: user.id,
+                    page_from: currentPage,
+                    page_size: itemsPerPage,
+                });
+                setTotalArticles(res.total);
+                setArticleIds(res.ids);
+                console.log('获取文章ID列表成功:', res.total, res.ids);
+            } catch (err) {
+                console.error('获取文章ID列表失败:', err);
+                setArticleIds([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchArticleIds();
+    }, [currentPage, user?.id]);
 
-        // 清理tooltip
+    // 根据ID列表获取文章详情
+    useEffect(() => {
+        const fetchArticleDetails = async () => {
+            if (!Array.isArray(articleIds) || articleIds.length === 0) {
+                setArticles([]);
+                return;
+            }
+
+            try {
+                const detailsList = await Promise.all(
+                    articleIds.map(id => ArticleService.getArticleDetails({ id, type: 0 }))
+                );
+                const personalArticles = detailsList.map(convertToPersonalArticle);
+                setArticles(personalArticles);
+            } catch (err) {
+                console.error('获取文章详情失败:', err);
+                setArticles([]);
+            }
+        };
+
+        fetchArticleDetails();
+    }, [articleIds]);
+
+    // 初始化标签数据
+    useEffect(() => {
+        setTags(mockPersonalTags);
+    }, []);
+
+    // 在用户切换到 "我的标签" 标签页时加载标签数据（仅在已登录时）
+    useEffect(() => {
+        const fetchPersonalTags = async () => {
+            setTagsLoading(true);
+            if (!user || !user.id) {
+                setTags([]);
+                setTagsLoading(false);
+                return;
+            }
+
+            try {
+                const res = await LabelService.queryLabel({ user_id: user.id });
+                const mapped = (res || []).map((t: any) => ({
+                    id: t.id,
+                    name: t.name,
+                    description: t.description || '暂无',
+                    articleCount: (t.article_count as number) || 0,
+                    color: t.color || '#61dafb',
+                    createTime: t.create_time || '未知时间'
+                }));
+                setTags(mapped);
+            } catch (err) {
+                console.error('获取个人标签失败:', err);
+                setTags([]);
+            } finally {
+                setTagsLoading(false);
+            }
+        };
+
+        if (activeTab === 'tags') {
+            fetchPersonalTags();
+        }
+    }, [activeTab, user?.id]);
+
+    // 计算统计数据
+    useEffect(() => {
+        const calculatedStats: PersonalStats = {
+            totalArticles: totalArticles,
+            publishedArticles: articles.filter(a => a.status === 'published').length,
+            draftArticles: articles.filter(a => a.status === 'draft').length,
+            totalViews: articles.reduce((sum, a) => sum + a.views, 0),
+            totalLikes: articles.reduce((sum, a) => sum + a.praise, 0),
+            totalComments: articles.reduce((sum, a) => sum + a.favorites, 0), // 使用favorites作为评论数
+            totalTags: tags.length
+        };
+        setStats(calculatedStats);
+    }, [articles, tags, totalArticles]);
+
+    // 清理tooltip
+    useEffect(() => {
         return () => {
             const tooltip = document.getElementById('sidebar-tooltip');
             if (tooltip && tooltip.parentNode) {
@@ -375,6 +301,65 @@ const PersonalCenter: React.FC = () => {
             }
         };
     }, []);
+
+    // 文章搜索和筛选
+    useEffect(() => {
+        let filtered = articles;
+
+        if (searchTerm) {
+            filtered = filtered.filter(article =>
+                article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                article.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                article.category.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(article => article.status === statusFilter);
+        }
+
+        setFilteredArticles(filtered);
+        // 只有在搜索或筛选条件变化时才重置页码
+        if (searchTerm || statusFilter !== 'all') {
+            setCurrentPage(1);
+        }
+    }, [searchTerm, statusFilter, articles]);
+
+    // 如果用户未登录，显示提示
+    if (!isAuthenticated || !currentUser) {
+        return (
+            <div className={styles.pageContainer}>
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: '60vh',
+                    textAlign: 'center'
+                }}>
+                    <h2 style={{ marginBottom: '16px', color: 'var(--text-primary)' }}>
+                        请先登录
+                    </h2>
+                    <p style={{ marginBottom: '24px', color: 'var(--text-secondary)' }}>
+                        您需要登录后才能访问个人中心
+                    </p>
+                    <div
+                        onClick={handleLoginRedirect}
+                        style={{
+                            padding: '12px 24px',
+                            backgroundColor: 'var(--primary)',
+                            color: 'white',
+                            textDecoration: 'none',
+                            borderRadius: '6px',
+                            fontWeight: '500'
+                        }}
+                    >
+                        去登录
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // 切换侧边栏
     const toggleSidebar = () => {
@@ -395,35 +380,15 @@ const PersonalCenter: React.FC = () => {
     const handleStatusChange = (selectedOption: SelectOption | null) => {
         setSelectedStatus(selectedOption);
         if (selectedOption) {
-            setStatusFilter(selectedOption.id as 'all' | 'published' | 'draft' | 'private');
+            setStatusFilter(selectedOption.id as 'all' | 'published' | 'draft' | 'private' | 'unallowed' | 'reviewing');
         }
     };
 
-    // 文章搜索和筛选
-    useEffect(() => {
-        let filtered = articles;
-
-        if (searchTerm) {
-            filtered = filtered.filter(article =>
-                article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                article.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                article.category.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-
-        if (statusFilter !== 'all') {
-            filtered = filtered.filter(article => article.status === statusFilter);
-        }
-
-        setFilteredArticles(filtered);
-        setCurrentPage(1);
-    }, [searchTerm, statusFilter, articles]);
-
     // 分页计算
-    const totalPages = Math.ceil(filteredArticles.length / itemsPerPage);
+    const totalPages = Math.ceil(totalArticles / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentArticles = filteredArticles.slice(startIndex, endIndex);
+    const endIndex = startIndex + articles.length;
+    const currentArticles = filteredArticles;
 
     // 生成页码数组
     const getPageNumbers = () => {
@@ -457,50 +422,114 @@ const PersonalCenter: React.FC = () => {
     };
 
     // 删除文章
-    const handleDeleteArticle = (id: number) => {
+    const handleDeleteArticle = async (id: string | number) => {
         if (window.confirm('确定要删除这篇文章吗？')) {
-            setArticles(articles.filter(article => article.id !== id));
+            try {
+                await ArticleService.deleteArticle({ ids: String(id) });
+                // 删除成功后重新获取文章列表
+                const res = await ArticleService.listArticlesByUserIdPages({
+                    user_id: user?.id,
+                    page_from: currentPage,
+                    page_size: itemsPerPage,
+                });
+                setTotalArticles(res.total);
+                setArticleIds(res.ids);
+            } catch (err) {
+                console.error('删除文章失败:', err);
+                alert('删除文章失败，请重试');
+            }
         }
     };
 
     // 切换文章状态
-    const handleToggleStatus = (id: number, newStatus: 'published' | 'draft' | 'private') => {
-        setArticles(articles.map(article =>
-            article.id === id ? { ...article, status: newStatus } : article
-        ));
+    const handleToggleStatus = async (id: string | number, newStatus: 'published' | 'draft' | 'private' | 'unallowed' | 'reviewing') => {
+        try {
+            // 将状态转换为API需要的格式
+            let state = 0; // draft
+            if (newStatus === 'published') {
+                state = 2;
+            } else if (newStatus === 'private') {
+                state = 5;
+            } else if (newStatus === 'draft') {
+                state = 4;
+            } else if (newStatus === 'unallowed') {
+                state = 3;
+            } else if (newStatus === 'reviewing') {
+                state = 1;
+            }
+
+            // 这里需要调用更新文章状态的API
+            // 由于API可能没有直接的状态更新接口，暂时只更新本地状态
+            setArticles(articles.map(article =>
+                article.id === id ? { ...article, status: newStatus, state } : article
+            ));
+        } catch (err) {
+            console.error('切换文章状态失败:', err);
+            alert('切换文章状态失败，请重试');
+        }
     };
 
     // 添加/编辑标签
-    const handleSaveTag = () => {
+    const handleSaveTag = async () => {
         if (!tagForm.name.trim()) return;
 
-        if (editingTag) {
-            setTags(tags.map(tag =>
-                tag.id === editingTag.id
-                    ? { ...tag, name: tagForm.name, description: tagForm.description, color: tagForm.color }
-                    : tag
-            ));
-        } else {
-            const newTag: PersonalTag = {
-                id: Math.max(...tags.map(t => t.id)) + 1,
-                name: tagForm.name,
-                description: tagForm.description,
-                articleCount: 0,
-                color: tagForm.color,
-                createTime: new Date().toISOString().split('T')[0]
-            };
-            setTags([...tags, newTag]);
-        }
+        setSavingTag(true);
+        try {
+            if (editingTag) {
+                // 编辑标签（暂时本地更新，待API支持）
+                setTags(tags.map(tag =>
+                    tag.id === editingTag.id
+                        ? { ...tag, name: tagForm.name, description: tagForm.description, color: tagForm.color }
+                        : tag
+                ));
+            } else {
+                // 创建新标签
+                const res = await LabelService.createLabel({
+                    name: tagForm.name,
+                    color: tagForm.color
+                });
 
-        setShowTagModal(false);
-        setEditingTag(null);
-        setTagForm({ name: '', description: '', color: '#61dafb' });
+                // 将API响应映射到PersonalTag格式
+                const newTag: PersonalTag = {
+                    id: Number(res.id),
+                    name: res.name,
+                    description: tagForm.description || '暂无',
+                    articleCount: 0,
+                    color: res.color,
+                    createTime: new Date().toISOString().split('T')[0]
+                };
+                setTags([...tags, newTag]);
+            }
+
+            setShowTagModal(false);
+            setEditingTag(null);
+            setTagForm({ name: '', description: '', color: '#61dafb' });
+        } catch (err) {
+            console.error('保存标签失败:', err);
+            alert('保存标签失败，请重试');
+        } finally {
+            setSavingTag(false);
+        }
     };
 
     // 删除标签
-    const handleDeleteTag = (id: number) => {
-        if (window.confirm('确定要删除这个标签吗？删除后关联文章将失去此标签。')) {
-            setTags(tags.filter(tag => tag.id !== id));
+    const handleDeleteTag = async (tag: PersonalTag) => {
+        const confirmed = await confirm({
+            title: '确认删除',
+            content: `确定要删除标签 "${tag.name}" 吗？删除后关联文章将失去此标签。`,
+            confirmText: '删除',
+            cancelText: '取消'
+        });
+
+        if (confirmed) {
+            try {
+                await LabelService.deleteLabel({ ids: String(tag.id) });
+                // 删除成功后从本地状态移除
+                setTags(tags.filter(t => t.id !== tag.id));
+            } catch (err) {
+                console.error('删除标签失败:', err);
+                alert('删除标签失败，请重试');
+            }
         }
     };
 
@@ -559,21 +588,13 @@ const PersonalCenter: React.FC = () => {
     // 编辑标签
     const handleEditTag = (tag: PersonalTag) => {
         setEditingTag(tag);
-        setTagForm({ name: tag.name, description: tag.description, color: tag.color });
+        setTagForm({ name: tag.name, description: tag.description || '', color: tag.color });
         setShowTagModal(true);
     };
 
     if (loading) {
         return (
             <div className={styles.pageContainer}>
-                <Loading size="large" text="正在加载个人数据..." />
-            </div>
-        );
-    }
-
-    if (loading) {
-        return (
-            <div className={styles.adminLayout}>
                 <Loading size="large" text="正在加载个人数据..." />
             </div>
         );
@@ -594,10 +615,10 @@ const PersonalCenter: React.FC = () => {
                 >
                     {/* Logo区域 */}
                     <div className={styles.adminSidebarHeader}>
-                        <Link to="/personal" className={styles.adminLogo}>
+                        <div onClick={() => navigate('/personal')} className={styles.adminLogo}>
                             <span className={styles.adminLogoIcon}>👤</span>
                             <span className={styles.adminLogoText}>个人中心</span>
-                        </Link>
+                        </div>
                         <button
                             className={styles.toggleSidebarBtn}
                             onClick={toggleSidebar}
@@ -670,7 +691,7 @@ const PersonalCenter: React.FC = () => {
                             <div className={styles.contentSection}>
                                 <div className={styles.sectionHeader}>
                                     <h2>我的文章</h2>
-                                    <button className={styles.addButton}>
+                                    <button onClick={() => navigate("/article/create")} className={styles.addButton}>
                                         <FaPlus />
                                         新建文章
                                     </button>
@@ -707,77 +728,122 @@ const PersonalCenter: React.FC = () => {
                                         <div>发布时间</div>
                                         <div>操作</div>
                                     </div>
-                                    {currentArticles.map(article => (
-                                        <div key={article.id} className={styles.listItem}>
-                                            <div className={styles.articleTitle}>
-                                                <div>{article.title}</div>
-                                                <div className={styles.articleSummary}>{article.summary}</div>
-                                            </div>
-                                            <div className={styles.articleCategory}>{article.category}</div>
-                                            <div className={styles.statusCell}>
-                                                <span className={`${styles.statusBadge} ${styles[article.status]}`}>
-                                                    {article.status === 'published' ? '已发布' :
-                                                     article.status === 'draft' ? '草稿' : '私密'}
-                                                </span>
-                                            </div>
-                                            <div className={styles.dataCell}>
-                                                <div className={styles.dataItem}>
-                                                    <FaEye /> {article.views}
+                                    {currentArticles.length === 0 ? (
+                                        <div className={styles.emptyState}>
+                                            <p>暂无文章</p>
+                                        </div>
+                                    ) : (
+                                        currentArticles.map(article => (
+                                            <div key={article.id} className={styles.listItem}>
+                                                <div className={styles.articleTitle}>
+                                                    <div>{article.title}</div>
+                                                    <div className={styles.articleSummary}>
+                                                        {article.content.substring(0, 80) || '无内容'}...
+                                                    </div>
                                                 </div>
-                                                <div className={styles.dataItem}>
-                                                    <FaThumbsUp /> {article.likes}
+                                                <div className={styles.articleCategory}>{article.category}</div>
+                                                <div className={styles.statusCell}>
+                                                    <span className={`${styles.statusBadge} ${styles[article.status]}`}>
+                                                        {article.status === 'published' ? '已发布' :
+                                                         article.status === 'draft' ? '草稿' :
+                                                         article.status === 'private' ? '私密' :
+                                                         article.status === 'reviewing' ? '审核中' : '未通过'}
+                                                    </span>
                                                 </div>
-                                                <div className={styles.dataItem}>
-                                                    <FaComment /> {article.comments}
+                                                <div className={styles.dataCell}>
+                                                    <div className={styles.dataItem}>
+                                                        <FaEye /> {article.views}
+                                                    </div>
+                                                    <div className={styles.dataItem}>
+                                                        <FaThumbsUp /> {article.praise}
+                                                    </div>
+                                                    <div className={styles.dataItem}>
+                                                        <FaComment /> {article.favorites}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className={styles.dateCell}>
-                                                <FaCalendarAlt />
-                                                {article.publishTime || '-'}
-                                            </div>
-                                            <div className={styles.actions}>
-                                                <button className={styles.actionButton} title="查看">
-                                                    <FaEye />
-                                                </button>
-                                                <button className={styles.actionButton} title="编辑">
-                                                    <FaEdit />
-                                                </button>
-                                                {article.status === 'draft' && (
+                                                <div className={styles.dateCell}>
+                                                    <FaCalendarAlt />
+                                                    {article.publish_time ? formatToChinaTime(Number(article.publish_time)) : '-'}
+                                                </div>
+                                                <div className={styles.actions}>
                                                     <button
                                                         className={styles.actionButton}
-                                                        title="发布"
-                                                        onClick={() => handleToggleStatus(article.id, 'published')}
+                                                        title="查看"
+                                                        onClick={() => navigate(`/article/${article.id}`)}
                                                     >
-                                                        <FaPlus />
+                                                        <FaEye />
                                                     </button>
-                                                )}
-                                                {article.status === 'published' && (
                                                     <button
                                                         className={styles.actionButton}
-                                                        title="设为草稿"
-                                                        onClick={() => handleToggleStatus(article.id, 'draft')}
+                                                        title="编辑"
+                                                        onClick={() => navigate(`/article/edit/${article.id}`)}
                                                     >
                                                         <FaEdit />
                                                     </button>
-                                                )}
-                                                <button
-                                                    className={styles.actionButton}
-                                                    title="删除"
-                                                    onClick={() => handleDeleteArticle(article.id)}
-                                                >
-                                                    <FaTrash />
-                                                </button>
+                                                    {article.status === 'draft' && (
+                                                        <button
+                                                            className={styles.actionButton}
+                                                            title="提交审核"
+                                                            onClick={() => handleToggleStatus(article.id, 'reviewing')}
+                                                        >
+                                                            <FaPlus />
+                                                        </button>
+                                                    )}
+                                                    {article.status === 'reviewing' && (
+                                                        <button
+                                                            className={styles.actionButton}
+                                                            title="撤回审核"
+                                                            onClick={() => handleToggleStatus(article.id, 'draft')}
+                                                        >
+                                                            <FaEdit />
+                                                        </button>
+                                                    )}
+                                                    {article.status === 'published' && (
+                                                        <button
+                                                            className={styles.actionButton}
+                                                            title="设为私密"
+                                                            onClick={() => handleToggleStatus(article.id, 'private')}
+                                                        >
+                                                            <FaEdit />
+                                                        </button>
+                                                    )}
+                                                    {article.status === 'private' && (
+                                                        <button
+                                                            className={styles.actionButton}
+                                                            title="设为公开"
+                                                            onClick={() => handleToggleStatus(article.id, 'published')}
+                                                        >
+                                                            <FaPlus />
+                                                        </button>
+                                                    )}
+                                                    {article.status === 'unallowed' && (
+                                                        <button
+                                                            className={styles.actionButton}
+                                                            title="重新提交"
+                                                            onClick={() => handleToggleStatus(article.id, 'reviewing')}
+                                                        >
+                                                            <FaPlus />
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        className={styles.actionButton}
+                                                        title="删除"
+                                                        onClick={() => handleDeleteArticle(article.id)}
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))
+                                    )}
                                 </div>
 
                                 {/* 分页 */}
                                 {totalPages > 1 && (
                                     <div className={styles.pagination}>
                                         <div className={styles.paginationInfo}>
-                                            显示 {startIndex + 1} - {Math.min(endIndex, filteredArticles.length)} 条，
-                                            共 {filteredArticles.length} 篇文章
+                                            显示 {startIndex + 1} - {Math.min(endIndex, totalArticles)} 条，
+                                            共 {totalArticles} 篇文章
                                         </div>
                                         <div className={styles.paginationControls}>
                                             <button
@@ -841,36 +907,46 @@ const PersonalCenter: React.FC = () => {
                                 </div>
 
                                 <div className={styles.tagsGrid}>
-                                    {tags.map(tag => (
-                                        <div key={tag.id} className={styles.tagCard}>
-                                            <div className={styles.tagHeader}>
-                                                <div
-                                                    className={styles.tagColor}
-                                                    style={{ backgroundColor: tag.color }}
-                                                ></div>
-                                                <h3>{tag.name}</h3>
-                                            </div>
-                                            <p className={styles.tagDescription}>{tag.description}</p>
-                                            <div className={styles.tagStats}>
-                                                <span>{tag.articleCount} 篇文章</span>
-                                                <span>创建于 {tag.createTime}</span>
-                                            </div>
-                                            <div className={styles.tagActions}>
-                                                <button
-                                                    className={styles.actionButton}
-                                                    onClick={() => handleEditTag(tag)}
-                                                >
-                                                    <FaEdit />
-                                                </button>
-                                                <button
-                                                    className={styles.actionButton}
-                                                    onClick={() => handleDeleteTag(tag.id)}
-                                                >
-                                                    <FaTrash />
-                                                </button>
-                                            </div>
+                                    {tagsLoading ? (
+                                        <div style={{ padding: '24px', textAlign: 'center' }}>
+                                            <Loading size="small" text="正在加载标签..." />
                                         </div>
-                                    ))}
+                                    ) : tags.length === 0 ? (
+                                        <div style={{ textAlign: 'center', fontWeight: 700, padding: '8px 0', color: 'var(--text-secondary)' }}>
+                                            暂无标签
+                                        </div>
+                                    ) : (
+                                        tags.map(tag => (
+                                            <div key={tag.id} className={styles.tagCard}>
+                                                <div className={styles.tagHeader}>
+                                                    <div
+                                                        className={styles.tagColor}
+                                                        style={{ backgroundColor: tag.color }}
+                                                    ></div>
+                                                    <h3>{tag.name}</h3>
+                                                </div>
+                                                <p className={styles.tagDescription}>{tag.description}</p>
+                                                <div className={styles.tagStats}>
+                                                    <span>{tag.articleCount} 篇文章</span>
+                                                    <span>创建于 {tag.createTime}</span>
+                                                </div>
+                                                <div className={styles.tagActions}>
+                                                    <button
+                                                        className={styles.actionButton}
+                                                        onClick={() => handleEditTag(tag)}
+                                                    >
+                                                        <FaEdit />
+                                                    </button>
+                                                    <button
+                                                        className={styles.actionButton}
+                                                        onClick={() => handleDeleteTag(tag)}
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
 
                                 {/* 标签模态框 */}
@@ -932,8 +1008,12 @@ const PersonalCenter: React.FC = () => {
                                                 >
                                                     取消
                                                 </button>
-                                                <button className={styles.confirmButton} onClick={handleSaveTag}>
-                                                    {editingTag ? '更新' : '创建'}
+                                                <button
+                                                    className={styles.confirmButton}
+                                                    onClick={handleSaveTag}
+                                                    disabled={savingTag}
+                                                >
+                                                    {savingTag ? '保存中...' : (editingTag ? '更新' : '创建')}
                                                 </button>
                                             </div>
                                         </div>

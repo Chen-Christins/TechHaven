@@ -163,24 +163,24 @@ const UserManagement: React.FC = () => {
 
     // 筛选选项数据
     const roleOptions: SelectOption[] = [
-        { id: '', name: '全部角色' },
-        { id: 'admin', name: '管理员' },
-        { id: 'moderator', name: '版主' },
-        { id: 'user', name: '普通用户' }
+        { id: '', name: '全部角色', color: '#6c757d' },
+        { id: 'admin', name: '管理员', color: '#dc3545' },
+        { id: 'moderator', name: '版主', color: '#28a745' },
+        { id: 'user', name: '普通用户', color: '#007bff' }
     ];
 
     const statusOptions: SelectOption[] = [
-        { id: '', name: '全部状态' },
-        { id: 'active', name: '活跃' },
-        { id: 'inactive', name: '非活跃' },
-        { id: 'pending', name: '待审核' }
+        { id: '', name: '全部状态', color: '#6c757d' },
+        { id: 'active', name: '活跃', color: '#28a745' },
+        { id: 'inactive', name: '非活跃', color: '#ffc107' },
+        { id: 'pending', name: '待审核', color: '#fd7e14' }
     ];
 
     const dateRangeOptions: SelectOption[] = [
-        { id: '', name: '全部时间' },
-        { id: '7days', name: '最近7天' },
-        { id: '30days', name: '最近30天' },
-        { id: '90days', name: '最近90天' }
+        { id: '', name: '全部时间', color: '#6c757d' },
+        { id: '7days', name: '最近7天', color: '#17a2b8' },
+        { id: '30days', name: '最近30天', color: '#17a2b8' },
+        { id: '90days', name: '最近90天', color: '#17a2b8' }
     ];
 
     // 处理CustomSelect选择

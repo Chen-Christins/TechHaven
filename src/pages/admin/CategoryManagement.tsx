@@ -66,23 +66,23 @@ const CategoryManagement: React.FC = () => {
 
     // 排序选项
     const sortOptions = [
-        { id: 'name', name: '按名称' },
-        { id: 'articleCount', name: '按文章数' },
-        { id: 'views', name: '按浏览量' },
-        { id: 'createdAt', name: '按创建时间' }
+        { id: 'name', name: '按名称', color: '#007bff' },
+        { id: 'articleCount', name: '按文章数', color: '#007bff' },
+        { id: 'views', name: '按浏览量', color: '#007bff' },
+        { id: 'createdAt', name: '按创建时间', color: '#007bff' }
     ];
 
     // 状态选项
     const statusOptions = [
-        { id: 'active', name: '活跃' },
-        { id: 'inactive', name: '停用' }
+        { id: 'active', name: '活跃', color: '#28a745' },
+        { id: 'inactive', name: '停用', color: '#dc3545' }
     ];
 
     // 动态获取父级分类选项
     const getParentCategoryOptions = () => {
-        const parentOptions = [{ id: '', name: '无（顶级分类）' }];
+        const parentOptions = [{ id: '', name: '无（顶级分类）', color: '#6c757d' }];
         const activeCategories = categories.filter(cat => cat.level === 0 && cat.status === 'active');
-        parentOptions.push(...activeCategories.map(cat => ({ id: cat.id.toString(), name: cat.name })));
+        parentOptions.push(...activeCategories.map(cat => ({ id: cat.id.toString(), name: cat.name, color: '#17a2b8' })));
         return parentOptions;
     };
 
@@ -727,9 +727,9 @@ const CategoryManagement: React.FC = () => {
                                     <label className={styles.formLabel}>图标</label>
                                     <CustomSelect
                                         name="图标"
-                                        value={iconOptions.find(icon => icon.value === formData.icon) ? { id: iconOptions.find(icon => icon.value === formData.icon)!.value, name: iconOptions.find(icon => icon.value === formData.icon)!.name } : null}
+                                        value={iconOptions.find(icon => icon.value === formData.icon) ? { id: iconOptions.find(icon => icon.value === formData.icon)!.value, name: iconOptions.find(icon => icon.value === formData.icon)!.name, color: '#007bff' } : null}
                                         onChange={(selectedOption) => setFormData(prev => ({ ...prev, icon: String(selectedOption?.id || '') }))}
-                                        options={iconOptions.map(icon => ({ id: icon.value, name: `${icon.name} ${icon.value}` }))}
+                                        options={iconOptions.map(icon => ({ id: icon.value, name: `${icon.name} ${icon.value}`, color: '#007bff' }))}
                                         hideBadge={true}
                                         placeholder="选择图标"
                                     />

@@ -2,7 +2,6 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthPage from '../pages/auth/AuthPage';
 import IndexPage from '../pages/home/IndexPage';
-import ArticleView from '../sample/ArticleView';
 import ArticleCreate from '../pages/articleCreate/ArticleCreate';
 import Profile from '../pages/profile/ProfilePage';
 import PersonalCenter from '../pages/personal/PersonalCenter';
@@ -17,6 +16,7 @@ import PermissionManagement from '../pages/admin/PermissionManagement';
 import DataManagement from '../pages/admin/DataManagement';
 import Analytics from '../pages/admin/Analytics';
 import Settings from '../pages/admin/Settings';
+import ArticleViewPage from '../pages/articleView/ArticleViewPage';
 
 const RouterConfig: React.FC = () => {
     return (
@@ -34,7 +34,7 @@ const RouterConfig: React.FC = () => {
             <Route path='/article/create' element={<ArticleCreate />} />
 
             {/* 文章详情页 */}
-            <Route path="/article/:id" element={<ArticleView />} />
+            <Route path="/article/:id" element={<ArticleViewPage />} />
 
             <Route path="/profile/:id" element={<Profile />} />
 

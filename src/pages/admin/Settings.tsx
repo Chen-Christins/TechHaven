@@ -130,12 +130,6 @@ const Settings: React.FC = () => {
             // 模拟API调用
             await new Promise(resolve => setTimeout(resolve, 1500));
 
-            console.log('保存设置:', {
-                site: siteSettings,
-                email: emailSettings,
-                system: systemSettings
-            });
-
             setSaveStatus('success');
             setTimeout(() => setSaveStatus('idle'), 3000);
         } catch (error) {
@@ -169,37 +163,37 @@ const Settings: React.FC = () => {
 
     // 时区选项
     const timezoneOptions = [
-        { id: 'Asia/Shanghai', name: 'Asia/Shanghai' },
-        { id: 'Asia/Tokyo', name: 'Asia/Tokyo' },
-        { id: 'Asia/Seoul', name: 'Asia/Seoul' },
-        { id: 'UTC', name: 'UTC' },
-        { id: 'America/New_York', name: 'America/New_York' },
-        { id: 'Europe/London', name: 'Europe/London' },
-        { id: 'Europe/Paris', name: 'Europe/Paris' }
+        { id: 'Asia/Shanghai', name: 'Asia/Shanghai', color: '' },
+        { id: 'Asia/Tokyo', name: 'Asia/Tokyo', color: '' },
+        { id: 'Asia/Seoul', name: 'Asia/Seoul', color: '' },
+        { id: 'UTC', name: 'UTC', color: '' },
+        { id: 'America/New_York', name: 'America/New_York', color: '' },
+        { id: 'Europe/London', name: 'Europe/London', color: '' },
+        { id: 'Europe/Paris', name: 'Europe/Paris', color: '' }
     ];
-
+    
     // 语言选项
     const languageOptions = [
-        { id: 'zh-CN', name: '简体中文' },
-        { id: 'zh-TW', name: '繁体中文' },
-        { id: 'en-US', name: 'English' },
-        { id: 'ja-JP', name: '日本語' },
-        { id: 'ko-KR', name: '한국어' }
+        { id: 'zh-CN', name: '简体中文', color: '' },
+        { id: 'zh-TW', name: '繁体中文', color: '' },
+        { id: 'en-US', name: 'English', color: '' },
+        { id: 'ja-JP', name: '日本語', color: '' },
+        { id: 'ko-KR', name: '한국어', color: '' }
     ];
-
+    
     // 加密方式选项
     const encryptionOptions = [
-        { id: 'none', name: '无加密' },
-        { id: 'ssl', name: 'SSL' },
-        { id: 'tls', name: 'TLS' }
+        { id: 'none', name: '无加密', color: '' },
+        { id: 'ssl', name: 'SSL', color: '' },
+        { id: 'tls', name: 'TLS', color: '' }
     ];
-
+    
     // 备份计划选项
     const backupScheduleOptions = [
-        { id: 'disabled', name: '禁用' },
-        { id: 'daily', name: '每日' },
-        { id: 'weekly', name: '每周' },
-        { id: 'monthly', name: '每月' }
+        { id: 'disabled', name: '禁用', color: '' },
+        { id: 'daily', name: '每日', color: '' },
+        { id: 'weekly', name: '每周', color: '' },
+        { id: 'monthly', name: '每月', color: '' }
     ];
 
     return (

@@ -54,17 +54,17 @@ const Analytics: React.FC = () => {
 
     // 时间范围选项
     const periodOptions = [
-        { id: '7天', name: '最近7天' },
-        { id: '30天', name: '最近30天' },
-        { id: '90天', name: '最近90天' },
-        { id: '1年', name: '最近1年' }
+        { id: '7天', name: '最近7天', color: '#4361ee' },
+        { id: '30天', name: '最近30天', color: '#4361ee' },
+        { id: '90天', name: '最近90天', color: '#4361ee' },
+        { id: '1年', name: '最近1年', color: '#4361ee' }
     ];
 
     // 指标类型选项
     const metricOptions = [
-        { id: 'visits', name: '访问量' },
-        { id: 'users', name: '用户数' },
-        { id: 'pageViews', name: '页面浏览量' }
+        { id: 'visits', name: '访问量', color: '#7209b7' },
+        { id: 'users', name: '用户数', color: '#7209b7' },
+        { id: 'pageViews', name: '页面浏览量', color: '#7209b7' }
     ];
 
     // 图表引用
@@ -417,7 +417,7 @@ const Analytics: React.FC = () => {
         // 模拟导出过程
         setTimeout(() => {
             setIsLoading(false);
-            console.log('导出分析数据');
+            // console.log('导出分析数据');
         }, 2000);
     };
 

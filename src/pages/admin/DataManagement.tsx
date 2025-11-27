@@ -322,25 +322,25 @@ const DataManagement: React.FC = () => {
 
     // 筛选选项数据
     const backupTypeOptions: SelectOption[] = [
-        { id: '', name: '全部类型' },
-        { id: 'full', name: '完整备份' },
-        { id: 'incremental', name: '增量备份' },
-        { id: 'manual', name: '手动备份' }
+        { id: '', name: '全部类型', color: '#6c757d' },
+        { id: 'full', name: '完整备份', color: '#007bff' },
+        { id: 'incremental', name: '增量备份', color: '#17a2b8' },
+        { id: 'manual', name: '手动备份', color: '#6c757d' }
     ];
 
     const exportTypeOptions: SelectOption[] = [
-        { id: '', name: '全部类型' },
-        { id: 'articles', name: '文章数据' },
-        { id: 'users', name: '用户数据' },
-        { id: 'comments', name: '评论数据' },
-        { id: 'full', name: '完整数据' }
+        { id: '', name: '全部类型', color: '#6c757d' },
+        { id: 'articles', name: '文章数据', color: '#007bff' },
+        { id: 'users', name: '用户数据', color: '#17a2b8' },
+        { id: 'comments', name: '评论数据', color: '#28a745' },
+        { id: 'full', name: '完整数据', color: '#007bff' }
     ];
 
     const statusOptions: SelectOption[] = [
-        { id: '', name: '全部状态' },
-        { id: 'completed', name: '已完成' },
-        { id: 'processing', name: '处理中' },
-        { id: 'failed', name: '失败' }
+        { id: '', name: '全部状态', color: '#6c757d' },
+        { id: 'completed', name: '已完成', color: '#28a745' },
+        { id: 'processing', name: '处理中', color: '#ffc107' },
+        { id: 'failed', name: '失败', color: '#dc3545' }
     ];
 
     // 处理选择变化

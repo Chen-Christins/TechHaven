@@ -21,6 +21,14 @@
     gap: 5px;
 }
 
+.emptyPlaceholder {
+    width: 100%;
+    text-align: center;
+    font-weight: 700;
+    padding: 8px 0;
+    color: var(--text-secondary);
+}
+
 .tag {
     display: inline-flex;
     align-items: center;
@@ -74,6 +82,17 @@
     justify-content: center;
 }
 
+/* 标签骨架屏容器 */
+.tagSkeletonContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tagSkeleton {
+    border-radius: 5px;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     .tagPanel {
@@ -84,5 +103,9 @@
     .tag {
         font-size: 11px;
         padding: 4px 8px;
+    }
+
+    .tagSkeletonContainer {
+        gap: 6px;
     }
 }

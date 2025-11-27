@@ -60,7 +60,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
         if (onLogout) {
             onLogout();
         } else {
-            console.log('退出登录');
+            // console.log('退出登录');
         }
     };
 

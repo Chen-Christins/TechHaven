@@ -34,104 +34,104 @@ const mockArticles: Article[] = [
   {
       id: 1,
       title: 'React Hooks 最佳实践与性能优化',
-      summary: '深入探讨React Hooks的使用技巧，如何避免常见陷阱，以及提升组件性能的各种策略。通过实际案例分析，掌握高级Hook用法。',
+      content: '深入探讨React Hooks的使用技巧，如何避免常见陷阱，以及提升组件性能的各种策略。通过实际案例分析，掌握高级Hook用法。',
       publish_time: '2024-01-15',
-      category: "前端技术",
+      update_time: '2024-01-15',
+      categorys: ["前端技术"],
+      labels: [1, 2, 3],
       views: 842,
-      tags: ['React', 'Hooks', '性能优化'],
-      praises: 45,
-      comments: 12,
+      praise: 45,
+      favorites: 12,
       author: mockUser.name,
-      date: '2024-01-15',
-      publishDate: '2024-01-15',
-      excerpt: '深入探讨React Hooks的使用技巧，如何避免常见陷阱，以及提升组件性能的各种策略。',
-      readTime: '8',
-      likes: 45
+      user_id: mockUser.id,
+      type: 1,
+      state: 1,
+      is_deleted: false
   },
   {
       id: 2,
       title: 'TypeScript在大型项目中的应用经验',
-      summary: '分享在大型前端项目中TypeScript的类型设计、工程化配置和团队协作规范，帮助企业提升代码质量。',
+      content: '分享在大型前端项目中TypeScript的类型设计、工程化配置和团队协作规范，帮助企业提升代码质量。',
       publish_time: '2024-01-10',
-      category: "前端技术",
+      update_time: '2024-01-10',
+      categorys: ["前端技术"],
+      labels: [4, 5],
       views: 1256,
-      tags: ['TypeScript', '工程化'],
-      praises: 78,
-      comments: 23,
+      praise: 78,
+      favorites: 23,
       author: mockUser.name,
-      date: '2024-01-10',
-      publishDate: '2024-01-10',
-      excerpt: '分享在大型前端项目中TypeScript的类型设计、工程化配置和团队协作规范...',
-      readTime: '12',
-      likes: 78
+      user_id: mockUser.id,
+      type: 1,
+      state: 1,
+      is_deleted: false
   },
   {
       id: 3,
-      title: 'TypeScript在大型项目中的应用经验',
-      summary: '分享在大型前端项目中TypeScript的类型设计、工程化配置和团队协作规范，帮助企业提升代码质量。',
-      publish_time: '2024-01-10',
-      category: "前端技术",
-      views: 1256,
-      tags: ['TypeScript', '工程化'],
-      praises: 78,
-      comments: 23,
+      title: 'Vue 3 Composition API 实战指南',
+      content: '详细介绍Vue 3 Composition API的使用方法，通过实际项目案例展示如何构建现代化的Vue应用。',
+      publish_time: '2024-01-05',
+      update_time: '2024-01-05',
+      categorys: ["前端技术"],
+      labels: [6, 7],
+      views: 945,
+      praise: 56,
+      favorites: 18,
       author: mockUser.name,
-      date: '2024-01-10',
-      publishDate: '2024-01-10',
-      excerpt: '分享在大型前端项目中TypeScript的类型设计、工程化配置和团队协作规范...',
-      readTime: '12',
-      likes: 78
+      user_id: mockUser.id,
+      type: 1,
+      state: 1,
+      is_deleted: false
   },
   {
       id: 4,
       title: '微前端架构的落地实践',
-      summary: '从单体应用到微前端的迁移过程，分享qiankun框架的使用经验和坑点总结，助力企业级应用拆分。',
+      content: '从单体应用到微前端的迁移过程，分享qiankun框架的使用经验和坑点总结，助力企业级应用拆分。',
       publish_time: '2024-01-05',
-      category: "架构设计",
+      update_time: '2024-01-05',
+      categorys: ["架构设计"],
+      labels: [8, 9, 10],
       views: 892,
-      tags: ['微前端', 'qiankun', '架构'],
-      praises: 56,
-      comments: 18,
+      praise: 56,
+      favorites: 18,
       author: mockUser.name,
-      date: '2024-01-05',
-      publishDate: '2024-01-05',
-      excerpt: '从单体应用到微前端的迁移过程，分享qiankun框架的使用经验和坑点总结...',
-      readTime: '15',
-      likes: 56
+      user_id: mockUser.id,
+      type: 1,
+      state: 1,
+      is_deleted: false
   },
   {
       id: 5,
-      title: '微前端架构的落地实践',
-      summary: '从单体应用到微前端的迁移过程，分享qiankun框架的使用经验和坑点总结，助力企业级应用拆分。',
-      publish_time: '2024-01-05',
-      category: "架构设计",
-      views: 892,
-      tags: ['微前端', 'qiankun', '架构'],
-      praises: 56,
-      comments: 18,
+      title: 'Node.js 性能优化实战',
+      content: '深入分析Node.js应用的性能瓶颈，提供实用的优化策略和监控方案，包含大量实际案例。',
+      publish_time: '2023-12-28',
+      update_time: '2023-12-28',
+      categorys: ["后端技术"],
+      labels: [11, 12],
+      views: 734,
+      praise: 42,
+      favorites: 15,
       author: mockUser.name,
-      date: '2024-01-05',
-      publishDate: '2024-01-05',
-      excerpt: '从单体应用到微前端的迁移过程，分享qiankun框架的使用经验和坑点总结...',
-      readTime: '15',
-      likes: 56
+      user_id: mockUser.id,
+      type: 1,
+      state: 1,
+      is_deleted: false
   },
   {
       id: 6,
-      title: '微前端架构的落地实践',
-      summary: '从单体应用到微前端的迁移过程，分享qiankun框架的使用经验和坑点总结，助力企业级应用拆分。',
-      publish_time: '2024-01-05',
-      category: "架构设计",
-      views: 892,
-      tags: ['微前端', 'qiankun', '架构'],
-      praises: 56,
-      comments: 18,
+      title: 'CSS Grid 布局完全指南',
+      content: '全面介绍CSS Grid布局系统，从基础概念到高级应用，帮助开发者掌握现代网页布局技术。',
+      publish_time: '2023-12-20',
+      update_time: '2023-12-20',
+      categorys: ["前端技术"],
+      labels: [13, 14],
+      views: 656,
+      praise: 38,
+      favorites: 11,
       author: mockUser.name,
-      date: '2024-01-05',
-      publishDate: '2024-01-05',
-      excerpt: '从单体应用到微前端的迁移过程，分享qiankun框架的使用经验和坑点总结...',
-      readTime: '15',
-      likes: 56
+      user_id: mockUser.id,
+      type: 1,
+      state: 1,
+      is_deleted: false
   }
 ];
 
@@ -290,21 +290,21 @@ const Profile: React.FC = () => {
               {mockArticles.map(article => (
                 <article key={article.id} className={`${styles.articleCard} ${viewMode === 'grid' ? styles.gridCard : styles.listCard}`}>
                   <div className={styles.articleHeader}>
-                    <div className={styles.articleCategory}>{article.category}</div>
-                    <span className={styles.articleDate}>{article.publishDate}</span>
+                    <div className={styles.articleCategory}>{article.categorys?.[0] || '未分类'}</div>
+                    <span className={styles.articleDate}>{article.publish_time}</span>
                   </div>
                   <h3 className={styles.articleTitle}>{article.title}</h3>
-                  <p className={styles.articleExcerpt}>{article.summary}</p>
+                  <p className={styles.articleExcerpt}>{article.content?.substring(0, 100) || ''}...</p>
                   <div className={styles.articleFooter}>
                     <div className={styles.tags}>
-                      {article.tags.slice(0, 3).map(tag => (
-                        <span key={tag} className={styles.tag}>
+                      {article.labels?.slice(0, 3).map((tagId: string | number) => (
+                        <span key={tagId} className={styles.tag}>
                           <Hash size={12} />
-                          {tag}
+                          标签{tagId}
                         </span>
                       ))}
-                      {article.tags.length > 3 && (
-                        <span className={styles.moreTags}>+{article.tags.length - 3}</span>
+                      {(article.labels?.length || 0) > 3 && (
+                        <span className={styles.moreTags}>+{(article.labels?.length || 0) - 3}</span>
                       )}
                     </div>
                     <div className={styles.articleStats}>
@@ -314,15 +314,15 @@ const Profile: React.FC = () => {
                       </div>
                       <div className={styles.statItem}>
                         <Heart size={14} />
-                        <span>{article.likes}</span>
+                        <span>{article.praise}</span>
                       </div>
                       <div className={styles.statItem}>
                         <MessageSquare size={14} />
-                        <span>{article.comments}</span>
+                        <span>{article.favorites}</span>
                       </div>
                       <div className={styles.statItem}>
                         <Clock size={14} />
-                        <span>{article.readTime}分钟</span>
+                        <span>5分钟</span>
                       </div>
                     </div>
                   </div>

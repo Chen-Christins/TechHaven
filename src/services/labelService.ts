@@ -34,8 +34,9 @@ export interface CreateLabelResponse {
  * 查询标签请求参数类型
  */
 export interface QueryLabelParams {
-    ids: string; // 逗号分隔的标签id字符串，如 "1,2,3"
-    user_id: string | number;
+    // 否则可传 `ids` 来查询指定标签id列表（逗号分隔）。
+    ids?: string; // 逗号分隔的标签id字符串，如 "1,2,3"
+    user_id?: string | number;
 }
 
 /**
@@ -91,8 +92,14 @@ export class LabelService {
      */
     static async queryLabel(params: QueryLabelParams): Promise<LabelInfo[]> {
         const formData = new URLSearchParams();
-        formData.append('ids', params.ids);
-        formData.append('user_id', String(params.user_id));
+        // 优先使用 user_id 查询当前用户的所有有效标签
+        if (params.user_id !== undefined && params.user_id !== null && params.user_id !== '') {
+            formData.append('user_id', String(params.user_id));
+        } else {
+            // 否则按 ids 查询指定标签
+            formData.append('ids', params.ids ?? '');
+        }
+
         const response = await http.post<LabelInfo[]>('/label/query', formData.toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
