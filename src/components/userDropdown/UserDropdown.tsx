@@ -9,7 +9,7 @@ import styles from './UserDropdown.module.css';
 
 interface User {
     name: string;
-    avatar: string;
+    avatar?: string;
     role?: string;
     email: string;
 }
@@ -72,7 +72,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
             {/* 用户显示区域 */}
             <div className={styles.userDisplay} onClick={toggleDropdown}>
                 <img
-                    src={user.avatar}
+                    src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
                     alt={user.name}
                     className={styles.userAvatar}
                 />
@@ -94,7 +94,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
                 <div className={styles.dropdown}>
                     <div className={styles.dropdownHeader}>
                         <img
-                            src={user.avatar}
+                            src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
                             alt={user.name}
                             className={styles.dropdownAvatar}
                         />

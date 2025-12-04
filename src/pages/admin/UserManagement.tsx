@@ -6,15 +6,16 @@ import Button from '../../components/button/Button';
 import Loading from '../../components/loading/Loading';
 import type { SelectOption } from '../../types/index';
 import styles from './UserManagement.module.css';
+import { AuthService } from '../../services/authService';
 
 // 用户接口定义
 interface User {
-    id: string;
+    id: string | number;
     username: string;
     email: string;
     avatar: string;
-    role: 'admin' | 'moderator' | 'user';
-    status: 'active' | 'inactive' | 'pending';
+    role: string;
+    status: string;
     createdAt: string;
     lastLogin: string;
     articleCount: number;
@@ -57,46 +58,75 @@ const UserManagement: React.FC = () => {
 
     const usersPerPage = 15; // 每页显示15条数据
 
-    // 模拟用户数据
-    const mockUsers: User[] = Array.from({ length: 150 }, (_, index) => ({
-        id: `user_${index + 1}`,
-        username: `用户${index + 1}`,
-        email: `user${index + 1}@example.com`,
-        avatar: `https://picsum.photos/id/${index + 10}/100`,
-        role: ['admin', 'moderator', 'user'][Math.floor(Math.random() * 3)] as User['role'],
-        status: ['active', 'inactive', 'pending'][Math.floor(Math.random() * 3)] as User['status'],
-        createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
-        lastLogin: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-        articleCount: Math.floor(Math.random() * 50),
-        commentCount: Math.floor(Math.random() * 100)
-    }));
-
     // 加载用户数据
     useEffect(() => {
-        setLoading(true);
-        // 模拟API调用
-        setTimeout(() => {
-            setUsers(mockUsers);
+        const fetchUsers = async () => {
+            setLoading(true);
+            try {
+                // 1. 获取所有用户ID
+                const userIds = await AuthService.listUsers();
+                
+                // 2. 并行获取所有用户详情
+                // 注意：如果用户量非常大，这里应该分批获取或只获取当前页
+                // 但由于API限制，目前只能这样获取完整信息以支持前端筛选
+                const userPromises = userIds.map(id => AuthService.getUserInfo(id));
+                const responses = await Promise.all(userPromises);
+                
+                console.log('用户详情响应:', responses);
 
-            // 计算统计数据
-            const totalUsers = mockUsers.length;
-            const activeUsers = mockUsers.filter(user => user.status === 'active').length;
-            const newUsers = mockUsers.filter(user => {
-                const createdAt = new Date(user.createdAt);
-                const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-                return createdAt > thirtyDaysAgo;
-            }).length;
-            const inactiveUsers = mockUsers.filter(user => user.status === 'inactive').length;
+                const fetchedUsers: User[] = responses
+                    .filter(res => res.code === '200' || res.code === 200)
+                    .map(res => {
+                        const userData = res.data;
+                        // 映射后端状态码到前端状态字符串
+                        // 假设 0: active, 1: inactive, 2: pending (需要根据实际后端定义调整)
+                        let statusStr = 'active';
+                        if (userData.status === 1) statusStr = 'inactive';
+                        if (userData.status === 2) statusStr = 'pending';
 
-            setStats({
-                totalUsers,
-                activeUsers,
-                newUsers,
-                inactiveUsers
-            });
+                        return {
+                            id: userData.id,
+                            username: userData.name || userData.account,
+                            email: userData.email,
+                            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || userData.account)}&background=random`,
+                            role: userData.role,
+                            status: statusStr,
+                            // API没有createdAt，暂时用login_time或当前时间
+                            createdAt: new Date(Number(userData.login_time) * 1000).toISOString(), 
+                            lastLogin: new Date(Number(userData.login_time) * 1000).toISOString(),
+                            articleCount: 0, // API未提供
+                            commentCount: 0  // API未提供
+                        };
+                    });
 
-            setLoading(false);
-        }, 1000);
+                setUsers(fetchedUsers);
+
+                // 计算统计数据
+                const totalUsers = fetchedUsers.length;
+                const activeUsers = fetchedUsers.filter(user => user.status === 'active').length;
+                const newUsers = fetchedUsers.filter(user => {
+                    const createdAt = new Date(user.createdAt);
+                    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                    return createdAt > thirtyDaysAgo;
+                }).length;
+                const inactiveUsers = fetchedUsers.filter(user => user.status === 'inactive').length;
+
+                setStats({
+                    totalUsers,
+                    activeUsers,
+                    newUsers,
+                    inactiveUsers
+                });
+
+            } catch (error) {
+                console.error('获取用户列表失败:', error);
+                // 可以添加错误提示
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUsers();
     }, []);
 
     // 筛选用户数据
@@ -213,8 +243,10 @@ const UserManagement: React.FC = () => {
 
     
     // 删除用户
-    const deleteUser = (userId: string) => {
+    const deleteUser = (userId: string | number) => {
         if (window.confirm('确定要删除这个用户吗？此操作不可恢复。')) {
+            // TODO: 调用后端删除接口 (目前API文档未提供删除用户接口，仅有删除文章/分类等)
+            // 暂时只更新前端状态
             setUsers(prev => prev.filter(user => user.id !== userId));
         }
     };

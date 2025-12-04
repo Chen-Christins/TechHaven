@@ -256,7 +256,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
             await ArticleService.createArticle({
                 title: formData.title,
                 content: formData.content,
-                type: formData.articleType === 'original' ? '1' : '2',
+                type: formData.articleType === 'original' ? 1 : 2,
                 label: labelIds,
                 category: categoryId
             });
@@ -278,7 +278,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
             const createRes = await ArticleService.createArticle({
                 title: formData.title,
                 content: formData.content,
-                type: formData.articleType === 'original' ? '1' : '2',
+                type: formData.articleType === 'original' ? 1 : 2,
                 label: labelIds,
                 category: categoryId
             });

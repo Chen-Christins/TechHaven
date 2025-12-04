@@ -4,14 +4,14 @@ import { tokenManager, getTokenFromCookie } from '../utils/http';
 
 // 用户信息类型
 export interface User {
-    id: number;
+    id: number | string;
     account: string;
     name: string;
     email: string;
-    avatar: string;
+    avatar?: string;
     role: string;
-    login_time: string;
-    status: string;
+    login_time: number | string;
+    status: number | string;
 }
 
 // 认证上下文类型

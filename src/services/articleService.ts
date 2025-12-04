@@ -1,3 +1,5 @@
+import http from '../utils/http';
+
 /**
  * 文章分页查询请求参数类型
  */
@@ -17,6 +19,7 @@ export interface ListArticlesResponse {
     page_size: number;
     ids: Array<string | number>;
 }
+
 /**
  * 文章发布请求参数类型
  */
@@ -27,12 +30,12 @@ export interface PublishArticleParams {
 
 /**
  * 文章发布响应类型
- * 仅包含状态码和 message
  */
 export interface PublishArticleResponse {
     code: number | string;
     msg: string;
 }
+
 /**
  * 文章详情请求参数类型
  */
@@ -45,6 +48,7 @@ export interface ArticleDetailsParams {
  * 文章详情响应类型
  */
 export interface ArticleDetailsResponse {
+    email: string;
     id: string | number;
     author: string;
     title: string;
@@ -61,20 +65,20 @@ export interface ArticleDetailsResponse {
     labels?: Array<string | number>;
     categorys?: Array<string | number>;
 }
+
 /**
  * 删除文章请求参数类型
  */
 export interface DeleteArticleParams {
-    ids: string; // 逗号分隔的文章id字符串，如 "1,2,3,4"
+    ids: string; // 逗号分隔的文章id字符串
 }
 
 /**
  * 删除文章响应类型
  */
 export interface DeleteArticleResponse {
-    deletedIds: Array<string | number>;
+    ids: Array<string | number>;
 }
-import http from '../utils/http';
 
 /**
  * 创建文章请求参数类型
@@ -82,9 +86,9 @@ import http from '../utils/http';
 export interface CreateArticleParams {
     title: string;
     content: string;
-    type: string;
-    label: string;
-    category: string;
+    type: number;
+    label?: string;
+    category?: string;
 }
 
 /**
@@ -95,34 +99,58 @@ export interface CreateArticleResponse {
 }
 
 /**
+ * 审核文章参数
+ */
+export interface VerifyArticleParams {
+    id: string | number;
+    state: number;
+}
+
+/**
+ * 更新文章内容参数
+ */
+export interface UpdateArticleContentParams {
+    id: string | number;
+    title: string;
+    content: string;
+}
+
+/**
+ * 更新文章分类参数
+ */
+export interface UpdateArticleCategoryParams {
+    id: string | number;
+    add_category_ids: string;
+    del_category_ids: string;
+}
+
+/**
+ * 更新文章分类响应
+ */
+export interface UpdateArticleCategoryResponse {
+    add_category_ids: Array<string | number>;
+    del_category_ids: Array<string | number>;
+}
+
+/**
  * 文章服务类
- * 专门处理文章相关操作，如创建文章
  */
 export class ArticleService {
     /**
-     * 分页获取用户文章列表
-     * @param params 查询参数
-     * @returns 分页结果
+     * 分页获取文章列表
      */
     static async listArticlesByUserIdPages(params: ListArticlesParams): Promise<ListArticlesResponse> {
-        const formData = new URLSearchParams();
-        if (params.user_id !== undefined && params.user_id !== null && params.user_id !== '') {
-            formData.append('user_id', String(params.user_id));
-        }
-        formData.append('page_from', String(params.page_from));
-        formData.append('page_size', String(params.page_size ?? 6));
-        formData.append('state', String(params.state ?? 0));
-        const response = await http.post<ListArticlesResponse>('/article/query', formData.toString(), {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-        });
+        let url = `/article/query?page_from=${params.page_from}`;
+        if (params.user_id) url += `&user_id=${params.user_id}`;
+        if (params.page_size) url += `&page_size=${params.page_size}`;
+        if (params.state !== undefined) url += `&state=${params.state}`;
+        
+        const response = await http.get<ListArticlesResponse>(url);
         return response.data;
     }
+
     /**
      * 发布文章
-     * @param params 发布参数
-     * @returns 发布结果
      */
     static async publishArticle(params: PublishArticleParams): Promise<PublishArticleResponse> {
         const formData = new URLSearchParams();
@@ -133,41 +161,31 @@ export class ArticleService {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
         });
-        // 只返回状态码和 message
         return {
             code: response.code,
             msg: response.message
         };
     }
+
     /**
      * 获取文章详情
-     * @param params 详情参数
-     * @returns 文章详情
      */
     static async getArticleDetails(params: ArticleDetailsParams): Promise<ArticleDetailsResponse> {
-        const formData = new URLSearchParams();
-        formData.append('id', String(params.id));
-        formData.append('type', String(params.type));
-        const response = await http.post<ArticleDetailsResponse>('/article/detail', formData.toString(), {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-        });
+        const response = await http.get<ArticleDetailsResponse>(`/article/detail?id=${params.id}&type=${params.type}`);
         return response.data;
     }
+
     /**
      * 创建文章
-     * @param params 文章创建参数
-     * @returns 创建响应
      */
     static async createArticle(params: CreateArticleParams): Promise<CreateArticleResponse> {
-        // 使用 form-urlencoded 格式发送请求，所有参数都转为字符串且不为 undefined/null
         const formData = new URLSearchParams();
-        formData.append('title', params.title ?? '');
-        formData.append('content', params.content ?? '');
-        formData.append('type', params.type ? String(params.type) : '');
-        formData.append('label', params.label ? String(params.label) : '');
-        formData.append('category', params.category ? String(params.category) : '');
+        formData.append('title', params.title);
+        formData.append('content', params.content);
+        formData.append('type', String(params.type));
+        if (params.label) formData.append('label', params.label);
+        if (params.category) formData.append('category', params.category);
+        
         const response = await http.post<CreateArticleResponse>('/article/create', formData.toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -178,13 +196,59 @@ export class ArticleService {
 
     /**
      * 删除文章
-     * @param params 删除参数
-     * @returns 删除结果
      */
     static async deleteArticle(params: DeleteArticleParams): Promise<DeleteArticleResponse> {
         const formData = new URLSearchParams();
         formData.append('ids', params.ids);
         const response = await http.post<DeleteArticleResponse>('/article/delete', formData.toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        });
+        return response.data;
+    }
+
+    /**
+     * 审核文章
+     */
+    static async verifyArticle(params: VerifyArticleParams) {
+        const formData = new URLSearchParams();
+        formData.append('id', String(params.id));
+        formData.append('state', String(params.state));
+        
+        return http.post('/article/verify', formData.toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        });
+    }
+
+    /**
+     * 更新文章内容
+     */
+    static async updateArticleContent(params: UpdateArticleContentParams) {
+        const formData = new URLSearchParams();
+        formData.append('id', String(params.id));
+        formData.append('title', params.title);
+        formData.append('content', params.content);
+        
+        return http.post('/article/update', formData.toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        });
+    }
+
+    /**
+     * 更新文章分类
+     */
+    static async updateArticleCategories(params: UpdateArticleCategoryParams): Promise<UpdateArticleCategoryResponse> {
+        const formData = new URLSearchParams();
+        formData.append('id', String(params.id));
+        formData.append('add_category_ids', params.add_category_ids);
+        formData.append('del_category_ids', params.del_category_ids);
+        
+        const response = await http.post<UpdateArticleCategoryResponse>('/article/update_category', formData.toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },

@@ -4,8 +4,24 @@ import http, {
     type RegisterParams,
     type ForgetPasswordParams,
     type SendCodeParams,
+    type HttpResponse,
     CodeType
 } from '../utils/http';
+
+/**
+ * 用户信息接口
+ */
+export interface UserInfo {
+    data: boolean;
+    code: string;
+    id: number | string;
+    account: string;
+    email: string;
+    name: string;
+    role: string;
+    login_time: number;
+    status: number;
+}
 
 /**
  * 认证服务类
@@ -114,7 +130,7 @@ export class AuthService {
      * @returns 注册响应
      */
     static async register(params: RegisterParams) {
-        // 使用新的 /user/create 接口，需要对 passwd 进行 MD5 加密
+        // 使用新的 /user/create 接口
         const registerParams = {
             account: params.account,
             email: params.email,
@@ -141,7 +157,7 @@ export class AuthService {
      */
     static logout() {
         // 调用后端的登出接口
-        return http.post('/user/logout', {}, {});
+        return http.get('/user/logout');
     }
 
     /**
@@ -149,63 +165,56 @@ export class AuthService {
      * @param userId 可选，用户ID。不传则获取当前用户信息
      * @returns 用户信息
      */
-    static async getUserInfo(userId?: number) {
-        const url = userId ? `/user/info?id=${userId}` : '/user/info';
-        return http.get(url);
+    static async getUserInfo(userId?: number | string): Promise<HttpResponse<UserInfo>> {
+        const url = userId ? `/user/info?user_id=${userId}` : '/user/info';
+        return http.get<UserInfo>(url);
     }
 
     /**
-     * 验证token有效性
-     * @returns token是否有效
+     * 获取用户列表 (Admin)
+     * @returns 用户ID列表
      */
-    static async validateToken(): Promise<boolean> {
-        try {
-            const response = await http.get('/user/validate');
-            return response.data.code === 200;
-        } catch {
-            return false;
-        }
+    static async listUsers(): Promise<Array<number | string>> {
+        const response = await http.get<{ ids: Array<number | string> }>('/user/list');
+        return response.data.ids;
     }
 
     /**
-     * 刷新token
-     * @returns 新token
+     * 检查用户是否存在
+     * @param authId 邮箱或账号
+     * @returns 是否存在
      */
-    static async refreshToken(): Promise<string> {
-        const response = await http.post<{
-            data: any; token: string
-        }>('/user/refresh');
-
-        if (response.data.data?.token) {
-            // 返回新token，由调用方管理状态
-            return response.data.data.token;
-        }
-
-        throw new Error('刷新token失败');
+    static async checkUserExists(authId: string): Promise<boolean> {
+        const response = await http.get<{ is_exists: string }>(`/user/exists?auth_id=${authId}`);
+        return response.data.is_exists === "1";
     }
 
     /**
-     * 修改密码
-     * @param oldPassword 旧密码
-     * @param newPassword 新密码
+     * 更新用户资料
+     * @param name 新昵称 (可选)
+     * @param passwd 新密码 (可选)
      */
-    static async changePassword(oldPassword: string, newPassword: string) {
-        return http.post('/user/change-password', {
-            old_passwd: oldPassword,
-            new_passwd: newPassword
+    static async updateUserProfile(name?: string, passwd?: string) {
+        const formData = new URLSearchParams();
+        if (name) formData.append('name', name);
+        if (passwd) formData.append('passwd', passwd);
+
+        return http.post('/user/update', formData.toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
         });
     }
 
     /**
-     * 重置密码
-     * @param token 重置token
-     * @param newPassword 新密码
+     * 批量查询用户
+     * @param userIds 用户ID列表
+     * @returns 用户信息列表
      */
-    static async resetPassword(token: string, newPassword: string) {
-        return http.post('/user/reset-password', {
-            token,
-            new_passwd: newPassword
-        });
+    static async queryUsersBatch(userIds: Array<number | string>): Promise<Array<{ id: number | string, name: string }>> {
+        const idsStr = userIds.join(',');
+        const response = await http.get<Array<{ id: number | string, name: string }>>(`/user/query?user_ids=${idsStr}`);
+        return response.data;
     }
 
     /**
@@ -221,9 +230,8 @@ export class AuthService {
             passwd: newPassword,
             auth_code: authCode
         };
-        // console.log('忘记密码重置参数:', params);
 
-        // 使用form-urlencoded格式发送请求，与其他认证接口保持一致
+        // 使用form-urlencoded格式发送请求
         const formData = new URLSearchParams();
         formData.append('email', params.email);
         formData.append('passwd', params.passwd);

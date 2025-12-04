@@ -1,9 +1,11 @@
+import http from '../utils/http';
+
 /**
  * 查询分类请求参数类型
  */
 export interface QueryCategoryParams {
-    ids: string; // 逗号分隔的分类id字符串，如 "1,2,3"
-    user_id: string | number;
+    ids?: string; // 逗号分隔的分类id字符串
+    user_id?: string | number;
 }
 
 /**
@@ -19,20 +21,20 @@ export interface CategoryInfo {
 export interface QueryCategoryResponse {
     categories: CategoryInfo[];
 }
+
 /**
  * 删除分类请求参数类型
  */
 export interface DeleteCategoryParams {
-    ids: string; // 逗号分隔的分类id字符串，如 "1,2,3"
+    ids: string; // 逗号分隔的分类id字符串
 }
 
 /**
  * 删除分类响应类型
  */
 export interface DeleteCategoryResponse {
-    deletedIds: Array<string | number>;
+    ids: Array<string | number>;
 }
-import http from '../utils/http';
 
 /**
  * 创建分类请求参数类型
@@ -64,17 +66,14 @@ export class CategoryService {
      * @returns 分类详情列表
      */
     static async queryCategory(params: QueryCategoryParams): Promise<CategoryInfo[]> {
-        const formData = new URLSearchParams();
-        formData.append('ids', params.ids);
-        formData.append('user_id', String(params.user_id));
-        const response = await http.post<CategoryInfo[]>('/category/query', formData.toString(), {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-        });
-        // 假定后端直接返回数组
+        let url = '/category/query?';
+        if (params.ids) url += `ids=${params.ids}&`;
+        if (params.user_id) url += `user_id=${params.user_id}`;
+        
+        const response = await http.get<CategoryInfo[]>(url);
         return response.data;
     }
+
     /**
      * 删除分类
      * @param params 删除参数
@@ -90,6 +89,7 @@ export class CategoryService {
         });
         return response.data;
     }
+
     /**
      * 创建分类
      * @param params 分类创建参数

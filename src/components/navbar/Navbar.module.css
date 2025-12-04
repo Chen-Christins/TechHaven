@@ -59,6 +59,7 @@
 
 .logo:hover .logoText {
     transform: scale(1.05);
+    cursor: pointer;
 }
 
 /* 桌面端导航链接 */
@@ -95,6 +96,7 @@
 .navLink:hover {
     background-color: var(--bg-hover);
     color: var(--text-primary);
+    cursor: pointer;
 }
 
 /* 活跃状态链接 */
