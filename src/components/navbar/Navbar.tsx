@@ -19,6 +19,8 @@ const Navbar: React.FC = () => {
 	const userMenuRef = useRef<HTMLDivElement>(null); // 用户菜单DOM引用
 	const recommendMenuRef = useRef<HTMLDivElement>(null); // 推荐菜单DOM引用
 
+    // console.log(user);
+
 	// 用户数据（从认证上下文获取）
 	const currentUser = user ? {
 		name: user.name || user.account || '用户',

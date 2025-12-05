@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
     FaUserCircle,
     FaCog,
@@ -29,7 +29,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
-
+    const navigate = useNavigate();
     // 点击外部关闭下拉菜单
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -105,15 +105,15 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
                     </div>
                     <div className={styles.dropdownDivider}></div>
                     <div className={styles.dropdownMenu}>
-                        <Link to="/profile/1" className={styles.dropdownItem} onClick={closeDropdown}>
+                        <div className={styles.dropdownItem} onClick={() => { closeDropdown(); navigate("/profile/1"); }}>
                             <FaUserCircle />
                             个人资料
-                        </Link>
+                        </div>
                         {showAdminLink && (
-                            <Link to="/admin" className={styles.dropdownItem} onClick={closeDropdown}>
+                            <div className={styles.dropdownItem} onClick={() => { closeDropdown(); navigate("/admin"); }}>
                                 <FaCog />
                                 管理后台
-                            </Link>
+                            </div>
                         )}
                         <div className={styles.dropdownDivider}></div>
                         <button className={styles.dropdownItem} onClick={handleLogout}>

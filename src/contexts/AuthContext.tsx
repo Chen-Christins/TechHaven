@@ -29,6 +29,14 @@ interface AuthContextType {
 // 创建认证上下文
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// 状态映射
+const ROLE_MAP: Record<string, string> = {
+    'user': '用户',
+    'admin': '管理员',
+    'editor': '编辑',
+    'checker': '审核员',
+};
+
 // 认证提供者组件
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
@@ -40,13 +48,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     useEffect(() => {
         const initAuth = async () => {
             try {
-                // 检查Cookie中是否有有效的认证信息
                 const cookieToken = getTokenFromCookie();
-                // // console.log('🔍 检查Cookie中的token:', cookieToken);
 
                 if (cookieToken) {
-                    // 有token，尝试恢复用户信息
-                    // // console.log('🔄 发现token，正在恢复用户信息...');
                     setToken(cookieToken);
                     tokenManager.setToken(cookieToken);
 
@@ -55,17 +59,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
                         if (userResponse.data && userResponse.code === '200') {
                             const userData = userResponse.data;
-                            if (userData.role === 'admin') {
-                                userData.role = '管理员';
-                            }
+                            userData.role = ROLE_MAP[userData.role] || '用户';
                             setUser(userData);
                         } else {
-                            // console.warn('⚠️ 无法恢复用户信息，清除无效token:', userResponse);
                             setToken(null);
                             tokenManager.clearToken();
                         }
                     } catch (userError) {
-                        // console.warn('⚠️ 获取用户信息失败，清除无效token:', userError);
                         setToken(null);
                         tokenManager.clearToken();
                     }
@@ -88,27 +88,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             const response = await AuthService.login(authId, password);
 
-            // // console.log('登录响应:', response);
-
             if (response.code === '200') {
-                // 设置token到状态和tokenManager（优先从响应数据获取，备选从Cookie获取）
                 let userToken = (response as any)?.token || (response.data as any)?.token;
 
                 if (!userToken) {
-                    // 如果响应中没有token，尝试从Cookie中获取
                     userToken = getTokenFromCookie();
                     if (userToken) {
-                        // // console.log('🍪 从Cookie中获取到token:', userToken);
+                        // console.log('🍪 从Cookie中获取到token:', userToken);
                     }
                 }
 
                 if (userToken) {
                     setToken(userToken);
                     tokenManager.setToken(userToken);
-                    // // console.log('✅ Token已设置:', userToken);
+                    // console.log('✅ Token已设置:', userToken);
                 } else {
                     // console.warn('⚠️ 未找到token，检查响应headers和Cookie:', (response as any).headers);
-                    // // console.log('🍪 当前页面Cookie:', document.cookie);
+                    // console.log('🍪 当前页面Cookie:', document.cookie);
                 }
 
                 // 获取最新的用户信息
@@ -117,9 +113,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
                     if (userResponse.data && userResponse.code === '200') {
                         const updatedUser = userResponse.data;
-                        if (updatedUser.role === 'admin') {
-                            updatedUser.role = '管理员';
-                        }
+                        updatedUser.role = ROLE_MAP[updatedUser.role] || '用户';
                         setUser(updatedUser);
                     } else {
                         console.warn('⚠️ 用户信息接口返回异常:', userResponse);
@@ -137,8 +131,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                             status: fallbackUserData.status || 'active'
                         };
                         setUser(fallbackUser);
-                        // // console.log('🔄 使用登录响应的用户信息:', fallbackUser);
-                        // // console.log('🔐 当前认证状态:', { token: userToken, user: fallbackUser });
+                        // console.log('🔄 使用登录响应的用户信息:', fallbackUser);
+                        // console.log('🔐 当前认证状态:', { token: userToken, user: fallbackUser });
                     }
                 }
             } else {

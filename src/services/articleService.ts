@@ -20,6 +20,31 @@ export interface ListArticlesResponse {
     ids: Array<string | number>;
 }
 
+export interface ListAdminArticlesParams {
+    page_num: number;
+    page_size: number;
+    state: number;
+}
+
+/**
+ * 管理员文章分页查询响应类型
+ */
+export interface ListAdminArticlesResponse {
+    total: number;
+    list: Array<{
+        update_time: number;
+        id: string | number;
+        title: string;
+        author: string;
+        email: string;
+        state: number;
+        summary: string;
+        publish_time: string;
+        author_role: string;
+        user_id: string | number;
+    }>;
+}
+
 /**
  * 文章发布请求参数类型
  */
@@ -141,11 +166,20 @@ export class ArticleService {
      */
     static async listArticlesByUserIdPages(params: ListArticlesParams): Promise<ListArticlesResponse> {
         let url = `/article/query?page_from=${params.page_from}`;
-        if (params.user_id) url += `&user_id=${params.user_id}`;
         if (params.page_size) url += `&page_size=${params.page_size}`;
         if (params.state !== undefined) url += `&state=${params.state}`;
+        if (params.user_id) url += `&user_id=${params.user_id}`;
         
         const response = await http.get<ListArticlesResponse>(url);
+        return response.data;
+    }
+
+    static async listAdminArticlesByPages(params: ListAdminArticlesParams): Promise<ListAdminArticlesResponse> {
+        let url = `/article/admin/lists?page_num=${params.page_num}`;
+        url += `&page_size=${params.page_size}`;
+        url += `&state=${params.state}`;
+        
+        const response = await http.get<ListAdminArticlesResponse>(url);
         return response.data;
     }
 

@@ -7,6 +7,7 @@ import Loading from '../../components/loading/Loading';
 import type { SelectOption } from '../../types/index';
 import styles from './UserManagement.module.css';
 import { AuthService } from '../../services/authService';
+import { formatToChinaTime } from '../../utils/utils';
 
 // 用户接口定义
 interface User {
@@ -92,8 +93,8 @@ const UserManagement: React.FC = () => {
                             role: userData.role,
                             status: statusStr,
                             // API没有createdAt，暂时用login_time或当前时间
-                            createdAt: new Date(Number(userData.login_time) * 1000).toISOString(), 
-                            lastLogin: new Date(Number(userData.login_time) * 1000).toISOString(),
+                            createdAt: formatToChinaTime(userData.create_time), 
+                            lastLogin: formatToChinaTime(userData.login_time),
                             articleCount: 0, // API未提供
                             commentCount: 0  // API未提供
                         };

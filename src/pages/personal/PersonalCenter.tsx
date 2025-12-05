@@ -73,7 +73,7 @@ interface PersonalStats {
 // 辅助函数：将API文章数据转换为PersonalArticle格式
 const convertToPersonalArticle = (article: ArticleDetailsResponse): PersonalArticle => {
     // 根据state字段确定文章状态
-    let status: 'published' | 'draft' | 'private' | 'unallowed' | 'reviewing' = 'draft';
+    let status: 'published' | 'private' | 'unallowed' | 'reviewing' = 'private';
     if (article.state === 1) {
         status = 'reviewing';
     } else if (article.state === 2) {
@@ -81,8 +81,6 @@ const convertToPersonalArticle = (article: ArticleDetailsResponse): PersonalArti
     } else if (article.state === 3) {
         status = 'unallowed';
     } else if (article.state === 4) {
-        status = 'draft';
-    } else if (article.state === 5) {
         status = 'private';
     }
 
@@ -127,6 +125,7 @@ const PersonalCenter: React.FC = () => {
     // 文章管理状态
     const [articles, setArticles] = useState<PersonalArticle[]>([]);
     const [filteredArticles, setFilteredArticles] = useState<PersonalArticle[]>([]);
+    const [allFilteredArticleIds, setAllFilteredArticleIds] = useState<(string | number)[]>([]);
     const [articleIds, setArticleIds] = useState<(string | number)[]>([]);
     const [totalArticles, setTotalArticles] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
@@ -138,11 +137,21 @@ const PersonalCenter: React.FC = () => {
     const statusOptions: SelectOption[] = [
         { id: 'all', name: '全部状态', color: '#6c757d' },
         { id: 'published', name: '已发布', color: '#28a745' },
-        { id: 'draft', name: '草稿', color: '#ffc107' },
         { id: 'private', name: '私密', color: '#dc3545' },
         { id: 'unallowed', name: '未通过', color: '#1474e2ff' },
         { id: 'reviewing', name: '审核中', color: '#17a2b8' },
     ];
+
+    // 获取状态对应的数值
+    const getStatusValue = (statusId: string): number | undefined => {
+        switch (statusId) {
+            case 'published': return 2;
+            case 'private': return 4;
+            case 'unallowed': return 3;
+            case 'reviewing': return 1;
+            default: return undefined; // 'all'
+        }
+    };
 
     // 当前选中的状态选项
     const [selectedStatus, setSelectedStatus] = useState<SelectOption | null>(statusOptions[0]);
@@ -191,30 +200,46 @@ const PersonalCenter: React.FC = () => {
         { id: 'stats', label: '数据统计', icon: <FaChartBar />, path: '/personal/stats' },
     ];
 
-    // 获取文章ID列表
+    // 获取文章ID列表 (获取所有符合状态的文章ID，然后在本地分页)
     useEffect(() => {
         const fetchArticleIds = async () => {
             if (!user?.id) return;
 
             try {
                 setLoading(true);
+                const stateValue = getStatusValue(statusFilter);
+                // 使用较大的page_size获取所有ID，以实现准确的客户端分页和总数统计
+                // 注意：如果文章数量非常大(>1000)，这里可能需要优化
                 const res = await ArticleService.listArticlesByUserIdPages({
                     user_id: user.id,
-                    page_from: currentPage,
-                    page_size: itemsPerPage,
+                    page_from: 1,
+                    page_size: 1000,
+                    state: stateValue
                 });
-                setTotalArticles(res.total);
-                setArticleIds(res.ids);
-                console.log('获取文章ID列表成功:', res.total, res.ids);
+                
+                // 使用返回的ID数量作为总数，这比res.total更准确（如果后端返回的是未过滤的总数）
+                const ids = res.ids || [];
+                setAllFilteredArticleIds(ids);
+                setTotalArticles(ids.length);
+                console.log('获取文章ID列表成功:', ids.length, ids);
             } catch (err) {
                 console.error('获取文章ID列表失败:', err);
-                setArticleIds([]);
+                setAllFilteredArticleIds([]);
+                setTotalArticles(0);
             } finally {
                 setLoading(false);
             }
         };
         fetchArticleIds();
-    }, [currentPage, user?.id]);
+    }, [user?.id, statusFilter]);
+
+    // 本地分页：根据当前页码切片ID列表
+    useEffect(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const slicedIds = allFilteredArticleIds.slice(startIndex, endIndex);
+        setArticleIds(slicedIds);
+    }, [currentPage, allFilteredArticleIds]);
 
     // 根据ID列表获取文章详情
     useEffect(() => {
@@ -314,16 +339,17 @@ const PersonalCenter: React.FC = () => {
             );
         }
 
-        if (statusFilter !== 'all') {
-            filtered = filtered.filter(article => article.status === statusFilter);
-        }
+        // 状态筛选已移至服务端
+        // if (statusFilter !== 'all') {
+        //     filtered = filtered.filter(article => article.status === statusFilter);
+        // }
 
         setFilteredArticles(filtered);
-        // 只有在搜索或筛选条件变化时才重置页码
-        if (searchTerm || statusFilter !== 'all') {
+        // 只有在搜索条件变化时才重置页码
+        if (searchTerm) {
             setCurrentPage(1);
         }
-    }, [searchTerm, statusFilter, articles]);
+    }, [searchTerm, articles]);
 
     // 如果用户未登录，显示提示
     if (!isAuthenticated || !currentUser) {
@@ -380,7 +406,8 @@ const PersonalCenter: React.FC = () => {
     const handleStatusChange = (selectedOption: SelectOption | null) => {
         setSelectedStatus(selectedOption);
         if (selectedOption) {
-            setStatusFilter(selectedOption.id as 'all' | 'published' | 'draft' | 'private' | 'unallowed' | 'reviewing');
+            setStatusFilter(selectedOption.id as 'all' | 'published' | 'private' | 'unallowed' | 'reviewing');
+            setCurrentPage(1);
         }
     };
 
@@ -426,14 +453,16 @@ const PersonalCenter: React.FC = () => {
         if (window.confirm('确定要删除这篇文章吗？')) {
             try {
                 await ArticleService.deleteArticle({ ids: String(id) });
-                // 删除成功后重新获取文章列表
-                const res = await ArticleService.listArticlesByUserIdPages({
-                    user_id: user?.id,
-                    page_from: currentPage,
-                    page_size: itemsPerPage,
-                });
-                setTotalArticles(res.total);
-                setArticleIds(res.ids);
+                // 删除成功后从本地状态移除
+                const newAllIds = allFilteredArticleIds.filter(aid => aid !== id);
+                setAllFilteredArticleIds(newAllIds);
+                setTotalArticles(newAllIds.length);
+                
+                // 如果当前页为空且不是第一页，则跳转到上一页
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                if (startIndex >= newAllIds.length && currentPage > 1) {
+                    setCurrentPage(currentPage - 1);
+                }
             } catch (err) {
                 console.error('删除文章失败:', err);
                 alert('删除文章失败，请重试');
@@ -442,15 +471,13 @@ const PersonalCenter: React.FC = () => {
     };
 
     // 切换文章状态
-    const handleToggleStatus = async (id: string | number, newStatus: 'published' | 'draft' | 'private' | 'unallowed' | 'reviewing') => {
+    const handleToggleStatus = async (id: string | number, newStatus: 'published' | 'private' | 'unallowed' | 'reviewing') => {
         try {
             // 将状态转换为API需要的格式
             let state = 0; // draft
             if (newStatus === 'published') {
                 state = 2;
             } else if (newStatus === 'private') {
-                state = 5;
-            } else if (newStatus === 'draft') {
                 state = 4;
             } else if (newStatus === 'unallowed') {
                 state = 3;
@@ -729,9 +756,7 @@ const PersonalCenter: React.FC = () => {
                                         <div>操作</div>
                                     </div>
                                     {currentArticles.length === 0 ? (
-                                        <div className={styles.emptyState}>
-                                            <p>暂无文章</p>
-                                        </div>
+                                        <></>
                                     ) : (
                                         currentArticles.map(article => (
                                             <div key={article.id} className={styles.listItem}>
@@ -745,7 +770,6 @@ const PersonalCenter: React.FC = () => {
                                                 <div className={styles.statusCell}>
                                                     <span className={`${styles.statusBadge} ${styles[article.status]}`}>
                                                         {article.status === 'published' ? '已发布' :
-                                                         article.status === 'draft' ? '草稿' :
                                                          article.status === 'private' ? '私密' :
                                                          article.status === 'reviewing' ? '审核中' : '未通过'}
                                                     </span>
@@ -793,7 +817,7 @@ const PersonalCenter: React.FC = () => {
                                                         <button
                                                             className={styles.actionButton}
                                                             title="撤回审核"
-                                                            onClick={() => handleToggleStatus(article.id, 'draft')}
+                                                            onClick={() => handleToggleStatus(article.id, 'private')}
                                                         >
                                                             <FaEdit />
                                                         </button>

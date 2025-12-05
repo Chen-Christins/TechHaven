@@ -32,8 +32,9 @@ import Loading from '../../components/loading/Loading';
 import { confirm } from '../../components/confirm/Confirm';
 import type { SelectOption } from '../../types/index';
 import styles from './ArticleManagement.module.css';
-import ArticleService, { type ArticleDetailsResponse } from '../../services/articleService';
+import ArticleService, { type ListAdminArticlesResponse } from '../../services/articleService';
 import { CategoryService } from '../../services/categoryService';
+import { formatToChinaTime } from '../../utils/utils';
 
 // 文章接口定义
 interface Article {
@@ -43,10 +44,10 @@ interface Article {
     summary: string;
     author: string;
     authorEmail: string;
-    authorRole: 'admin' | 'editor' | 'writer' | 'user';
+    authorRole: string;
     category: string;
     tags: string[];
-    status: 'pending' | 'approved' | 'published' | 'rejected' | 'draft' | 'private';
+    status: 'pending' | 'published' | 'rejected' | 'private';
     featured: boolean;
     views: number;
     likes: number;
@@ -82,27 +83,23 @@ interface FilterOptions {
 
 // 状态映射
 const STATE_MAP: Record<number, Article['status']> = {
-    0: 'draft',
     1: 'pending',
-    2: 'approved',
-    3: 'published',
-    4: 'rejected',
-    5: 'private'
+    2: 'published',
+    3: 'rejected',
+    4: 'private',
 };
 
 const REVERSE_STATE_MAP: Record<string, number> = {
-    'draft': 0,
     'pending': 1,
-    'approved': 2,
-    'published': 3,
-    'rejected': 4,
-    'private': 5
+    'published': 2,
+    'rejected': 3,
+    'private': 4
 };
 
 const ArticleManagement: React.FC = () => {
     // 状态管理
     const [articles, setArticles] = useState<Article[]>([]);
-    const [stats, setStats] = useState<ArticleStats>({
+    const [stats] = useState<ArticleStats>({
         totalArticles: 0,
         pendingArticles: 0,
         publishedArticles: 0,
@@ -149,70 +146,38 @@ const ArticleManagement: React.FC = () => {
         const fetchArticles = async () => {
             setLoading(true);
             try {
-                // 1. 获取文章ID列表 (获取前1000条以支持前端筛选)
-                const listRes = await ArticleService.listArticlesByUserIdPages({
-                    page_from: 0,
-                    page_size: 1000
+                const res: ListAdminArticlesResponse = await ArticleService.listAdminArticlesByPages({
+                    page_num: 1,
+                    page_size: 1000,
+                    state: 0 // 获取所有状态的文章
                 });
+                
+                setArticles(res.list.map(article => ({
+                    id: String(article.id),
+                    title: article.title,
+                    slug: "asdasdsad", // 占位符，API未提供
+                    summary: article.summary + "...",
+                    author: article.author,
+                    authorEmail: article.email,
+                    authorRole: article.author_role || 'user', // 使用API提供的author_role字段
+                    category: "默认分类", // 占位符，API未提供
+                    tags: [], // 占位符，API未提供
+                    status: STATE_MAP[article.state] || 'draft',
+                    featured: false, // 占位符，API未提供
+                    views: 0, // 占位符，API未提供
+                    likes: 0, // 占位符，API未提供
+                    comments: 0, // 占位符，API未提供
+                    readTime: 0, // 占位符，API未提供
+                    publishedAt: formatToChinaTime(Number(article.publish_time)),
+                    createdAt: formatToChinaTime(Number(article.publish_time)),
+                    updatedAt: formatToChinaTime(Number(article.update_time)),
+                    reviewedAt: undefined,
+                    reviewedBy: undefined,
+                    rejectionReason: undefined,
+                    reportCount: 0,
+                    isReported: false,
+                })));
 
-                if (listRes && listRes.ids) {
-                    // 2. 并行获取文章详情
-                    const detailPromises = listRes.ids.map(id => 
-                        ArticleService.getArticleDetails({ id, type: 1 }) // 假设type 1为普通文章
-                            .catch(() => null) // 忽略单个失败
-                    );
-                    
-                    const detailsResults = await Promise.all(detailPromises);
-                    
-                    const fetchedArticles: Article[] = detailsResults
-                        .filter((item): item is ArticleDetailsResponse => item !== null)
-                        .map(detail => {
-                            const status = STATE_MAP[detail.state] || 'draft';
-                            
-                            return {
-                                id: String(detail.id),
-                                title: detail.title,
-                                slug: `article-${detail.id}`,
-                                summary: detail.content.substring(0, 100) + '...', // 简单截取作为摘要
-                                author: detail.author || 'Unknown',
-                                authorEmail: 'user@example.com', // API未提供
-                                authorRole: 'user', // API未提供
-                                category: (detail.categorys && detail.categorys.length > 0) ? String(detail.categorys[0]) : '未分类', // 简化处理
-                                tags: detail.labels ? detail.labels.map(String) : [],
-                                status: status,
-                                featured: false, // API未提供
-                                views: detail.views || 0,
-                                likes: detail.praise || 0,
-                                comments: 0, // API未提供
-                                readTime: Math.ceil(detail.content.length / 500), // 估算阅读时间
-                                publishedAt: detail.publish_time ? new Date(Number(detail.publish_time) * 1000).toISOString() : '',
-                                createdAt: detail.publish_time ? new Date(Number(detail.publish_time) * 1000).toISOString() : new Date().toISOString(),
-                                updatedAt: detail.update_time ? new Date(Number(detail.update_time) * 1000).toISOString() : new Date().toISOString(),
-                                reviewedAt: undefined,
-                                reviewedBy: undefined,
-                                rejectionReason: undefined,
-                                reportCount: 0,
-                                isReported: false
-                            };
-                        });
-
-                    setArticles(fetchedArticles);
-
-                    // 计算统计数据
-                    const totalArticles = fetchedArticles.length;
-                    const pendingArticles = fetchedArticles.filter(a => a.status === 'pending').length;
-                    const publishedArticles = fetchedArticles.filter(a => a.status === 'published').length;
-                    const rejectedArticles = fetchedArticles.filter(a => a.status === 'rejected').length;
-                    const reportedArticles = fetchedArticles.filter(a => a.isReported).length;
-
-                    setStats({
-                        totalArticles,
-                        pendingArticles,
-                        publishedArticles,
-                        rejectedArticles,
-                        reportedArticles
-                    });
-                }
             } catch (error) {
                 console.error('获取文章列表失败:', error);
             } finally {
@@ -295,18 +260,16 @@ const ArticleManagement: React.FC = () => {
     const statusOptions: SelectOption[] = [
         { id: '', name: '全部状态', color: '#6c757d' },
         { id: 'pending', name: '待审核', color: '#ffc107' },
-        { id: 'approved', name: '已通过', color: '#28a745' },
         { id: 'published', name: '已发布', color: '#007bff' },
         { id: 'rejected', name: '已拒绝', color: '#dc3545' },
-        { id: 'draft', name: '草稿', color: '#6c757d' },
-        { id: 'private', name: '私密', color: '#343a40' }
+        { id: 'private', name: '私密', color: '#9129e7ff' }
     ];
 
     const authorRoleOptions: SelectOption[] = [
         { id: '', name: '全部角色', color: '#6c757d' },
         { id: 'admin', name: '管理员', color: '#dc3545' },
         { id: 'editor', name: '编辑', color: '#28a745' },
-        { id: 'writer', name: '作者', color: '#007bff' },
+        { id: 'checker', name: '审核员', color: '#007bff' },
         { id: 'user', name: '普通用户', color: '#6c757d' }
     ];
 
@@ -369,7 +332,7 @@ const ArticleManagement: React.FC = () => {
                         a.id === article.id
                             ? {
                                 ...a,
-                                status: 'approved',
+                                status: 'published',
                                 reviewedAt: new Date().toISOString().split('T')[0],
                                 reviewedBy: '当前管理员',
                                 updatedAt: new Date().toISOString().split('T')[0]
@@ -476,7 +439,7 @@ const ArticleManagement: React.FC = () => {
                         a.id === article.id
                             ? {
                                 ...a,
-                                status: 'draft',
+                                status: 'private',
                                 updatedAt: new Date().toISOString().split('T')[0]
                             }
                             : a
@@ -749,13 +712,11 @@ const ArticleManagement: React.FC = () => {
                                     <span className={`${styles.statusBadge} ${styles[article.status]}`}>
                                         <span className={styles.statusIndicator}></span>
                                         {article.status === 'pending' && <><FaHourglassHalf /> 待审核</>}
-                                        {article.status === 'approved' && <><FaCheckCircle /> 已通过</>}
                                         {article.status === 'published' && <><FaEye /> 已发布</>}
                                         {article.status === 'rejected' && <><FaTimes /> 已拒绝</>}
-                                        {article.status === 'draft' && <><FaClock /> 草稿</>}
                                         {article.status === 'private' && <><FaClipboardCheck /> 私密</>}
                                     </span>
-                                    {(article.status === 'pending' || article.status === 'rejected' || article.status === 'approved') && (
+                                    {(article.status === 'pending' || article.status === 'rejected' || article.status === 'published') && (
                                         <div className={styles.reviewInfo}>
                                             {article.reviewedBy && (
                                                 <div className={styles.reviewedBy}>审核人：{article.reviewedBy}</div>
@@ -808,7 +769,7 @@ const ArticleManagement: React.FC = () => {
                                         )}
 
                                         {/* 已通过文章可以发布 */}
-                                        {article.status === 'approved' && (
+                                        {article.status === 'published' && (
                                             <button
                                                 className={`${styles.actionButton} ${styles.publish}`}
                                                 title="发布文章"

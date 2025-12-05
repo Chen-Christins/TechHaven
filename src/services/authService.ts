@@ -19,6 +19,9 @@ export interface UserInfo {
     email: string;
     name: string;
     role: string;
+    create_time: number;
+    is_deleted: number;
+    update_time: number;
     login_time: number;
     status: number;
 }

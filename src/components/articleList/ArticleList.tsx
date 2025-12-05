@@ -26,6 +26,7 @@ const ArticleList: React.FC = () => {
                     // user_id: 1,
                     page_from: currentPage,
                     page_size: itemsPerPage,
+                    state: 2
                 });
                 // // console.log('获取文章ID列表成功:', res.total, res.ids);
                 // // console.log('准备设置 articleIds:', res.ids);
