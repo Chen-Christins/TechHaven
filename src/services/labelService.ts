@@ -20,6 +20,7 @@ export interface DeleteLabelResponse {
 export interface CreateLabelParams {
     name: string;
     color: string;
+    description?: string;
 }
 
 /**
@@ -29,6 +30,8 @@ export interface CreateLabelResponse {
     id: string | number;
     name: string;
     color: string;
+    desc: string;
+    create_time: number;
 }
 
 /**
@@ -46,6 +49,8 @@ export interface LabelInfo {
     id: string | number;
     name: string;
     color: string;
+    description?: string;
+    create_time?: string;
 }
 
 /**
@@ -78,6 +83,9 @@ export class LabelService {
         const formData = new URLSearchParams();
         formData.append('name', params.name);
         formData.append('color', params.color);
+        if (params.description) {
+            formData.append('desc', params.description);
+        }
         const response = await http.post<CreateLabelResponse>('/label/create', formData.toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',

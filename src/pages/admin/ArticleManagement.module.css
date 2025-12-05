@@ -407,10 +407,12 @@
 /* 统计数据单元格 */
 .statsInfo {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    flex-direction: row;
+    gap: 12px;
     font-size: 11px;
     color: var(--text-secondary);
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .statsInfo div {

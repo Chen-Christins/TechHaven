@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     FaFileAlt,
     FaPlus,
@@ -97,6 +98,7 @@ const REVERSE_STATE_MAP: Record<string, number> = {
 };
 
 const ArticleManagement: React.FC = () => {
+    const navigate = useNavigate();
     // 状态管理
     const [articles, setArticles] = useState<Article[]>([]);
     const [stats] = useState<ArticleStats>({
@@ -125,10 +127,10 @@ const ArticleManagement: React.FC = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const res = await CategoryService.queryCategory({});
+                const res = await CategoryService.queryCategory();
                 if (res) {
-                    const options = res.map(cat => ({
-                        id: String(cat.name), // 使用名称作为ID以匹配筛选逻辑
+                    const options = res.list.map(cat => ({
+                        id: cat.id,
                         name: cat.name,
                         color: cat.color || '#007bff'
                     }));
@@ -450,6 +452,11 @@ const ArticleManagement: React.FC = () => {
                 }
             }
         });
+    };
+
+    // 查看文章详情
+    const handleViewArticle = (id: string) => {
+        navigate(`/article/${id}`);
     };
 
     // 删除文章
@@ -799,6 +806,7 @@ const ArticleManagement: React.FC = () => {
                                         <button
                                             className={`${styles.actionButton} ${styles.edit}`}
                                             title="查看详情"
+                                            onClick={() => handleViewArticle(article.id)}
                                         >
                                             <FaEye />
                                         </button>

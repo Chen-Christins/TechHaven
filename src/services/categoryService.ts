@@ -1,25 +1,23 @@
 import http from '../utils/http';
 
 /**
- * 查询分类请求参数类型
- */
-export interface QueryCategoryParams {
-    ids?: string; // 逗号分隔的分类id字符串
-    user_id?: string | number;
-}
-
-/**
  * 查询分类响应类型
  */
 export interface CategoryInfo {
-    id: string | number;
-    name: string;
+    id: any;
+    name: any;
     color: string;
-    parent_id: string | number;
-}
-
-export interface QueryCategoryResponse {
-    categories: CategoryInfo[];
+    total: number;
+    list: Array<{
+        id: string | number;
+        name: string;
+        url: string;
+        color: string;
+        icon: string;
+        description: string;
+        parent_id: string | number;
+        status: number;
+    }>;
 }
 
 /**
@@ -41,8 +39,12 @@ export interface DeleteCategoryResponse {
  */
 export interface CreateCategoryParams {
     name: string;
+    url: string;
     color: string;
+    icon: string;
+    description?: string;
     parent_id?: string | number;
+    status?: number;
 }
 
 /**
@@ -62,15 +64,12 @@ export interface CreateCategoryResponse {
 export class CategoryService {
     /**
      * 查询分类详情
-     * @param params 查询参数
      * @returns 分类详情列表
      */
-    static async queryCategory(params: QueryCategoryParams): Promise<CategoryInfo[]> {
-        let url = '/category/query?';
-        if (params.ids) url += `ids=${params.ids}&`;
-        if (params.user_id) url += `user_id=${params.user_id}`;
-        
-        const response = await http.get<CategoryInfo[]>(url);
+    static async queryCategory(): Promise<CategoryInfo> {
+        let url = '/category/admin/query';
+
+        const response = await http.get<CategoryInfo>(url);
         return response.data;
     }
 
@@ -82,7 +81,7 @@ export class CategoryService {
     static async deleteCategory(params: DeleteCategoryParams): Promise<DeleteCategoryResponse> {
         const formData = new URLSearchParams();
         formData.append('ids', params.ids);
-        const response = await http.post<DeleteCategoryResponse>('/category/delete', formData.toString(), {
+        const response = await http.post<DeleteCategoryResponse>('/category/admin/delete', formData.toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
@@ -99,10 +98,18 @@ export class CategoryService {
         const formData = new URLSearchParams();
         formData.append('name', params.name);
         formData.append('color', params.color);
+        formData.append('icon', params.icon);
+        formData.append('url', params.url);
+        if (params.description) {
+            formData.append('desc', params.description);
+        }
+        if (params.status !== undefined) {
+            formData.append('status', String(params.status));
+        }
         if (params.parent_id !== undefined && params.parent_id !== null && params.parent_id !== '') {
             formData.append('parent_id', String(params.parent_id));
         }
-        const response = await http.post<CreateCategoryResponse>('/category/create', formData.toString(), {
+        const response = await http.post<CreateCategoryResponse>('/category/admin/create', formData.toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },

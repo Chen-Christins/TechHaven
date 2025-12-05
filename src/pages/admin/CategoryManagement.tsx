@@ -17,6 +17,7 @@ import CustomSelect from '../../components/customSelect/CustomSelect';
 import SearchBox from '../../components/searchBox/SearchBox';
 import Button from '../../components/button/Button';
 import { confirm } from '../../components/confirm/Confirm';
+import CategoryService from '../../services/categoryService';
 
 interface Category {
     id: string | number;
@@ -86,15 +87,6 @@ const CategoryManagement: React.FC = () => {
         return parentOptions;
     };
 
-    // 预设颜色选项
-    const colorOptions = [
-        '#4361ee', '#3a0ca3', '#7209b7', '#f72585',
-        '#4cc9f0', '#4895ef', '#4361ee', '#3f37c9',
-        '#3a0ca3', '#240046', '#10002b', '#e63946',
-        '#f77f00', '#fcbf49', '#eae2b7', '#2a9d8f',
-        '#264653', '#d62828', '#003049', '#f77f00'
-    ];
-
     // 图标选项
     const iconOptions = [
         { name: '默认', value: '' },
@@ -109,122 +101,40 @@ const CategoryManagement: React.FC = () => {
         { name: '摄影', value: '📷' }
     ];
 
-    // 模拟分类数据
-    const mockCategories: Category[] = [
-        {
-            id: 1,
-            name: '前端开发',
-            slug: 'frontend',
-            description: 'HTML、CSS、JavaScript等前端技术相关文章',
-            color: '#4361ee',
-            icon: '💻',
-            articleCount: 456,
-            views: 125678,
-            createdAt: '2024-01-15',
-            updatedAt: '2024-11-20',
-            status: 'active',
-            level: 0,
-            children: [
-                {
-                    id: 11,
-                    name: 'React',
-                    slug: 'react',
-                    description: 'React框架相关内容',
-                    color: '#61dafb',
-                    icon: '⚛️',
-                    parentId: 1,
-                    articleCount: 156,
-                    views: 45678,
-                    createdAt: '2024-02-01',
-                    updatedAt: '2024-11-18',
-                    status: 'active',
-                    level: 1
-                },
-                {
-                    id: 12,
-                    name: 'Vue',
-                    slug: 'vue',
-                    description: 'Vue框架相关内容',
-                    color: '#4fc08d',
-                    icon: '💚',
-                    parentId: 1,
-                    articleCount: 89,
-                    views: 23456,
-                    createdAt: '2024-02-15',
-                    updatedAt: '2024-11-17',
-                    status: 'active',
-                    level: 1
-                }
-            ]
-        },
-        {
-            id: 2,
-            name: '后端技术',
-            slug: 'backend',
-            description: '服务器端编程相关技术文章',
-            color: '#7209b7',
-            icon: '⚙️',
-            articleCount: 342,
-            views: 98765,
-            createdAt: '2024-01-20',
-            updatedAt: '2024-11-19',
-            status: 'active',
-            level: 0
-        },
-        {
-            id: 3,
-            name: '开发工具',
-            slug: 'tools',
-            description: '各种开发工具和软件使用教程',
-            color: '#f72585',
-            icon: '🔧',
-            articleCount: 289,
-            views: 67890,
-            createdAt: '2024-01-25',
-            updatedAt: '2024-11-18',
-            status: 'active',
-            level: 0
-        },
-        {
-            id: 4,
-            name: '设计相关',
-            slug: 'design',
-            description: 'UI/UX设计、平面设计相关内容',
-            color: '#4cc9f0',
-            icon: '🎨',
-            articleCount: 234,
-            views: 54321,
-            createdAt: '2024-02-01',
-            updatedAt: '2024-11-16',
-            status: 'active',
-            level: 0
-        },
-        {
-            id: 5,
-            name: '其他',
-            slug: 'other',
-            description: '其他杂类文章',
-            color: '#eae2b7',
-            icon: '📝',
-            articleCount: 135,
-            views: 32109,
-            createdAt: '2024-02-10',
-            updatedAt: '2024-11-15',
-            status: 'inactive',
-            level: 0
-        }
-    ];
-
     useEffect(() => {
         loadCategories();
     }, []);
 
     const loadCategories = async () => {
         setIsLoading(true);
-        // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setCategories(mockCategories);
-        setIsLoading(false);
+        try {
+            const response = await CategoryService.queryCategory();
+            // @ts-ignore
+            const categoryList = response.list || [];
+            
+            const mappedCategories: Category[] = categoryList.map((item: any) => ({
+                id: item.id,
+                name: item.name,
+                slug: item.url,
+                description: item.description || '',
+                color: item.color,
+                icon: item.icon,
+                parentId: item.parent_id,
+                articleCount: 0, // 暂时没有这个字段
+                views: 0, // 暂时没有这个字段
+                createdAt: new Date().toISOString().split('T')[0], // 暂时没有这个字段
+                updatedAt: new Date().toISOString().split('T')[0], // 暂时没有这个字段
+                status: item.status === 1 ? 'active' : 'inactive',
+                level: item.parent_id ? 1 : 0,
+                children: []
+            }));
+            
+            setCategories(mappedCategories);
+        } catch (error) {
+            console.error('加载分类失败:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     // 生成slug
@@ -293,8 +203,16 @@ const CategoryManagement: React.FC = () => {
         setIsLoading(true);
 
         try {
-            // 模拟API调用
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // 调用后端API
+            const response = await CategoryService.createCategory({
+                name: formData.name,
+                url: formData.slug,
+                color: formData.color,
+                icon: formData.icon,
+                description: formData.description,
+                parent_id: formData.parentId,
+                status: formData.status === 'active' ? 1 : 0
+            });
 
             if (editingCategory) {
                 // 编辑模式
@@ -306,12 +224,18 @@ const CategoryManagement: React.FC = () => {
             } else {
                 // 新增模式
                 const newCategory: Category = {
-                    id: Date.now(),
-                    ...formData,
+                    id: response.id,
+                    name: response.name,
+                    slug: formData.slug,
+                    description: formData.description,
+                    color: response.color,
+                    icon: formData.icon,
+                    parentId: response.parent_id,
                     articleCount: 0,
                     views: 0,
                     createdAt: new Date().toISOString().split('T')[0],
                     updatedAt: new Date().toISOString().split('T')[0],
+                    status: formData.status,
                     level: formData.parentId ? 1 : 0
                 };
                 setCategories(prev => [...prev, newCategory]);
@@ -342,8 +266,9 @@ const CategoryManagement: React.FC = () => {
             onConfirm: async () => {
                 setIsLoading(true);
                 try {
-                    // 模拟API调用
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await CategoryService.deleteCategory({
+                        ids: selectedCategories.join(',')
+                    });
 
                     setCategories(prev => prev.filter(cat => !selectedCategories.includes(cat.id)));
                     setSelectedCategories([]);
@@ -360,7 +285,16 @@ const CategoryManagement: React.FC = () => {
     const toggleCategoryStatus = async (category: Category) => {
         const newStatus = category.status === 'active' ? 'inactive' : 'active';
         try {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await CategoryService.createCategory({
+                name: category.name,
+                url: category.slug,
+                color: category.color,
+                icon: category.icon || '',
+                description: category.description,
+                parent_id: category.parentId,
+                status: newStatus === 'active' ? 1 : 0
+            });
+
             setCategories(prev => prev.map(cat =>
                 cat.id === category.id
                     ? { ...cat, status: newStatus, updatedAt: new Date().toISOString().split('T')[0] }
@@ -388,7 +322,9 @@ const CategoryManagement: React.FC = () => {
             onConfirm: async () => {
                 setIsLoading(true);
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await CategoryService.deleteCategory({
+                        ids: String(category.id)
+                    });
                     setCategories(prev => prev.filter(cat => cat.id !== category.id));
                 } catch (error) {
                     console.error('删除分类失败:', error);
@@ -710,16 +646,17 @@ const CategoryManagement: React.FC = () => {
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label className={styles.formLabel}>颜色</label>
-                                    <div className={styles.colorPicker}>
-                                        {colorOptions.map(color => (
-                                            <button
-                                                key={color}
-                                                type="button"
-                                                className={`${styles.colorOption} ${formData.color === color ? styles.selected : ''}`}
-                                                style={{ backgroundColor: color }}
-                                                onClick={() => setFormData(prev => ({ ...prev, color }))}
-                                            />
-                                        ))}
+                                    <div className={styles.colorPickerContainer}>
+                                        <input
+                                            type="color"
+                                            className={styles.colorInput}
+                                            value={formData.color}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+                                        />
+                                        <div
+                                            className={styles.colorPreview}
+                                            style={{ backgroundColor: formData.color }}
+                                        />
                                     </div>
                                 </div>
 
@@ -727,7 +664,12 @@ const CategoryManagement: React.FC = () => {
                                     <label className={styles.formLabel}>图标</label>
                                     <CustomSelect
                                         name="图标"
-                                        value={iconOptions.find(icon => icon.value === formData.icon) ? { id: iconOptions.find(icon => icon.value === formData.icon)!.value, name: iconOptions.find(icon => icon.value === formData.icon)!.name, color: '#007bff' } : null}
+                                        value={iconOptions.find(icon => icon.value === formData.icon) ? { 
+                                                id: iconOptions.find(icon => icon.value === formData.icon)!.value,
+                                                name: iconOptions.find(icon => icon.value === formData.icon)!.name,
+                                                color: '#007bff' 
+                                            } : null
+                                        }
                                         onChange={(selectedOption) => setFormData(prev => ({ ...prev, icon: String(selectedOption?.id || '') }))}
                                         options={iconOptions.map(icon => ({ id: icon.value, name: `${icon.name} ${icon.value}`, color: '#007bff' }))}
                                         hideBadge={true}

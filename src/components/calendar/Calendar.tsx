@@ -48,7 +48,7 @@ const Calendar: React.FC = () => {
 
   return (
     <div className={styles.calendar}>
-      <h3 className={styles.panelTitle}>文章日历</h3>
+      <h3 className={styles.panelTitle}>站点日历</h3>
       <div className={styles.calendarHeader}>
         <button 
           className={styles.monthBtn} 

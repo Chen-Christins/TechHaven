@@ -284,10 +284,10 @@ const PersonalCenter: React.FC = () => {
                 const mapped = (res || []).map((t: any) => ({
                     id: t.id,
                     name: t.name,
-                    description: t.description || '暂无',
+                    description: t.desc || '暂无',
                     articleCount: (t.article_count as number) || 0,
                     color: t.color || '#61dafb',
-                    createTime: t.create_time || '未知时间'
+                    createTime: t.create_time ? formatToChinaTime(t.create_time) : '未知时间'
                 }));
                 setTags(mapped);
             } catch (err) {
@@ -503,27 +503,40 @@ const PersonalCenter: React.FC = () => {
         setSavingTag(true);
         try {
             if (editingTag) {
-                // 编辑标签（暂时本地更新，待API支持）
+                // 编辑标签
+                const res = await LabelService.createLabel({
+                    name: tagForm.name,
+                    color: tagForm.color,
+                    description: tagForm.description || '',
+                });
+
                 setTags(tags.map(tag =>
                     tag.id === editingTag.id
-                        ? { ...tag, name: tagForm.name, description: tagForm.description, color: tagForm.color }
+                        ? { 
+                            ...tag, 
+                            name: res.name, 
+                            description: res.desc || '暂无', 
+                            color: res.color,
+                            createTime: res.create_time ? formatToChinaTime(res.create_time) : tag.createTime
+                          }
                         : tag
                 ));
             } else {
                 // 创建新标签
                 const res = await LabelService.createLabel({
                     name: tagForm.name,
-                    color: tagForm.color
+                    color: tagForm.color,
+                    description: tagForm.description || '',
                 });
 
                 // 将API响应映射到PersonalTag格式
                 const newTag: PersonalTag = {
                     id: Number(res.id),
                     name: res.name,
-                    description: tagForm.description || '暂无',
+                    description: res.desc || '暂无',
                     articleCount: 0,
                     color: res.color,
-                    createTime: new Date().toISOString().split('T')[0]
+                    createTime: res.create_time ? formatToChinaTime(res.create_time) : new Date().toISOString().split('T')[0]
                 };
                 setTags([...tags, newTag]);
             }
@@ -706,7 +719,7 @@ const PersonalCenter: React.FC = () => {
                             <UserDropdown
                                 user={currentUser}
                                 onLogout={handleLogout}
-                                showAdminLink={true}
+                                showAdminLink={currentUser?.role === '管理员'}
                             />
                         </div>
                     </header>
@@ -863,7 +876,7 @@ const PersonalCenter: React.FC = () => {
                                 </div>
 
                                 {/* 分页 */}
-                                {totalPages > 1 && (
+                                {totalPages >= 1 && (
                                     <div className={styles.pagination}>
                                         <div className={styles.paginationInfo}>
                                             显示 {startIndex + 1} - {Math.min(endIndex, totalArticles)} 条，
@@ -930,17 +943,19 @@ const PersonalCenter: React.FC = () => {
                                     </button>
                                 </div>
 
-                                <div className={styles.tagsGrid}>
-                                    {tagsLoading ? (
-                                        <div style={{ padding: '24px', textAlign: 'center' }}>
-                                            <Loading size="small" text="正在加载标签..." />
-                                        </div>
-                                    ) : tags.length === 0 ? (
-                                        <div style={{ textAlign: 'center', fontWeight: 700, padding: '8px 0', color: 'var(--text-secondary)' }}>
-                                            暂无标签
-                                        </div>
-                                    ) : (
-                                        tags.map(tag => (
+                                {tagsLoading ? (
+                                    <div style={{ padding: '24px', textAlign: 'center' }}>
+                                        <Loading size="small" text="正在加载标签..." />
+                                    </div>
+                                ) : tags.length === 0 ? (
+                                    <div className={styles.emptyState}>
+                                        <FaTag className={styles.emptyIcon} />
+                                        <h3>暂无标签数据</h3>
+                                        <p>点击"新增标签"按钮创建第一个标签</p>
+                                    </div>
+                                ) : (
+                                    <div className={styles.tagsGrid}>
+                                        {tags.map(tag => (
                                             <div key={tag.id} className={styles.tagCard}>
                                                 <div className={styles.tagHeader}>
                                                     <div
@@ -969,9 +984,9 @@ const PersonalCenter: React.FC = () => {
                                                     </button>
                                                 </div>
                                             </div>
-                                        ))
-                                    )}
-                                </div>
+                                        ))}
+                                    </div>
+                                )}
 
                                 {/* 标签模态框 */}
                                 {showTagModal && (

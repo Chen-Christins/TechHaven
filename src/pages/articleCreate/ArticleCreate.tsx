@@ -144,8 +144,9 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
             if (user?.id) {
                 try {
                     // 获取所有分类，保证每项都有 color 字段
-                    const categoryData = await CategoryService.queryCategory({ ids: '', user_id: user.id });
-                    setCategories(categoryData.map(cat => ({
+                    const categoryData = await CategoryService.queryCategory();
+
+                    setCategories(categoryData.list.map(cat => ({
                         id: cat.id,
                         name: cat.name,
                         color: cat.color || '#3B82F6'
@@ -201,26 +202,6 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
         const newTags = selectedTags.filter(tag => tag.id !== tagId);
         setSelectedTags(newTags);
         setFormData(prev => ({ ...prev, tags: newTags }));
-    };
-
-    const handleAddCategory = async (newCategory: SelectOption) => {
-        try {
-            // 调用后端API创建分类
-            const created = await CategoryService.createCategory({
-                name: newCategory.name,
-                color: newCategory.color || '#3B82F6'
-            });
-            // 更新分类列表
-            const categoryToAdd = {
-                id: created.id,
-                name: created.name,
-                color: created.color || '#3B82F6',
-            };
-            setCategories(prev => [...prev, categoryToAdd]);
-            setFormData(prev => ({ ...prev, category: categoryToAdd }));
-        } catch (err) {
-            console.error('分类创建失败:', err);
-        }
     };
 
     const handleAddTag = async (newTag: SelectOption) => {
@@ -396,10 +377,6 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                         <div className={styles.formSectionTitle}>
                             <i className="bi bi-folder"></i>
                             文章分类
-                            <AddButton
-                                name="分类"
-                                onAdd={handleAddCategory}
-                            />
                         </div>
                         <div style={{ position: 'relative' }}>
                             <CustomSelect
