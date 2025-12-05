@@ -59,6 +59,7 @@
 
 .logo:hover .logoText {
     transform: scale(1.05);
+    cursor: pointer;
 }
 
 /* 桌面端导航链接 */
@@ -95,6 +96,7 @@
 .navLink:hover {
     background-color: var(--bg-hover);
     color: var(--text-primary);
+    cursor: pointer;
 }
 
 /* 活跃状态链接 */
@@ -210,7 +212,7 @@
     border: 1px solid var(--border-primary);
     border-radius: 12px;
     box-shadow: var(--shadow-lg);
-    min-width: 280px;
+    min-width: 220px;
     z-index: 1000;
     overflow: hidden;
     animation: dropdownSlide 0.2s ease-out;
@@ -231,8 +233,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 16px;
-    border-bottom: 1px solid var(--border-primary);
+    padding: 8px 16px;
 }
 
 .dropdownAvatar {
@@ -266,7 +267,7 @@
 }
 
 .dropdownMenu {
-    padding: 8px 0;
+    padding: 0px;
 }
 
 .dropdownItem {
@@ -554,11 +555,6 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.dropdownHeader {
-    padding: 1rem 1.2rem;
-    border-bottom: 1px solid var(--border-secondary);
 }
 
 .dropdownTitle {

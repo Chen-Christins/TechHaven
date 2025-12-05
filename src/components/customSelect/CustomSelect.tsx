@@ -13,6 +13,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     hideBadge = false
 }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [openUpwards, setOpenUpwards] = useState(false);
     const [selectedOption, setSelectedOption] = useState<SelectOption | null>(value || null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -52,6 +53,19 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     };
 
     const openDropdown = () => {
+        if (containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            const dropdownHeight = 320; // Approximate max height including padding
+
+            if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+                setOpenUpwards(true);
+            } else {
+                setOpenUpwards(false);
+            }
+        }
+
         setIsOpen(true);
         setSearchTerm('');
         // 延迟focus以确保dropdown已经打开
@@ -122,7 +136,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             </div>
 
             {/* 下拉框 */}
-            <div className={`${styles.dropdown} ${isOpen ? styles.dropdownOpen : ''}`}>
+            <div className={`${styles.dropdown} ${isOpen ? styles.dropdownOpen : ''} ${openUpwards ? styles.dropdownUp : ''}`}>
                 <div className={styles.search}>
                     <input
                         ref={searchInputRef}

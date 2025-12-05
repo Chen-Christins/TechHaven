@@ -100,3 +100,19 @@ export interface SelectChangeEventDetail {
     oldIndex: number;
     name: string;
 }
+
+// 学科类型
+export interface Subject {
+    id: number | string;
+    name: string;
+    color: string;
+    works?: Assignment[];
+}
+
+// 作业/任务类型
+export interface Assignment {
+    id: number | string;
+    name: string;
+    color: string;
+    date?: string;
+}

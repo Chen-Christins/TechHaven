@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaHome, FaPen, FaBars, FaSignOutAlt, FaCog, FaUserCircle, FaStar, FaExternalLinkAlt, FaSignInAlt } from 'react-icons/fa';
+import { FaHome, FaPen, FaBars, FaSignOutAlt, FaUserCircle, FaStar, FaExternalLinkAlt, FaSignInAlt } from 'react-icons/fa';
 import styles from './Navbar.module.css';
 import ThemeToggle from '../themeToggle/ThemeToggle';
 import AuthButtons from '../authButtons/AuthButtons';
@@ -19,6 +19,8 @@ const Navbar: React.FC = () => {
 	const userMenuRef = useRef<HTMLDivElement>(null); // 用户菜单DOM引用
 	const recommendMenuRef = useRef<HTMLDivElement>(null); // 推荐菜单DOM引用
 
+    // console.log(user);
+
 	// 用户数据（从认证上下文获取）
 	const currentUser = user ? {
 		name: user.name || user.account || '用户',
@@ -30,9 +32,6 @@ const Navbar: React.FC = () => {
 	// 导航链接数据（包含图标和路径）
 	const navLinks = [
 		{ label: "首页", icon: <FaHome />, path: "/" },
-		...(isAuthenticated ? [
-			{ label: "管理", icon: <FaCog />, path: "/admin" },
-		] : []),
 		// { label: "标签", icon: <FaTags />, path: "/tags" },
 		// { label: "关于", icon: <FaUser />, path: "/about" },
 	];

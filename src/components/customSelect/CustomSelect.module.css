@@ -71,6 +71,16 @@
     pointer-events: all;
 }
 
+.dropdownUp {
+    top: auto;
+    bottom: calc(100% + 5px);
+    transform: translateY(10px);
+}
+
+.dropdownUp.dropdownOpen {
+    transform: translateY(0);
+}
+
 .search {
     padding: 0.75rem;
     border-bottom: 1px solid var(--border-primary);

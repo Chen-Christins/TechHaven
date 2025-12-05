@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
     FaUserCircle,
     FaCog,
@@ -9,7 +9,7 @@ import styles from './UserDropdown.module.css';
 
 interface User {
     name: string;
-    avatar: string;
+    avatar?: string;
     role?: string;
     email: string;
 }
@@ -29,7 +29,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
-
+    const navigate = useNavigate();
     // 点击外部关闭下拉菜单
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -72,7 +72,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
             {/* 用户显示区域 */}
             <div className={styles.userDisplay} onClick={toggleDropdown}>
                 <img
-                    src={user.avatar}
+                    src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
                     alt={user.name}
                     className={styles.userAvatar}
                 />
@@ -94,7 +94,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
                 <div className={styles.dropdown}>
                     <div className={styles.dropdownHeader}>
                         <img
-                            src={user.avatar}
+                            src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
                             alt={user.name}
                             className={styles.dropdownAvatar}
                         />
@@ -105,15 +105,15 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
                     </div>
                     <div className={styles.dropdownDivider}></div>
                     <div className={styles.dropdownMenu}>
-                        <Link to="/profile/1" className={styles.dropdownItem} onClick={closeDropdown}>
+                        <div className={styles.dropdownItem} onClick={() => { closeDropdown(); navigate("/profile/1"); }}>
                             <FaUserCircle />
                             个人资料
-                        </Link>
+                        </div>
                         {showAdminLink && (
-                            <Link to="/admin" className={styles.dropdownItem} onClick={closeDropdown}>
+                            <div className={styles.dropdownItem} onClick={() => { closeDropdown(); navigate("/admin"); }}>
                                 <FaCog />
                                 管理后台
-                            </Link>
+                            </div>
                         )}
                         <div className={styles.dropdownDivider}></div>
                         <button className={styles.dropdownItem} onClick={handleLogout}>

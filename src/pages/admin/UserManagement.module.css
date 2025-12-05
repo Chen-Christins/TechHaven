@@ -210,6 +210,11 @@
     white-space: nowrap;
 }
 
+.usersTable th:first-child {
+    text-align: left;
+    padding-left: 24px;
+}
+
 .usersTable tbody tr {
     border-bottom: 1px solid var(--border-primary);
     transition: background-color 0.2s ease;
@@ -227,9 +232,10 @@
     text-align: center;
 }
 
-/* 用户信息列居中 */
+/* 用户信息列左对齐 */
 .usersTable td:nth-child(1) {
-    justify-content: center;
+    text-align: left;
+    padding-left: 24px;
 }
 
 /* 用户信息单元格 */
@@ -237,7 +243,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .userAvatar {

@@ -470,14 +470,14 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .modalHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 24px 24px 20px;
+    padding: 24px 24px 0px 24px;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -557,28 +557,27 @@
 }
 
 /* 颜色选择器 */
-.colorPicker {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 8px;
+.colorPickerContainer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.colorOption {
-    width: 32px;
-    height: 32px;
+.colorInput {
+    width: 50px;
+    height: 38px;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
-    border: 2px solid transparent;
     cursor: pointer;
-    transition: all 0.2s ease;
+    padding: 2px;
+    background: var(--bg-primary);
 }
 
-.colorOption:hover {
-    transform: scale(1.1);
-}
-
-.colorOption.selected {
-    border-color: var(--text-primary);
-    box-shadow: 0 0 0 2px var(--bg-secondary), 0 0 0 4px var(--text-primary);
+.colorPreview {
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
 }
 
 .modalActions {

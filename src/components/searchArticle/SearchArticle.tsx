@@ -14,7 +14,7 @@ const SearchPanel: React.FC = () => {
 
     return (
         <div className={styles.SearchArticlePanel}>
-            <h3 className={styles.panelTitle}>文章搜索</h3>
+            <h3 className={styles.panelTitle}>搜索文章</h3>
             <SearchBox placeholder="搜索文章..." onSearch={handleSearch} onChange={handleChange} />
         </div>
     );

@@ -1,17 +1,18 @@
+import http from '../utils/http';
+
 /**
  * 删除标签请求参数类型
  */
 export interface DeleteLabelParams {
-    ids: string; // 逗号分隔的标签id字符串，如 "1,2,3"
+    ids: string; // 逗号分隔的标签id字符串
 }
 
 /**
  * 删除标签响应类型
  */
 export interface DeleteLabelResponse {
-    deletedIds: Array<string | number>;
+    ids: Array<string | number>;
 }
-import http from '../utils/http';
 
 /**
  * 创建标签请求参数类型
@@ -19,6 +20,7 @@ import http from '../utils/http';
 export interface CreateLabelParams {
     name: string;
     color: string;
+    description?: string;
 }
 
 /**
@@ -28,14 +30,15 @@ export interface CreateLabelResponse {
     id: string | number;
     name: string;
     color: string;
+    desc: string;
+    create_time: number;
 }
 
 /**
  * 查询标签请求参数类型
  */
 export interface QueryLabelParams {
-    // 否则可传 `ids` 来查询指定标签id列表（逗号分隔）。
-    ids?: string; // 逗号分隔的标签id字符串，如 "1,2,3"
+    ids?: string; // 逗号分隔的标签id字符串
     user_id?: string | number;
 }
 
@@ -46,6 +49,8 @@ export interface LabelInfo {
     id: string | number;
     name: string;
     color: string;
+    description?: string;
+    create_time?: string;
 }
 
 /**
@@ -68,6 +73,7 @@ export class LabelService {
         });
         return response.data;
     }
+
     /**
      * 创建标签
      * @param params 标签创建参数
@@ -77,6 +83,9 @@ export class LabelService {
         const formData = new URLSearchParams();
         formData.append('name', params.name);
         formData.append('color', params.color);
+        if (params.description) {
+            formData.append('desc', params.description);
+        }
         const response = await http.post<CreateLabelResponse>('/label/create', formData.toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -91,20 +100,11 @@ export class LabelService {
      * @returns 标签详情列表
      */
     static async queryLabel(params: QueryLabelParams): Promise<LabelInfo[]> {
-        const formData = new URLSearchParams();
-        // 优先使用 user_id 查询当前用户的所有有效标签
-        if (params.user_id !== undefined && params.user_id !== null && params.user_id !== '') {
-            formData.append('user_id', String(params.user_id));
-        } else {
-            // 否则按 ids 查询指定标签
-            formData.append('ids', params.ids ?? '');
-        }
+        let url = '/label/query?';
+        if (params.ids) url += `ids=${params.ids}&`;
+        if (params.user_id) url += `user_id=${params.user_id}`;
 
-        const response = await http.post<LabelInfo[]>('/label/query', formData.toString(), {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-        });
+        const response = await http.get<LabelInfo[]>(url);
         return response.data;
     }
 }

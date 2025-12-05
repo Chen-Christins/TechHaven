@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     FaFileAlt,
     FaPlus,
@@ -32,6 +33,9 @@ import Loading from '../../components/loading/Loading';
 import { confirm } from '../../components/confirm/Confirm';
 import type { SelectOption } from '../../types/index';
 import styles from './ArticleManagement.module.css';
+import ArticleService, { type ListAdminArticlesResponse } from '../../services/articleService';
+import { CategoryService } from '../../services/categoryService';
+import { formatToChinaTime } from '../../utils/utils';
 
 // 文章接口定义
 interface Article {
@@ -41,10 +45,10 @@ interface Article {
     summary: string;
     author: string;
     authorEmail: string;
-    authorRole: 'admin' | 'editor' | 'writer' | 'user';
+    authorRole: string;
     category: string;
     tags: string[];
-    status: 'pending' | 'approved' | 'published' | 'rejected' | 'draft' | 'private';
+    status: 'pending' | 'published' | 'rejected' | 'private';
     featured: boolean;
     views: number;
     likes: number;
@@ -78,10 +82,26 @@ interface FilterOptions {
     dateRange: string;
 }
 
+// 状态映射
+const STATE_MAP: Record<number, Article['status']> = {
+    1: 'pending',
+    2: 'published',
+    3: 'rejected',
+    4: 'private',
+};
+
+const REVERSE_STATE_MAP: Record<string, number> = {
+    'pending': 1,
+    'published': 2,
+    'rejected': 3,
+    'private': 4
+};
+
 const ArticleManagement: React.FC = () => {
+    const navigate = useNavigate();
     // 状态管理
     const [articles, setArticles] = useState<Article[]>([]);
-    const [stats, setStats] = useState<ArticleStats>({
+    const [stats] = useState<ArticleStats>({
         totalArticles: 0,
         pendingArticles: 0,
         publishedArticles: 0,
@@ -97,86 +117,77 @@ const ArticleManagement: React.FC = () => {
     });
     const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
+    const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>([
+        { id: '', name: '全部分类', color: '#6c757d' }
+    ]);
 
     const articlesPerPage = 15; // 每页显示15条数据
 
-    // 模拟文章数据
-    const mockArticles: Article[] = Array.from({ length: 200 }, (_, index) => {
-        const statuses: Article['status'][] = ['pending', 'approved', 'published', 'rejected', 'draft', 'private'];
-        const categories = ['前端开发', '后端技术', '开发工具', '设计相关', '其他'];
-        const authors = [
-            { name: '张三', role: 'writer' as const, email: 'zhangsan@example.com' },
-            { name: '李四', role: 'editor' as const, email: 'lisi@example.com' },
-            { name: '王五', role: 'user' as const, email: 'wangwu@example.com' },
-            { name: '赵六', role: 'writer' as const, email: 'zhaoliu@example.com' },
-            { name: '陈七', role: 'admin' as const, email: 'chenqi@example.com' }
-        ];
-        const reviewers = ['管理员A', '管理员B', '超级管理员'];
-        const authorData = authors[Math.floor(Math.random() * authors.length)];
-        const status = statuses[Math.floor(Math.random() * statuses.length)];
-        const isPublished = status === 'published';
-        const isPending = status === 'pending';
-        const isRejected = status === 'rejected';
-
-        return {
-            id: `article_${index + 1}`,
-            title: `文章标题 ${index + 1}：${isPending ? '[待审核]' : isRejected ? '[已拒绝]' : isPublished ? '[已发布]' : '[草稿]'}${['React Hooks最佳实践', 'Vue3组合式API详解', 'TypeScript高级技巧', '前端性能优化指南', 'Node.js微服务架构'][index % 5]}`,
-            slug: `article-${index + 1}-${['react-hooks', 'vue3-composition', 'typescript-tips', 'frontend-optimization', 'nodejs-microservices'][index % 5]}`,
-            summary: `这是一篇${['技术分享', '经验总结', '教程指南', '最佳实践', '深度分析'][index % 5]}文章，详细介绍了相关技术的使用方法和注意事项。${isRejected ? '内容存在一些问题需要修改。' : isPending ? '正在等待管理员审核。' : ''}`,
-            author: authorData.name,
-            authorEmail: authorData.email,
-            authorRole: authorData.role,
-            category: categories[Math.floor(Math.random() * categories.length)],
-            tags: [['React', 'JavaScript', '前端开发'], ['Vue', 'TypeScript', '前端框架'], ['Node.js', '后端', '微服务'], ['CSS', '设计', 'UI'], ['工具', '效率', '开发']][index % 5],
-            status: status,
-            featured: Math.random() > 0.9 && isPublished,
-            views: Math.floor(Math.random() * 10000),
-            likes: Math.floor(Math.random() * 500),
-            comments: Math.floor(Math.random() * 100),
-            readTime: Math.floor(Math.random() * 20) + 5,
-            publishedAt: isPublished ?
-                new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] :
-                '',
-            createdAt: new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            updatedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            reviewedAt: (isPending || isRejected || status === 'approved') ?
-                new Date(Date.now() - Math.random() * 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] :
-                undefined,
-            reviewedBy: (isPending || isRejected || status === 'approved') ?
-                reviewers[Math.floor(Math.random() * reviewers.length)] :
-                undefined,
-            rejectionReason: isRejected ?
-                ['内容不符合社区规范', '存在技术错误', '质量不达标', '重复内容'][Math.floor(Math.random() * 4)] :
-                undefined,
-            reportCount: Math.floor(Math.random() * 5),
-            isReported: Math.random() > 0.8
+    // 加载分类数据
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await CategoryService.queryCategory();
+                if (res) {
+                    const options = res.list.map(cat => ({
+                        id: cat.id,
+                        name: cat.name,
+                        color: cat.color || '#007bff'
+                    }));
+                    setCategoryOptions([{ id: '', name: '全部分类', color: '#6c757d' }, ...options]);
+                }
+            } catch (error) {
+                console.error('获取分类失败:', error);
+            }
         };
-    });
+        fetchCategories();
+    }, []);
 
     // 加载文章数据
     useEffect(() => {
-        setLoading(true);
-        // 模拟API调用
-        setTimeout(() => {
-            setArticles(mockArticles);
+        const fetchArticles = async () => {
+            setLoading(true);
+            try {
+                const res: ListAdminArticlesResponse = await ArticleService.listAdminArticlesByPages({
+                    page_num: 1,
+                    page_size: 1000,
+                    state: 0 // 获取所有状态的文章
+                });
+                
+                setArticles(res.list.map(article => ({
+                    id: String(article.id),
+                    title: article.title,
+                    slug: "asdasdsad", // 占位符，API未提供
+                    summary: article.summary + "...",
+                    author: article.author,
+                    authorEmail: article.email,
+                    authorRole: article.author_role || 'user', // 使用API提供的author_role字段
+                    category: "默认分类", // 占位符，API未提供
+                    tags: [], // 占位符，API未提供
+                    status: STATE_MAP[article.state] || 'draft',
+                    featured: false, // 占位符，API未提供
+                    views: 0, // 占位符，API未提供
+                    likes: 0, // 占位符，API未提供
+                    comments: 0, // 占位符，API未提供
+                    readTime: 0, // 占位符，API未提供
+                    publishedAt: formatToChinaTime(Number(article.publish_time)),
+                    createdAt: formatToChinaTime(Number(article.publish_time)),
+                    updatedAt: formatToChinaTime(Number(article.update_time)),
+                    reviewedAt: undefined,
+                    reviewedBy: undefined,
+                    rejectionReason: undefined,
+                    reportCount: 0,
+                    isReported: false,
+                })));
 
-            // 计算统计数据
-            const totalArticles = mockArticles.length;
-            const pendingArticles = mockArticles.filter(article => article.status === 'pending').length;
-            const publishedArticles = mockArticles.filter(article => article.status === 'published').length;
-            const rejectedArticles = mockArticles.filter(article => article.status === 'rejected').length;
-            const reportedArticles = mockArticles.filter(article => article.isReported).length;
+            } catch (error) {
+                console.error('获取文章列表失败:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-            setStats({
-                totalArticles,
-                pendingArticles,
-                publishedArticles,
-                rejectedArticles,
-                reportedArticles
-            });
-
-            setLoading(false);
-        }, 1000);
+        fetchArticles();
     }, []);
 
     // 筛选文章数据
@@ -251,27 +262,16 @@ const ArticleManagement: React.FC = () => {
     const statusOptions: SelectOption[] = [
         { id: '', name: '全部状态', color: '#6c757d' },
         { id: 'pending', name: '待审核', color: '#ffc107' },
-        { id: 'approved', name: '已通过', color: '#28a745' },
         { id: 'published', name: '已发布', color: '#007bff' },
         { id: 'rejected', name: '已拒绝', color: '#dc3545' },
-        { id: 'draft', name: '草稿', color: '#6c757d' },
-        { id: 'private', name: '私密', color: '#343a40' }
-    ];
-
-    const categoryOptions: SelectOption[] = [
-        { id: '', name: '全部分类', color: '#6c757d' },
-        { id: '前端开发', name: '前端开发', color: '#007bff' },
-        { id: '后端技术', name: '后端技术', color: '#28a745' },
-        { id: '开发工具', name: '开发工具', color: '#fd7e14' },
-        { id: '设计相关', name: '设计相关', color: '#e83e8c' },
-        { id: '其他', name: '其他', color: '#6c757d' }
+        { id: 'private', name: '私密', color: '#9129e7ff' }
     ];
 
     const authorRoleOptions: SelectOption[] = [
         { id: '', name: '全部角色', color: '#6c757d' },
         { id: 'admin', name: '管理员', color: '#dc3545' },
         { id: 'editor', name: '编辑', color: '#28a745' },
-        { id: 'writer', name: '作者', color: '#007bff' },
+        { id: 'checker', name: '审核员', color: '#007bff' },
         { id: 'user', name: '普通用户', color: '#6c757d' }
     ];
 
@@ -324,17 +324,27 @@ const ArticleManagement: React.FC = () => {
             confirmText: '通过审核',
             cancelText: '取消',
             onConfirm: async () => {
-                setArticles(prev => prev.map(a =>
-                    a.id === article.id
-                        ? {
-                            ...a,
-                            status: 'approved',
-                            reviewedAt: new Date().toISOString().split('T')[0],
-                            reviewedBy: '当前管理员',
-                            updatedAt: new Date().toISOString().split('T')[0]
-                        }
-                        : a
-                ));
+                try {
+                    await ArticleService.verifyArticle({
+                        id: article.id,
+                        state: REVERSE_STATE_MAP['approved']
+                    });
+                    
+                    setArticles(prev => prev.map(a =>
+                        a.id === article.id
+                            ? {
+                                ...a,
+                                status: 'published',
+                                reviewedAt: new Date().toISOString().split('T')[0],
+                                reviewedBy: '当前管理员',
+                                updatedAt: new Date().toISOString().split('T')[0]
+                            }
+                            : a
+                    ));
+                } catch (error) {
+                    console.error('审核失败:', error);
+                    alert('操作失败，请重试');
+                }
             }
         });
     };
@@ -355,34 +365,54 @@ const ArticleManagement: React.FC = () => {
             confirmText: '拒绝审核',
             cancelText: '取消',
             onConfirm: async () => {
-                setArticles(prev => prev.map(a =>
-                    a.id === article.id
-                        ? {
-                            ...a,
-                            status: 'rejected',
-                            rejectionReason: reason,
-                            reviewedAt: new Date().toISOString().split('T')[0],
-                            reviewedBy: '当前管理员',
-                            updatedAt: new Date().toISOString().split('T')[0]
-                        }
-                        : a
-                ));
+                try {
+                    await ArticleService.verifyArticle({
+                        id: article.id,
+                        state: REVERSE_STATE_MAP['rejected']
+                    });
+
+                    setArticles(prev => prev.map(a =>
+                        a.id === article.id
+                            ? {
+                                ...a,
+                                status: 'rejected',
+                                rejectionReason: reason,
+                                reviewedAt: new Date().toISOString().split('T')[0],
+                                reviewedBy: '当前管理员',
+                                updatedAt: new Date().toISOString().split('T')[0]
+                            }
+                            : a
+                    ));
+                } catch (error) {
+                    console.error('拒绝失败:', error);
+                    alert('操作失败，请重试');
+                }
             }
         });
     };
 
     // 发布文章
     const publishArticle = async (article: Article) => {
-        setArticles(prev => prev.map(a =>
-            a.id === article.id
-                ? {
-                    ...a,
-                    status: 'published',
-                    publishedAt: new Date().toISOString().split('T')[0],
-                    updatedAt: new Date().toISOString().split('T')[0]
-                }
-                : a
-        ));
+        try {
+            await ArticleService.publishArticle({
+                id: article.id,
+                publish_time: Math.floor(Date.now() / 1000)
+            });
+
+            setArticles(prev => prev.map(a =>
+                a.id === article.id
+                    ? {
+                        ...a,
+                        status: 'published',
+                        publishedAt: new Date().toISOString().split('T')[0],
+                        updatedAt: new Date().toISOString().split('T')[0]
+                    }
+                    : a
+            ));
+        } catch (error) {
+            console.error('发布失败:', error);
+            alert('发布失败，请重试');
+        }
     };
 
     // 下架文章
@@ -400,28 +430,48 @@ const ArticleManagement: React.FC = () => {
             confirmText: '确认下架',
             cancelText: '取消',
             onConfirm: async () => {
-                setArticles(prev => prev.map(a =>
-                    a.id === article.id
-                        ? {
-                            ...a,
-                            status: 'draft',
-                            updatedAt: new Date().toISOString().split('T')[0]
-                        }
-                        : a
-                ));
+                try {
+                    // 假设下架就是转为草稿或私密，这里转为草稿
+                    await ArticleService.verifyArticle({
+                        id: article.id,
+                        state: REVERSE_STATE_MAP['draft']
+                    });
+
+                    setArticles(prev => prev.map(a =>
+                        a.id === article.id
+                            ? {
+                                ...a,
+                                status: 'private',
+                                updatedAt: new Date().toISOString().split('T')[0]
+                            }
+                            : a
+                    ));
+                } catch (error) {
+                    console.error('下架失败:', error);
+                    alert('操作失败，请重试');
+                }
             }
         });
     };
 
+    // 查看文章详情
+    const handleViewArticle = (id: string) => {
+        navigate(`/article/${id}`);
+    };
+
     // 删除文章
-    const deleteArticle = (articleId: string) => {
+    const deleteArticle = async (articleId: string) => {
         if (window.confirm('确定要删除这篇文章吗？此操作不可恢复。')) {
-            setArticles(prev => prev.filter(article => article.id !== articleId));
+            try {
+                await ArticleService.deleteArticle({ ids: articleId });
+                setArticles(prev => prev.filter(article => article.id !== articleId));
+            } catch (error) {
+                console.error('删除失败:', error);
+                alert('删除失败，请重试');
+            }
         }
     };
 
-    // 切换置顶状态
-    
     // 格式化日期
     const formatDate = (dateString: string) => {
         if (!dateString) return '-';
@@ -669,13 +719,11 @@ const ArticleManagement: React.FC = () => {
                                     <span className={`${styles.statusBadge} ${styles[article.status]}`}>
                                         <span className={styles.statusIndicator}></span>
                                         {article.status === 'pending' && <><FaHourglassHalf /> 待审核</>}
-                                        {article.status === 'approved' && <><FaCheckCircle /> 已通过</>}
                                         {article.status === 'published' && <><FaEye /> 已发布</>}
                                         {article.status === 'rejected' && <><FaTimes /> 已拒绝</>}
-                                        {article.status === 'draft' && <><FaClock /> 草稿</>}
                                         {article.status === 'private' && <><FaClipboardCheck /> 私密</>}
                                     </span>
-                                    {(article.status === 'pending' || article.status === 'rejected' || article.status === 'approved') && (
+                                    {(article.status === 'pending' || article.status === 'rejected' || article.status === 'published') && (
                                         <div className={styles.reviewInfo}>
                                             {article.reviewedBy && (
                                                 <div className={styles.reviewedBy}>审核人：{article.reviewedBy}</div>
@@ -728,7 +776,7 @@ const ArticleManagement: React.FC = () => {
                                         )}
 
                                         {/* 已通过文章可以发布 */}
-                                        {article.status === 'approved' && (
+                                        {article.status === 'published' && (
                                             <button
                                                 className={`${styles.actionButton} ${styles.publish}`}
                                                 title="发布文章"
@@ -758,6 +806,7 @@ const ArticleManagement: React.FC = () => {
                                         <button
                                             className={`${styles.actionButton} ${styles.edit}`}
                                             title="查看详情"
+                                            onClick={() => handleViewArticle(article.id)}
                                         >
                                             <FaEye />
                                         </button>
