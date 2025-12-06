@@ -32,6 +32,7 @@ const RouterConfig: React.FC = () => {
 
             {/* 文章创建页 */}
             <Route path='/article/create' element={<ArticleCreate />} />
+            <Route path='/article/edit/:id' element={<ArticleCreate />} />
 
             {/* 文章详情页 */}
             <Route path="/article/:id" element={<ArticleViewPage />} />

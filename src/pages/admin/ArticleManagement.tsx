@@ -13,7 +13,6 @@ import {
     FaAngleDoubleRight,
     FaThumbsUp,
     FaThumbsDown,
-    FaCheckCircle,
     FaBan,
     FaHourglassHalf,
     FaTimes,
@@ -36,6 +35,7 @@ import styles from './ArticleManagement.module.css';
 import ArticleService, { type ListAdminArticlesResponse } from '../../services/articleService';
 import { CategoryService } from '../../services/categoryService';
 import { formatToChinaTime } from '../../utils/utils';
+import message from '../../components/message/Message';
 
 // 文章接口定义
 interface Article {
@@ -121,6 +121,7 @@ const ArticleManagement: React.FC = () => {
         { id: '', name: '全部分类', color: '#6c757d' }
     ]);
 
+    const [totalArticles, setTotalArticles] = useState(0);
     const articlesPerPage = 15; // 每页显示15条数据
 
     // 加载分类数据
@@ -148,12 +149,14 @@ const ArticleManagement: React.FC = () => {
         const fetchArticles = async () => {
             setLoading(true);
             try {
+                const stateValue = filters.status ? REVERSE_STATE_MAP[filters.status] : 0;
                 const res: ListAdminArticlesResponse = await ArticleService.listAdminArticlesByPages({
-                    page_num: 1,
-                    page_size: 1000,
-                    state: 0 // 获取所有状态的文章
+                    page_num: currentPage,
+                    page_size: articlesPerPage,
+                    state: stateValue || 0 // 获取所有状态的文章
                 });
-                
+
+                setTotalArticles(res.total);
                 setArticles(res.list.map(article => ({
                     id: String(article.id),
                     title: article.title,
@@ -170,7 +173,7 @@ const ArticleManagement: React.FC = () => {
                     likes: 0, // 占位符，API未提供
                     comments: 0, // 占位符，API未提供
                     readTime: 0, // 占位符，API未提供
-                    publishedAt: formatToChinaTime(Number(article.publish_time)),
+                    publishedAt: article.publish_time ? formatToChinaTime(Number(article.publish_time)) : '暂未发布',
                     createdAt: formatToChinaTime(Number(article.publish_time)),
                     updatedAt: formatToChinaTime(Number(article.update_time)),
                     reviewedAt: undefined,
@@ -182,13 +185,14 @@ const ArticleManagement: React.FC = () => {
 
             } catch (error) {
                 console.error('获取文章列表失败:', error);
+                setTotalArticles(0);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchArticles();
-    }, []);
+    }, [currentPage, filters.status]);
 
     // 筛选文章数据
     const filteredArticles = useMemo(() => {
@@ -203,10 +207,10 @@ const ArticleManagement: React.FC = () => {
                 }
             }
 
-            // 状态筛选
-            if (filters.status && article.status !== filters.status) {
-                return false;
-            }
+            // 状态筛选已移至服务端
+            // if (filters.status && article.status !== filters.status) {
+            //     return false;
+            // }
 
             // 分类筛选
             if (filters.category && article.category !== filters.category) {
@@ -248,15 +252,15 @@ const ArticleManagement: React.FC = () => {
     }, [articles, filters]);
 
     // 分页计算
-    const totalPages = Math.ceil(filteredArticles.length / articlesPerPage);
+    const totalPages = Math.ceil(totalArticles / articlesPerPage);
     const startIndex = (currentPage - 1) * articlesPerPage;
-    const endIndex = startIndex + articlesPerPage;
-    const currentArticles = filteredArticles.slice(startIndex, endIndex);
+    const endIndex = startIndex + articles.length;
+    const currentArticles = filteredArticles;
 
     // 重置页码
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [filters]);
+    // useEffect(() => {
+    //     setCurrentPage(1);
+    // }, [filters]);
 
     // 筛选选项数据
     const statusOptions: SelectOption[] = [
@@ -289,6 +293,10 @@ const ArticleManagement: React.FC = () => {
                 ...prev,
                 [field]: selectedOption?.id || ''
             }));
+            if (field === 'status') {
+                setCurrentPage(1);
+                setArticles([]); // 清空列表以显示加载状态
+            }
         };
     };
 
@@ -327,7 +335,7 @@ const ArticleManagement: React.FC = () => {
                 try {
                     await ArticleService.verifyArticle({
                         id: article.id,
-                        state: REVERSE_STATE_MAP['approved']
+                        state: REVERSE_STATE_MAP['published']
                     });
                     
                     setArticles(prev => prev.map(a =>
@@ -343,7 +351,7 @@ const ArticleManagement: React.FC = () => {
                     ));
                 } catch (error) {
                     console.error('审核失败:', error);
-                    alert('操作失败，请重试');
+                    message.error('操作失败，请重试');
                 }
             }
         });
@@ -385,34 +393,10 @@ const ArticleManagement: React.FC = () => {
                     ));
                 } catch (error) {
                     console.error('拒绝失败:', error);
-                    alert('操作失败，请重试');
+                    message.error('操作失败，请重试');
                 }
             }
         });
-    };
-
-    // 发布文章
-    const publishArticle = async (article: Article) => {
-        try {
-            await ArticleService.publishArticle({
-                id: article.id,
-                publish_time: Math.floor(Date.now() / 1000)
-            });
-
-            setArticles(prev => prev.map(a =>
-                a.id === article.id
-                    ? {
-                        ...a,
-                        status: 'published',
-                        publishedAt: new Date().toISOString().split('T')[0],
-                        updatedAt: new Date().toISOString().split('T')[0]
-                    }
-                    : a
-            ));
-        } catch (error) {
-            console.error('发布失败:', error);
-            alert('发布失败，请重试');
-        }
     };
 
     // 下架文章
@@ -431,24 +415,24 @@ const ArticleManagement: React.FC = () => {
             cancelText: '取消',
             onConfirm: async () => {
                 try {
-                    // 假设下架就是转为草稿或私密，这里转为草稿
-                    await ArticleService.verifyArticle({
+                    // 下架转为私密状态
+                    await ArticleService.switchArticleState({
                         id: article.id,
-                        state: REVERSE_STATE_MAP['draft']
+                        state: REVERSE_STATE_MAP['rejected']
                     });
 
                     setArticles(prev => prev.map(a =>
                         a.id === article.id
                             ? {
                                 ...a,
-                                status: 'private',
+                                status: 'rejected',
                                 updatedAt: new Date().toISOString().split('T')[0]
                             }
                             : a
                     ));
                 } catch (error) {
                     console.error('下架失败:', error);
-                    alert('操作失败，请重试');
+                    message.error('操作失败，请重试');
                 }
             }
         });
@@ -465,6 +449,12 @@ const ArticleManagement: React.FC = () => {
             try {
                 await ArticleService.deleteArticle({ ids: articleId });
                 setArticles(prev => prev.filter(article => article.id !== articleId));
+                setTotalArticles(prev => Math.max(0, prev - 1));
+                
+                // 如果当前页为空且不是第一页，则跳转到上一页
+                if (articles.length === 1 && currentPage > 1) {
+                    setCurrentPage(prev => prev - 1);
+                }
             } catch (error) {
                 console.error('删除失败:', error);
                 alert('删除失败，请重试');
@@ -664,7 +654,7 @@ const ArticleManagement: React.FC = () => {
                     <h3 className={styles.tableTitle}>文章列表</h3>
                     <div className={styles.tableActions}>
                         <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                            共 {filteredArticles.length} 篇文章
+                            共 {totalArticles} 篇文章
                         </span>
                     </div>
                 </div>
@@ -746,7 +736,7 @@ const ArticleManagement: React.FC = () => {
                                     <div className={styles.dateInfo}>
                                         <div>
                                             {article.publishedAt ? (
-                                                <><FaCalendar /> {formatDate(article.publishedAt)}</>
+                                                <><FaCalendar /> {article.publishedAt}</>
                                             ) : (
                                                 <><FaClock /> {formatDate(article.createdAt)}</>
                                             )}
@@ -773,17 +763,6 @@ const ArticleManagement: React.FC = () => {
                                                     <FaThumbsDown />
                                                 </button>
                                             </>
-                                        )}
-
-                                        {/* 已通过文章可以发布 */}
-                                        {article.status === 'published' && (
-                                            <button
-                                                className={`${styles.actionButton} ${styles.publish}`}
-                                                title="发布文章"
-                                                onClick={() => publishArticle(article)}
-                                            >
-                                                <FaCheckCircle />
-                                            </button>
                                         )}
 
                                         {/* 已发布文章可以下架 */}
@@ -827,8 +806,8 @@ const ArticleManagement: React.FC = () => {
                 {/* 分页 */}
                 <div className={styles.paginationContainer}>
                     <div className={styles.paginationInfo}>
-                        显示 {startIndex + 1} - {Math.min(endIndex, filteredArticles.length)} 条，
-                        共 {filteredArticles.length} 条记录
+                        显示 {startIndex + 1} - {Math.min(endIndex, totalArticles)} 条，
+                        共 {totalArticles} 条记录
                     </div>
                     <div className={styles.paginationControls}>
                         <button

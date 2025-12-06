@@ -57,6 +57,7 @@
     gap: 12px;
     transition: all 0.3s ease;
     text-decoration: none;
+    cursor: pointer;
 }
 
 .adminLogo:hover {
@@ -337,7 +338,7 @@
 .adminTopBar {
     background-color: var(--card-bg);
     border-bottom: 1px solid var(--border-primary);
-    padding: 16px 24px;
+    padding: 5px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -362,6 +363,7 @@
     color: var(--text-secondary);
     text-decoration: none;
     transition: color 0.2s ease;
+    cursor: pointer;
 }
 
 .breadcrumbLink:hover {

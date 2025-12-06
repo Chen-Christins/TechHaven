@@ -2,7 +2,7 @@ import ArticleService from '../../services/articleService';
 import CategoryService from '../../services/categoryService';
 import LabelService from '../../services/labelService';
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -10,14 +10,16 @@ import remarkGfm from 'remark-gfm';
 import mermaid from 'mermaid';
 import 'katex/dist/katex.min.css';
 import type { ArticleCreateProps, ArticleFormData, SelectOption, Tag } from '../../types/index';
-import { FaEdit, FaEye, FaFileImport, FaInfoCircle, FaSave, FaFly } from 'react-icons/fa';
+import { FaEdit, FaEye, FaFileImport, FaInfoCircle, FaSave, FaFly, FaLock } from 'react-icons/fa';
 import styles from './ArticleCreate.module.css';
 import Footer from '../../components/footer/Footer';
 import Navbar from '../../components/navbar/Navbar';
 import CustomSelect from '../../components/customSelect/CustomSelect';
 import AddButton from '../../components/addButton/AddButton';
 import BackToTop from '../../components/backToTop/BackToTop';
+import Skeleton from '../../components/skeleton/Skeleton';
 import { useAuth } from '../../contexts/AuthContext';
+import message from '../../components/message/Message';
 
 // 模拟数据（已移除）
 
@@ -89,7 +91,11 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
     onPublish,
     initialData
 }) => {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [permissionDenied, setPermissionDenied] = useState(false);
     const [formData, setFormData] = useState<ArticleFormData>({
         title: '',
         articleType: 'original',
@@ -142,29 +148,87 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
     useEffect(() => {
         const fetchData = async () => {
             if (user?.id) {
+                setLoading(true);
+                let formattedCategories: SelectOption[] = [];
+                let formattedTags: Tag[] = [];
+
                 try {
                     // 获取所有分类，保证每项都有 color 字段
                     const categoryData = await CategoryService.queryCategory();
-
-                    setCategories(categoryData.list.map(cat => ({
+                    formattedCategories = categoryData.list.map(cat => ({
                         id: cat.id,
                         name: cat.name,
                         color: cat.color || '#3B82F6'
-                    })));
+                    }));
+                    setCategories(formattedCategories);
                 } catch (err) {
                     console.error('获取分类失败:', err);
                 }
+
                 try {
                     // 获取所有标签，使用当前用户id
                     const tagData = await LabelService.queryLabel({ user_id: user.id });
-                    setTags(tagData.map(tag => ({ id: tag.id, name: tag.name, color: tag.color || '#61dafb' })));
+                    formattedTags = tagData.map(tag => ({ id: tag.id, name: tag.name, color: tag.color || '#61dafb' }));
+                    setTags(formattedTags);
                 } catch (err) {
                     console.error('获取标签失败:', err);
                 }
+
+                // 如果是编辑模式，获取文章详情
+                if (id) {
+                    try {
+                        let article;
+                        try {
+                            // 尝试获取文章详情，先假设是原创(1)
+                            article = await ArticleService.getArticleDetails({ id, type: 1 });
+                        } catch (err) {
+                            // 如果失败，尝试转载(2)
+                            article = await ArticleService.getArticleDetails({ id, type: 2 });
+                        }
+                        
+                        if (article) {
+                            // 检查权限
+                            if (String(article.user_id) !== String(user.id)) {
+                                setPermissionDenied(true);
+                                setLoading(false);
+                                return;
+                            }
+
+                            // 填充表单
+                            setFormData(prev => ({
+                                ...prev,
+                                title: article.title,
+                                content: article.content,
+                                articleType: article.type === 1 ? 'original' : 'repost',
+                                category: formattedCategories.find(c => c.id == article.categorys?.[0]) || null,
+                                tags: [] 
+                            }));
+
+                            // 填充标签
+                            if (article.labels && article.labels.length > 0) {
+                                const articleTags = formattedTags.filter(t => article.labels?.includes(t.id));
+                                setSelectedTags(articleTags);
+                                setFormData(prev => ({ ...prev, tags: articleTags }));
+                            }
+                            
+                            // 填充分类
+                            if (article.categorys && article.categorys.length > 0) {
+                                const cat = formattedCategories.find(c => c.id == article.categorys![0]);
+                                if (cat) {
+                                    setFormData(prev => ({ ...prev, category: cat }));
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.error('获取文章详情失败:', err);
+                        message.error('获取文章详情失败');
+                    }
+                }
+                setLoading(false);
             }
         };
         fetchData();
-    }, [user]);
+    }, [user, id]);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -234,17 +298,31 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
         try {
             const labelIds = selectedTags.length > 0 ? selectedTags.map(t => t.id).join(',') : '';
             const categoryId = formData.category?.id ? String(formData.category.id) : '';
-            await ArticleService.createArticle({
-                title: formData.title,
-                content: formData.content,
-                type: formData.articleType === 'original' ? 1 : 2,
-                label: labelIds,
-                category: categoryId
-            });
-            // console.log('保存草稿成功:', res);
-            // 可根据 res.id 做后续处理
+            
+            if (id) {
+                await ArticleService.updateArticleContent({
+                    id,
+                    title: formData.title,
+                    content: formData.content
+                });
+                message.success('文章更新成功');
+            } else {
+                const data = await ArticleService.createArticle({
+                    title: formData.title,
+                    content: formData.content,
+                    type: formData.articleType === 'original' ? 1 : 2,
+                    label: labelIds,
+                    category: categoryId
+                });
+                if (data) {
+                    message.success('草稿保存成功');
+                } else {
+                    message.error('草稿保存失败');
+                }
+            }
         } catch (err) {
             console.error('保存草稿失败:', err);
+            // message.error('保存草稿失败');
         }
     };
 
@@ -256,26 +334,41 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
             const labelIds = selectedTags.length > 0 ? selectedTags.map(t => t.id).join(',') : '';
             // 选中的分类id
             const categoryId = formData.category?.id ? String(formData.category.id) : '';
-            const createRes = await ArticleService.createArticle({
-                title: formData.title,
-                content: formData.content,
-                type: formData.articleType === 'original' ? 1 : 2,
-                label: labelIds,
-                category: categoryId
-            });
-            if (createRes.id) {
-                // 当前时间戳（秒），uint64
-                const timestamp = Math.floor(Date.now() / 1000);
-                await ArticleService.publishArticle({
-                    id: createRes.id,
-                    publish_time: timestamp
+            
+            if (id) {
+                await ArticleService.updateArticleContent({
+                    id,
+                    title: formData.title,
+                    content: formData.content
                 });
-                // console.log('发布文章成功:', publishRes);
+                message.success('文章更新成功');
+                navigate(`/article/${id}`);
             } else {
-                console.error('创建文章失败，无法发布');
+                const createRes = await ArticleService.createArticle({
+                    title: formData.title,
+                    content: formData.content,
+                    type: formData.articleType === 'original' ? 1 : 2,
+                    label: labelIds,
+                    category: categoryId
+                });
+                if (createRes.id) {
+                    // 当前时间戳（秒），uint64
+                    const timestamp = Math.floor(Date.now() / 1000);
+                    await ArticleService.publishArticle({
+                        id: createRes.id,
+                        publish_time: timestamp
+                    });
+                    message.success('文章发布成功, 待审核');
+                    navigate(`/article/${createRes.id}`);
+                    // console.log('发布文章成功:', publishRes);
+                } else {
+                    // console.error('创建文章失败，无法发布');
+                    message.error('创建文章失败，无法发布');
+                }
             }
         } catch (err) {
             console.error('发布文章失败:', err);
+            // message.error('发布文章失败');
         }
     };
 
@@ -310,6 +403,54 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
             return <p {...props}>{children}</p>;
         };
 
+    if (loading) {
+        return (
+            <div className={`${styles.container} ${className}`}>
+                <Navbar />
+                <div className={styles.editorContainer}>
+                    <div className={styles.editorHeader}>
+                        <Skeleton variant="text" width={200} height={32} />
+                    </div>
+                    <div style={{ padding: '20px 0' }}>
+                        <div style={{ marginBottom: '24px' }}>
+                            <div style={{ marginBottom: '10px' }}>
+                                <Skeleton variant="text" width={100} height={24} />
+                            </div>
+                            <Skeleton variant="rounded" height={40} />
+                        </div>
+                        <div style={{ marginBottom: '24px' }}>
+                            <div style={{ marginBottom: '10px' }}>
+                                <Skeleton variant="text" width={100} height={24} />
+                            </div>
+                            <Skeleton variant="rounded" height={400} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (permissionDenied) {
+        return (
+            <div className={`${styles.container} ${className}`}>
+                <Navbar />
+                <div className={styles.editorContainer} style={{ minHeight: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ fontSize: '48px', color: '#dc3545', marginBottom: '20px' }}>
+                        <FaLock />
+                    </div>
+                    <h2 style={{ marginBottom: '10px', color: '#333' }}>访问被拒绝</h2>
+                    <p style={{ color: '#666', marginBottom: '20px' }}>您没有权限编辑此文章，因为它不属于您。</p>
+                    <button 
+                        className={`${styles.btn} ${styles.btnPrimary}`}
+                        onClick={() => navigate('/')}
+                    >
+                        返回首页
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
             <div className={`${styles.container} ${className}`}>
@@ -320,7 +461,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                     <div className={styles.editorHeader}>
                         <h2>
                             <Link to="/" className={styles.editorHeaderLink}>
-                                创建新文章
+                                {id ? '编辑文章' : '创建新文章'}
                             </Link>
                         </h2>
                     </div>
@@ -340,97 +481,101 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                         />
                     </div>
 
-                    {/* 文章类型 */}
-                    <div className={styles.formSection}>
-                        <div className={styles.formSectionTitle}>
-                            <i className="bi bi-file-earmark"></i>
-                            文章类型
-                        </div>
-                        <div className={styles.radioGroup}>
-                            <label className={styles.radioItem}>
-                                <input
-                                    type="radio"
-                                    className={styles.radioInput}
-                                    name="article-type"
-                                    value="original"
-                                    checked={formData.articleType === 'original'}
-                                    onChange={() => handleTypeChange('original')}
-                                />
-                                <span className={styles.radioLabel}>原创文章</span>
-                            </label>
-                            <label className={styles.radioItem}>
-                                <input
-                                    type="radio"
-                                    className={styles.radioInput}
-                                    name="article-type"
-                                    value="repost"
-                                    checked={formData.articleType === 'repost'}
-                                    onChange={() => handleTypeChange('repost')}
-                                />
-                                <span className={styles.radioLabel}>转载文章</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    {/* 文章分类 */}
-                    <div className={styles.formSection}>
-                        <div className={styles.formSectionTitle}>
-                            <i className="bi bi-folder"></i>
-                            文章分类
-                        </div>
-                        <div style={{ position: 'relative' }}>
-                            <CustomSelect
-                                name={'分类'}
-                                options={categories}
-                                value={formData.category}
-                                onChange={(selected, _idx) => {
-                                    setFormData(prev => ({ ...prev, category: selected }));
-                                }}
-                            />
-                        </div>
-                    </div>
-
-                    {/* 文章标签 */}
-                    <div className={styles.formSection}>
-                        <div className={styles.formSectionTitle}>
-                            <i className="bi bi-tags"></i>
-                            文章标签
-                            <AddButton
-                                name="标签"
-                                onAdd={handleAddTag}
-                            />
-                        </div>
-                        <div style={{ position: 'relative' }}>
-                            <CustomSelect
-                                name={'标签'}
-                                options={tags.filter(tag => !selectedTags.find(t => t.id === tag.id))}
-                                value={null}
-                                onChange={(selected, _idx) => {
-                                    if (selected) {
-                                        // 多选逻辑，添加到 selectedTags
-                                        if (!selectedTags.find(t => t.id === selected.id)) {
-                                            const newTags = [...selectedTags, selected];
-                                            setSelectedTags(newTags);
-                                            setFormData(prev => ({ ...prev, tags: newTags }));
-                                        }
-                                    }
-                                }}
-                            />
-                        </div>
-                        <div className={styles.tagsContainer}>
-                            {selectedTags.map(tag => (
-                                <div key={tag.id} className={styles.tagItem}>
-                                    {tag.name}
-                                    <button
-                                        className={styles.removeTag}
-                                        onClick={() => handleRemoveTag(tag.id)}
-                                    >
-                                        <i className="bi bi-x"></i>
-                                    </button>
+                    {!id && (
+                        <>
+                            {/* 文章类型 */}
+                            <div className={styles.formSection}>
+                                <div className={styles.formSectionTitle}>
+                                    <i className="bi bi-file-earmark"></i>
+                                    文章类型
                                 </div>
-                            ))}
-                        </div>
-                    </div>
+                                <div className={styles.radioGroup}>
+                                    <label className={styles.radioItem}>
+                                        <input
+                                            type="radio"
+                                            className={styles.radioInput}
+                                            name="article-type"
+                                            value="original"
+                                            checked={formData.articleType === 'original'}
+                                            onChange={() => handleTypeChange('original')}
+                                        />
+                                        <span className={styles.radioLabel}>原创文章</span>
+                                    </label>
+                                    <label className={styles.radioItem}>
+                                        <input
+                                            type="radio"
+                                            className={styles.radioInput}
+                                            name="article-type"
+                                            value="repost"
+                                            checked={formData.articleType === 'repost'}
+                                            onChange={() => handleTypeChange('repost')}
+                                        />
+                                        <span className={styles.radioLabel}>转载文章</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* 文章分类 */}
+                            <div className={styles.formSection}>
+                                <div className={styles.formSectionTitle}>
+                                    <i className="bi bi-folder"></i>
+                                    文章分类
+                                </div>
+                                <div style={{ position: 'relative' }}>
+                                    <CustomSelect
+                                        name={'分类'}
+                                        options={categories}
+                                        value={formData.category}
+                                        onChange={(selected, _idx) => {
+                                            setFormData(prev => ({ ...prev, category: selected }));
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* 文章标签 */}
+                            <div className={styles.formSection}>
+                                <div className={styles.formSectionTitle}>
+                                    <i className="bi bi-tags"></i>
+                                    文章标签
+                                    <AddButton
+                                        name="标签"
+                                        onAdd={handleAddTag}
+                                    />
+                                </div>
+                                <div style={{ position: 'relative' }}>
+                                    <CustomSelect
+                                        name={'标签'}
+                                        options={tags.filter(tag => !selectedTags.find(t => t.id === tag.id))}
+                                        value={null}
+                                        onChange={(selected, _idx) => {
+                                            if (selected) {
+                                                // 多选逻辑，添加到 selectedTags
+                                                if (!selectedTags.find(t => t.id === selected.id)) {
+                                                    const newTags = [...selectedTags, selected];
+                                                    setSelectedTags(newTags);
+                                                    setFormData(prev => ({ ...prev, tags: newTags }));
+                                                }
+                                            }
+                                        }}
+                                    />
+                                </div>
+                                <div className={styles.tagsContainer}>
+                                    {selectedTags.map(tag => (
+                                        <div key={tag.id} className={styles.tagItem}>
+                                            {tag.name}
+                                            <button
+                                                className={styles.removeTag}
+                                                onClick={() => handleRemoveTag(tag.id)}
+                                            >
+                                                <i className="bi bi-x"></i>
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    )}
 
                     {/* 文章内容 */}
                     <div className={styles.formSection}>
@@ -571,13 +716,13 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                             className={`${styles.btn} ${styles.btnOutline}`}
                             onClick={handleSaveDraft}
                         >
-                            <FaSave /> 保存草稿
+                            <FaSave /> {id ? '保存修改' : '保存草稿'}
                         </button>
                         <button
                             className={`${styles.btn} ${styles.btnPrimary}`}
                             onClick={handlePublish}
                         >
-                            <FaFly /> 发布文章
+                            <FaFly /> {id ? '更新文章' : '发布文章'}
                         </button>
                     </div>
                 </div>

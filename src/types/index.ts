@@ -18,6 +18,21 @@ export interface Article {
     categorys?: Array<string | number>;
 }
 
+export interface ArticleListItem {
+    id: string | number;
+    title: string;
+    author: string;
+    summary: string;
+    state: string;
+    type: string;
+    publish_time: string;
+    views: number;
+    praise: number;
+    favorites: number;
+    category: string;
+    tags: string[];
+}
+
 export interface UserProfile {
     id: number;
     name: string;

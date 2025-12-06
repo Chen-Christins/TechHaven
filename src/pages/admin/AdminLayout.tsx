@@ -12,7 +12,8 @@ import {
     FaComments,
     FaTags,
     FaImages,
-    FaDatabase
+    FaDatabase,
+    FaLock
 } from 'react-icons/fa';
 import styles from './AdminLayout.module.css';
 import ThemeToggle from '../../components/themeToggle/ThemeToggle';
@@ -55,6 +56,88 @@ const AdminLayout: React.FC = () => {
     if (!isAuthenticated || !user) {
         navigate('/auth');
         return null;
+    }
+
+    // 权限校验：非管理员禁止访问
+    if (user.role !== '管理员') {
+        return (
+            <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '100vh',
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                padding: '20px'
+            }}>
+                <div style={{
+                    fontSize: '64px',
+                    color: '#dc3545', // 使用红色表示警告
+                    marginBottom: '24px',
+                    opacity: 0.9
+                }}>
+                    <FaLock />
+                </div>
+                <h1 style={{
+                    fontSize: '28px',
+                    fontWeight: 'bold',
+                    marginBottom: '12px',
+                    color: 'var(--text-primary)'
+                }}>
+                    访问被拒绝
+                </h1>
+                <p style={{
+                    fontSize: '16px',
+                    color: 'var(--text-secondary)',
+                    marginBottom: '32px',
+                    textAlign: 'center',
+                    maxWidth: '480px',
+                    lineHeight: '1.6'
+                }}>
+                    抱歉，您没有权限访问此页面。该区域仅限管理员访问。<br/>
+                    如果您认为这是一个错误，请联系系统管理员或尝试重新登录。
+                </p>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                    <button 
+                        onClick={() => navigate('/')}
+                        style={{
+                            padding: '10px 24px',
+                            backgroundColor: 'var(--primary)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '15px',
+                            fontWeight: '500',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}
+                    >
+                        <FaHome /> 返回首页
+                    </button>
+                    <button 
+                        onClick={() => logout()}
+                        style={{
+                            padding: '10px 24px',
+                            backgroundColor: 'transparent',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--border-primary)',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '15px',
+                            fontWeight: '500',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        切换账号
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     if (!user.avatar) {

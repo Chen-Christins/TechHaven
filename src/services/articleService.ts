@@ -15,9 +15,15 @@ export interface ListArticlesParams {
  */
 export interface ListArticlesResponse {
     total: number;
-    page_from: number;
-    page_size: number;
-    ids: Array<string | number>;
+    list: Array<{
+        id: string | number;
+        title: string;
+        author: string;
+        summary: string;
+        state: number;
+        type: number;
+        publish_time: number;
+    }>;
 }
 
 export interface ListAdminArticlesParams {
@@ -66,7 +72,7 @@ export interface PublishArticleResponse {
  */
 export interface ArticleDetailsParams {
     id: string | number;
-    type: 0 | 1;
+    type: number;
 }
 
 /**
@@ -155,6 +161,11 @@ export interface UpdateArticleCategoryParams {
 export interface UpdateArticleCategoryResponse {
     add_category_ids: Array<string | number>;
     del_category_ids: Array<string | number>;
+}
+
+export interface SwitchArticleStateParams {
+    id: string | number;
+    state: number;
 }
 
 /**
@@ -288,6 +299,18 @@ export class ArticleService {
             },
         });
         return response.data;
+    }
+
+    static async switchArticleState(params: SwitchArticleStateParams) {
+        const formData = new URLSearchParams();
+        formData.append('id', String(params.id));
+        formData.append('new_state', String(params.state));
+        
+        return http.post('/article/switch_state', formData.toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        });
     }
 }
 

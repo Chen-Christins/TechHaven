@@ -12,42 +12,27 @@ import {
     FaThumbsUp,
     FaComment,
     FaBars,
-    FaTimes
+    FaTimes,
+    FaUserLock,
+    FaLock,
+    FaArrowDown
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Loading from '../../components/loading/Loading';
+import Skeleton from '../../components/skeleton/Skeleton';
 import ThemeToggle from '../../components/themeToggle/ThemeToggle';
 import UserDropdown from '../../components/userDropdown/UserDropdown';
 import CustomSelect from '../../components/customSelect/CustomSelect';
 import Footer from '../../components/footer/Footer';
 import { confirm } from '../../components/confirm/Confirm';
+import { message } from '../../components/message/Message';
 import { useAuth } from '../../contexts/AuthContext';
 import type { SelectOption } from '../../types/index';
 import ArticleService from '../../services/articleService';
 import LabelService from '../../services/labelService';
-import type { ArticleDetailsResponse } from '../../services/articleService';
 import { formatToChinaTime } from '../../utils/utils';
+import type { ArticleListItem } from '../../types/index';
 import styles from './PersonalCenter.module.css';
-
-// 个人文章类型 - 基于API数据结构
-interface PersonalArticle {
-    id: string | number;
-    title: string;
-    content: string;
-    author: string;
-    publish_time: string;
-    update_time: string;
-    state: number;
-    views: number;
-    praise: number;
-    favorites: number;
-    labels?: Array<string | number>;
-    categorys?: Array<string | number>;
-    // 计算字段，用于UI显示
-    status: 'published' | 'draft' | 'private' | 'unallowed' | 'reviewing';
-    category: string;
-    tags: string[];
-}
 
 // 个人标签类型
 interface PersonalTag {
@@ -63,46 +48,12 @@ interface PersonalTag {
 interface PersonalStats {
     totalArticles: number;
     publishedArticles: number;
-    draftArticles: number;
+    privateArticles: number;
     totalViews: number;
     totalLikes: number;
     totalComments: number;
     totalTags: number;
 }
-
-// 辅助函数：将API文章数据转换为PersonalArticle格式
-const convertToPersonalArticle = (article: ArticleDetailsResponse): PersonalArticle => {
-    // 根据state字段确定文章状态
-    let status: 'published' | 'private' | 'unallowed' | 'reviewing' = 'private';
-    if (article.state === 1) {
-        status = 'reviewing';
-    } else if (article.state === 2) {
-        status = 'published';
-    } else if (article.state === 3) {
-        status = 'unallowed';
-    } else if (article.state === 4) {
-        status = 'private';
-    }
-
-    return {
-        id: article.id,
-        title: article.title || '无标题',
-        content: article.content || '',
-        author: article.author || '未知作者',
-        publish_time: article.publish_time,
-        update_time: article.update_time,
-        state: article.state,
-        views: article.views || 0,
-        praise: article.praise || 0,
-        favorites: article.favorites || 0,
-        labels: article.labels || [],
-        categorys: article.categorys || [],
-        // 计算字段
-        status,
-        category: article.categorys && article.categorys.length > 0 ? String(article.categorys[0]) : '未分类',
-        tags: article.labels ? article.labels.map(label => String(label)) : []
-    };
-};
 
 // 标签数据暂时为空，后续可根据需要实现标签管理
 const mockPersonalTags: PersonalTag[] = [];
@@ -114,19 +65,24 @@ interface NavItem {
     path: string;
 }
 
+const STATE_MAP: Record<number, string> = {
+    1: 'reviewing',
+    2: 'published',
+    3: 'unallowed',
+    4: 'private',
+};
+
 const PersonalCenter: React.FC = () => {
     const navigate = useNavigate();
-    const { user, isAuthenticated, logout } = useAuth();
+    const { user, isAuthenticated, logout, loading: authLoading } = useAuth();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'articles' | 'tags' | 'stats'>('articles');
     const [loading, setLoading] = useState(false);
 
     // 文章管理状态
-    const [articles, setArticles] = useState<PersonalArticle[]>([]);
-    const [filteredArticles, setFilteredArticles] = useState<PersonalArticle[]>([]);
-    const [allFilteredArticleIds, setAllFilteredArticleIds] = useState<(string | number)[]>([]);
-    const [articleIds, setArticleIds] = useState<(string | number)[]>([]);
+    const [articles, setArticles] = useState<ArticleListItem[]>([]);
+    const [filteredArticles, setFilteredArticles] = useState<ArticleListItem[]>([]);
     const [totalArticles, setTotalArticles] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft' | 'private' | 'unallowed' | 'reviewing'>('all');
@@ -168,7 +124,7 @@ const PersonalCenter: React.FC = () => {
     const [stats, setStats] = useState<PersonalStats>({
         totalArticles: 0,
         publishedArticles: 0,
-        draftArticles: 0,
+        privateArticles: 0,
         totalViews: 0,
         totalLikes: 0,
         totalComments: 0,
@@ -200,7 +156,6 @@ const PersonalCenter: React.FC = () => {
         { id: 'stats', label: '数据统计', icon: <FaChartBar />, path: '/personal/stats' },
     ];
 
-    // 获取文章ID列表 (获取所有符合状态的文章ID，然后在本地分页)
     useEffect(() => {
         const fetchArticleIds = async () => {
             if (!user?.id) return;
@@ -208,61 +163,40 @@ const PersonalCenter: React.FC = () => {
             try {
                 setLoading(true);
                 const stateValue = getStatusValue(statusFilter);
-                // 使用较大的page_size获取所有ID，以实现准确的客户端分页和总数统计
-                // 注意：如果文章数量非常大(>1000)，这里可能需要优化
-                const res = await ArticleService.listArticlesByUserIdPages({
+                // 使用分页请求，每页5条
+                const response = await ArticleService.listArticlesByUserIdPages({
                     user_id: user.id,
-                    page_from: 1,
-                    page_size: 1000,
+                    page_from: currentPage,
+                    page_size: itemsPerPage,
                     state: stateValue
                 });
                 
-                // 使用返回的ID数量作为总数，这比res.total更准确（如果后端返回的是未过滤的总数）
-                const ids = res.ids || [];
-                setAllFilteredArticleIds(ids);
-                setTotalArticles(ids.length);
-                console.log('获取文章ID列表成功:', ids.length, ids);
+                // 优先使用接口返回的total，如果是0也要使用
+                setTotalArticles(typeof response.total === 'number' ? response.total : response.list.length);
+                setArticles(response.list.map(article => ({
+                    id: article.id,
+                    title: article.title,
+                    author: article.author,
+                    summary: article.summary,
+                    state: STATE_MAP[article.state],
+                    type: article.type === 1 ? '原创' : '转载',
+                    publish_time: article.publish_time ? formatToChinaTime(article.publish_time) : '暂未发布',
+                    views: 0, // 后续可通过详情接口补全
+                    praise: 0, // 后续可通过详情接口补全
+                    favorites: 0, // 后续可通过详情接口补全
+                    category: '未分类', // 后续可通过详情接口补全
+                    tags: [] // 后续可通过详情接口补全
+                })));
+                
             } catch (err) {
                 console.error('获取文章ID列表失败:', err);
-                setAllFilteredArticleIds([]);
                 setTotalArticles(0);
-            } finally {
+            } finally { 
                 setLoading(false);
             }
         };
         fetchArticleIds();
-    }, [user?.id, statusFilter]);
-
-    // 本地分页：根据当前页码切片ID列表
-    useEffect(() => {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const slicedIds = allFilteredArticleIds.slice(startIndex, endIndex);
-        setArticleIds(slicedIds);
-    }, [currentPage, allFilteredArticleIds]);
-
-    // 根据ID列表获取文章详情
-    useEffect(() => {
-        const fetchArticleDetails = async () => {
-            if (!Array.isArray(articleIds) || articleIds.length === 0) {
-                setArticles([]);
-                return;
-            }
-
-            try {
-                const detailsList = await Promise.all(
-                    articleIds.map(id => ArticleService.getArticleDetails({ id, type: 0 }))
-                );
-                const personalArticles = detailsList.map(convertToPersonalArticle);
-                setArticles(personalArticles);
-            } catch (err) {
-                console.error('获取文章详情失败:', err);
-                setArticles([]);
-            }
-        };
-
-        fetchArticleDetails();
-    }, [articleIds]);
+    }, [user?.id, statusFilter, currentPage]);
 
     // 初始化标签数据
     useEffect(() => {
@@ -307,8 +241,8 @@ const PersonalCenter: React.FC = () => {
     useEffect(() => {
         const calculatedStats: PersonalStats = {
             totalArticles: totalArticles,
-            publishedArticles: articles.filter(a => a.status === 'published').length,
-            draftArticles: articles.filter(a => a.status === 'draft').length,
+            publishedArticles: articles.filter(a => a.state === 'published').length,
+            privateArticles: articles.filter(a => a.state === 'private').length,
             totalViews: articles.reduce((sum, a) => sum + a.views, 0),
             totalLikes: articles.reduce((sum, a) => sum + a.praise, 0),
             totalComments: articles.reduce((sum, a) => sum + a.favorites, 0), // 使用favorites作为评论数
@@ -334,7 +268,7 @@ const PersonalCenter: React.FC = () => {
         if (searchTerm) {
             filtered = filtered.filter(article =>
                 article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                article.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                article.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 article.category.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
@@ -351,37 +285,134 @@ const PersonalCenter: React.FC = () => {
         }
     }, [searchTerm, articles]);
 
+    // 如果正在验证身份，显示骨架屏
+    if (authLoading) {
+        return (
+            <div className={styles.adminLayout}>
+                <div className={styles.adminContainer}>
+                    {/* 侧边栏骨架 */}
+                    <aside className={styles.adminSidebar} style={{ width: '240px' }}>
+                        <div className={styles.adminSidebarHeader} style={{ padding: '20px' }}>
+                            <Skeleton variant="rectangular" width={120} height={32} />
+                        </div>
+                        <div style={{ padding: '20px 12px' }}>
+                            {[1, 2, 3].map(i => (
+                                <div key={i} style={{ marginBottom: '24px' }}>
+                                    <Skeleton variant="rounded" height={40} />
+                                </div>
+                            ))}
+                        </div>
+                    </aside>
+
+                    {/* 主内容骨架 */}
+                    <main className={styles.adminMainContent} style={{ flex: 1 }}>
+                        {/* 顶部栏骨架 */}
+                        <header className={styles.adminTopBar} style={{ padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '64px' }}>
+                            <Skeleton variant="text" width={100} height={24} />
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <Skeleton variant="circular" width={32} height={32} />
+                                <Skeleton variant="circular" width={32} height={32} />
+                            </div>
+                        </header>
+
+                        {/* 页面内容骨架 */}
+                        <div className={styles.adminPageContent} style={{ padding: '24px' }}>
+                            <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between' }}>
+                                <Skeleton variant="text" width={150} height={32} />
+                                <Skeleton variant="rounded" width={100} height={36} />
+                            </div>
+                            
+                            <div style={{ marginBottom: '24px' }}>
+                                <div style={{ marginBottom: '16px' }}>
+                                    <Skeleton variant="rounded" height={48} />
+                                </div>
+                                {[1, 2, 3, 4, 5].map(i => (
+                                    <div key={i} style={{ marginBottom: '12px' }}>
+                                        <Skeleton variant="rounded" height={80} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        );
+    }
+
     // 如果用户未登录，显示提示
     if (!isAuthenticated || !currentUser) {
         return (
-            <div className={styles.pageContainer}>
+            <div className={styles.pageContainer} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    minHeight: '60vh',
+                    padding: '40px',
+                    backgroundColor: 'var(--card-bg)',
+                    borderRadius: '12px',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
+                    maxWidth: '400px',
+                    width: '100%',
                     textAlign: 'center'
                 }}>
-                    <h2 style={{ marginBottom: '16px', color: 'var(--text-primary)' }}>
+                    <div style={{
+                        fontSize: '48px',
+                        color: 'var(--primary)',
+                        marginBottom: '24px',
+                        opacity: 0.8
+                    }}>
+                        <FaUserLock />
+                    </div>
+                    <h2 style={{ 
+                        marginBottom: '12px', 
+                        color: 'var(--text-primary)',
+                        fontSize: '24px',
+                        fontWeight: '600'
+                    }}>
                         请先登录
                     </h2>
-                    <p style={{ marginBottom: '24px', color: 'var(--text-secondary)' }}>
-                        您需要登录后才能访问个人中心
+                    <p style={{ 
+                        marginBottom: '32px', 
+                        color: 'var(--text-secondary)',
+                        fontSize: '15px',
+                        lineHeight: '1.6'
+                    }}>
+                        您需要登录后才能访问个人中心，查看和管理您的文章、标签及数据统计。
                     </p>
-                    <div
+                    <button
                         onClick={handleLoginRedirect}
                         style={{
-                            padding: '12px 24px',
+                            padding: '12px 32px',
                             backgroundColor: 'var(--primary)',
                             color: 'white',
-                            textDecoration: 'none',
-                            borderRadius: '6px',
-                            fontWeight: '500'
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '16px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 4px 12px rgba(var(--primary-rgb), 0.3)',
+                            width: '100%'
                         }}
                     >
-                        去登录
-                    </div>
+                        立即登录
+                    </button>
+                    <button
+                        onClick={() => navigate('/')}
+                        style={{
+                            marginTop: '16px',
+                            padding: '8px 16px',
+                            backgroundColor: 'transparent',
+                            color: 'var(--text-secondary)',
+                            border: 'none',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            textDecoration: 'underline'
+                        }}
+                    >
+                        返回首页
+                    </button>
                 </div>
             </div>
         );
@@ -405,10 +436,10 @@ const PersonalCenter: React.FC = () => {
     // 处理状态筛选变化
     const handleStatusChange = (selectedOption: SelectOption | null) => {
         setSelectedStatus(selectedOption);
-        if (selectedOption) {
-            setStatusFilter(selectedOption.id as 'all' | 'published' | 'private' | 'unallowed' | 'reviewing');
-            setCurrentPage(1);
-        }
+        const newStatus = selectedOption ? (selectedOption.id as 'all' | 'published' | 'private' | 'unallowed' | 'reviewing') : 'all';
+        setStatusFilter(newStatus);
+        setCurrentPage(1);
+        setArticles([]); // 清空列表以显示加载状态
     };
 
     // 分页计算
@@ -454,18 +485,17 @@ const PersonalCenter: React.FC = () => {
             try {
                 await ArticleService.deleteArticle({ ids: String(id) });
                 // 删除成功后从本地状态移除
-                const newAllIds = allFilteredArticleIds.filter(aid => aid !== id);
-                setAllFilteredArticleIds(newAllIds);
-                setTotalArticles(newAllIds.length);
+                const newAllIds = articles.filter(aid => aid.id !== id);
+                setArticles(newAllIds);
+                setTotalArticles(prev => prev - 1);
                 
                 // 如果当前页为空且不是第一页，则跳转到上一页
-                const startIndex = (currentPage - 1) * itemsPerPage;
-                if (startIndex >= newAllIds.length && currentPage > 1) {
+                if (newAllIds.length === 0 && currentPage > 1) {
                     setCurrentPage(currentPage - 1);
                 }
             } catch (err) {
                 console.error('删除文章失败:', err);
-                alert('删除文章失败，请重试');
+                message.error('删除文章失败，请重试');
             }
         }
     };
@@ -473,26 +503,29 @@ const PersonalCenter: React.FC = () => {
     // 切换文章状态
     const handleToggleStatus = async (id: string | number, newStatus: 'published' | 'private' | 'unallowed' | 'reviewing') => {
         try {
-            // 将状态转换为API需要的格式
-            let state = 0; // draft
-            if (newStatus === 'published') {
-                state = 2;
-            } else if (newStatus === 'private') {
-                state = 4;
-            } else if (newStatus === 'unallowed') {
-                state = 3;
-            } else if (newStatus === 'reviewing') {
-                state = 1;
+            if (newStatus === 'reviewing') {
+                await ArticleService.publishArticle({
+                    id: id,
+                    publish_time: Math.floor(Date.now() / 1000)
+                });
+                setArticles(articles.map(article =>
+                    article.id === id ? { ...article, state: newStatus } : article
+                ));
+                message.success('文章发布成功, 等待管理员审核中');
             }
-
-            // 这里需要调用更新文章状态的API
-            // 由于API可能没有直接的状态更新接口，暂时只更新本地状态
-            setArticles(articles.map(article =>
-                article.id === id ? { ...article, status: newStatus, state } : article
-            ));
+            if (newStatus === 'private') {
+                await ArticleService.switchArticleState({
+                    id: id,
+                    state: 4
+                });
+                setArticles(articles.map(article =>
+                    article.id === id ? { ...article, state: newStatus } : article
+                ));
+                message.success('文章已设为私密');
+            }
         } catch (err) {
             console.error('切换文章状态失败:', err);
-            alert('切换文章状态失败，请重试');
+            // message.error('切换文章状态失败，请重试');
         }
     };
 
@@ -776,15 +809,15 @@ const PersonalCenter: React.FC = () => {
                                                 <div className={styles.articleTitle}>
                                                     <div>{article.title}</div>
                                                     <div className={styles.articleSummary}>
-                                                        {article.content.substring(0, 80) || '无内容'}...
+                                                        {article.summary}...
                                                     </div>
                                                 </div>
                                                 <div className={styles.articleCategory}>{article.category}</div>
                                                 <div className={styles.statusCell}>
-                                                    <span className={`${styles.statusBadge} ${styles[article.status]}`}>
-                                                        {article.status === 'published' ? '已发布' :
-                                                         article.status === 'private' ? '私密' :
-                                                         article.status === 'reviewing' ? '审核中' : '未通过'}
+                                                    <span className={`${styles.statusBadge} ${styles[article.state]}`}>
+                                                        {article.state === 'published' ? '已发布' :
+                                                         article.state === 'private' ? '私密' :
+                                                         article.state === 'reviewing' ? '审核中' : '未通过'}
                                                     </span>
                                                 </div>
                                                 <div className={styles.dataCell}>
@@ -800,7 +833,7 @@ const PersonalCenter: React.FC = () => {
                                                 </div>
                                                 <div className={styles.dateCell}>
                                                     <FaCalendarAlt />
-                                                    {article.publish_time ? formatToChinaTime(Number(article.publish_time)) : '-'}
+                                                    {article.publish_time ? article.publish_time : '-'}
                                                 </div>
                                                 <div className={styles.actions}>
                                                     <button
@@ -817,43 +850,34 @@ const PersonalCenter: React.FC = () => {
                                                     >
                                                         <FaEdit />
                                                     </button>
-                                                    {article.status === 'draft' && (
-                                                        <button
-                                                            className={styles.actionButton}
-                                                            title="提交审核"
-                                                            onClick={() => handleToggleStatus(article.id, 'reviewing')}
-                                                        >
-                                                            <FaPlus />
-                                                        </button>
-                                                    )}
-                                                    {article.status === 'reviewing' && (
+                                                    {article.state === 'reviewing' && (
                                                         <button
                                                             className={styles.actionButton}
                                                             title="撤回审核"
                                                             onClick={() => handleToggleStatus(article.id, 'private')}
                                                         >
-                                                            <FaEdit />
+                                                            <FaArrowDown />
                                                         </button>
                                                     )}
-                                                    {article.status === 'published' && (
+                                                    {article.state === 'published' && (
                                                         <button
                                                             className={styles.actionButton}
                                                             title="设为私密"
                                                             onClick={() => handleToggleStatus(article.id, 'private')}
                                                         >
-                                                            <FaEdit />
+                                                            <FaLock />
                                                         </button>
                                                     )}
-                                                    {article.status === 'private' && (
+                                                    {article.state === 'private' && (
                                                         <button
                                                             className={styles.actionButton}
-                                                            title="设为公开"
-                                                            onClick={() => handleToggleStatus(article.id, 'published')}
+                                                            title="发布文章"
+                                                            onClick={() => handleToggleStatus(article.id, 'reviewing')}
                                                         >
                                                             <FaPlus />
                                                         </button>
                                                     )}
-                                                    {article.status === 'unallowed' && (
+                                                    {article.state === 'unallowed' && (
                                                         <button
                                                             className={styles.actionButton}
                                                             title="重新提交"
@@ -1132,8 +1156,8 @@ const PersonalCenter: React.FC = () => {
                                             <span>{stats.publishedArticles} 篇</span>
                                         </div>
                                         <div className={styles.tableRow}>
-                                            <span>草稿文章</span>
-                                            <span>{stats.draftArticles} 篇</span>
+                                            <span>私密文章</span>
+                                            <span>{stats.privateArticles} 篇</span>
                                         </div>
                                         <div className={styles.tableRow}>
                                             <span>平均浏览量</span>

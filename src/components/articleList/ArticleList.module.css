@@ -51,6 +51,12 @@
     margin-bottom: 1rem;
 }
 
+.articleMeta span {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
 .articleSummary {
     color: var(--text-secondary);
     line-height: 1.6;
@@ -131,6 +137,14 @@
     padding: 0 8px;
     color: var(--text-tertiary);
     font-size: 0.9rem;
+}
+
+.typeBadge {
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary-color);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.85rem;
 }
 
 /* 响应式分页 */

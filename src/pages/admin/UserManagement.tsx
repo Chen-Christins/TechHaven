@@ -10,7 +10,7 @@ import { AuthService } from '../../services/authService';
 import { formatToChinaTime } from '../../utils/utils';
 
 // 用户接口定义
-interface User {
+interface UserListItem {
     id: string | number;
     username: string;
     email: string;
@@ -41,7 +41,7 @@ interface FilterOptions {
 
 const UserManagement: React.FC = () => {
     // 状态管理
-    const [users, setUsers] = useState<User[]>([]);
+    const [users, setUsers] = useState<UserListItem[]>([]);
     const [stats, setStats] = useState<UserStats>({
         totalUsers: 0,
         activeUsers: 0,
@@ -56,6 +56,7 @@ const UserManagement: React.FC = () => {
     });
     const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
+    const [totalUsers, setTotalUsers] = useState(0);
 
     const usersPerPage = 15; // 每页显示15条数据
 
@@ -64,60 +65,43 @@ const UserManagement: React.FC = () => {
         const fetchUsers = async () => {
             setLoading(true);
             try {
-                // 1. 获取所有用户ID
-                const userIds = await AuthService.listUsers();
+                const dateRangeMap: Record<string, number> = { '7days': 7, '30days': 30, '90days': 90 };
                 
-                // 2. 并行获取所有用户详情
-                // 注意：如果用户量非常大，这里应该分批获取或只获取当前页
-                // 但由于API限制，目前只能这样获取完整信息以支持前端筛选
-                const userPromises = userIds.map(id => AuthService.getUserInfo(id));
-                const responses = await Promise.all(userPromises);
+                const params: any = {
+                    page_num: currentPage,
+                    page_size: usersPerPage
+                };
+
+                if (filters.role) params.role = filters.role;
+                // 假设 1=active, 2=inactive (根据实际后端定义调整)
+                if (filters.status) params.state = filters.status === 'active' ? 1 : 2;
+                if (filters.dateRange) params.regis_range = dateRangeMap[filters.dateRange];
+
+                const rsp = await AuthService.listUsersAdmin(params);
                 
-                console.log('用户详情响应:', responses);
-
-                const fetchedUsers: User[] = responses
-                    .filter(res => res.code === '200' || res.code === 200)
-                    .map(res => {
-                        const userData = res.data;
-                        // 映射后端状态码到前端状态字符串
-                        // 假设 0: active, 1: inactive, 2: pending (需要根据实际后端定义调整)
-                        let statusStr = 'active';
-                        if (userData.status === 1) statusStr = 'inactive';
-                        if (userData.status === 2) statusStr = 'pending';
-
-                        return {
-                            id: userData.id,
-                            username: userData.name || userData.account,
-                            email: userData.email,
-                            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || userData.account)}&background=random`,
-                            role: userData.role,
-                            status: statusStr,
-                            // API没有createdAt，暂时用login_time或当前时间
-                            createdAt: formatToChinaTime(userData.create_time), 
-                            lastLogin: formatToChinaTime(userData.login_time),
-                            articleCount: 0, // API未提供
-                            commentCount: 0  // API未提供
-                        };
-                    });
-
+                let fetchedUsers: UserListItem[] = [];
+                if (Array.isArray(rsp.list) && rsp.list.length > 0) {
+                    fetchedUsers = rsp.list.map(user => ({
+                        id: user.id,
+                        username: user.name,
+                        email: user.email,
+                        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=random`, // 使用占位头像
+                        role: user.role,
+                        status: user.state === 1 ? 'active' : 'inactive',
+                        createdAt: formatToChinaTime(user.create_time),
+                        lastLogin: formatToChinaTime(user.login_time),
+                        articleCount: 0, // 随机文章数，实际应从接口获取
+                        commentCount: 0  // 随机评论数，实际应从接口获取
+                    }));
+                }
                 setUsers(fetchedUsers);
+                setTotalUsers(rsp.total);
 
-                // 计算统计数据
-                const totalUsers = fetchedUsers.length;
-                const activeUsers = fetchedUsers.filter(user => user.status === 'active').length;
-                const newUsers = fetchedUsers.filter(user => {
-                    const createdAt = new Date(user.createdAt);
-                    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-                    return createdAt > thirtyDaysAgo;
-                }).length;
-                const inactiveUsers = fetchedUsers.filter(user => user.status === 'inactive').length;
-
-                setStats({
-                    totalUsers,
-                    activeUsers,
-                    newUsers,
-                    inactiveUsers
-                });
+                // 更新统计数据 (仅更新总数，其他统计需要单独接口)
+                setStats(prev => ({
+                    ...prev,
+                    totalUsers: rsp.total
+                }));
 
             } catch (error) {
                 console.error('获取用户列表失败:', error);
@@ -128,7 +112,7 @@ const UserManagement: React.FC = () => {
         };
 
         fetchUsers();
-    }, []);
+    }, [currentPage, filters.role, filters.status, filters.dateRange]);
 
     // 筛选用户数据
     const filteredUsers = useMemo(() => {
@@ -141,62 +125,22 @@ const UserManagement: React.FC = () => {
                     return false;
                 }
             }
-
-            // 角色筛选
-            if (filters.role && user.role !== filters.role) {
-                return false;
-            }
-
-            // 状态筛选
-            if (filters.status && user.status !== filters.status) {
-                return false;
-            }
-
-            // 日期范围筛选
-            if (filters.dateRange) {
-                const userDate = new Date(user.createdAt);
-                const now = new Date();
-                let startDate: Date;
-
-                switch (filters.dateRange) {
-                    case '7days':
-                        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                        break;
-                    case '30days':
-                        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-                        break;
-                    case '90days':
-                        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-                        break;
-                    default:
-                        return true;
-                }
-
-                if (userDate < startDate) {
-                    return false;
-                }
-            }
-
             return true;
         });
-    }, [users, filters]);
+    }, [users, filters.search]);
 
     // 分页计算
-    const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+    const totalPages = Math.ceil(totalUsers / usersPerPage);
     const startIndex = (currentPage - 1) * usersPerPage;
-    const endIndex = startIndex + usersPerPage;
-    const currentUsers = filteredUsers.slice(startIndex, endIndex);
-
-    // 重置页码
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [filters]);
+    const endIndex = startIndex + users.length;
+    const currentUsers = filteredUsers;
 
     // 筛选选项数据
     const roleOptions: SelectOption[] = [
         { id: '', name: '全部角色', color: '#6c757d' },
         { id: 'admin', name: '管理员', color: '#dc3545' },
-        { id: 'moderator', name: '版主', color: '#28a745' },
+        { id: 'checker', name: '审核者', color: '#28a745' },
+        { id: 'editor', name: '编辑', color: '#ffc107' },
         { id: 'user', name: '普通用户', color: '#007bff' }
     ];
 
@@ -204,7 +148,6 @@ const UserManagement: React.FC = () => {
         { id: '', name: '全部状态', color: '#6c757d' },
         { id: 'active', name: '活跃', color: '#28a745' },
         { id: 'inactive', name: '非活跃', color: '#ffc107' },
-        { id: 'pending', name: '待审核', color: '#fd7e14' }
     ];
 
     const dateRangeOptions: SelectOption[] = [
@@ -221,6 +164,7 @@ const UserManagement: React.FC = () => {
                 ...prev,
                 [field]: selectedOption?.id || ''
             }));
+            setCurrentPage(1);
         };
     };
 
@@ -240,6 +184,7 @@ const UserManagement: React.FC = () => {
             status: '',
             dateRange: ''
         });
+        setCurrentPage(1);
     };
 
     
@@ -424,7 +369,7 @@ const UserManagement: React.FC = () => {
                     <h3 className={styles.tableTitle}>用户列表</h3>
                     <div className={styles.tableActions}>
                         <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                            共 {filteredUsers.length} 个用户
+                            共 {totalUsers} 个用户
                         </span>
                     </div>
                 </div>
@@ -508,8 +453,8 @@ const UserManagement: React.FC = () => {
                 {/* 分页 */}
                 <div className={styles.paginationContainer}>
                     <div className={styles.paginationInfo}>
-                        显示 {startIndex + 1} - {Math.min(endIndex, filteredUsers.length)} 条，
-                        共 {filteredUsers.length} 条记录
+                        显示 {startIndex + 1} - {Math.min(endIndex, totalUsers)} 条，
+                        共 {totalUsers} 条记录
                     </div>
                     <div className={styles.paginationControls}>
                         <button

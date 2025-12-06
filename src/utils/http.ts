@@ -339,6 +339,8 @@ class HttpClient {
                                         mappedMessage = '账号或邮箱不存在';
                                     } else if (errorMsg.includes('invalid auth_code')) {
                                         mappedMessage = '验证码无效或已过期';
+                                    } else if (errorMsg.includes('Access Denied')) { 
+                                        mappedMessage = '权限不足，拒绝访问';
                                     } else {
                                         mappedMessage = '账号状态异常';
                                     }

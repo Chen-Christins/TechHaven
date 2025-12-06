@@ -26,6 +26,27 @@ export interface UserInfo {
     status: number;
 }
 
+export interface UserAdminListParams {
+    page_num: number;
+    page_size: number;
+    role?: string;
+    state?: number;
+    days?: number;
+}
+
+export interface UserAdminListResponse {
+    total: number;
+    list: Array<{
+        id: number | string;
+        name: string;
+        email: string;
+        role: string;
+        state: number;
+        create_time: number;
+        login_time: number;
+    }>;
+}
+
 /**
  * 认证服务类
  * 专门处理用户登录、注册等相关操作
@@ -180,6 +201,11 @@ export class AuthService {
     static async listUsers(): Promise<Array<number | string>> {
         const response = await http.get<{ ids: Array<number | string> }>('/user/list');
         return response.data.ids;
+    }
+
+    static async listUsersAdmin(params: UserAdminListParams): Promise<UserAdminListResponse> {
+        const response = await http.get<UserAdminListResponse>('/user/admin/lists', { params });
+        return response.data;
     }
 
     /**

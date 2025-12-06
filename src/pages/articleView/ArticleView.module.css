@@ -160,6 +160,16 @@
     box-shadow: var(--shadow-sm);
 }
 
+.article a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.article a:hover {
+    text-decoration: underline;
+}
+
 /* Markdown 内容样式 */
 .markdownBody {
     line-height: 1.7;
@@ -247,8 +257,6 @@
     border-collapse: collapse;
     width: 100%;
     margin: 16px 0;
-    overflow-x: auto;
-    display: block;
 }
 
 .markdownBody table th,
