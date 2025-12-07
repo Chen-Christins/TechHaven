@@ -150,14 +150,25 @@ const ArticleManagement: React.FC = () => {
             setLoading(true);
             try {
                 const stateValue = filters.status ? REVERSE_STATE_MAP[filters.status] : 0;
+                
+                // 处理日期筛选
+                let days: number | undefined;
+                if (filters.dateRange === '7days') days = 7;
+                else if (filters.dateRange === '30days') days = 30;
+                else if (filters.dateRange === '90days') days = 90;
+
                 const res: ListAdminArticlesResponse = await ArticleService.listAdminArticlesByPages({
                     page_num: currentPage,
                     page_size: articlesPerPage,
-                    state: stateValue || 0 // 获取所有状态的文章
+                    state: stateValue || 0, // 获取所有状态的文章
+                    keyword: filters.search,
+                    category_id: filters.category,
+                    role: filters.authorRole,
+                    days: days
                 });
 
                 setTotalArticles(res.total);
-                setArticles(res.list.map(article => ({
+                setArticles((res.list || []).map(article => ({
                     id: String(article.id),
                     title: article.title,
                     slug: "asdasdsad", // 占位符，API未提供
@@ -186,70 +197,19 @@ const ArticleManagement: React.FC = () => {
             } catch (error) {
                 console.error('获取文章列表失败:', error);
                 setTotalArticles(0);
+                setArticles([]);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchArticles();
-    }, [currentPage, filters.status]);
+    }, [currentPage, filters]);
 
     // 筛选文章数据
     const filteredArticles = useMemo(() => {
-        return articles.filter(article => {
-            // 搜索筛选
-            if (filters.search) {
-                const searchTerm = filters.search.toLowerCase();
-                if (!article.title.toLowerCase().includes(searchTerm) &&
-                    !article.summary.toLowerCase().includes(searchTerm) &&
-                    !article.author.toLowerCase().includes(searchTerm)) {
-                    return false;
-                }
-            }
-
-            // 状态筛选已移至服务端
-            // if (filters.status && article.status !== filters.status) {
-            //     return false;
-            // }
-
-            // 分类筛选
-            if (filters.category && article.category !== filters.category) {
-                return false;
-            }
-
-            // 作者角色筛选
-            if (filters.authorRole && article.authorRole !== filters.authorRole) {
-                return false;
-            }
-
-            // 日期范围筛选
-            if (filters.dateRange) {
-                const articleDate = new Date(article.createdAt);
-                const now = new Date();
-                let startDate: Date;
-
-                switch (filters.dateRange) {
-                    case '7days':
-                        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                        break;
-                    case '30days':
-                        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-                        break;
-                    case '90days':
-                        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-                        break;
-                    default:
-                        return true;
-                }
-
-                if (articleDate < startDate) {
-                    return false;
-                }
-            }
-
-            return true;
-        });
-    }, [articles, filters]);
+        return articles;
+    }, [articles]);
 
     // 分页计算
     const totalPages = Math.ceil(totalArticles / articlesPerPage);
@@ -288,10 +248,7 @@ const ArticleManagement: React.FC = () => {
                 ...prev,
                 [field]: selectedOption?.id || ''
             }));
-            if (field === 'status') {
-                setCurrentPage(1);
-                setArticles([]); // 清空列表以显示加载状态
-            }
+            setCurrentPage(1); // 任何筛选条件变化都重置页码
         };
     };
 
@@ -301,6 +258,7 @@ const ArticleManagement: React.FC = () => {
             ...prev,
             [field]: value
         }));
+        setCurrentPage(1); // 搜索条件变化重置页码
     };
 
     // 清除筛选条件
@@ -671,192 +629,202 @@ const ArticleManagement: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentArticles.map((article) => (
-                            <tr key={article.id} className={`${article.featured ? styles.featured : ''}`}>
-                                <td>
-                                    <div className={styles.articleInfo}>
-                                        <div className={styles.articleDetails}>
-                                            {article.featured && (
-                                                <span className={styles.featuredTag}>
-                                                    <FaStar /> 置顶
-                                                </span>
-                                            )}
-                                            <div className={styles.articleTitle}>{article.title}</div>
-                                            <div className={styles.articleSummary}>{article.summary}</div>
-                                            {article.isReported && (
-                                                <span className={styles.reportedTag}>
-                                                    <FaFlag /> 举报 {article.reportCount}
-                                                </span>
-                                            )}
+                        {currentArticles.length > 0 ? (
+                            currentArticles.map((article) => (
+                                <tr key={article.id} className={`${article.featured ? styles.featured : ''}`}>
+                                    <td>
+                                        <div className={styles.articleInfo}>
+                                            <div className={styles.articleDetails}>
+                                                {article.featured && (
+                                                    <span className={styles.featuredTag}>
+                                                        <FaStar /> 置顶
+                                                    </span>
+                                                )}
+                                                <div className={styles.articleTitle}>{article.title}</div>
+                                                <div className={styles.articleSummary}>{article.summary}</div>
+                                                {article.isReported && (
+                                                    <span className={styles.reportedTag}>
+                                                        <FaFlag /> 举报 {article.reportCount}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div className={styles.authorInfo}>
-                                        <div className={styles.authorName}>
-                                            <FaUser /> {article.author}
-                                            <span className={styles.authorRole}>({article.authorRole})</span>
+                                    </td>
+                                    <td>
+                                        <div className={styles.authorInfo}>
+                                            <div className={styles.authorName}>
+                                                <FaUser /> {article.author}
+                                                <span className={styles.authorRole}>({article.authorRole})</span>
+                                            </div>
+                                            <div className={styles.authorEmail}>{article.authorEmail}</div>
                                         </div>
-                                        <div className={styles.authorEmail}>{article.authorEmail}</div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span className={styles.categoryTag}>
-                                        <FaTags /> {article.category}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span className={`${styles.statusBadge} ${styles[article.status]}`}>
-                                        <span className={styles.statusIndicator}></span>
-                                        {article.status === 'pending' && <><FaHourglassHalf /> 待审核</>}
-                                        {article.status === 'published' && <><FaEye /> 已发布</>}
-                                        {article.status === 'rejected' && <><FaTimes /> 已拒绝</>}
-                                        {article.status === 'private' && <><FaClipboardCheck /> 私密</>}
-                                    </span>
-                                    {(article.status === 'pending' || article.status === 'rejected' || article.status === 'published') && (
-                                        <div className={styles.reviewInfo}>
-                                            {article.reviewedBy && (
-                                                <div className={styles.reviewedBy}>审核人：{article.reviewedBy}</div>
-                                            )}
-                                            {article.reviewedAt && (
-                                                <div className={styles.reviewedAt}>{article.reviewedAt}</div>
-                                            )}
-                                        </div>
-                                    )}
-                                </td>
-                                <td>
-                                    <div className={styles.statsInfo}>
-                                        <div><FaEye /> {article.views.toLocaleString()}</div>
-                                        <div><FaHeart /> {article.likes}</div>
-                                        <div><FaComment /> {article.comments}</div>
-                                        <div><FaClock /> {article.readTime}分钟</div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div className={styles.dateInfo}>
-                                        <div>
-                                            {article.publishedAt ? (
-                                                <><FaCalendar /> {article.publishedAt}</>
-                                            ) : (
-                                                <><FaClock /> {formatDate(article.createdAt)}</>
-                                            )}
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div className={styles.actionButtons}>
-                                        {/* 管理员审批操作 */}
-                                        {article.status === 'pending' && (
-                                            <>
-                                                <button
-                                                    className={`${styles.actionButton} ${styles.approve}`}
-                                                    title="通过审核"
-                                                    onClick={() => approveArticle(article)}
-                                                >
-                                                    <FaThumbsUp />
-                                                </button>
-                                                <button
-                                                    className={`${styles.actionButton} ${styles.reject}`}
-                                                    title="拒绝审核"
-                                                    onClick={() => rejectArticle(article, '内容质量不达标')}
-                                                >
-                                                    <FaThumbsDown />
-                                                </button>
-                                            </>
+                                    </td>
+                                    <td>
+                                        <span className={styles.categoryTag}>
+                                            <FaTags /> {article.category}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`${styles.statusBadge} ${styles[article.status]}`}>
+                                            <span className={styles.statusIndicator}></span>
+                                            {article.status === 'pending' && <><FaHourglassHalf /> 待审核</>}
+                                            {article.status === 'published' && <><FaEye /> 已发布</>}
+                                            {article.status === 'rejected' && <><FaTimes /> 已拒绝</>}
+                                            {article.status === 'private' && <><FaClipboardCheck /> 私密</>}
+                                        </span>
+                                        {(article.status === 'pending' || article.status === 'rejected' || article.status === 'published') && (
+                                            <div className={styles.reviewInfo}>
+                                                {article.reviewedBy && (
+                                                    <div className={styles.reviewedBy}>审核人：{article.reviewedBy}</div>
+                                                )}
+                                                {article.reviewedAt && (
+                                                    <div className={styles.reviewedAt}>{article.reviewedAt}</div>
+                                                )}
+                                            </div>
                                         )}
+                                    </td>
+                                    <td>
+                                        <div className={styles.statsInfo}>
+                                            <div><FaEye /> {article.views.toLocaleString()}</div>
+                                            <div><FaHeart /> {article.likes}</div>
+                                            <div><FaComment /> {article.comments}</div>
+                                            <div><FaClock /> {article.readTime}分钟</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className={styles.dateInfo}>
+                                            <div>
+                                                {article.publishedAt ? (
+                                                    <><FaCalendar /> {article.publishedAt}</>
+                                                ) : (
+                                                    <><FaClock /> {formatDate(article.createdAt)}</>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className={styles.actionButtons}>
+                                            {/* 管理员审批操作 */}
+                                            {article.status === 'pending' && (
+                                                <>
+                                                    <button
+                                                        className={`${styles.actionButton} ${styles.approve}`}
+                                                        title="通过审核"
+                                                        onClick={() => approveArticle(article)}
+                                                    >
+                                                        <FaThumbsUp />
+                                                    </button>
+                                                    <button
+                                                        className={`${styles.actionButton} ${styles.reject}`}
+                                                        title="拒绝审核"
+                                                        onClick={() => rejectArticle(article, '内容质量不达标')}
+                                                    >
+                                                        <FaThumbsDown />
+                                                    </button>
+                                                </>
+                                            )}
 
-                                        {/* 已发布文章可以下架 */}
-                                        {article.status === 'published' && (
+                                            {/* 已发布文章可以下架 */}
+                                            {article.status === 'published' && (
+                                                <button
+                                                    className={`${styles.actionButton} ${styles.unpublish}`}
+                                                    title="下架文章"
+                                                    onClick={() => unpublishArticle(article)}
+                                                >
+                                                    <FaBan />
+                                                </button>
+                                            )}
+
                                             <button
-                                                className={`${styles.actionButton} ${styles.unpublish}`}
-                                                title="下架文章"
-                                                onClick={() => unpublishArticle(article)}
+                                                className={`${styles.actionButton} ${styles.edit}`}
+                                                title="编辑文章"
+                                                onClick={() => handleEditArticle(article.id)}
                                             >
-                                                <FaBan />
+                                                <FaEdit />
                                             </button>
-                                        )}
-
-                                        <button
-                                            className={`${styles.actionButton} ${styles.edit}`}
-                                            title="编辑文章"
-                                            onClick={() => handleEditArticle(article.id)}
-                                        >
-                                            <FaEdit />
-                                        </button>
-                                        <button
-                                            className={`${styles.actionButton} ${styles.edit}`}
-                                            title="查看详情"
-                                            onClick={() => handleViewArticle(article.id)}
-                                        >
-                                            <FaEye />
-                                        </button>
-                                        <button
-                                            className={`${styles.actionButton} ${styles.delete}`}
-                                            title="删除文章"
-                                            onClick={() => deleteArticle(article.id)}
-                                        >
-                                            <FaTrash />
-                                        </button>
-                                    </div>
+                                            <button
+                                                className={`${styles.actionButton} ${styles.edit}`}
+                                                title="查看详情"
+                                                onClick={() => handleViewArticle(article.id)}
+                                            >
+                                                <FaEye />
+                                            </button>
+                                            <button
+                                                className={`${styles.actionButton} ${styles.delete}`}
+                                                title="删除文章"
+                                                onClick={() => deleteArticle(article.id)}
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                                    暂无数据
                                 </td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
 
                 {/* 分页 */}
-                <div className={styles.paginationContainer}>
-                    <div className={styles.paginationInfo}>
-                        显示 {startIndex + 1} - {Math.min(endIndex, totalArticles)} 条，
-                        共 {totalArticles} 条记录
-                    </div>
-                    <div className={styles.paginationControls}>
-                        <button
-                            className={styles.paginationButton}
-                            onClick={() => setCurrentPage(1)}
-                            disabled={currentPage === 1}
-                        >
-                            <FaAngleDoubleLeft />
-                        </button>
-                        <button
-                            className={styles.paginationButton}
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            disabled={currentPage === 1}
-                        >
-                            <FaChevronLeft />
-                        </button>
+                {totalPages >= 1 && (
+                    <div className={styles.paginationContainer}>
+                        <div className={styles.paginationInfo}>
+                            显示 {totalArticles > 0 ? startIndex + 1 : 0} - {Math.min(endIndex, totalArticles)} 条，
+                            共 {totalArticles} 条记录
+                        </div>
+                        <div className={styles.paginationControls}>
+                            <button
+                                className={styles.paginationButton}
+                                onClick={() => setCurrentPage(1)}
+                                disabled={currentPage === 1}
+                            >
+                                <FaAngleDoubleLeft />
+                            </button>
+                            <button
+                                className={styles.paginationButton}
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                            >
+                                <FaChevronLeft />
+                            </button>
 
-                        {getPageNumbers().map((page, index) => (
-                            <React.Fragment key={index}>
-                                {page === '...' ? (
-                                    <span className={styles.paginationEllipsis}>...</span>
-                                ) : (
-                                    <button
-                                        className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
-                                        onClick={() => setCurrentPage(page as number)}
-                                    >
-                                        {page}
-                                    </button>
-                                )}
-                            </React.Fragment>
-                        ))}
+                            {getPageNumbers().map((page, index) => (
+                                <React.Fragment key={index}>
+                                    {page === '...' ? (
+                                        <span className={styles.paginationEllipsis}>...</span>
+                                    ) : (
+                                        <button
+                                            className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
+                                            onClick={() => setCurrentPage(page as number)}
+                                        >
+                                            {page}
+                                        </button>
+                                    )}
+                                </React.Fragment>
+                            ))}
 
-                        <button
-                            className={styles.paginationButton}
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                            disabled={currentPage === totalPages}
-                        >
-                            <FaChevronRight />
-                        </button>
-                        <button
-                            className={styles.paginationButton}
-                            onClick={() => setCurrentPage(totalPages)}
-                            disabled={currentPage === totalPages}
-                        >
-                            <FaAngleDoubleRight />
-                        </button>
+                            <button
+                                className={styles.paginationButton}
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                            >
+                                <FaChevronRight />
+                            </button>
+                            <button
+                                className={styles.paginationButton}
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={currentPage === totalPages}
+                            >
+                                <FaAngleDoubleRight />
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

@@ -116,18 +116,15 @@ export interface SelectChangeEventDetail {
     name: string;
 }
 
-// 学科类型
-export interface Subject {
-    id: number | string;
-    name: string;
-    color: string;
-    works?: Assignment[];
-}
-
 // 作业/任务类型
 export interface Assignment {
-    id: number | string;
     name: string;
-    color: string;
-    date?: string;
+    subject_name: string;
+    end_time: string;
+    create_time: string;
+    file_size: number;
+    status: string;
+    submission_count: number;
+    file_type: string;
+    description: string;
 }

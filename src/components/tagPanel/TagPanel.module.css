@@ -52,19 +52,19 @@
 .tagSmall {
     padding: 4px 8px;
     font-size: 11px;
-    border-radius: 5px;
+    border-radius: 4px;
 }
 
 .tagMedium {
     padding: 4px 8px;
     font-size: 12px;
-    border-radius: 5px;
+    border-radius: 4px;
 }
 
 .tagLarge {
     padding: 4px 8px;
     font-size: 14px;
-    border-radius: 5px;
+    border-radius: 4px;
 }
 
 /* 面板布局变体 */

@@ -387,122 +387,132 @@ const UserManagement: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentUsers.map((user) => (
-                            <tr key={user.id}>
-                                <td>
-                                    <div className={styles.userInfo}>
-                                        <img
-                                            src={user.avatar}
-                                            alt={user.username}
-                                            className={styles.userAvatar}
-                                        />
-                                        <div className={styles.userDetails}>
-                                            <div className={styles.userName}>{user.username}</div>
-                                            <div className={styles.userEmail}>{user.email}</div>
+                        {currentUsers.length > 0 ? (
+                            currentUsers.map((user) => (
+                                <tr key={user.id}>
+                                    <td>
+                                        <div className={styles.userInfo}>
+                                            <img
+                                                src={user.avatar}
+                                                alt={user.username}
+                                                className={styles.userAvatar}
+                                            />
+                                            <div className={styles.userDetails}>
+                                                <div className={styles.userName}>{user.username}</div>
+                                                <div className={styles.userEmail}>{user.email}</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span className={`${styles.roleBadge} ${styles[user.role]}`}>
-                                        {user.role === 'admin' ? '管理员' :
-                                         user.role === 'moderator' ? '版主' : '普通用户'}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span className={`${styles.statusBadge} ${styles[user.status]}`}>
-                                        <span className={styles.statusIndicator}></span>
-                                        {user.status === 'active' ? '活跃' :
-                                         user.status === 'inactive' ? '非活跃' : '待审核'}
-                                    </span>
-                                </td>
-                                <td>{formatDate(user.createdAt)}</td>
-                                <td>{formatDate(user.lastLogin)}</td>
-                                <td>{user.articleCount}</td>
-                                <td>{user.commentCount}</td>
-                                <td>
-                                    <div className={styles.actionButtons}>
-                                        <button
-                                            className={`${styles.actionButton} ${styles.edit}`}
-                                            title="编辑用户"
-                                        >
-                                            <FaEdit />
-                                        </button>
-                                        <button
-                                            className={`${styles.actionButton} ${styles.edit}`}
-                                            title="查看详情"
-                                        >
-                                            <FaEye />
-                                        </button>
-                                        <Button
-                                            color="error"
-                                            variant="ghost"
-                                            size="small"
-                                            onClick={() => deleteUser(user.id)}
-                                            className={styles.actionButton}
-                                            aria-label="删除用户"
-                                        >
-                                            <FaTrash />
-                                        </Button>
-                                    </div>
+                                    </td>
+                                    <td>
+                                        <span className={`${styles.roleBadge} ${styles[user.role]}`}>
+                                            {user.role === 'admin' ? '管理员' :
+                                             user.role === 'moderator' ? '版主' : '普通用户'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`${styles.statusBadge} ${styles[user.status]}`}>
+                                            <span className={styles.statusIndicator}></span>
+                                            {user.status === 'active' ? '活跃' :
+                                             user.status === 'inactive' ? '非活跃' : '待审核'}
+                                        </span>
+                                    </td>
+                                    <td>{formatDate(user.createdAt)}</td>
+                                    <td>{formatDate(user.lastLogin)}</td>
+                                    <td>{user.articleCount}</td>
+                                    <td>{user.commentCount}</td>
+                                    <td>
+                                        <div className={styles.actionButtons}>
+                                            <button
+                                                className={`${styles.actionButton} ${styles.edit}`}
+                                                title="编辑用户"
+                                            >
+                                                <FaEdit />
+                                            </button>
+                                            <button
+                                                className={`${styles.actionButton} ${styles.edit}`}
+                                                title="查看详情"
+                                            >
+                                                <FaEye />
+                                            </button>
+                                            <Button
+                                                color="error"
+                                                variant="ghost"
+                                                size="small"
+                                                onClick={() => deleteUser(user.id)}
+                                                className={styles.actionButton}
+                                                aria-label="删除用户"
+                                            >
+                                                <FaTrash />
+                                            </Button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                                    暂无数据
                                 </td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
 
                 {/* 分页 */}
-                <div className={styles.paginationContainer}>
-                    <div className={styles.paginationInfo}>
-                        显示 {startIndex + 1} - {Math.min(endIndex, totalUsers)} 条，
-                        共 {totalUsers} 条记录
-                    </div>
-                    <div className={styles.paginationControls}>
-                        <button
-                            className={styles.paginationButton}
-                            onClick={() => setCurrentPage(1)}
-                            disabled={currentPage === 1}
-                        >
-                            <FaAngleDoubleLeft />
-                        </button>
-                        <button
-                            className={styles.paginationButton}
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            disabled={currentPage === 1}
-                        >
-                            <FaChevronLeft />
-                        </button>
+                {totalPages >= 1 && (
+                    <div className={styles.paginationContainer}>
+                        <div className={styles.paginationInfo}>
+                            显示 {startIndex + 1} - {Math.min(endIndex, totalUsers)} 条，
+                            共 {totalUsers} 条记录
+                        </div>
+                        <div className={styles.paginationControls}>
+                            <button
+                                className={styles.paginationButton}
+                                onClick={() => setCurrentPage(1)}
+                                disabled={currentPage === 1}
+                            >
+                                <FaAngleDoubleLeft />
+                            </button>
+                            <button
+                                className={styles.paginationButton}
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                            >
+                                <FaChevronLeft />
+                            </button>
 
-                        {getPageNumbers().map((page, index) => (
-                            <React.Fragment key={index}>
-                                {page === '...' ? (
-                                    <span className={styles.paginationEllipsis}>...</span>
-                                ) : (
-                                    <button
-                                        className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
-                                        onClick={() => setCurrentPage(page as number)}
-                                    >
-                                        {page}
-                                    </button>
-                                )}
-                            </React.Fragment>
-                        ))}
+                            {getPageNumbers().map((page, index) => (
+                                <React.Fragment key={index}>
+                                    {page === '...' ? (
+                                        <span className={styles.paginationEllipsis}>...</span>
+                                    ) : (
+                                        <button
+                                            className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
+                                            onClick={() => setCurrentPage(page as number)}
+                                        >
+                                            {page}
+                                        </button>
+                                    )}
+                                </React.Fragment>
+                            ))}
 
-                        <button
-                            className={styles.paginationButton}
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                            disabled={currentPage === totalPages}
-                        >
-                            <FaChevronRight />
-                        </button>
-                        <button
-                            className={styles.paginationButton}
-                            onClick={() => setCurrentPage(totalPages)}
-                            disabled={currentPage === totalPages}
-                        >
-                            <FaAngleDoubleRight />
-                        </button>
+                            <button
+                                className={styles.paginationButton}
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                            >
+                                <FaChevronRight />
+                            </button>
+                            <button
+                                className={styles.paginationButton}
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={currentPage === totalPages}
+                            >
+                                <FaAngleDoubleRight />
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

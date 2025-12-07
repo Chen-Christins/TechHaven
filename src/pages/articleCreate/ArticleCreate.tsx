@@ -322,7 +322,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
             }
         } catch (err) {
             console.error('保存草稿失败:', err);
-            // message.error('保存草稿失败');
+            message.error('保存草稿失败');
         }
     };
 
@@ -368,7 +368,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
             }
         } catch (err) {
             console.error('发布文章失败:', err);
-            // message.error('发布文章失败');
+            message.error('发布文章失败');
         }
     };
 

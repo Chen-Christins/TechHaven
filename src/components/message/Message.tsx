@@ -65,15 +65,10 @@ export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     // 自动关闭 - 修正返回值类型问题
     if (newMessage.duration && newMessage.duration > 0) {
-      const timer = setTimeout(() => {
+      setTimeout(() => {
         removeMessage(id);
         newMessage.onClose?.();
       }, newMessage.duration);
-
-      // 清理定时器 - 在消息被移除时
-      const cleanup = () => clearTimeout(timer);
-      // 使用effect清理而不是返回清理函数
-      useEffect(() => cleanup, [id]);
     }
 
     return id; // 始终返回id

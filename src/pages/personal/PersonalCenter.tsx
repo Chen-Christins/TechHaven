@@ -481,9 +481,17 @@ const PersonalCenter: React.FC = () => {
 
     // 删除文章
     const handleDeleteArticle = async (id: string | number) => {
-        if (window.confirm('确定要删除这篇文章吗？')) {
+        const isConfirmed = await confirm({
+            title: '确认删除',
+            content: '确定要删除这篇文章吗？删除后无法恢复。',
+            confirmText: '删除',
+            cancelText: '取消'
+        });
+
+        if (isConfirmed) {
             try {
                 await ArticleService.deleteArticle({ ids: String(id) });
+                message.success('文章删除成功');
                 // 删除成功后从本地状态移除
                 const newAllIds = articles.filter(aid => aid.id !== id);
                 setArticles(newAllIds);
@@ -508,24 +516,24 @@ const PersonalCenter: React.FC = () => {
                     id: id,
                     publish_time: Math.floor(Date.now() / 1000)
                 });
+                message.success('文章发布成功, 等待管理员审核中');
                 setArticles(articles.map(article =>
                     article.id === id ? { ...article, state: newStatus } : article
                 ));
-                message.success('文章发布成功, 等待管理员审核中');
             }
             if (newStatus === 'private') {
                 await ArticleService.switchArticleState({
                     id: id,
                     state: 4
                 });
+                message.success('文章已设为私密');
                 setArticles(articles.map(article =>
                     article.id === id ? { ...article, state: newStatus } : article
                 ));
-                message.success('文章已设为私密');
             }
         } catch (err) {
             console.error('切换文章状态失败:', err);
-            // message.error('切换文章状态失败，请重试');
+            message.error('切换文章状态失败，请重试');
         }
     };
 
@@ -802,7 +810,9 @@ const PersonalCenter: React.FC = () => {
                                         <div>操作</div>
                                     </div>
                                     {currentArticles.length === 0 ? (
-                                        <></>
+                                        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                                            暂无数据
+                                        </div>
                                     ) : (
                                         currentArticles.map(article => (
                                             <div key={article.id} className={styles.listItem}>

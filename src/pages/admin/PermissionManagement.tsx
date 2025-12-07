@@ -597,65 +597,73 @@ const PermissionManagement: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {currentRoles.map((role) => (
-                                <tr key={role.id}>
-                                    <td>
-                                        <div className={styles.roleInfo}>
-                                            <div className={styles.roleIcon} style={{ backgroundColor: role.color }}>
-                                                {role.isSystem ? <FaShieldAlt /> : <FaUserTag />}
-                                            </div>
-                                            <div className={styles.roleDetails}>
-                                                <div className={styles.roleName}>
-                                                    {role.name}
-                                                    {role.isSystem && (
-                                                        <span className={styles.systemTag}>
-                                                            <FaLock /> 系统
-                                                        </span>
-                                                    )}
+                            {currentRoles.length > 0 ? (
+                                currentRoles.map((role) => (
+                                    <tr key={role.id}>
+                                        <td>
+                                            <div className={styles.roleInfo}>
+                                                <div className={styles.roleIcon} style={{ backgroundColor: role.color }}>
+                                                    {role.isSystem ? <FaShieldAlt /> : <FaUserTag />}
                                                 </div>
-                                                <div className={styles.roleCode}>{role.code}</div>
-                                                <div className={styles.roleDescription}>{role.description}</div>
+                                                <div className={styles.roleDetails}>
+                                                    <div className={styles.roleName}>
+                                                        {role.name}
+                                                        {role.isSystem && (
+                                                            <span className={styles.systemTag}>
+                                                                <FaLock /> 系统
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className={styles.roleCode}>{role.code}</div>
+                                                    <div className={styles.roleDescription}>{role.description}</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className={styles.permissionCount}>
-                                            <FaKey /> {role.permissions.length}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className={styles.userCount}>
-                                            <FaUsers /> {role.userCount}
-                                        </div>
-                                    </td>
-                                    <td>{formatDate(role.createdAt)}</td>
-                                    <td>
-                                        <div className={styles.actionButtons}>
-                                            <button
-                                                className={`${styles.actionButton} ${styles.edit}`}
-                                                title="编辑角色"
-                                            >
-                                                <FaEdit />
-                                            </button>
-                                            <button
-                                                className={`${styles.actionButton} ${styles.edit}`}
-                                                title="查看权限"
-                                            >
-                                                <FaEye />
-                                            </button>
-                                            {!role.isSystem && (
+                                        </td>
+                                        <td>
+                                            <div className={styles.permissionCount}>
+                                                <FaKey /> {role.permissions.length}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className={styles.userCount}>
+                                                <FaUsers /> {role.userCount}
+                                            </div>
+                                        </td>
+                                        <td>{formatDate(role.createdAt)}</td>
+                                        <td>
+                                            <div className={styles.actionButtons}>
                                                 <button
-                                                    className={`${styles.actionButton} ${styles.delete}`}
-                                                    title="删除角色"
-                                                    onClick={() => deleteRole(role)}
+                                                    className={`${styles.actionButton} ${styles.edit}`}
+                                                    title="编辑角色"
                                                 >
-                                                    <FaTrash />
+                                                    <FaEdit />
                                                 </button>
-                                            )}
-                                        </div>
+                                                <button
+                                                    className={`${styles.actionButton} ${styles.edit}`}
+                                                    title="查看权限"
+                                                >
+                                                    <FaEye />
+                                                </button>
+                                                {!role.isSystem && (
+                                                    <button
+                                                        className={`${styles.actionButton} ${styles.delete}`}
+                                                        title="删除角色"
+                                                        onClick={() => deleteRole(role)}
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                                        暂无数据
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 ) : (
@@ -671,114 +679,124 @@ const PermissionManagement: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {currentUserPermissions.map((userPermission) => (
-                                <tr key={userPermission.id}>
-                                    <td>
-                                        <div className={styles.userInfo}>
-                                            <img
-                                                src={userPermission.avatar}
-                                                alt={userPermission.username}
-                                                className={styles.userAvatar}
-                                            />
-                                            <div className={styles.userDetails}>
-                                                <div className={styles.userName}>{userPermission.username}</div>
-                                                <div className={styles.userEmail}>{userPermission.email}</div>
+                            {currentUserPermissions.length > 0 ? (
+                                currentUserPermissions.map((userPermission) => (
+                                    <tr key={userPermission.id}>
+                                        <td>
+                                            <div className={styles.userInfo}>
+                                                <img
+                                                    src={userPermission.avatar}
+                                                    alt={userPermission.username}
+                                                    className={styles.userAvatar}
+                                                />
+                                                <div className={styles.userDetails}>
+                                                    <div className={styles.userName}>{userPermission.username}</div>
+                                                    <div className={styles.userEmail}>{userPermission.email}</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className={styles.userRoles}>
-                                            {getRoleNames(userPermission.roles)}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className={styles.permissionCount}>
-                                            <FaKey /> {userPermission.permissions.length}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className={`${styles.statusBadge} ${styles[userPermission.status]}`}>
-                                            <span className={styles.statusIndicator}></span>
-                                            {userPermission.status === 'active' ? '活跃' : '非活跃'}
-                                        </span>
-                                    </td>
-                                    <td>{formatDate(userPermission.lastLogin)}</td>
-                                    <td>
-                                        <div className={styles.actionButtons}>
-                                            <button
-                                                className={`${styles.actionButton} ${styles.edit}`}
-                                                title="编辑权限"
-                                            >
-                                                <FaUserCog />
-                                            </button>
-                                            <button
-                                                className={`${styles.actionButton} ${styles[userPermission.status === 'active' ? 'unpublish' : 'publish']}`}
-                                                title={userPermission.status === 'active' ? '禁用用户' : '启用用户'}
-                                                onClick={() => toggleUserStatus(userPermission)}
-                                            >
-                                                {userPermission.status === 'active' ? <FaLock /> : <FaUnlock />}
-                                            </button>
-                                        </div>
+                                        </td>
+                                        <td>
+                                            <div className={styles.userRoles}>
+                                                {getRoleNames(userPermission.roles)}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className={styles.permissionCount}>
+                                                <FaKey /> {userPermission.permissions.length}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={`${styles.statusBadge} ${styles[userPermission.status]}`}>
+                                                <span className={styles.statusIndicator}></span>
+                                                {userPermission.status === 'active' ? '活跃' : '非活跃'}
+                                            </span>
+                                        </td>
+                                        <td>{formatDate(userPermission.lastLogin)}</td>
+                                        <td>
+                                            <div className={styles.actionButtons}>
+                                                <button
+                                                    className={`${styles.actionButton} ${styles.edit}`}
+                                                    title="编辑权限"
+                                                >
+                                                    <FaUserCog />
+                                                </button>
+                                                <button
+                                                    className={`${styles.actionButton} ${styles[userPermission.status === 'active' ? 'unpublish' : 'publish']}`}
+                                                    title={userPermission.status === 'active' ? '禁用用户' : '启用用户'}
+                                                    onClick={() => toggleUserStatus(userPermission)}
+                                                >
+                                                    {userPermission.status === 'active' ? <FaLock /> : <FaUnlock />}
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                                        暂无数据
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 )}
 
                 {/* 分页 */}
-                <div className={styles.paginationContainer}>
-                    <div className={styles.paginationInfo}>
-                        显示 {startIndex + 1} - {Math.min(endIndex, currentData.length)} 条，
-                        共 {currentData.length} 条记录
-                    </div>
-                    <div className={styles.paginationControls}>
-                        <button
-                            className={styles.paginationButton}
-                            onClick={() => setCurrentPage(1)}
-                            disabled={currentPage === 1}
-                        >
-                            <FaAngleDoubleLeft />
-                        </button>
-                        <button
-                            className={styles.paginationButton}
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            disabled={currentPage === 1}
-                        >
-                            <FaChevronLeft />
-                        </button>
+                {totalPages >= 1 && (
+                    <div className={styles.paginationContainer}>
+                        <div className={styles.paginationInfo}>
+                            显示 {startIndex + 1} - {Math.min(endIndex, currentData.length)} 条，
+                            共 {currentData.length} 条记录
+                        </div>
+                        <div className={styles.paginationControls}>
+                            <button
+                                className={styles.paginationButton}
+                                onClick={() => setCurrentPage(1)}
+                                disabled={currentPage === 1}
+                            >
+                                <FaAngleDoubleLeft />
+                            </button>
+                            <button
+                                className={styles.paginationButton}
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                            >
+                                <FaChevronLeft />
+                            </button>
 
-                        {getPageNumbers().map((page, index) => (
-                            <React.Fragment key={index}>
-                                {page === '...' ? (
-                                    <span className={styles.paginationEllipsis}>...</span>
-                                ) : (
-                                    <button
-                                        className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
-                                        onClick={() => setCurrentPage(page as number)}
-                                    >
-                                        {page}
-                                    </button>
-                                )}
-                            </React.Fragment>
-                        ))}
+                            {getPageNumbers().map((page, index) => (
+                                <React.Fragment key={index}>
+                                    {page === '...' ? (
+                                        <span className={styles.paginationEllipsis}>...</span>
+                                    ) : (
+                                        <button
+                                            className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
+                                            onClick={() => setCurrentPage(page as number)}
+                                        >
+                                            {page}
+                                        </button>
+                                    )}
+                                </React.Fragment>
+                            ))}
 
-                        <button
-                            className={styles.paginationButton}
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                            disabled={currentPage === totalPages}
-                        >
-                            <FaChevronRight />
-                        </button>
-                        <button
-                            className={styles.paginationButton}
-                            onClick={() => setCurrentPage(totalPages)}
-                            disabled={currentPage === totalPages}
-                        >
-                            <FaAngleDoubleRight />
-                        </button>
+                            <button
+                                className={styles.paginationButton}
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                            >
+                                <FaChevronRight />
+                            </button>
+                            <button
+                                className={styles.paginationButton}
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={currentPage === totalPages}
+                            >
+                                <FaAngleDoubleRight />
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

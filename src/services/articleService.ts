@@ -29,7 +29,11 @@ export interface ListArticlesResponse {
 export interface ListAdminArticlesParams {
     page_num: number;
     page_size: number;
-    state: number;
+    state?: number;
+    category_id?: string | number;
+    role?: string;
+    days?: number;
+    keyword?: string;
 }
 
 /**
@@ -188,7 +192,21 @@ export class ArticleService {
     static async listAdminArticlesByPages(params: ListAdminArticlesParams): Promise<ListAdminArticlesResponse> {
         let url = `/article/admin/lists?page_num=${params.page_num}`;
         url += `&page_size=${params.page_size}`;
-        url += `&state=${params.state}`;
+        if (params.state !== undefined) {
+            url += `&state=${params.state}`;
+        }
+        if (params.category_id !== undefined && params.category_id !== '') {
+            url += `&category_id=${params.category_id}`;
+        }
+        if (params.role !== undefined && params.role !== '') {
+            url += `&role=${params.role}`;
+        }
+        if (params.days !== undefined) {
+            url += `&days=${params.days}`;
+        }
+        if (params.keyword !== undefined && params.keyword !== '') {
+            url += `&keyword=${encodeURIComponent(params.keyword)}`;
+        }
         
         const response = await http.get<ListAdminArticlesResponse>(url);
         return response.data;

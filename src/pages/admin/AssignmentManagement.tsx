@@ -11,7 +11,9 @@ import {
     FaClock,
     FaCheckCircle,
     FaTimesCircle,
-    FaFilter
+    FaFilter,
+    FaAngleDoubleLeft,
+    FaAngleDoubleRight
 } from 'react-icons/fa';
 import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
@@ -24,6 +26,7 @@ import { confirm } from '../../components/confirm/Confirm';
 import message from '../../components/message/Message';
 import Modal from '../../components/modal/Modal';
 import styles from './AssignmentManagement.module.css';
+import AssignmentService from '../../services/assignmentService';
 
 // 模拟作业数据接口
 interface Assignment {
@@ -40,74 +43,17 @@ interface Assignment {
     allowedTypes?: string[];
 }
 
-// 模拟数据
-const MOCK_ASSIGNMENTS: Assignment[] = [
-    {
-        id: '1',
-        title: 'Web前端开发期末大作业',
-        courseName: 'Web前端开发技术',
-        deadline: '2025-12-31 23:59:59',
-        status: 'active',
-        submissionCount: 45,
-        totalStudents: 60,
-        createdAt: '2025-09-01',
-        description: '请完成一个完整的Web前端项目，包含HTML、CSS和JavaScript。',
-        maxFileSize: 50,
-        allowedTypes: ['.zip', '.rar', '.7z']
-    },
-    {
-        id: '2',
-        title: '计算机网络实验报告',
-        courseName: '计算机网络',
-        deadline: '2025-11-15 12:00:00',
-        status: 'closed',
-        submissionCount: 58,
-        totalStudents: 60,
-        createdAt: '2025-10-01',
-        description: '完成实验一至实验四的实验报告，并打包上传。',
-        maxFileSize: 20,
-        allowedTypes: ['.pdf', '.doc', '.docx']
-    },
-    {
-        id: '3',
-        title: '数据库课程设计',
-        courseName: '数据库系统原理',
-        deadline: '2025-10-01 00:00:00',
-        status: 'closed',
-        submissionCount: 55,
-        totalStudents: 58,
-        createdAt: '2025-09-15',
-        description: '设计一个简单的数据库管理系统，包含ER图和SQL脚本。',
-        maxFileSize: 30,
-        allowedTypes: ['.zip', '.pdf']
-    },
-    {
-        id: '4',
-        title: '算法分析与设计作业',
-        courseName: '算法分析与设计',
-        deadline: '2026-01-10 23:59:59',
-        status: 'active',
-        submissionCount: 12,
-        totalStudents: 60,
-        createdAt: '2025-11-20',
-        description: '完成课后习题3.1至3.5。',
-        maxFileSize: 10,
-        allowedTypes: ['.pdf', '.jpg', '.png']
-    },
-    {
-        id: '5',
-        title: '操作系统实验一',
-        courseName: '操作系统',
-        deadline: '2025-12-20 23:59:59',
-        status: 'draft',
-        submissionCount: 0,
-        totalStudents: 60,
-        createdAt: '2025-12-01',
-        description: '实现进程调度算法。',
-        maxFileSize: 15,
-        allowedTypes: ['.cpp', '.c', '.txt']
-    }
-];
+const STATE_STR_MAP_NUMBER: Record<string, number> = {
+    "draft": 0,
+    "active": 1,
+    "closed": 2
+};
+
+const STATE_NUMBER_MAP_STR: Record<number, string> = {
+    0: "draft",
+    1: "active",
+    2: "closed"
+};
 
 const AssignmentManagement: React.FC = () => {
     const [loading, setLoading] = useState(true);
@@ -115,6 +61,7 @@ const AssignmentManagement: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
+    const [total, setTotal] = useState(0);
     
     // 模态框状态
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -129,17 +76,50 @@ const AssignmentManagement: React.FC = () => {
         maxFileSize: 50,
         allowedTypes: []
     });
+    const [allowedTypesInput, setAllowedTypesInput] = useState('');
 
     const pageSize = 10;
 
-    useEffect(() => {
-        // 模拟加载数据
-        const timer = setTimeout(() => {
-            setAssignments(MOCK_ASSIGNMENTS);
+    const fetchAssignments = async () => {
+        setLoading(true);
+        try {
+            const params: any = {
+                page_num: currentPage,
+                page_size: pageSize
+            };
+            if (statusFilter !== 'all') {
+                params.state = STATE_STR_MAP_NUMBER[statusFilter];
+            }
+            
+            const res = await AssignmentService.getAdminAssignments(params);
+            
+            const mappedList: Assignment[] = (res.list || []).map(item => ({
+                id: String(item.id),
+                title: item.name,
+                courseName: item.subject_name,
+                deadline: dayjs.unix(item.end_time).format('YYYY-MM-DD HH:mm:ss'),
+                status: STATE_NUMBER_MAP_STR[Number(item.status)] as 'active' | 'draft' | 'closed',
+                submissionCount: 0, // 暂无数据
+                totalStudents: 0, // 暂无数据
+                createdAt: dayjs.unix(item.create_time).format('YYYY-MM-DD'),
+                description: item.description,
+                maxFileSize: item.file_size,
+                allowedTypes: item.file_type ? item.file_type.split(',') : []
+            }));
+
+            setAssignments(mappedList);
+            setTotal(res.total);
+        } catch (error) {
+            console.error('获取作业列表失败:', error);
+            message.error('获取作业列表失败');
+        } finally {
             setLoading(false);
-        }, 800);
-        return () => clearTimeout(timer);
-    }, []);
+        }
+    };
+
+    useEffect(() => {
+        fetchAssignments();
+    }, [currentPage, statusFilter]);
 
     // 打开创建模态框
     const openCreateModal = () => {
@@ -153,6 +133,7 @@ const AssignmentManagement: React.FC = () => {
             maxFileSize: 50,
             allowedTypes: []
         });
+        setAllowedTypesInput('');
         setIsModalVisible(true);
     };
 
@@ -168,6 +149,7 @@ const AssignmentManagement: React.FC = () => {
             maxFileSize: assignment.maxFileSize || 50,
             allowedTypes: assignment.allowedTypes || []
         });
+        setAllowedTypesInput(assignment.allowedTypes?.join(', ') || '');
         setIsModalVisible(true);
     };
 
@@ -178,53 +160,92 @@ const AssignmentManagement: React.FC = () => {
     };
 
     // 处理表单提交
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!formData.title || !formData.courseName || !formData.deadline) {
             message.error('请填写完整信息');
             return;
         }
 
         setLoading(true);
-        setTimeout(() => {
+        try {
             if (currentAssignment) {
                 // 编辑模式
-                setAssignments(prev => prev.map(item => 
-                    item.id === currentAssignment.id 
-                        ? { ...item, ...formData } as Assignment 
-                        : item
-                ));
+                await AssignmentService.createAssignment({
+                    name: formData.title!,
+                    subject_name: formData.courseName!,
+                    end_time: String(dayjs(formData.deadline).unix()),
+                    file_size: formData.maxFileSize || 50,
+                    status: String(STATE_STR_MAP_NUMBER[formData.status || 'draft']),
+                    file_type: formData.allowedTypes?.join(',') || '',
+                    description: formData.description || ''
+                });
+                await fetchAssignments(); // 刷新列表
                 message.success('作业更新成功');
             } else {
                 // 创建模式
-                const newAssignment: Assignment = {
-                    id: String(Date.now()),
-                    ...formData as any,
-                    submissionCount: 0,
-                    totalStudents: 60,
-                    createdAt: new Date().toISOString().split('T')[0]
-                };
-                setAssignments(prev => [newAssignment, ...prev]);
+                await AssignmentService.createAssignment({
+                    name: formData.title!,
+                    subject_name: formData.courseName!,
+                    end_time: String(dayjs(formData.deadline).unix()),
+                    file_size: formData.maxFileSize || 50,
+                    status: String(STATE_STR_MAP_NUMBER[formData.status || 'draft']),
+                    file_type: formData.allowedTypes?.join(',') || '',
+                    description: formData.description || ''
+                });
+                await fetchAssignments(); // 刷新列表
                 message.success('作业发布成功');
             }
             setIsModalVisible(false);
+        } catch (error: any) {
+            console.error('操作失败:', error);
+            message.error(error.message || '操作失败');
+        } finally {
             setLoading(false);
-        }, 500);
+        }
     };
 
-    // 筛选逻辑
+    // 筛选逻辑 (仅在当前页搜索)
     const filteredAssignments = assignments.filter(item => {
         const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             item.courseName.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
-        return matchesSearch && matchesStatus;
+        return matchesSearch;
     });
 
     // 分页逻辑
-    const totalPages = Math.ceil(filteredAssignments.length / pageSize);
-    const currentData = filteredAssignments.slice(
-        (currentPage - 1) * pageSize,
-        currentPage * pageSize
-    );
+    const totalPages = Math.ceil(total / pageSize);
+    const currentData = filteredAssignments;
+    const startIndex = (currentPage - 1) * pageSize;
+
+    // 生成页码数组
+    const getPageNumbers = () => {
+        const pages: (number | string)[] = [];
+        const maxVisiblePages = 5;
+
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            const start = Math.max(1, currentPage - 2);
+            const end = Math.min(totalPages, start + maxVisiblePages - 1);
+
+            if (start > 1) {
+                pages.push(1);
+                if (start > 2) pages.push('...');
+            }
+
+            for (let i = start; i <= end; i++) {
+                pages.push(i);
+            }
+
+            if (end < totalPages) {
+                if (end < totalPages - 1) pages.push('...');
+                pages.push(totalPages);
+            }
+        }
+
+        return pages;
+    };
 
     const handleDelete = async (id: string) => {
         const isConfirmed = await confirm({
@@ -236,13 +257,16 @@ const AssignmentManagement: React.FC = () => {
         
         if (isConfirmed) {
             setLoading(true);
-            // 模拟API调用
-            setTimeout(() => {
-                setAssignments(prev => prev.filter(item => item.id !== id));
+            try {
+                await AssignmentService.deleteAssignments({ ids: id });
+                await fetchAssignments(); // 刷新列表
                 message.success('作业已删除');
+            } catch (error) {
+                console.error('删除失败:', error);
+                message.error('删除失败');
+            } finally {
                 setLoading(false);
-            }, 500);
-            setLoading(false);
+            }
         }
     };
 
@@ -442,40 +466,62 @@ const AssignmentManagement: React.FC = () => {
                         )}
                     </tbody>
                 </table>
-            </div>
 
-            {totalPages > 1 && (
-                <div className={styles.pagination}>
-                    <span className={styles.pageInfo}>
-                        第 {currentPage} 页 / 共 {totalPages} 页
-                    </span>
-                    <div className={styles.pageButtons}>
-                        <button 
-                            className={styles.pageBtn}
-                            disabled={currentPage === 1}
-                            onClick={() => setCurrentPage(prev => prev - 1)}
-                        >
-                            <FaChevronLeft />
-                        </button>
-                        {Array.from({ length: totalPages }).map((_, i) => (
-                            <button
-                                key={i + 1}
-                                className={`${styles.pageBtn} ${currentPage === i + 1 ? styles.active : ''}`}
-                                onClick={() => setCurrentPage(i + 1)}
+                {totalPages >= 1 && (
+                    <div className={styles.pagination}>
+                        <span className={styles.pageInfo}>
+                            显示 {startIndex + 1} - {Math.min(startIndex + pageSize, total)} 条，
+                            共 {total} 条记录
+                        </span>
+                        <div className={styles.pageButtons}>
+                            <button 
+                                className={styles.pageBtn}
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(1)}
                             >
-                                {i + 1}
+                                <FaAngleDoubleLeft />
                             </button>
-                        ))}
-                        <button 
-                            className={styles.pageBtn}
-                            disabled={currentPage === totalPages}
-                            onClick={() => setCurrentPage(prev => prev + 1)}
-                        >
-                            <FaChevronRight />
-                        </button>
+                            <button 
+                                className={styles.pageBtn}
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(prev => prev - 1)}
+                            >
+                                <FaChevronLeft />
+                            </button>
+                            
+                            {getPageNumbers().map((page, index) => (
+                                <React.Fragment key={index}>
+                                    {page === '...' ? (
+                                        <span className={styles.paginationEllipsis}>...</span>
+                                    ) : (
+                                        <button
+                                            className={`${styles.pageBtn} ${currentPage === page ? styles.active : ''}`}
+                                            onClick={() => setCurrentPage(page as number)}
+                                        >
+                                            {page}
+                                        </button>
+                                    )}
+                                </React.Fragment>
+                            ))}
+
+                            <button 
+                                className={styles.pageBtn}
+                                disabled={currentPage === totalPages}
+                                onClick={() => setCurrentPage(prev => prev + 1)}
+                            >
+                                <FaChevronRight />
+                            </button>
+                            <button 
+                                className={styles.pageBtn}
+                                disabled={currentPage === totalPages}
+                                onClick={() => setCurrentPage(totalPages)}
+                            >
+                                <FaAngleDoubleRight />
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* 创建/编辑模态框 */}
             <Modal
@@ -561,11 +607,14 @@ const AssignmentManagement: React.FC = () => {
                     <label className={styles.formLabel}>允许文件格式 (用逗号分隔)</label>
                     <Input 
                         placeholder="例如: .pdf, .doc, .zip" 
-                        value={formData.allowedTypes?.join(', ') || ''}
-                        onChange={(value) => setFormData({
-                            ...formData, 
-                            allowedTypes: value.split(/[,，]/).map(t => t.trim()).filter(t => t)
-                        })}
+                        value={allowedTypesInput}
+                        onChange={(value) => {
+                            setAllowedTypesInput(value);
+                            setFormData(prev => ({
+                                ...prev, 
+                                allowedTypes: value.split(/[,，]/).map(t => t.trim()).filter(t => t)
+                            }));
+                        }}
                         className={styles.formInput}
                     />
                 </div>
