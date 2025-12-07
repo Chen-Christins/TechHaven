@@ -521,7 +521,7 @@
 
 .searchBox {
     flex: 2;
-    min-width: 300px;
+    width: 50%;
     position: relative;
     display: flex;
     align-items: center;
@@ -554,8 +554,7 @@
 
 .statusSelect {
     flex: 1;
-    min-width: 140px;
-    max-width: 200px;
+    width: 50%;
 }
 
 /* 文章列表 */

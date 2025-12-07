@@ -65,7 +65,7 @@
     align-items: center;
     gap: 12px;
     padding: 16px;
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-tertiary);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -481,7 +481,7 @@
 .typeBadge {
     display: inline-block;
     padding: 4px 8px;
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-tertiary);
     color: var(--text-secondary);
     border-radius: 4px;
     font-size: 12px;

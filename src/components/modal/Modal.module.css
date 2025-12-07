@@ -1,0 +1,117 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--modal-overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    animation: fadeIn 0.2s forwards;
+    backdrop-filter: blur(2px);
+}
+
+.modal {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow-xl);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transform: scale(0.95);
+    opacity: 0;
+    animation: scaleIn 0.2s forwards;
+    border: 1px solid var(--border-primary);
+}
+
+.modal.large {
+    max-width: 800px;
+}
+
+.modal.small {
+    max-width: 400px;
+}
+
+.header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.closeBtn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.closeBtn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.content {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-primary);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background-color: var(--bg-secondary);
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+    from { 
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to { 
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* 移动端适配 */
+@media (max-width: 640px) {
+    .modal {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .content {
+        padding: 16px;
+    }
+}

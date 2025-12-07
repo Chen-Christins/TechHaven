@@ -514,7 +514,7 @@ const CategoryManagement: React.FC = () => {
                                         </div>
                                         <div>
                                             <h3 className={styles.categoryName}>{category.name}</h3>
-                                            <p className={styles.categorySlug}>/{category.slug}</p>
+                                            <p className={styles.categorySlug}>{category.slug}</p>
                                         </div>
                                     </div>
                                     <div className={styles.categoryStatus}>

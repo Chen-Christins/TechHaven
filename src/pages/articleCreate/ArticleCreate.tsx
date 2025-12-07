@@ -840,8 +840,8 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
                     </div>
                 )}
 
+                <Footer companyName="TechBlog" startYear={2025} />
             </div>
-            <Footer companyName="TechBlog" startYear={2025} />
             <BackToTop />
         </>
     );

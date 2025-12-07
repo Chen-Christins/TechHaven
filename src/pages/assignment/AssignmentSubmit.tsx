@@ -247,7 +247,7 @@ const AssignmentSubmit: React.FC = () => {
             
             <div className={styles.mainContent}>
                 <div className={styles.card}>
-                    <div style={{ marginBottom: '2rem', paddingBottom: '2rem', borderBottom: '1px solid var(--border-secondary)' }}>
+                    <div style={{ marginBottom: '2rem', paddingBottom: '0.6rem', borderBottom: '1px solid var(--border-secondary)' }}>
                         <button className={styles.backButton} onClick={() => navigate(-1)}>
                             <FaArrowLeft /> 返回上一页
                         </button>
@@ -262,7 +262,7 @@ const AssignmentSubmit: React.FC = () => {
                         </div>
                     </div>
 
-                    <div style={{ marginBottom: '3rem' }}>
+                    <div style={{ marginBottom: '2rem' }}>
                         <div className={styles.sectionHeader}>
                             <div className={styles.sectionIcon}>
                                 <FaInfoCircle />

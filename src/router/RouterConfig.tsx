@@ -9,6 +9,7 @@ import AdminLayout from '../pages/admin/AdminLayout';
 import Dashboard from '../pages/admin/Dashboard';
 import UserManagement from '../pages/admin/UserManagement';
 import ArticleManagement from '../pages/admin/ArticleManagement';
+import AssignmentManagement from '../pages/admin/AssignmentManagement';
 import CategoryManagement from '../pages/admin/CategoryManagement';
 import CommentManagement from '../pages/admin/CommentManagement';
 import MediaManagement from '../pages/admin/MediaManagement';
@@ -54,6 +55,7 @@ const RouterConfig: React.FC = () => {
                 <Route index element={<Dashboard />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="articles" element={<ArticleManagement />} />
+                <Route path="assignments" element={<AssignmentManagement />} />
                 <Route path="comments" element={<CommentManagement />} />
                 <Route path="categories" element={<CategoryManagement />} />
                 <Route path="media" element={<MediaManagement />} />
