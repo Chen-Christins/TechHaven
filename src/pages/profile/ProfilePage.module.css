@@ -13,7 +13,6 @@
   max-width: 1560px;
   margin: 2rem auto;
   padding: 0 1.8rem;
-  padding-top: 48px;
 }
 
 .leftColumn {
@@ -627,7 +626,6 @@
   .mainContent {
     min-width: auto;
     padding: 0 1rem;
-    padding-top: 48px;
   }
 
   .leftColumn {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FaHome, FaPen, FaBars, FaSignOutAlt, FaUserCircle, FaStar, FaExternalLinkAlt, FaSignInAlt } from 'react-icons/fa';
 import styles from './Navbar.module.css';
 import ThemeToggle from '../themeToggle/ThemeToggle';
@@ -8,6 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 	// 获取认证状态
 	const { user, isAuthenticated, logout, token } = useAuth();
 
@@ -32,6 +33,7 @@ const Navbar: React.FC = () => {
 	// 导航链接数据（包含图标和路径）
 	const navLinks = [
 		{ label: "首页", icon: <FaHome />, path: "/" },
+        { label: "作业", icon: <FaPen />, path: "/assignments" },
 		// { label: "标签", icon: <FaTags />, path: "/tags" },
 		// { label: "关于", icon: <FaUser />, path: "/about" },
 	];
@@ -133,6 +135,16 @@ const Navbar: React.FC = () => {
 
 	// 渲染导航链接（桌面端）
 	const renderNavLinks = () => {
+        const isActive = (path: string) => {
+            if (path === '/') {
+                return location.pathname === '/' || location.pathname === '/index';
+            }
+            if (path === '/assignments') {
+                return location.pathname.startsWith('/assignments') || location.pathname.startsWith('/assignment');
+            }
+            return location.pathname === path;
+        };
+
 		return (
 			<ul className={styles.navLinks}>
 				{navLinks.map((link, index) => (
@@ -140,8 +152,7 @@ const Navbar: React.FC = () => {
 						<div
 							onClick={() => { navigate(link.path); }}
 							className={styles.navLink}
-							// 假设首页为当前活跃页
-							data-active={link.path === "/"}
+							data-active={isActive(link.path)}
 						>
 							<span className={styles.linkIcon}>{link.icon}</span>
 							<span className={styles.linkText}>{link.label}</span>

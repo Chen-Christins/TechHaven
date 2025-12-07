@@ -91,7 +91,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({
     onPublish,
     initialData
 }) => {
-    const { user, loading: authLoading } = useAuth();
+    const { user } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);

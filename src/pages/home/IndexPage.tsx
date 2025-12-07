@@ -12,7 +12,6 @@ import SearchPanel from '../../components/searchArticle/SearchArticle';
 import BackToTop from '../../components/backToTop/BackToTop';
 import LabelService from '../../services/labelService';
 import PageSkeleton from '../../components/pageSkeleton/PageSkeleton';
-import Skeleton from '../../components/skeleton/Skeleton';
 import { useAuth } from '../../contexts/AuthContext';
 
 const IndexPage: React.FC = () => {
@@ -66,22 +65,8 @@ const IndexPage: React.FC = () => {
 
     return (
         <div className={styles.index}>
-            {/* 导航栏：使用条件渲染 */}
-            {isInitialLoad ? (
-                <div className={styles.navbarSkeleton}>
-                    <div className={styles.navContainer}>
-                        <Skeleton variant="rectangular" width={140} height={22} />
-                        <div className={styles.navActions}>
-                            <Skeleton variant="circular" width={32} height={32} />
-                            <Skeleton variant="rectangular" width={80} height={36} />
-                        </div>
-                    </div>
-                </div>
-            ) : (
-                <div className={`${styles.navbarActual} ${showContent ? styles.navbarVisible : styles.navbarHidden}`}>
-                    <Navbar />
-                </div>
-            )}
+            {/* 导航栏：直接渲染，不参与骨架屏加载 */}
+            <Navbar />
 
             {/* 主内容区域 */}
             {isInitialLoad ? (

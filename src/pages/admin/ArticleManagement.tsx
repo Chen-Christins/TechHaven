@@ -257,11 +257,6 @@ const ArticleManagement: React.FC = () => {
     const endIndex = startIndex + articles.length;
     const currentArticles = filteredArticles;
 
-    // 重置页码
-    // useEffect(() => {
-    //     setCurrentPage(1);
-    // }, [filters]);
-
     // 筛选选项数据
     const statusOptions: SelectOption[] = [
         { id: '', name: '全部状态', color: '#6c757d' },
@@ -441,6 +436,11 @@ const ArticleManagement: React.FC = () => {
     // 查看文章详情
     const handleViewArticle = (id: string) => {
         navigate(`/article/${id}`);
+    };
+
+    // 编辑文章
+    const handleEditArticle = (id: string) => {
+        navigate(`/article/edit/${id}`);
     };
 
     // 删除文章
@@ -779,6 +779,7 @@ const ArticleManagement: React.FC = () => {
                                         <button
                                             className={`${styles.actionButton} ${styles.edit}`}
                                             title="编辑文章"
+                                            onClick={() => handleEditArticle(article.id)}
                                         >
                                             <FaEdit />
                                         </button>

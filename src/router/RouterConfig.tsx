@@ -17,6 +17,8 @@ import DataManagement from '../pages/admin/DataManagement';
 import Analytics from '../pages/admin/Analytics';
 import Settings from '../pages/admin/Settings';
 import ArticleViewPage from '../pages/articleView/ArticleViewPage';
+import AssignmentSubmit from '../pages/assignment/AssignmentSubmit';
+import AssignmentList from '../pages/assignment/AssignmentList';
 
 const RouterConfig: React.FC = () => {
     return (
@@ -36,6 +38,11 @@ const RouterConfig: React.FC = () => {
 
             {/* 文章详情页 */}
             <Route path="/article/:id" element={<ArticleViewPage />} />
+
+            {/* 作业列表页 */}
+            <Route path="/assignments" element={<AssignmentList />} />
+            {/* 作业提交页 */}
+            <Route path="/assignment/submit/:id" element={<AssignmentSubmit />} />
 
             <Route path="/profile/:id" element={<Profile />} />
 
