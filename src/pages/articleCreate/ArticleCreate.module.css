@@ -2,7 +2,6 @@
 
 :root {
     --border-radius: 8px;
-    --transition: all 0.3s ease;
 }
 
 .container {
@@ -22,7 +21,6 @@
     border: 1px solid var(--border-primary);
     padding: 30px;
     margin: 30px auto 20px auto;
-    transition: var(--transition);
     width: calc(100% - 60px);
     max-width: 1460px;
     min-width: 640px;
@@ -72,7 +70,6 @@
     padding: 12px 15px;
     border-radius: var(--border-radius);
     border: 1px solid var(--border-primary);
-    transition: var(--transition);
     width: 100%;
     font-size: 16px;
     min-height: 46px;
@@ -123,7 +120,6 @@
     border-radius: var(--border-radius);
     font-size: 14px;
     font-weight: 500;
-    transition: var(--transition);
     border: none;
 }
 
@@ -166,7 +162,6 @@
     font-size: 15px;
     line-height: 1.8;
     background-color: var(--card-bg);
-    transition: var(--transition);
 }
 
 .markdownEditor {
@@ -213,7 +208,6 @@
     padding: 10px 20px;
     border-radius: var(--border-radius);
     font-weight: 500;
-    transition: var(--transition);
     border: none;
     cursor: pointer;
     font-size: 14px;
@@ -276,7 +270,6 @@
     border-radius: 20px;
     font-size: 14px;
     color: var(--primary);
-    transition: var(--transition);
 }
 
 .tagItem:hover {
@@ -716,7 +709,6 @@
     box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2) !important;
     text-decoration: none !important;
     font-weight: 500 !important;
-    transition: all 0.2s ease !important;
 }
 
 .markdownPreview .inlineCode:hover {
@@ -760,7 +752,6 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 11px;
-    transition: all 0.2s ease;
 }
 
 .markdownPreview .copyButton:hover {
@@ -797,7 +788,6 @@
 .markdownPreview a {
     color: var(--link-primary);
     text-decoration: none;
-    transition: color 0.2s ease;
 }
 
 .markdownPreview a:hover {

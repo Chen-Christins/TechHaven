@@ -345,6 +345,21 @@ class HttpClient {
                                         mappedMessage = '账号状态异常';
                                     }
                                     break;
+                                case 404:
+                                    if (errorMsg.includes('not found')) {
+                                        mappedMessage = '请求资源不存在';
+                                    } else if (errorMsg.includes('auth_id not exists')) {
+                                        mappedMessage = '账号或邮箱不存在';
+                                    } else if (errorMsg.includes('user not found')) {
+                                        mappedMessage = '用户不存在';
+                                    } else if (errorMsg.includes('file not found')) {
+                                        mappedMessage = '请求资源不存在';
+                                    } else if (errorMsg.includes('resource not found')) {
+                                        mappedMessage = '请求资源不存在';
+                                    } else if (errorMsg.includes('invalid id')) {
+                                        mappedMessage = '请求资源不存在';
+                                    }
+                                    break;
                                 case 405:
                                     if (errorMsg.includes('invalid passwd')) {
                                         mappedMessage = '密码错误，请重新输入';
@@ -369,7 +384,11 @@ class HttpClient {
                                     }
                                     break;
                                 case 500:
-                                    mappedMessage = '服务器内部错误，请联系管理员';
+                                    if (errorMsg.includes('not login')) {
+                                        mappedMessage = '未登录，请重新登录';
+                                    } else {
+                                        mappedMessage = '服务器内部错误，请联系管理员';
+                                    }
                                     break;
                                 case 501:
                                     mappedMessage = '服务器内部错误，请联系管理员';

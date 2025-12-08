@@ -55,7 +55,6 @@
     font-weight: 500;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .tabButton:hover {
@@ -108,7 +107,6 @@
     padding: 16px;
     background-color: var(--bg-secondary);
     border-radius: 8px;
-    transition: all 0.2s ease;
 }
 
 .storageCard:hover {
@@ -165,7 +163,6 @@
     height: 100%;
     background: linear-gradient(90deg, var(--primary) 0%, var(--success) 100%);
     border-radius: 4px;
-    transition: width 0.3s ease;
 }
 
 /* 数据统计 */
@@ -188,7 +185,6 @@
     border: 1px solid var(--border-primary);
     border-radius: 8px;
     padding: 20px;
-    transition: all 0.2s ease;
 }
 
 .statCard:hover {
@@ -223,7 +219,7 @@
 }
 
 .statIcon.warning {
-    background-color: rgba(245, 158, 11, 0.1);
+    background-color: var(--warn-light);
     color: var(--warning);
 }
 
@@ -272,7 +268,6 @@
     border: 1px solid var(--border-primary);
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
     text-align: left;
 }
 
@@ -412,7 +407,6 @@
 
 .recordsTable tbody tr {
     border-bottom: 1px solid var(--border-primary);
-    transition: background-color 0.2s ease;
 }
 
 .recordsTable tbody tr:hover {
@@ -600,7 +594,6 @@
     border-radius: 4px;
     cursor: pointer;
     color: var(--text-secondary);
-    transition: all 0.2s ease;
     font-size: 14px;
     display: flex;
     align-items: center;
@@ -664,7 +657,6 @@
     color: var(--text-primary);
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -758,7 +750,6 @@
     font-weight: 500;
     border: none;
     cursor: pointer;
-    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 8px;

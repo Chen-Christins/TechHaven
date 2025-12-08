@@ -15,7 +15,6 @@
 
 .ready {
     opacity: 1;
-    transition: opacity 0.5s ease-in-out;
 }
 
 /* 内容加载状态 */
@@ -27,7 +26,6 @@
 .contentReady {
     opacity: 1;
     transform: translateY(0);
-    transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
 }
 
 /* 加载指示器 */
@@ -118,7 +116,6 @@
     color: var(--text-primary);
     font-size: 14px;
     line-height: 1.4;
-    transition: color 0.2s ease;
     border-left: 2px solid transparent;
     padding-left: 12px;
     margin-left: 0;
@@ -162,7 +159,6 @@
 .article a {
     color: var(--primary);
     text-decoration: none;
-    transition: color 0.2s ease;
 }
 
 .article a:hover {
@@ -317,7 +313,6 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 11px;
-    transition: all 0.2s ease;
 }
 
 .copyButton:hover {
@@ -340,7 +335,6 @@
     box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2) !important;
     text-decoration: none !important;
     font-weight: 500 !important;
-    transition: all 0.2s ease !important;
 }
 
 /* 行内代码悬停效果 */
@@ -420,7 +414,6 @@
 
 /* 为图片添加缩放动画 */
 .markdownBody img {
-    transition: transform 0.2s ease;
 }
 
 .markdownBody img:hover {

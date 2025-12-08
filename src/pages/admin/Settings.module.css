@@ -1,6 +1,5 @@
 .settings {
     max-width: 100%;
-    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
     min-height: calc(100vh - 200px);
 }
 
@@ -62,7 +61,6 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
     box-shadow: 0 4px 16px rgba(67, 97, 238, 0.3);
 }
 
@@ -150,7 +148,6 @@
     font-weight: 500;
     cursor: pointer;
     border-radius: 12px;
-    transition: all 0.3s ease;
     text-align: left;
     border: 2px solid transparent;
     position: relative;
@@ -168,7 +165,6 @@
     bottom: 0;
     background: linear-gradient(135deg, var(--primary), var(--primary-hover));
     opacity: 0;
-    transition: opacity 0.3s ease;
 }
 
 .tabButton:hover {
@@ -194,7 +190,6 @@
     background: rgba(67, 97, 238, 0.1);
     color: var(--primary);
     font-size: 18px;
-    transition: all 0.3s ease;
     flex-shrink: 0;
 }
 
@@ -250,7 +245,6 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--border-primary);
     backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
 }
 
 .sectionHeader {
@@ -290,11 +284,9 @@
 
 /* 设置卡片 */
 .settingCard {
-    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
     border: 1px solid var(--border-primary);
     border-radius: 16px;
     padding: 32px;
-    transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
 }
@@ -361,7 +353,6 @@
     background: var(--input-bg);
     color: var(--text-primary);
     font-size: 14px;
-    transition: all 0.3s ease;
     box-sizing: border-box;
     font-family: inherit;
 }
@@ -414,7 +405,6 @@
     padding: 24px;
     text-align: center;
     background: var(--bg-primary);
-    transition: all 0.3s ease;
     min-height: 140px;
     display: flex;
     flex-direction: column;
@@ -463,7 +453,6 @@
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 .uploadButton:hover {
@@ -486,7 +475,6 @@
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    transition: all 0.3s ease;
 }
 
 .deleteButton:hover {
@@ -513,7 +501,6 @@
     cursor: pointer;
     padding: 16px;
     border-radius: 10px;
-    transition: background-color 0.3s ease;
 }
 
 .switchLabel:hover {
@@ -530,7 +517,6 @@
     height: 26px;
     background-color: var(--border-secondary);
     border-radius: 13px;
-    transition: all 0.3s ease;
     flex-shrink: 0;
 }
 
@@ -543,7 +529,6 @@
     height: 20px;
     background-color: white;
     border-radius: 50%;
-    transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -582,7 +567,6 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 .actionButton:hover {
@@ -622,7 +606,6 @@
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
     border: none;
 }
 

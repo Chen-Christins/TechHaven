@@ -35,7 +35,6 @@
   font-size: 1rem;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  transition: border-color 0.3s;
 }
 
 .emailInput:focus {
@@ -51,7 +50,6 @@
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s;
 }
 
 .subscribeBtn:hover:enabled {

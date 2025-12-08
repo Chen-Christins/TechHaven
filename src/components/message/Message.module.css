@@ -37,7 +37,6 @@
   border-radius: 4px;
   background: var(--card-bg);
   box-shadow: var(--shadow-md);
-  transition: all 0.3s ease;
   animation: fadeIn 0.3s ease;
   max-width: 380px;
 }
@@ -80,7 +79,6 @@
   color: var(--text-tertiary);
   padding: 0;
   margin-left: 8px;
-  transition: color 0.2s;
 }
 
 .closeBtn:hover {

@@ -1,4 +1,5 @@
 import React from 'react';
+import NotFound404 from '../pages/error/NotFound404';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthPage from '../pages/auth/AuthPage';
 import IndexPage from '../pages/home/IndexPage';
@@ -17,6 +18,7 @@ import PermissionManagement from '../pages/admin/PermissionManagement';
 import DataManagement from '../pages/admin/DataManagement';
 import Analytics from '../pages/admin/Analytics';
 import Settings from '../pages/admin/Settings';
+import OrganizationManagement from '../pages/admin/OrganizationManagement';
 import ArticleViewPage from '../pages/articleView/ArticleViewPage';
 import AssignmentSubmit from '../pages/assignment/AssignmentSubmit';
 import AssignmentList from '../pages/assignment/AssignmentList';
@@ -56,6 +58,7 @@ const RouterConfig: React.FC = () => {
                 <Route path="users" element={<UserManagement />} />
                 <Route path="articles" element={<ArticleManagement />} />
                 <Route path="assignments" element={<AssignmentManagement />} />
+                                <Route path="organizations" element={<OrganizationManagement />} />
                 <Route path="comments" element={<CommentManagement />} />
                 <Route path="categories" element={<CategoryManagement />} />
                 <Route path="media" element={<MediaManagement />} />
@@ -66,7 +69,7 @@ const RouterConfig: React.FC = () => {
             </Route>
 
             {/* 404 页面 */}
-            <Route path="*" element={<div>页面不存在</div>} />
+            <Route path="*" element={<NotFound404 />} />
         </Routes>
     );
 };

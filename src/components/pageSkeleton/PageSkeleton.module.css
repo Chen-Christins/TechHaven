@@ -50,7 +50,6 @@
     box-shadow:
         0 1px 3px rgba(0, 0, 0, 0.04),
         0 1px 2px rgba(0, 0, 0, 0.06);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .articleHeader {
@@ -105,7 +104,6 @@
     box-shadow:
         0 1px 3px rgba(0, 0, 0, 0.04),
         0 1px 2px rgba(0, 0, 0, 0.06);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tagCloud {
@@ -121,7 +119,6 @@
     align-items: center;
     padding: 12px 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-    transition: all 0.2s ease;
 }
 
 .categoryItem:last-child {
@@ -154,39 +151,37 @@
     align-items: center;
 }
 
-/* 暗色主题适配 */
-@media (prefers-color-scheme: dark) {
-    .pageSkeleton {
-        background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
-    }
+/* 暗色主题适配（支持 data-theme） */
+:root[data-theme='dark'] .pageSkeleton {
+    background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+}
 
-    .articleCardSkeleton,
-    .searchPanelSkeleton,
-    .tagPanelSkeleton,
-    .subscribeSkeleton,
-    .categorySkeleton,
-    .statsSkeleton,
-    .calendarSkeleton {
-        background: rgba(26, 26, 26, 0.8);
-        border-color: rgba(255, 255, 255, 0.1);
-        box-shadow:
-            0 1px 3px rgba(0, 0, 0, 0.3),
-            0 1px 2px rgba(0, 0, 0, 0.2);
-    }
+:root[data-theme='dark'] .articleCardSkeleton,
+:root[data-theme='dark'] .searchPanelSkeleton,
+:root[data-theme='dark'] .tagPanelSkeleton,
+:root[data-theme='dark'] .subscribeSkeleton,
+:root[data-theme='dark'] .categorySkeleton,
+:root[data-theme='dark'] .statsSkeleton,
+:root[data-theme='dark'] .calendarSkeleton {
+    background: rgba(26, 26, 26, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.3),
+        0 1px 2px rgba(0, 0, 0, 0.2);
+}
 
-    .articleHeader,
-    .categoryItem {
-        border-bottom-color: rgba(255, 255, 255, 0.1);
-    }
+:root[data-theme='dark'] .articleHeader,
+:root[data-theme='dark'] .categoryItem {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
 
-    .categoryItem:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
+:root[data-theme='dark'] .categoryItem:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
 
-    .footerSkeleton {
-        background: rgba(26, 26, 26, 0.9);
-        border-top-color: rgba(255, 255, 255, 0.1);
-    }
+:root[data-theme='dark'] .footerSkeleton {
+    background: rgba(26, 26, 26, 0.9);
+    border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 /* 响应式设计 */

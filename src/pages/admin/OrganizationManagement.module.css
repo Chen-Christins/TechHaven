@@ -1,33 +1,4 @@
-.statusBadge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-}
-/* 作业状态色彩标签 */
-.statusActive {
-    background-color: var(--success-light);
-    color: var(--success);
-}
-
-.statusClosed {
-    background-color: var(--error-light);
-    color: var(--error);
-}
-
-.statusDraft {
-    background-color: var(--warn-light);
-    color: var(--warning);
-}
-
-.container {
-    max-width: 100%;
-}
-/* 页面头部 */
-/* removed stray closing brace */
+/* 表格区块样式对齐用户管理 */
 .tableContainer {
     background-color: var(--card-bg);
     border: 1px solid var(--border-primary);
@@ -35,7 +6,6 @@
     overflow: hidden;
     margin-bottom: 24px;
 }
-
 .tableHeader {
     padding: 20px;
     border-bottom: 1px solid var(--border-primary);
@@ -43,31 +13,21 @@
     justify-content: space-between;
     align-items: center;
 }
-
 .tableTitle {
     font-size: 18px;
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
 }
-
 .tableActions {
     display: flex;
     gap: 8px;
 }
-
-.headerActions {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.assignmentTable {
+.orgTable {
     width: 100%;
     border-collapse: collapse;
 }
-
-.assignmentTable th {
+.orgTable th {
     padding: 12px 16px;
     text-align: center;
     font-weight: 600;
@@ -75,6 +35,30 @@
     color: var(--text-secondary);
     border-bottom: 1px solid var(--border-primary);
     white-space: nowrap;
+}
+.orgTable th:first-child {
+    text-align: left;
+    padding-left: 24px;
+}
+.orgTable tbody tr {
+    border-bottom: 1px solid var(--border-primary);
+}
+.orgTable tbody tr:hover {
+    background-color: var(--bg-hover);
+}
+.orgTable td {
+    padding: 16px;
+    font-size: 14px;
+    color: var(--text-primary);
+    vertical-align: middle;
+    text-align: center;
+}
+.orgTable td:nth-child(1) {
+    text-align: left;
+    padding-left: 24px;
+}
+.container {
+    max-width: 100%;
 }
 
 /* 页面头部 */
@@ -87,31 +71,28 @@
     gap: 16px;
 }
 
-.assignmentTable th:first-child {
-    text-align: left;
-    padding-left: 24px;
-}
-
-.assignmentTable tbody tr {
-    border-bottom: 1px solid var(--border-primary);
-}
-
-.assignmentTable tbody tr:hover {
-    background-color: var(--bg-hover);
-}
-
-.assignmentTable td {
-    padding: 16px;
-    font-size: 14px;
+.pageTitle {
+    font-size: 24px;
+    font-weight: 600;
     color: var(--text-primary);
-    vertical-align: middle;
-    text-align: center;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.assignmentTable td:nth-child(1) {
-    text-align: left;
-    padding-left: 24px;
+.pageDescription {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 4px;
 }
+
+.headerActions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
 /* 统计卡片 */
 .statsContainer {
     display: grid;
@@ -265,24 +246,27 @@
     border-bottom: none;
 }
 
-
-.tableContainer {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-primary);
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 24px;
+.table tr:hover {
+    background-color: var(--bg-hover);
 }
 
-.tableHeader {
-    padding: 20px;
-    border-bottom: 1px solid var(--border-primary);
-    display: flex;
-    justify-content: space-between;
+/* 状态标签 */
+.statusBadge {
+    display: inline-flex;
     align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
 }
 
-.statusClosed {
+.statusActive {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.statusInactive {
     background-color: var(--error-light);
     color: var(--error);
 }
@@ -383,11 +367,6 @@
         align-items: stretch;
     }
     
-    .headerActions {
-        width: 100%;
-        justify-content: flex-start;
-    }
-
     .filterGroup {
         flex-direction: column;
     }
@@ -498,73 +477,4 @@
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px var(--primary-light);
-}
-
-/* 美化数字输入框 - 移除上下箭头 */
-.formInput input[type="number"]::-webkit-outer-spin-button,
-.formInput input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.formInput input[type="number"] {
-    -moz-appearance: textfield;
-}
-
-/* Ant Design DatePicker 样式覆盖 */
-.formInput:global(.ant-picker) {
-    border-color: var(--border-primary);
-    background-color: var(--input-bg);
-}
-
-.formInput:global(.ant-picker):hover {
-    border-color: var(--primary);
-}
-
-.formInput:global(.ant-picker-focused) {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--primary-light);
-}
-
-.formInput :global(.ant-picker-input > input) {
-    color: var(--text-primary);
-    font-size: 14px;
-}
-
-.formInput :global(.ant-picker-input > input::placeholder) {
-    color: var(--text-tertiary);
-    opacity: 1;
-}
-
-.formInput :global(.ant-picker-suffix) {
-    color: var(--text-secondary);
-}
-
-.formInput :global(.ant-picker-clear) {
-    background-color: var(--input-bg);
-    color: var(--text-secondary);
-}
-
-/* 预览详情样式 */
-.detailGroup {
-    margin-bottom: 20px;
-}
-
-.detailLabel {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-bottom: 4px;
-}
-
-.detailValue {
-    font-size: 15px;
-    color: var(--text-primary);
-    font-weight: 500;
-    line-height: 1.6;
-}
-
-.detailRow {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
 }

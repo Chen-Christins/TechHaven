@@ -8,7 +8,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
   color: var(--text-secondary);
 }
 
@@ -32,7 +31,6 @@
 
 .icon {
   color: currentColor;
-  transition: transform 0.3s ease;
 }
 
 .themeToggle:hover .icon {

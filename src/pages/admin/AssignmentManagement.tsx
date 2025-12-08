@@ -121,22 +121,6 @@ const AssignmentManagement: React.FC = () => {
         fetchAssignments();
     }, [currentPage, statusFilter]);
 
-    // 打开创建模态框
-    const openCreateModal = () => {
-        setCurrentAssignment(null);
-        setFormData({
-            title: '',
-            courseName: '',
-            deadline: '',
-            status: 'draft',
-            description: '',
-            maxFileSize: 50,
-            allowedTypes: []
-        });
-        setAllowedTypesInput('');
-        setIsModalVisible(true);
-    };
-
     // 打开编辑模态框
     const openEditModal = (assignment: Assignment) => {
         setCurrentAssignment(assignment);
@@ -161,7 +145,7 @@ const AssignmentManagement: React.FC = () => {
 
     // 处理表单提交
     const handleSubmit = async () => {
-        if (!formData.title || !formData.courseName || !formData.deadline) {
+        if (!formData.title || !formData.courseName || !formData.deadline || !formData.maxFileSize || !formData.description || !formData.allowedTypes || formData.allowedTypes.length === 0) {
             message.error('请填写完整信息');
             return;
         }
@@ -298,15 +282,16 @@ const AssignmentManagement: React.FC = () => {
             <div className={styles.pageHeader}>
                 <div>
                     <h1 className={styles.pageTitle}>作业管理</h1>
-                    <p className={styles.pageDescription}>管理课程作业发布、编辑及查看提交情况</p>
+                    <p className={styles.pageDescription}>
+                        管理系统中的所有作业，包括发布、筛选和状态管理
+                    </p>
                 </div>
                 <div className={styles.headerActions}>
-                    <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={openCreateModal}>
+                    <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setIsModalVisible(true)}>
                         <FaPlus /> 发布作业
                     </button>
                 </div>
             </div>
-
             <div className={styles.statsContainer}>
                 <div className={styles.statCard}>
                     <div className={`${styles.statIcon} ${styles.primary}`}>
@@ -383,7 +368,15 @@ const AssignmentManagement: React.FC = () => {
             </div>
 
             <div className={styles.tableContainer}>
-                <table className={styles.table}>
+                <div className={styles.tableHeader}>
+                    <h3 className={styles.tableTitle}>作业列表</h3>
+                    <div className={styles.tableActions}>
+                        <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                            共 {total} 个作业
+                        </span>
+                    </div>
+                </div>
+                <table className={styles.assignmentTable}>
                     <thead>
                         <tr>
                             <th>作业标题</th>
@@ -488,7 +481,6 @@ const AssignmentManagement: React.FC = () => {
                             >
                                 <FaChevronLeft />
                             </button>
-                            
                             {getPageNumbers().map((page, index) => (
                                 <React.Fragment key={index}>
                                     {page === '...' ? (
@@ -503,7 +495,6 @@ const AssignmentManagement: React.FC = () => {
                                     )}
                                 </React.Fragment>
                             ))}
-
                             <button 
                                 className={styles.pageBtn}
                                 disabled={currentPage === totalPages}
@@ -541,7 +532,7 @@ const AssignmentManagement: React.FC = () => {
                 }
             >
                 <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>作业标题</label>
+                    <label className={styles.formLabel}>作业标题 *</label>
                     <Input 
                         placeholder="请输入作业标题" 
                         value={formData.title || ''}
@@ -550,7 +541,7 @@ const AssignmentManagement: React.FC = () => {
                     />
                 </div>
                 <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>所属课程</label>
+                    <label className={styles.formLabel}>所属课程 *</label>
                     <Input 
                         placeholder="请输入课程名称" 
                         value={formData.courseName || ''}
@@ -560,7 +551,7 @@ const AssignmentManagement: React.FC = () => {
                 </div>
                 <div className={styles.formRow}>
                     <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>截止时间</label>
+                        <label className={styles.formLabel}>截止时间 *</label>
                         <DatePicker 
                             showTime
                             locale={locale}
@@ -573,7 +564,7 @@ const AssignmentManagement: React.FC = () => {
                         />
                     </div>
                     <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>文件大小限制 (MB)</label>
+                        <label className={styles.formLabel}>文件大小限制 (MB) *</label>
                         <Input 
                             type="number"
                             placeholder="请输入最大文件大小" 
@@ -584,7 +575,7 @@ const AssignmentManagement: React.FC = () => {
                     </div>
                 </div>
                 <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>作业状态</label>
+                    <label className={styles.formLabel}>作业状态 *</label>
                     <CustomSelect
                         name="状态选择"
                         options={[
@@ -604,7 +595,7 @@ const AssignmentManagement: React.FC = () => {
                     />
                 </div>
                 <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>允许文件格式 (用逗号分隔)</label>
+                    <label className={styles.formLabel}>允许文件格式 (用逗号分隔) *</label>
                     <Input 
                         placeholder="例如: .pdf, .doc, .zip" 
                         value={allowedTypesInput}
@@ -619,7 +610,7 @@ const AssignmentManagement: React.FC = () => {
                     />
                 </div>
                 <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>作业描述</label>
+                    <label className={styles.formLabel}>作业描述 *</label>
                     <textarea 
                         className={styles.formTextarea}
                         placeholder="请输入作业详细描述..."

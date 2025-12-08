@@ -11,7 +11,6 @@
     padding: 8px 12px;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .userDisplay:hover {
@@ -48,7 +47,6 @@
 /* 下拉箭头 */
 .dropdownArrow {
     color: var(--text-secondary);
-    transition: transform 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -140,7 +138,6 @@
     color: var(--text-primary);
     font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
     text-decoration: none;
 }
 

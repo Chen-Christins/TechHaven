@@ -14,7 +14,8 @@ import {
     FaImages,
     FaDatabase,
     FaLock,
-    FaClipboardList
+    FaClipboardList,
+    FaBuilding
 } from 'react-icons/fa';
 import styles from './AdminLayout.module.css';
 import ThemeToggle from '../../components/themeToggle/ThemeToggle';
@@ -111,7 +112,6 @@ const AdminLayout: React.FC = () => {
                             cursor: 'pointer',
                             fontSize: '15px',
                             fontWeight: '500',
-                            transition: 'all 0.2s',
                             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                             display: 'flex',
                             alignItems: 'center',
@@ -131,7 +131,6 @@ const AdminLayout: React.FC = () => {
                             cursor: 'pointer',
                             fontSize: '15px',
                             fontWeight: '500',
-                            transition: 'all 0.2s'
                         }}
                     >
                         切换账号
@@ -159,6 +158,7 @@ const AdminLayout: React.FC = () => {
                 { id: 'users', label: '用户管理', icon: <FaUsers />, path: '/admin/users' },
                 { id: 'articles', label: '文章管理', icon: <FaFileAlt />, path: '/admin/articles' },
                 { id: 'assignments', label: '作业管理', icon: <FaClipboardList />, path: '/admin/assignments' },
+                { id: 'organizations', label: '组织管理', icon: <FaBuilding />, path: '/admin/organizations' },
                 { id: 'comments', label: '评论管理', icon: <FaComments />, path: '/admin/comments' },
             ]
         },
@@ -216,7 +216,6 @@ const AdminLayout: React.FC = () => {
                     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
                     pointer-events: none;
                     opacity: 0;
-                    transition: opacity 0.2s ease;
                     max-width: 200px;
                     text-align: center;
                 `;

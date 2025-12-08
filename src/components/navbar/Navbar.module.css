@@ -8,7 +8,6 @@
     background-color: var(--navbar-bg);
     color: var(--text-primary);
     z-index: 1000;
-    transition: all 0.3s ease;
     box-shadow: var(--shadow-md);
     border-bottom: 1px solid var(--navbar-border);
 }
@@ -54,7 +53,6 @@
     background-clip: text;
     color: transparent;
     letter-spacing: 0.02em;
-    transition: transform 0.2s ease;
 }
 
 .logo:hover .logoText {
@@ -89,7 +87,6 @@
     text-decoration: none;
     font-weight: 500;
     border-radius: 5px;
-    transition: all 0.2s ease;
     height: 56px;
 }
 
@@ -138,7 +135,6 @@
     cursor: pointer;
     padding: 0.3rem 0.5rem;
     border-radius: 5px;
-    transition: background-color 0.2s ease;
     height: 56px;
 }
 
@@ -161,7 +157,6 @@
     border: 2px solid transparent;
     background-clip: padding-box;
     background-image: linear-gradient(to right, #3b82f6, #818cf8);
-    transition: transform 0.2s ease;
 }
 
 .userArea:hover .avatar {
@@ -282,7 +277,6 @@
     color: var(--text-primary);
     font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
     text-decoration: none;
 }
 
@@ -309,7 +303,6 @@
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 6px;
-    transition: background-color 0.2s ease;
 }
 
 .mobileMenuBtn:hover {
@@ -332,7 +325,6 @@
     transform: translateY(-100%);
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
     z-index: 999;
 }
 
@@ -361,7 +353,6 @@
     color: var(--text-primary);
     text-decoration: none;
     font-size: 1rem;
-    transition: all 0.2s ease;
 }
 
 .mobileNavLink:hover {
@@ -392,7 +383,6 @@
     text-align: left;
     font-size: 1rem;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .mobileRecommendButton:hover {
@@ -436,7 +426,6 @@
     color: var(--text-primary);
     text-decoration: none;
     border-bottom: 1px solid var(--border-secondary);
-    transition: all 0.2s ease;
 }
 
 .mobileRecommendItem:last-child {
@@ -504,7 +493,6 @@
     cursor: pointer;
     font-weight: 500;
     font-size: 1rem;
-    transition: all 0.2s ease;
     text-decoration: none;
     height: 56px;
 }
@@ -575,7 +563,6 @@
     color: var(--text-primary);
     text-decoration: none;
     border-radius: 8px;
-    transition: all 0.2s ease;
     border: 1px solid transparent;
 }
 
@@ -613,7 +600,6 @@
     text-decoration: none;
     font-size: 14px;
     font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 2px solid rgba(59, 130, 246, 0.3);
     color: var(--text-primary);
     backdrop-filter: blur(10px);
@@ -631,7 +617,6 @@
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.6s;
 }
 
 .mobileAuthButton:hover::before {

@@ -14,7 +14,6 @@
     width: 240px;
     background-color: var(--card-bg);
     border-right: 1px solid var(--border-primary);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: fixed;
     left: 0;
     top: 0;
@@ -38,7 +37,6 @@
     align-items: center;
     justify-content: space-between;
     min-height: 64px;
-    transition: padding 0.3s ease;
 }
 
 .adminSidebar.collapsed .adminSidebarHeader {
@@ -55,7 +53,6 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    transition: all 0.3s ease;
     text-decoration: none;
     cursor: pointer;
 }
@@ -78,7 +75,6 @@
     background: linear-gradient(135deg, var(--primary), var(--primary-hover));
     color: white;
     border-radius: 8px;
-    transition: all 0.3s ease;
     flex-shrink: 0;
 }
 
@@ -89,7 +85,6 @@
 }
 
 .adminLogoText {
-    transition: all 0.3s ease;
     font-weight: 700;
     letter-spacing: -0.5px;
     white-space: nowrap;
@@ -110,7 +105,6 @@
     font-size: 14px;
     padding: 6px;
     border-radius: 6px;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -192,7 +186,6 @@
     text-transform: uppercase;
     color: var(--text-tertiary);
     letter-spacing: 0.8px;
-    transition: all 0.3s ease;
     opacity: 1;
 }
 
@@ -215,7 +208,6 @@
     padding: 12px 20px;
     color: var(--text-secondary);
     text-decoration: none;
-    transition: all 0.2s ease;
     position: relative;
     gap: 12px;
     border-radius: 0;
@@ -253,7 +245,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
 }
 
 .adminNavLink:hover .adminNavIcon {
@@ -263,7 +254,6 @@
 .adminNavText {
     font-size: 14px;
     font-weight: 500;
-    transition: all 0.3s ease;
     white-space: nowrap;
 }
 
@@ -324,7 +314,6 @@
 .adminMainContent {
     flex: 1;
     margin-left: 240px;
-    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -362,7 +351,6 @@
 .breadcrumbLink {
     color: var(--text-secondary);
     text-decoration: none;
-    transition: color 0.2s ease;
     cursor: pointer;
 }
 
@@ -393,7 +381,6 @@
     padding: 6px 12px;
     border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-primary);
 }
@@ -433,7 +420,6 @@
 .userMenuArrow {
     color: var(--text-tertiary);
     font-size: 12px;
-    transition: transform 0.2s ease;
     flex-shrink: 0;
 }
 
@@ -521,7 +507,6 @@
     color: var(--text-primary);
     font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
     text-decoration: none;
 }
 
@@ -718,7 +703,6 @@
         z-index: 999;
         display: none;
         opacity: 0;
-        transition: opacity 0.3s ease;
     }
 
     .mobileMenuOverlay.show {
@@ -737,7 +721,6 @@
         padding: 8px 12px;
         cursor: pointer;
         border-radius: 8px;
-        transition: all 0.2s ease;
         min-width: 44px;
         min-height: 44px;
     }

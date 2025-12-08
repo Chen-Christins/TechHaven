@@ -3,6 +3,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* CSS 变量定义 - 浅色主题 */
@@ -81,6 +82,7 @@
   --primary-disabled: #94a3b8;
   --success-light: rgba(16, 185, 129, 0.1);
   --error-light: rgba(239, 68, 68, 0.1);
+  --warn-light: rgba(245, 158, 11, 0.1);
   --primary-light: rgba(59, 130, 246, 0.1);
   --primary-hover-light: rgba(37, 99, 235, 0.1);
   --disabled: #94a3b8;
@@ -174,6 +176,7 @@
   --primary-disabled: #475569;
   --success-light: rgba(52, 211, 153, 0.1);
   --error-light: rgba(248, 113, 113, 0.1);
+  --warn-light: rgba(245, 158, 11, 0.1);
   --primary-light: rgba(59, 130, 246, 0.2);
   --primary-hover-light: rgba(37, 99, 235, 0.2);
   --disabled: #475569;
@@ -218,10 +221,4 @@ body {
     line-height: 1.5;
     color: var(--text-primary);
     background-color: var(--bg-primary);
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* 平滑过渡效果 */
-* {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }

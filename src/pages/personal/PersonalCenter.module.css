@@ -21,7 +21,6 @@
     z-index: 999;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
 }
 
 .mobileMenuOverlay.show {
@@ -34,7 +33,6 @@
     width: 240px;
     background-color: var(--card-bg);
     border-right: 1px solid var(--border-primary);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: fixed;
     left: 0;
     top: 0;
@@ -62,7 +60,6 @@
     align-items: center;
     justify-content: space-between;
     min-height: 64px;
-    transition: padding 0.3s ease;
 }
 
 .adminSidebar.collapsed .adminSidebarHeader {
@@ -79,7 +76,6 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    transition: all 0.3s ease;
 }
 
 .adminLogo:hover {
@@ -100,7 +96,6 @@
     background: linear-gradient(135deg, var(--primary), var(--primary-hover));
     color: white;
     border-radius: 8px;
-    transition: all 0.3s ease;
     flex-shrink: 0;
 }
 
@@ -111,7 +106,6 @@
 }
 
 .adminLogoText {
-    transition: all 0.3s ease;
     font-weight: 700;
     letter-spacing: -0.5px;
     white-space: nowrap;
@@ -131,7 +125,6 @@
     cursor: pointer;
     padding: 8px;
     border-radius: 8px;
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -179,7 +172,6 @@
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
     text-decoration: none;
     position: relative;
 }
@@ -216,7 +208,6 @@
 
 .adminNavText {
     white-space: nowrap;
-    transition: all 0.3s ease;
 }
 
 .adminSidebar.collapsed .adminNavText {
@@ -238,7 +229,6 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .adminMainContent.expanded {
@@ -292,7 +282,6 @@
 .breadcrumbLink {
     color: var(--text-secondary);
     text-decoration: none;
-    transition: color 0.2s ease;
 }
 
 .breadcrumbLink:hover {
@@ -320,7 +309,6 @@
     padding: 8px 12px;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .userDisplay:hover {
@@ -357,7 +345,6 @@
 .userMenuArrow {
     font-size: 12px;
     color: var(--text-secondary);
-    transition: transform 0.2s ease;
 }
 
 .userMenuArrow.open {
@@ -444,7 +431,6 @@
     color: var(--text-primary);
     font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
     text-decoration: none;
 }
 
@@ -503,7 +489,6 @@
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 .addButton:hover {
@@ -543,7 +528,6 @@
     background-color: var(--bg-primary);
     color: var(--text-primary);
     font-size: 14px;
-    transition: all 0.3s ease;
 }
 
 .searchBox input:focus {
@@ -585,7 +569,6 @@
     padding: 16px;
     border-bottom: 1px solid var(--border-secondary);
     align-items: center;
-    transition: background-color 0.2s ease;
 }
 
 .listItem:hover {
@@ -708,7 +691,6 @@
     color: var(--text-secondary);
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s ease;
     font-size: 12px;
 }
 
@@ -751,7 +733,6 @@
     color: var(--text-primary);
     font-size: 13px;
     cursor: pointer;
-    transition: all 0.2s ease;
     min-width: 64px;
 }
 
@@ -783,7 +764,6 @@
     border: 1px solid var(--border-primary);
     border-radius: 12px;
     padding: 20px;
-    transition: all 0.3s ease;
 }
 
 .tagCard:hover {
@@ -884,7 +864,6 @@
     align-items: center;
     justify-content: center;
     border-radius: 6px;
-    transition: all 0.2s ease;
 }
 
 .closeButton:hover {
@@ -916,7 +895,6 @@
     background-color: var(--bg-primary);
     color: var(--text-primary);
     font-size: 14px;
-    transition: all 0.3s ease;
     resize: none;
     box-sizing: border-box;
 }
@@ -967,7 +945,6 @@
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 .cancelButton:hover {
@@ -983,7 +960,6 @@
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 .confirmButton:hover {
@@ -1006,7 +982,6 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    transition: all 0.3s ease;
 }
 
 .statCard:hover {

@@ -2,11 +2,11 @@
 .skeleton {
     background: linear-gradient(
         90deg,
-        rgba(156, 163, 175, 0.1) 0%,
-        rgba(156, 163, 175, 0.2) 25%,
-        rgba(156, 163, 175, 0.3) 50%,
-        rgba(156, 163, 175, 0.2) 75%,
-        rgba(156, 163, 175, 0.1) 100%
+        var(--skeleton-bg1, rgba(156, 163, 175, 0.1)) 0%,
+        var(--skeleton-bg2, rgba(156, 163, 175, 0.2)) 25%,
+        var(--skeleton-bg3, rgba(156, 163, 175, 0.3)) 50%,
+        var(--skeleton-bg2, rgba(156, 163, 175, 0.2)) 75%,
+        var(--skeleton-bg1, rgba(156, 163, 175, 0.1)) 100%
     );
     background-size: 200% 100%;
     border-radius: 6px;
@@ -26,7 +26,7 @@
     background: linear-gradient(
         90deg,
         transparent 0%,
-        rgba(255, 255, 255, 0.4) 50%,
+        var(--skeleton-shimmer, rgba(255, 255, 255, 0.4)) 50%,
         transparent 100%
     );
     transform: translateX(-100%);
@@ -104,7 +104,7 @@
 
 .textLine {
     height: 1em;
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background: linear-gradient(90deg, var(--skeleton-text1, #f0f0f0) 25%, var(--skeleton-text2, #e0e0e0) 50%, var(--skeleton-text1, #f0f0f0) 75%);
     background-size: 200% 100%;
     border-radius: 4px;
 }
@@ -134,37 +134,21 @@
 
 /* 暗色主题适配 */
 @media (prefers-color-scheme: dark) {
-    .skeleton {
-        background: linear-gradient(
-            90deg,
-            rgba(75, 85, 99, 0.2) 0%,
-            rgba(75, 85, 99, 0.3) 25%,
-            rgba(75, 85, 99, 0.4) 50%,
-            rgba(75, 85, 99, 0.3) 75%,
-            rgba(75, 85, 99, 0.2) 100%
-        );
-        background-size: 200% 100%;
+    :root[data-theme='dark'] {
+        --skeleton-bg1: rgba(75, 85, 99, 0.2);
+        --skeleton-bg2: rgba(75, 85, 99, 0.3);
+        --skeleton-bg3: rgba(75, 85, 99, 0.4);
+        --skeleton-shimmer: rgba(255,255,255,0.1);
+        --skeleton-text1: #444a57;
+        --skeleton-text2: #2a2e36;
     }
-
-    .skeleton::before {
-        background: linear-gradient(
-            90deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.1) 50%,
-            transparent 100%
-        );
-    }
-
-    .textLine {
-        background: linear-gradient(
-            90deg,
-            rgba(75, 85, 99, 0.2) 0%,
-            rgba(75, 85, 99, 0.3) 25%,
-            rgba(75, 85, 99, 0.4) 50%,
-            rgba(75, 85, 99, 0.3) 75%,
-            rgba(75, 85, 99, 0.2) 100%
-        );
-        background-size: 200% 100%;
+    :root[data-theme='light'], :root:not([data-theme]) {
+        --skeleton-bg1: rgba(156, 163, 175, 0.1);
+        --skeleton-bg2: rgba(156, 163, 175, 0.2);
+        --skeleton-bg3: rgba(156, 163, 175, 0.3);
+        --skeleton-shimmer: rgba(255,255,255,0.4);
+        --skeleton-text1: #f0f0f0;
+        --skeleton-text2: #e0e0e0;
     }
 }
 

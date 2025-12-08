@@ -391,7 +391,6 @@ const PersonalCenter: React.FC = () => {
                             fontSize: '16px',
                             fontWeight: '500',
                             cursor: 'pointer',
-                            transition: 'all 0.2s ease',
                             boxShadow: '0 4px 12px rgba(var(--primary-rgb), 0.3)',
                             width: '100%'
                         }}
@@ -635,7 +634,6 @@ const PersonalCenter: React.FC = () => {
                     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
                     pointer-events: none;
                     opacity: 0;
-                    transition: opacity 0.3s ease;
                 `;
                 document.body.appendChild(tooltip);
             }
