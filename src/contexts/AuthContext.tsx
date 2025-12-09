@@ -31,10 +31,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // 状态映射
 const ROLE_MAP: Record<string, string> = {
-    'user': '用户',
-    'admin': '管理员',
-    'editor': '编辑',
-    'checker': '审核员',
+    1: '用户',
+    2: '管理员',
+    3: '编辑',
+    4: '审核员',
 };
 
 // 认证提供者组件

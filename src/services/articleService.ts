@@ -31,7 +31,7 @@ export interface ListAdminArticlesParams {
     page_size: number;
     state?: number;
     category_id?: string | number;
-    role?: string;
+    role?: number;
     days?: number;
     keyword?: string;
 }
@@ -50,7 +50,7 @@ export interface ListAdminArticlesResponse {
         state: number;
         summary: string;
         publish_time: string;
-        author_role: string;
+        author_role: number;
         user_id: string | number;
     }>;
 }
@@ -198,7 +198,7 @@ export class ArticleService {
         if (params.category_id !== undefined && params.category_id !== '') {
             url += `&category_id=${params.category_id}`;
         }
-        if (params.role !== undefined && params.role !== '') {
+        if (params.role !== undefined) {
             url += `&role=${params.role}`;
         }
         if (params.days !== undefined) {

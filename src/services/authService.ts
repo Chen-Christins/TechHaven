@@ -29,7 +29,7 @@ export interface UserInfo {
 export interface UserAdminListParams {
     page_num: number;
     page_size: number;
-    role?: string;
+    role?: number;
     state?: number;
     days?: number;
 }

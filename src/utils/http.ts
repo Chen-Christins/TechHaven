@@ -218,14 +218,6 @@ class HttpClient {
             (config) => {
                 // 调试：输出请求信息
                 const fullURL = `${config.baseURL}${config.url}`;
-                // // console.log('🚀 发送请求:', {
-                //     url: config.url,
-                //     method: config.method,
-                //     baseURL: config.baseURL,
-                //     fullURL: fullURL,
-                //     withCredentials: config.withCredentials
-                // });
-
                 // 额外调试：检查路径是否正确
                 if (import.meta.env.VITE_USE_PROXY === 'true' && fullURL.includes('/api/')) {
                     // // console.log('✅ 代理路径正确:', fullURL);

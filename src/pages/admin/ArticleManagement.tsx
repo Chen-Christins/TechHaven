@@ -90,6 +90,20 @@ const STATE_MAP: Record<number, Article['status']> = {
     4: 'private',
 };
 
+const ROLE_MAP: Record<number, string> = {
+    1: '用户',
+    2: '管理员',
+    3: '编辑',
+    4: '审核员',
+};
+
+const REVERSE_ROLE_MAP: Record<string, number> = {
+    'user': 1,
+    'admin': 2,
+    'editor': 3,
+    'checker': 4
+};
+
 const REVERSE_STATE_MAP: Record<string, number> = {
     'pending': 1,
     'published': 2,
@@ -163,7 +177,7 @@ const ArticleManagement: React.FC = () => {
                     state: stateValue || 0, // 获取所有状态的文章
                     keyword: filters.search,
                     category_id: filters.category,
-                    role: filters.authorRole,
+                    role: filters.authorRole ? REVERSE_ROLE_MAP[filters.authorRole] : -1,
                     days: days
                 });
 
@@ -175,7 +189,7 @@ const ArticleManagement: React.FC = () => {
                     summary: article.summary + "...",
                     author: article.author,
                     authorEmail: article.email,
-                    authorRole: article.author_role || 'user', // 使用API提供的author_role字段
+                    authorRole: ROLE_MAP[article.author_role] || '用户', // 使用API提供的author_role字段
                     category: "默认分类", // 占位符，API未提供
                     tags: [], // 占位符，API未提供
                     status: STATE_MAP[article.state] || 'draft',

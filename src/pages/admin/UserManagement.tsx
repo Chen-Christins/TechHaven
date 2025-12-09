@@ -60,6 +60,13 @@ const UserManagement: React.FC = () => {
 
     const usersPerPage = 15; // 每页显示15条数据
 
+    const MAP_STR_ROLE_NUM: Record<string, number> = {
+        'admin': 2,
+        'editor': 3,
+        'checker': 4,
+        'user': 1
+    };
+
     // 加载用户数据
     useEffect(() => {
         const fetchUsers = async () => {
@@ -72,7 +79,7 @@ const UserManagement: React.FC = () => {
                     page_size: usersPerPage
                 };
 
-                if (filters.role) params.role = filters.role;
+                if (filters.role) params.role = MAP_STR_ROLE_NUM[filters.role];
                 // 假设 1=active, 2=inactive (根据实际后端定义调整)
                 if (filters.status) params.state = filters.status === 'active' ? 1 : 2;
                 if (filters.dateRange) params.regis_range = dateRangeMap[filters.dateRange];

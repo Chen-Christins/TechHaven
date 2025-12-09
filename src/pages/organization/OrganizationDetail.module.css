@@ -396,6 +396,10 @@
     cursor: pointer;
     color: var(--text-secondary);
     font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
 }
 
 .actionButton:hover {
@@ -549,6 +553,57 @@
     font-weight: 600;
 }
 
+/* Tab切换按钮 */
+.tabsHeader {
+    display: flex;
+    border-bottom: 1px solid var(--border-primary);
+    background-color: var(--bg-secondary);
+}
+
+.tabButton {
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+}
+
+.tabButton:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-hover);
+}
+
+.tabButton.activeTab {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+}
+
+/* 操作按钮样式 - 接受和拒绝按钮 */
+.actionButton.acceptButton {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.actionButton.acceptButton:hover {
+    background-color: var(--success);
+    color: white;
+}
+
+.actionButton.rejectButton {
+    background-color: var(--error-light);
+    color: var(--error);
+}
+
+.actionButton.rejectButton:hover {
+    background-color: var(--error);
+    color: white;
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
     .detailCard {
@@ -574,6 +629,16 @@
     .joined {
         width: 100%;
         justify-content: center;
+    }
+
+    /* Mobile responsive for tabs */
+    .tabsHeader {
+        flex-wrap: wrap;
+    }
+
+    .tabButton {
+        padding: 10px 16px;
+        font-size: 13px;
     }
 }
 
