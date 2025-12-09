@@ -155,6 +155,7 @@ const AssignmentManagement: React.FC = () => {
             if (currentAssignment) {
                 // 编辑模式
                 await AssignmentService.createAssignment({
+                    id: currentAssignment.id,
                     name: formData.title!,
                     subject_name: formData.courseName!,
                     end_time: String(dayjs(formData.deadline).unix()),
@@ -281,14 +282,14 @@ const AssignmentManagement: React.FC = () => {
         <div className={styles.container}>
             <div className={styles.pageHeader}>
                 <div>
-                    <h1 className={styles.pageTitle}>作业管理</h1>
+                    <h1 className={styles.pageTitle}>任务管理</h1>
                     <p className={styles.pageDescription}>
-                        管理系统中的所有作业，包括发布、筛选和状态管理
+                        管理系统中的所有任务，包括发布、筛选和状态管理
                     </p>
                 </div>
                 <div className={styles.headerActions}>
                     <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setIsModalVisible(true)}>
-                        <FaPlus /> 发布作业
+                        <FaPlus /> 发布任务
                     </button>
                 </div>
             </div>
@@ -298,7 +299,7 @@ const AssignmentManagement: React.FC = () => {
                         <FaBookOpen />
                     </div>
                     <div className={styles.statValue}>{stats.total}</div>
-                    <div className={styles.statLabel}>总作业数</div>
+                    <div className={styles.statLabel}>总任务数</div>
                 </div>
                 <div className={styles.statCard}>
                     <div className={`${styles.statIcon} ${styles.success}`}>
@@ -332,9 +333,9 @@ const AssignmentManagement: React.FC = () => {
                 </div>
                 <div className={styles.filterForm}>
                     <div className={styles.filterGroup}>
-                        <label className={styles.filterLabel}>搜索作业</label>
+                        <label className={styles.filterLabel}>搜索任务</label>
                         <Input 
-                            placeholder="搜索作业标题或课程名称..." 
+                            placeholder="搜索任务标题或课程名称..." 
                             value={searchTerm}
                             onChange={(value) => setSearchTerm(value)}
                             prefix={<FaSearch />}
@@ -343,7 +344,7 @@ const AssignmentManagement: React.FC = () => {
                         />
                     </div>
                     <div className={styles.filterGroup}>
-                        <label className={styles.filterLabel}>作业状态</label>
+                        <label className={styles.filterLabel}>任务状态</label>
                         <CustomSelect
                             name="状态筛选"
                             options={[
@@ -369,17 +370,17 @@ const AssignmentManagement: React.FC = () => {
 
             <div className={styles.tableContainer}>
                 <div className={styles.tableHeader}>
-                    <h3 className={styles.tableTitle}>作业列表</h3>
+                    <h3 className={styles.tableTitle}>任务列表</h3>
                     <div className={styles.tableActions}>
                         <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                            共 {total} 个作业
+                            共 {total} 个任务
                         </span>
                     </div>
                 </div>
                 <table className={styles.assignmentTable}>
                     <thead>
                         <tr>
-                            <th>作业标题</th>
+                            <th>任务标题</th>
                             <th>所属课程</th>
                             <th>截止时间</th>
                             <th>提交情况</th>

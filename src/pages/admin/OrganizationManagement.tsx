@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import dayjs from 'dayjs';
 import { 
     FaPlus, 
     FaEdit, 
@@ -21,7 +22,7 @@ import message from '../../components/message/Message';
 import Modal from '../../components/modal/Modal';
 import CustomSelect from '../../components/customSelect/CustomSelect';
 import styles from './OrganizationManagement.module.css';
-// import OrganizationService from '../../services/organizationService'; // 预留
+import OrganizationService from '../../services/organizationService';
 
 interface Organization {
     id: string;
@@ -50,27 +51,46 @@ const OrganizationManagement: React.FC = () => {
     });
     const [previewOrg, setPreviewOrg] = useState<Organization | null>(null);
     const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+
+
+
+    const STATUS_STR_MAP_NUMBER: Record<string, number> = { active: 1, inactive: 0 };
+    const STATUS_NUMBER_MAP_STR: Record<number, 'active' | 'inactive'> = { 1: 'active', 0: 'inactive' };
     const pageSize = 10;
 
-    // 模拟获取组织数据
-    useEffect(() => {
+    const fetchOrganizations = async () => {
         setLoading(true);
-        setTimeout(() => {
-            // 假数据
-            const orgs: Organization[] = Array.from({ length: 23 }, (_, i) => ({
-                id: String(i + 1),
-                name: `组织 ${i + 1}`,
-                type: i % 2 === 0 ? '学校' : '企业',
-                status: i % 3 === 0 ? 'inactive' : 'active',
-                createdAt: '2025-12-01',
-                description: '这是一个组织的描述信息。',
-                memberCount: 0
+        try {
+            const params: any = {
+                page_num: currentPage,
+                page_size: pageSize
+            };
+            if (statusFilter !== 'all') {
+                params.status = STATUS_STR_MAP_NUMBER[statusFilter];
+            }
+            const res = await OrganizationService.getAdminOrganizations(params);
+            const mappedList: Organization[] = (res.list || []).map(item => ({
+                id: String(item.id),
+                name: item.name,
+                type: item.type,
+                status: STATUS_NUMBER_MAP_STR[Number(item.status)] as 'active' | 'inactive',
+                createdAt: dayjs.unix(item.create_time).format('YYYY-MM-DD'),
+                description: item.description,
+                memberCount: 0 // 如有成员数字段可填
             }));
-            setOrganizations(orgs);
-            setTotal(orgs.length);
+            setOrganizations(mappedList);
+            setTotal(res.total);
+        } catch (e) {
+            message.error('获取组织列表失败');
+        } finally {
             setLoading(false);
-        }, 500);
-    }, []);
+        }
+    };
+
+    useEffect(() => {
+        fetchOrganizations();
+        // eslint-disable-next-line
+    }, [currentPage, statusFilter]);
 
     // 打开创建模态框
     const openCreateModal = () => {
@@ -104,11 +124,34 @@ const OrganizationManagement: React.FC = () => {
             return;
         }
         setLoading(true);
-        setTimeout(() => {
-            message.success(currentOrg ? '组织信息已更新' : '组织已创建');
+        try {
+            if (currentOrg) {
+                // 编辑模式（假设接口同创建）
+                await OrganizationService.createOrganization({
+                    id: currentOrg.id,
+                    name: formData.name!,
+                    type: formData.type!,
+                    status: STATUS_STR_MAP_NUMBER[formData.status!],
+                    description: formData.description || ''
+                });
+                message.success('组织信息已更新');
+            } else {
+                // 创建模式
+                await OrganizationService.createOrganization({
+                    name: formData.name!,
+                    type: formData.type!,
+                    status: STATUS_STR_MAP_NUMBER[formData.status!],
+                    description: formData.description || ''
+                });
+                message.success('组织已创建');
+            }
             setIsModalVisible(false);
+            await fetchOrganizations();
+        } catch (e: any) {
+            message.error(e.message || '操作失败');
+        } finally {
             setLoading(false);
-        }, 500);
+        }
     };
 
     // 筛选逻辑
@@ -147,7 +190,6 @@ const OrganizationManagement: React.FC = () => {
 
     const handleDelete = async (id: string) => {
         const isConfirmed = await confirm({
-            id: id,
             title: '确认删除',
             content: '您确定要删除这个组织吗？删除后无法恢复。',
             confirmText: '删除',
@@ -155,10 +197,15 @@ const OrganizationManagement: React.FC = () => {
         });
         if (isConfirmed) {
             setLoading(true);
-            setTimeout(() => {
+            try {
+                await OrganizationService.deleteOrganizations({ ids: id });
+                await fetchOrganizations();
                 message.success('组织已删除');
+            } catch (e) {
+                message.error('删除失败');
+            } finally {
                 setLoading(false);
-            }, 500);
+            }
         }
     };
 

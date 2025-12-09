@@ -1,5 +1,4 @@
 import http from '../utils/http';
-// import type { Assignment } from '../types';
 
 /**
  * 创建作业参数
@@ -75,7 +74,7 @@ export class AssignmentService {
      */
     static async createAssignment(params: CreateAssignmentParams): Promise<CreateAssignmentResponse> {
         const formData = new URLSearchParams();
-        if (params.id) {
+        if (params.id !== undefined && params.id !== null && params.id !== '') {
             formData.append('id', String(params.id));
         }
         formData.append('name', params.name);
@@ -121,6 +120,8 @@ export class AssignmentService {
         });
         return response.data;
     }
+
+    
 }
 
 export default AssignmentService;

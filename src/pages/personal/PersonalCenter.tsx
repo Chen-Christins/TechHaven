@@ -191,8 +191,8 @@ const PersonalCenter: React.FC = () => {
             } catch (err) {
                 console.error('获取文章ID列表失败:', err);
                 setTotalArticles(0);
-            } finally { 
-                setLoading(false);
+            } finally {
+                setTimeout(() => setLoading(false), 200); // 延迟隐藏加载状态，避免闪烁
             }
         };
         fetchArticleIds();
@@ -545,6 +545,7 @@ const PersonalCenter: React.FC = () => {
             if (editingTag) {
                 // 编辑标签
                 const res = await LabelService.createLabel({
+                    id: editingTag.id,
                     name: tagForm.name,
                     color: tagForm.color,
                     description: tagForm.description || '',

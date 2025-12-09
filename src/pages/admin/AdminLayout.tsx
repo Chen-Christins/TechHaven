@@ -157,7 +157,7 @@ const AdminLayout: React.FC = () => {
                 { id: 'dashboard', label: '仪表盘', icon: <FaHome />, path: '/admin' },
                 { id: 'users', label: '用户管理', icon: <FaUsers />, path: '/admin/users' },
                 { id: 'articles', label: '文章管理', icon: <FaFileAlt />, path: '/admin/articles' },
-                { id: 'assignments', label: '作业管理', icon: <FaClipboardList />, path: '/admin/assignments' },
+                { id: 'assignments', label: '任务管理', icon: <FaClipboardList />, path: '/admin/assignments' },
                 { id: 'organizations', label: '组织管理', icon: <FaBuilding />, path: '/admin/organizations' },
                 { id: 'comments', label: '评论管理', icon: <FaComments />, path: '/admin/comments' },
             ]

@@ -18,6 +18,7 @@ export interface DeleteLabelResponse {
  * 创建标签请求参数类型
  */
 export interface CreateLabelParams {
+    id?: string | number; // 可选的标签ID，用于更新时
     name: string;
     color: string;
     description?: string;
@@ -81,6 +82,9 @@ export class LabelService {
      */
     static async createLabel(params: CreateLabelParams): Promise<CreateLabelResponse> {
         const formData = new URLSearchParams();
+        if (params.id !== undefined && params.id !== null && params.id !== '') {
+            formData.append('id', params.id.toString());
+        }
         formData.append('name', params.name);
         formData.append('color', params.color);
         if (params.description) {

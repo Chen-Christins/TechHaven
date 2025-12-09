@@ -27,7 +27,8 @@
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    align-items: center;
 }
 
 .filterBar {
@@ -59,6 +60,9 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 1.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .card {
@@ -69,6 +73,14 @@
     display: flex;
     flex-direction: column;
     border: 1px solid var(--border-primary);
+}
+
+.cardTitle {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin: 0 0 0.8rem 0;
+    font-weight: 600;
+    line-height: 1.4;
 }
 
 .card:hover {
@@ -83,6 +95,16 @@
     margin-bottom: 1rem;
 }
 
+.orgName {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 0.8rem 0;
+}
+
 .courseBadge {
     background: var(--primary-light);
     color: var(--primary);
@@ -90,6 +112,7 @@
     border-radius: 12px;
     font-size: 0.8rem;
     font-weight: 500;
+    display: inline-block;
 }
 
 .statusBadge {
@@ -100,16 +123,22 @@
     font-weight: 500;
 }
 
-.statusPending { color: var(--warning); }
-.statusSubmitted { color: var(--success); }
-.statusLate { color: var(--error); }
+.statusActive {
+    color: var(--success);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+}
 
-.cardTitle {
-    font-size: 1.2rem;
-    color: var(--text-primary);
-    margin: 0 0 0.8rem 0;
-    font-weight: 600;
-    line-height: 1.4;
+.statusInactive {
+    color: var(--error);
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .cardDesc {
@@ -132,7 +161,7 @@
     margin-top: auto;
 }
 
-.deadline {
+.cardMetric {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -155,6 +184,7 @@
 .btnPrimary {
     background: var(--button-primary);
     color: var(--text-inverse);
+    box-shadow: 0 2px 8px 0 rgba(59, 130, 246, 0.04);
 }
 
 .btnPrimary:hover {
@@ -169,6 +199,13 @@
 
 .btnSecondary:hover {
     background: var(--button-secondary-hover);
+}
+
+.joined {
+    color: var(--success);
+    font-weight: 600;
+    font-size: 1rem;
+    margin-left: 1rem;
 }
 
 .emptyState {

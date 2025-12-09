@@ -205,6 +205,7 @@ const CategoryManagement: React.FC = () => {
         try {
             // 调用后端API
             const response = await CategoryService.createCategory({
+                id: editingCategory ? editingCategory.id : undefined,
                 name: formData.name,
                 url: formData.slug,
                 color: formData.color,

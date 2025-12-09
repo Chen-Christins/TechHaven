@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaHome, FaPen, FaBars, FaSignOutAlt, FaUserCircle, FaStar, FaExternalLinkAlt, FaSignInAlt } from 'react-icons/fa';
+import { FaHome, FaPen, FaBars, FaSignOutAlt, FaUserCircle, FaStar, FaExternalLinkAlt, FaSignInAlt, FaBuilding, FaTasks } from 'react-icons/fa';
 import styles from './Navbar.module.css';
 import ThemeToggle from '../themeToggle/ThemeToggle';
 import AuthButtons from '../authButtons/AuthButtons';
@@ -33,7 +33,8 @@ const Navbar: React.FC = () => {
 	// 导航链接数据（包含图标和路径）
 	const navLinks = [
 		{ label: "首页", icon: <FaHome />, path: "/" },
-        { label: "作业", icon: <FaPen />, path: "/assignments" },
+		{ label: "任务", icon: <FaTasks />, path: "/assignments" },
+		{ label: "组织", icon: <FaBuilding />, path: "/organizations/list" },
 		// { label: "标签", icon: <FaTags />, path: "/tags" },
 		// { label: "关于", icon: <FaUser />, path: "/about" },
 	];
@@ -135,15 +136,18 @@ const Navbar: React.FC = () => {
 
 	// 渲染导航链接（桌面端）
 	const renderNavLinks = () => {
-        const isActive = (path: string) => {
-            if (path === '/') {
-                return location.pathname === '/' || location.pathname === '/index';
-            }
-            if (path === '/assignments') {
-                return location.pathname.startsWith('/assignments') || location.pathname.startsWith('/assignment');
-            }
-            return location.pathname === path;
-        };
+		const isActive = (path: string) => {
+			if (path === '/') {
+				return location.pathname === '/' || location.pathname === '/index';
+			}
+			if (path === '/assignments') {
+				return location.pathname.startsWith('/assignments') || location.pathname.startsWith('/assignment');
+			}
+			if (path === '/organizations/list') {
+				return location.pathname.startsWith('/organizations') || location.pathname.startsWith('/organization');
+			}
+			return location.pathname === path;
+		};
 
 		return (
 			<ul className={styles.navLinks}>

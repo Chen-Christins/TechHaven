@@ -38,6 +38,7 @@ export interface DeleteCategoryResponse {
  * 创建分类请求参数类型
  */
 export interface CreateCategoryParams {
+    id?: string | number;
     name: string;
     url: string;
     color: string;
@@ -96,6 +97,9 @@ export class CategoryService {
      */
     static async createCategory(params: CreateCategoryParams): Promise<CreateCategoryResponse> {
         const formData = new URLSearchParams();
+        if (params.id !== undefined && params.id !== null && params.id !== '') {
+            formData.append('id', String(params.id));
+        }
         formData.append('name', params.name);
         formData.append('color', params.color);
         formData.append('icon', params.icon);
