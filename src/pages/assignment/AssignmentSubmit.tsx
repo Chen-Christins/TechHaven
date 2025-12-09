@@ -9,14 +9,13 @@ import {
     FaInfoCircle,
     FaCheckCircle,
     FaExclamationCircle,
-    FaBookOpen,
-    FaLock,
-    FaSignInAlt
+    FaBookOpen
 } from 'react-icons/fa';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import message from '../../components/message/Message';
-import { useAuth } from '../../contexts/AuthContext';
+import AuthRequired from '../../components/auth/AuthRequired';
+import AssignmentSubmitSkeleton from '../../components/assignment/AssignmentSubmitSkeleton';
 import styles from './AssignmentSubmit.module.css';
 
 // 模拟作业数据类型
@@ -78,7 +77,6 @@ const MOCK_ASSIGNMENTS: Assignment[] = [
 const AssignmentSubmit: React.FC = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { isAuthenticated, loading: authLoading } = useAuth();
     const [assignment, setAssignment] = useState<Assignment | null>(null);
     const [files, setFiles] = useState<File[]>([]);
     const [isDragging, setIsDragging] = useState(false);
@@ -189,64 +187,16 @@ const AssignmentSubmit: React.FC = () => {
         }
     };
 
-    if (!authLoading && !isAuthenticated) {
-        return (
-            <div className={styles.container}>
-                <Navbar />
-                <div className={styles.mainContent}>
-                    <div className={styles.emptyState} style={{ marginTop: '4rem', padding: '6rem 2rem' }}>
-                        <div style={{ 
-                            fontSize: '4rem', 
-                            color: 'var(--text-tertiary)', 
-                            marginBottom: '1.5rem',
-                            background: 'var(--bg-secondary)',
-                            width: '100px',
-                            height: '100px',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto 1.5rem'
-                        }}>
-                            <FaLock />
-                        </div>
-                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>
-                            请先登录
-                        </h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '400px', margin: '0 auto 2rem' }}>
-                            您需要登录后才能查看作业详情和提交作业。
-                        </p>
-                        <button 
-                            onClick={() => navigate('/auth')}
-                            className={styles.loginBtn}
-                        >
-                            <FaSignInAlt /> 立即登录
-                        </button>
-                    </div>
-                </div>
-                <Footer companyName="TechBlog" startYear={2025} />
-            </div>
-        );
-    }
-
-    if (!assignment) {
-        return (
-            <div className={styles.container}>
-                <Navbar />
-                <div className={styles.mainContent} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-                    加载中...
-                </div>
-                <Footer />
-            </div>
-        );
-    }
-
     return (
         <div className={styles.container}>
             <Navbar />
-            
+
             <div className={styles.mainContent}>
-                <div className={styles.card}>
+                <AuthRequired message="您需要登录后才能查看作业详情和提交作业。">
+                    {(!assignment) ? (
+                        <AssignmentSubmitSkeleton />
+                    ) : (
+                    <div className={styles.card}>
                     <div style={{ marginBottom: '2rem', paddingBottom: '0.6rem', borderBottom: '1px solid var(--border-secondary)' }}>
                         <button className={styles.backButton} onClick={() => navigate(-1)}>
                             <FaArrowLeft /> 返回上一页
@@ -376,8 +326,10 @@ const AssignmentSubmit: React.FC = () => {
                         </div>
                     </div>
                 </div>
+                )}
+                </AuthRequired>
             </div>
-            
+
             <Footer companyName="TechBlog" startYear={2025} />
         </div>
     );

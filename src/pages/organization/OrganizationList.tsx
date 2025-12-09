@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom'; // Assuming react-router-dom is 
 import {
     FaBuilding,
     FaCheckCircle,
-    FaPlus,
     FaUserFriends, // Icon for member count
-    FaSignInAlt, // For login button if not authenticated
     FaLock, // For empty state if not authenticated
     FaClipboardList, // For empty state if no orgs
     FaArrowRight
@@ -13,11 +11,10 @@ import {
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import Skeleton from '../../components/skeleton/Skeleton';
-import { useAuth } from '../../contexts/AuthContext'; // Assuming AuthContext exists
 import styles from './OrganizationList.module.css';
 import OrganizationService from '../../services/organizationService';
 import message from '../../components/message/Message';
-import { confirm } from '../../components/confirm/Confirm';
+import AuthRequired from '../../components/auth/AuthRequired';
 
 interface Organization {
     id: string;
@@ -34,7 +31,6 @@ interface Organization {
 
 const OrganizationList: React.FC = () => {
     const navigate = useNavigate();
-    const { isAuthenticated, loading: authLoading } = useAuth(); // Assuming useAuth provides these
     const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
     const [loading, setLoading] = useState(true);
     const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -85,56 +81,26 @@ const OrganizationList: React.FC = () => {
     return (
         <div className={styles.container}>
             <Navbar />
-            
+
             <div className={styles.mainContent}>
-                {!authLoading && !isAuthenticated ? (
-                    <div className={styles.emptyState} style={{ marginTop: '4rem', padding: '6rem 2rem' }}>
-                        <div style={{ 
-                            fontSize: '4rem', 
-                            color: 'var(--text-tertiary)', 
-                            marginBottom: '1.5rem',
-                            background: 'var(--bg-secondary)',
-                            width: '100px',
-                            height: '100px',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto 1.5rem'
-                        }}>
-                            <FaLock />
-                        </div>
-                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>
-                            请先登录
-                        </h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '400px', margin: '0 auto 2rem' }}>
-                            您需要登录后才能查看和管理组织列表。
-                        </p>
-                        <button 
-                            onClick={() => navigate('/auth')}
-                            className={styles.loginBtn}
-                        >
-                            <FaSignInAlt /> 立即登录
-                        </button>
-                    </div>
-                ) : (
+                <AuthRequired message="您需要登录后才能查看和管理组织列表。">
                     <>
                         <div className={styles.pageHeader}>
                             <h1 className={styles.pageTitle}><FaBuilding /> 组织列表</h1>
                             <div className={styles.filterBar}>
-                                <button 
+                                <button
                                     className={`${styles.filterBtn} ${filter === 'all' ? styles.active : ''}`}
                                     onClick={() => setFilter('all')}
                                 >
                                     全部
                                 </button>
-                                <button 
+                                <button
                                     className={`${styles.filterBtn} ${filter === 'active' ? styles.active : ''}`}
                                     onClick={() => setFilter('active')}
                                 >
                                     正常
                                 </button>
-                                <button 
+                                <button
                                     className={`${styles.filterBtn} ${filter === 'inactive' ? styles.active : ''}`}
                                     onClick={() => setFilter('inactive')}
                                 >
@@ -152,12 +118,12 @@ const OrganizationList: React.FC = () => {
                                             <Skeleton variant="rectangular" width={100} height={24} style={{ borderRadius: '6px' }} />
                                             <Skeleton variant="rounded" width={80} height={24} style={{ borderRadius: '30px' }} />
                                         </div>
-                                        
+
                                         <div style={{ margin: '1rem 0' }}>
                                             <Skeleton variant="text" width="80%" height={28} style={{ marginBottom: '0.5rem' }} />
                                             <Skeleton variant="text" lines={2} />
                                         </div>
-                                        
+
                                         <div className={styles.cardFooter}>
                                             <div style={{ width: '120px' }}>
                                                 <Skeleton variant="text" width="100%" />
@@ -175,16 +141,16 @@ const OrganizationList: React.FC = () => {
                                             <span className={styles.courseBadge}>{org.type}</span>
                                             {getStatusBadge(org.status)}
                                         </div>
-                                        
+
                                         <h3 className={styles.cardTitle}>{org.name}</h3>
                                         <p className={styles.cardDesc}>{org.description}</p>
-                                        
+
                                         <div className={styles.cardFooter}>
                                             <div className={styles.cardMetric}> {/* Changed from deadline to cardMetric */}
                                                 <FaUserFriends />
                                                 {org.memberCount} 成员
                                             </div>
-                                            <button 
+                                            <button
                                                 className={`${styles.actionBtn} ${styles.btnPrimary}`}
                                                 onClick={() => navigate(`/organization/detail/${org.id}`)}
                                             >
@@ -202,9 +168,9 @@ const OrganizationList: React.FC = () => {
                             </div>
                         )}
                     </>
-                )}
+                </AuthRequired>
             </div>
-            
+
             <Footer companyName="TechBlog" startYear={2025} />
         </div>
     );

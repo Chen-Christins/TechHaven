@@ -10,7 +10,7 @@ const Navbar: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 	// 获取认证状态
-	const { user, isAuthenticated, logout, token } = useAuth();
+	const { user, isAuthenticated, logout, token, loading } = useAuth();
 
 	// 状态管理
 	const [isScrolled, setIsScrolled] = useState(false); // 滚动状态（控制导航栏样式变化）
@@ -218,7 +218,17 @@ const Navbar: React.FC = () => {
 						</div>
 					</li>
 					{/* 移动端认证区域 */}
-					{!isAuthenticated && (
+					{loading ? (
+						// 认证状态加载中 - 显示占位符以避免状态切换的闪烁
+						<li className={styles.mobileNavItem}>
+							<div className={styles.mobileAuthSection}>
+								<div className={styles.mobileAuthButtonPlaceholder}>
+									<FaSignInAlt className={styles.mobileLinkIcon} />
+									<span className={styles.mobileLinkText}>加载中...</span>
+								</div>
+							</div>
+						</li>
+					) : !isAuthenticated ? (
 						<li className={styles.mobileNavItem}>
 							<div className={styles.mobileAuthSection}>
 								<div
@@ -230,7 +240,7 @@ const Navbar: React.FC = () => {
 								</div>
 							</div>
 						</li>
-					)}
+					) : null}
 				</ul>
 			</div>
 		);
@@ -266,7 +276,14 @@ const Navbar: React.FC = () => {
 					{/* 主题切换按钮 */}
 					<ThemeToggle />
 
-					{isAuthenticated && currentUser ? (
+					{loading ? (
+						// 认证状态加载中 - 显示占位符以避免状态切换的闪烁
+						<div className={styles.userAreaPlaceholder}>
+							<div className={styles.avatarContainer}>
+								<div className={styles.avatarPlaceholder}></div>
+							</div>
+						</div>
+					) : isAuthenticated && currentUser ? (
 						<>
 							<div className={styles.userArea} onClick={toggleUserMenu}>
 								{/* 用户头像 */}

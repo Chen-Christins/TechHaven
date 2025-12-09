@@ -7,14 +7,12 @@ import {
     FaArrowRight,
     FaCalendarAlt,
     FaClipboardList,
-    FaLock,
-    FaSignInAlt,
     FaTasks
 } from 'react-icons/fa';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import Skeleton from '../../components/skeleton/Skeleton';
-import { useAuth } from '../../contexts/AuthContext';
+import AuthRequired from '../../components/auth/AuthRequired';
 import styles from './AssignmentList.module.css';
 
 interface Assignment {
@@ -63,14 +61,13 @@ const MOCK_ASSIGNMENTS: Assignment[] = [
 
 const AssignmentList: React.FC = () => {
     const navigate = useNavigate();
-    const { isAuthenticated, loading: authLoading } = useAuth();
     const [filter, setFilter] = useState<'all' | 'pending' | 'submitted' | 'late'>('all');
-    const [loading, setLoading] = useState(true);
+    const [dataLoading, setDataLoading] = useState(true);
 
     useEffect(() => {
         // 模拟数据加载延迟
         const timer = setTimeout(() => {
-            setLoading(false);
+            setDataLoading(false);
         }, 800);
         return () => clearTimeout(timer);
     }, []);
@@ -94,62 +91,31 @@ const AssignmentList: React.FC = () => {
     return (
         <div className={styles.container}>
             <Navbar />
-            
             <div className={styles.mainContent}>
-                {!authLoading && !isAuthenticated ? (
-                    <div className={styles.emptyState} style={{ marginTop: '4rem', padding: '6rem 2rem' }}>
-                        <div style={{ 
-                            fontSize: '4rem', 
-                            color: 'var(--text-tertiary)', 
-                            marginBottom: '1.5rem',
-                            background: 'var(--bg-secondary)',
-                            width: '100px',
-                            height: '100px',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto 1.5rem'
-                        }}>
-                            <FaLock />
-                        </div>
-                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>
-                            请先登录
-                        </h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '400px', margin: '0 auto 2rem' }}>
-                            您需要登录后才能查看和管理您的作业列表。
-                        </p>
-                        <button 
-                            onClick={() => navigate('/auth')}
-                            className={styles.loginBtn}
-                        >
-                            <FaSignInAlt /> 立即登录
-                        </button>
-                    </div>
-                ) : (
+                <AuthRequired message="您需要登录后才能查看和管理您的作业列表。">
                     <>
                         <div className={styles.pageHeader}>
                             <h1 className={styles.pageTitle}><FaTasks /> 我的任务</h1>
                             <div className={styles.filterBar}>
-                                <button 
+                                <button
                                     className={`${styles.filterBtn} ${filter === 'all' ? styles.active : ''}`}
                                     onClick={() => setFilter('all')}
                                 >
                                     全部
                                 </button>
-                                <button 
+                                <button
                                     className={`${styles.filterBtn} ${filter === 'pending' ? styles.active : ''}`}
                                     onClick={() => setFilter('pending')}
                                 >
                                     进行中
                                 </button>
-                                <button 
+                                <button
                                     className={`${styles.filterBtn} ${filter === 'submitted' ? styles.active : ''}`}
                                     onClick={() => setFilter('submitted')}
                                 >
                                     已提交
                                 </button>
-                                <button 
+                                <button
                                     className={`${styles.filterBtn} ${filter === 'late' ? styles.active : ''}`}
                                     onClick={() => setFilter('late')}
                                 >
@@ -158,7 +124,7 @@ const AssignmentList: React.FC = () => {
                             </div>
                         </div>
 
-                        {loading ? (
+                        {dataLoading ? (
                             <div className={styles.grid}>
                                 {/* 骨架屏加载状态 */}
                                 {Array.from({ length: 6 }).map((_, index) => (
@@ -167,12 +133,12 @@ const AssignmentList: React.FC = () => {
                                             <Skeleton variant="rectangular" width={100} height={24} style={{ borderRadius: '6px' }} />
                                             <Skeleton variant="rounded" width={80} height={24} style={{ borderRadius: '30px' }} />
                                         </div>
-                                        
+
                                         <div style={{ margin: '1rem 0' }}>
                                             <Skeleton variant="text" width="80%" height={28} style={{ marginBottom: '0.5rem' }} />
                                             <Skeleton variant="text" lines={2} />
                                         </div>
-                                        
+
                                         <div className={styles.cardFooter}>
                                             <div className={styles.deadline} style={{ width: '120px' }}>
                                                 <Skeleton variant="text" width="100%" />
@@ -190,16 +156,16 @@ const AssignmentList: React.FC = () => {
                                             <span className={styles.courseBadge}>{item.courseName}</span>
                                             {getStatusBadge(item.status)}
                                         </div>
-                                        
+
                                         <h3 className={styles.cardTitle}>{item.title}</h3>
                                         <p className={styles.cardDesc}>{item.description}</p>
-                                        
+
                                         <div className={styles.cardFooter}>
                                             <div className={styles.deadline}>
                                                 <FaCalendarAlt />
                                                 {item.deadline.split(' ')[0]} 截止
                                             </div>
-                                            <button 
+                                            <button
                                                 className={`${styles.actionBtn} ${item.status === 'submitted' ? styles.btnSecondary : styles.btnPrimary}`}
                                                 onClick={() => navigate(`/assignment/submit/${item.id}`)}
                                             >
@@ -217,9 +183,9 @@ const AssignmentList: React.FC = () => {
                             </div>
                         )}
                     </>
-                )}
+                </AuthRequired>
             </div>
-            
+
             <Footer companyName="TechBlog" startYear={2025} />
         </div>
     );

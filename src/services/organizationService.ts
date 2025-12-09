@@ -77,6 +77,24 @@ export interface GetOrganizationListsResponse {
 }
 
 /**
+ * 获取作业详情参数
+ */
+export interface GetOrganizationDetailParams {
+    id: number | string;
+}
+
+/**
+ * 获取作业详情响应
+ */
+export interface GetOrganizationDetailResponse {
+    id: number | string;
+    name: string;
+    type: string;
+    status: number | string;
+    description: string;
+}
+
+/**
  * 学科与作业服务类
  */
 export class AssignmentService {
@@ -142,6 +160,16 @@ export class AssignmentService {
         }
 
         const response = await http.get<GetOrganizationListsResponse>(url);
+        return response.data;
+    }
+
+    /**
+     * 获取作业详情
+     */
+    static async getOrganizationDetail(params: GetOrganizationDetailParams): Promise<GetOrganizationDetailResponse> {
+        const url = `/organization/detail?id=${params.id}`;
+
+        const response = await http.get<GetOrganizationDetailResponse>(url);
         return response.data;
     }
 }

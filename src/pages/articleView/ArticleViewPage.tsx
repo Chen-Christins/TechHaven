@@ -1,118 +1,96 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { FaExclamationTriangle, FaHome, FaArrowLeft } from 'react-icons/fa';
+import { useParams } from 'react-router-dom';
 import ArticleView from './ArticleView';
 import ArticleService from '../../services/articleService';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import BackToTop from '../../components/backToTop/BackToTop';
 import { formatToChinaTime } from '../../utils/utils';
+import { useAuth } from '../../contexts/AuthContext';
+import AuthRequired from '../../components/auth/AuthRequired';
+import ArticleErrorView from '../../components/articleView/ArticleErrorView';
+import SkeletonArticleView from '../../components/articleView/SkeletonArticleView';
 
 const ArticleViewPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState<boolean>(true);
+    const { isAuthenticated, loading: authLoading } = useAuth();
+    const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [article, setArticle] = useState<any>(null);
+    const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
 
     useEffect(() => {
-        const fetch = async () => {
+        // 只有在认证加载完成且用户已认证时才加载文章
+        if (!authLoading && isAuthenticated) {
             if (!id) {
                 setError('文章ID缺失');
-                setLoading(false);
                 return;
             }
 
-            setLoading(true);
-            try {
-                const res = await ArticleService.getArticleDetails({ id, type: 0 });
-                setArticle(res);
-            } catch (err: any) {
-                console.error('获取文章失败', err);
-                setError(err?.message || '获取文章失败');
-            } finally {
-                setLoading(false);
-            }
-        };
+            const fetch = async () => {
+                setLoading(true);
 
-        fetch();
-    }, [id]);
+                // 设置一个定时器，在加载持续一段时间后才显示骨架屏
+                const skeletonTimer = setTimeout(() => {
+                    setShowSkeleton(true);
+                }, 300); // 300ms 后才显示骨架屏，避免快速加载/失败时的闪烁
+
+                let hasError = false; // 使用局部变量来追踪是否有错误
+
+                try {
+                    const res = await ArticleService.getArticleDetails({ id, type: 0 });
+                    setArticle(res);
+                    // 成功获取数据后，不立即隐藏骨架屏
+                    // 让渲染逻辑处理从骨架屏到内容的过渡
+                } catch (err: any) {
+                    console.error('获取文章失败', err);
+                    setError(err?.message || '获取文章失败');
+                    hasError = true;
+                } finally {
+                    clearTimeout(skeletonTimer); // 清除定时器
+                    setLoading(false);
+                    // 仅在出错时隐藏骨架屏
+                    if (hasError) {
+                        setShowSkeleton(false);
+                    }
+                }
+            };
+
+            fetch();
+        }
+    }, [id, authLoading, isAuthenticated]);
 
     return (
         <div>
             <Navbar />
             <div style={{ minHeight: 'calc(100vh - 64px)' }}>
-                {loading && (
-                    <div style={{ padding: '2rem', textAlign: 'center' }}>正在加载文章...</div>
-                )}
+                <AuthRequired>
+                    {authLoading ? (
+                        <div style={{ padding: '2rem', textAlign: 'center' }}>正在加载认证状态...</div>
+                    ) : (
+                        <>
+                            {showSkeleton && !article && !error && (  // 只在没有文章和错误时显示骨架屏
+                                <SkeletonArticleView />
+                            )}
 
-                {!loading && error && (
-                    <div style={{ 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        alignItems: 'center', 
-                        justifyContent: 'center', 
-                        padding: '4rem 2rem',
-                        textAlign: 'center',
-                        minHeight: '60vh'
-                    }}>
-                        <div style={{ fontSize: '4rem', color: 'var(--danger)', marginBottom: '1.5rem', opacity: 0.8 }}>
-                            <FaExclamationTriangle />
-                        </div>
-                        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>
-                            无法加载文章
-                        </h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '400px' }}>
-                            {error}
-                        </p>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button 
-                                onClick={() => navigate(-1)}
-                                style={{
-                                    padding: '0.75rem',
-                                    border: '1px solid var(--border-primary)',
-                                    borderRadius: '0.5rem',
-                                    background: 'var(--bg-secondary)',
-                                    color: 'var(--text-primary)',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem'
-                                }}
-                            >
-                                <FaArrowLeft /> 返回上一页
-                            </button>
-                            <button 
-                                onClick={() => navigate('/')}
-                                style={{
-                                    padding: '0.75rem',
-                                    border: 'none',
-                                    borderRadius: '0.5rem',
-                                    background: 'var(--primary)',
-                                    color: 'white',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem'
-                                }}
-                            >
-                                <FaHome /> 返回首页
-                            </button>
-                        </div>
-                    </div>
-                )}
+                            {!loading && error && (
+                                <ArticleErrorView error={error} />
+                            )}
 
-                {!loading && !error && article && (
-                    <ArticleView
-                        title={article.title}
-                        content={article.content}
-                        author={article.author}
-                        views={article.views ?? 0}
-                        praises={article.praise ?? article.praises ?? 0}
-                        update_time={formatToChinaTime(Number(article.update_time))}
-                        pushlish_time={article.publish_time ? formatToChinaTime(Number(article.publish_time)) : '暂未发布'}
-                    />
-                )}
+                            {!loading && !error && article && (
+                                <ArticleView
+                                    title={article.title}
+                                    content={article.content}
+                                    author={article.author}
+                                    views={article.views ?? 0}
+                                    praises={article.praise ?? article.praises ?? 0}
+                                    update_time={formatToChinaTime(Number(article.update_time))}
+                                    pushlish_time={article.publish_time ? formatToChinaTime(Number(article.publish_time)) : '暂未发布'}
+                                />
+                            )}
+                        </>
+                    )}
+                </AuthRequired>
             </div>
             <Footer companyName="TechBlog" startYear={2025} />
             <BackToTop />
