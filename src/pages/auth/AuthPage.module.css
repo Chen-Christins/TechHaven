@@ -22,7 +22,6 @@
     border-radius: 12px;
     box-shadow: var(--shadow-md);
     overflow: hidden;
-    transition: all 0.3s ease;
 }
 
 .authCard:hover {
@@ -50,7 +49,6 @@
     padding: 0;
     margin-bottom: 20px;
     cursor: pointer;
-    transition: color 0.2s ease;
 }
 
 .backButton:hover {
@@ -127,7 +125,6 @@
     border: 1px solid var(--border-primary);
     border-radius: 6px;
     font-size: 16px;
-    transition: all 0.2s ease;
     background-color: var(--input-bg);
     color: var(--text-primary);
 }
@@ -164,7 +161,6 @@
     border: none;
     color: var(--text-tertiary);
     cursor: pointer;
-    transition: color 0.2s ease;
 }
 
 .actionButton:hover {
@@ -190,7 +186,6 @@
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
     border: none;
 }
 

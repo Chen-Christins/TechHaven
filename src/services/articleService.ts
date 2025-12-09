@@ -15,15 +15,25 @@ export interface ListArticlesParams {
  */
 export interface ListArticlesResponse {
     total: number;
-    page_from: number;
-    page_size: number;
-    ids: Array<string | number>;
+    list: Array<{
+        id: string | number;
+        title: string;
+        author: string;
+        summary: string;
+        state: number;
+        type: number;
+        publish_time: number;
+    }>;
 }
 
 export interface ListAdminArticlesParams {
     page_num: number;
     page_size: number;
-    state: number;
+    state?: number;
+    category_id?: string | number;
+    role?: string;
+    days?: number;
+    keyword?: string;
 }
 
 /**
@@ -66,7 +76,7 @@ export interface PublishArticleResponse {
  */
 export interface ArticleDetailsParams {
     id: string | number;
-    type: 0 | 1;
+    type: number;
 }
 
 /**
@@ -157,6 +167,11 @@ export interface UpdateArticleCategoryResponse {
     del_category_ids: Array<string | number>;
 }
 
+export interface SwitchArticleStateParams {
+    id: string | number;
+    state: number;
+}
+
 /**
  * 文章服务类
  */
@@ -177,7 +192,21 @@ export class ArticleService {
     static async listAdminArticlesByPages(params: ListAdminArticlesParams): Promise<ListAdminArticlesResponse> {
         let url = `/article/admin/lists?page_num=${params.page_num}`;
         url += `&page_size=${params.page_size}`;
-        url += `&state=${params.state}`;
+        if (params.state !== undefined) {
+            url += `&state=${params.state}`;
+        }
+        if (params.category_id !== undefined && params.category_id !== '') {
+            url += `&category_id=${params.category_id}`;
+        }
+        if (params.role !== undefined && params.role !== '') {
+            url += `&role=${params.role}`;
+        }
+        if (params.days !== undefined) {
+            url += `&days=${params.days}`;
+        }
+        if (params.keyword !== undefined && params.keyword !== '') {
+            url += `&keyword=${encodeURIComponent(params.keyword)}`;
+        }
         
         const response = await http.get<ListAdminArticlesResponse>(url);
         return response.data;
@@ -288,6 +317,18 @@ export class ArticleService {
             },
         });
         return response.data;
+    }
+
+    static async switchArticleState(params: SwitchArticleStateParams) {
+        const formData = new URLSearchParams();
+        formData.append('id', String(params.id));
+        formData.append('new_state', String(params.state));
+        
+        return http.post('/article/switch_state', formData.toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        });
     }
 }
 

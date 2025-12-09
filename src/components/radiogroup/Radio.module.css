@@ -96,7 +96,6 @@
 	border: 2px solid var(--border-primary);
 	border-radius: 50%;
 	background-color: var(--radio-bg);
-	transition: all 0.3s ease;
 	position: relative;
 	flex-shrink: 0;
 }
@@ -114,7 +113,6 @@
 	border-radius: 50%;
 	background-color: var(--text-inverse);
 	transform: scale(0);
-	transition: transform 0.3s ease;
 }
 
 .checked .radioDot {
@@ -125,7 +123,6 @@
 .radioLabel {
 	color: var(--text-primary);
 	font-weight: normal;
-	transition: color 0.3s ease;
 }
 
 .checked .radioLabel {

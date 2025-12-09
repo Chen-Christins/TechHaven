@@ -65,10 +65,9 @@
     align-items: center;
     gap: 12px;
     padding: 16px;
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-tertiary);
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .folderCard:hover {
@@ -155,7 +154,6 @@
     color: var(--text-secondary);
     cursor: pointer;
     border-radius: 4px;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -264,7 +262,6 @@
     background-color: var(--bg-secondary);
     border-radius: 8px;
     overflow: hidden;
-    transition: all 0.2s ease;
     border: 1px solid var(--border-primary);
 }
 
@@ -417,7 +414,6 @@
     padding: 16px 20px;
     border-bottom: 1px solid var(--border-primary);
     align-items: center;
-    transition: background-color 0.2s ease;
 }
 
 /* 列表项中除第一列和文件名列外的所有列居中 */
@@ -481,7 +477,7 @@
 .typeBadge {
     display: inline-block;
     padding: 4px 8px;
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-tertiary);
     color: var(--text-secondary);
     border-radius: 4px;
     font-size: 12px;
@@ -505,7 +501,6 @@
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s ease;
     font-size: 14px;
     color: var(--text-secondary);
     background-color: transparent;
@@ -585,7 +580,6 @@
     font-size: 24px;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: color 0.2s ease;
 }
 
 .closeButton:hover {
@@ -681,7 +675,6 @@
     color: var(--text-primary);
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -716,7 +709,6 @@
     font-weight: 500;
     border: none;
     cursor: pointer;
-    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 8px;

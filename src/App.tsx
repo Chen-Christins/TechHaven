@@ -1,3 +1,5 @@
+import SimpleBar from 'simplebar-react';
+import 'simplebar-react/dist/simplebar.min.css';
 import './App.css';
 import { BrowserRouter } from 'react-router-dom';
 import { MessageProvider } from './components/message/Message';
@@ -13,7 +15,9 @@ function App() {
         <AuthProvider>
           <MessageProvider>
             <ConfirmProvider>
-              <RouterConfig />
+              <SimpleBar style={{ maxHeight: '100vh', width: '100vw', overflowX: 'hidden' }} autoHide={false}>
+                <RouterConfig />
+              </SimpleBar>
             </ConfirmProvider>
           </MessageProvider>
         </AuthProvider>

@@ -36,7 +36,6 @@
     align-items: center;
     cursor: pointer;
     border-radius: 8px;
-    transition: background-color 0.2s ease;
     padding: 0.2rem 0;
     height: 38px;
 }
@@ -58,7 +57,6 @@
 
 .chevron {
     font-size: 1rem;
-    transition: transform 0.3s ease;
 }
 
 /* 父分类链接 */
@@ -77,7 +75,6 @@
 
 .parentName {
     flex: 1;
-    transition: color 0.2s ease;
 }
 
 .parentCategory:hover .parentName {
@@ -100,7 +97,6 @@
 /* 子分类容器（带动画） */
 .childrenContainer {
     overflow: hidden;
-    transition: max-height 0.3s ease-out, opacity 0.2s ease-out, padding 0.3s ease-out;
 }
 
 .collapsed {
@@ -142,7 +138,6 @@
     color: var(--text-secondary);
     font-size: 0.95rem;
     border-radius: 6px;
-    transition: all 0.2s ease;
     height: 32px;
 }
 

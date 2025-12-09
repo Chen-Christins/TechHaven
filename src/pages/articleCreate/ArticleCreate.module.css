@@ -2,16 +2,16 @@
 
 :root {
     --border-radius: 8px;
-    --transition: all 0.3s ease;
 }
 
 .container {
-    min-width: 100vw;
+    width: 100%;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 0 30px;
+    justify-content: flex-start;
+    padding: 0;
+    background-color: var(--bg-primary);
 }
 
 .editorContainer {
@@ -20,9 +20,8 @@
     box-shadow: var(--shadow-md);
     border: 1px solid var(--border-primary);
     padding: 30px;
-    margin: 80px 20px 20px 20px;
-    transition: var(--transition);
-    width: 100%;
+    margin: 30px auto 20px auto;
+    width: calc(100% - 60px);
     max-width: 1460px;
     min-width: 640px;
 }
@@ -71,7 +70,6 @@
     padding: 12px 15px;
     border-radius: var(--border-radius);
     border: 1px solid var(--border-primary);
-    transition: var(--transition);
     width: 100%;
     font-size: 16px;
     min-height: 46px;
@@ -122,7 +120,6 @@
     border-radius: var(--border-radius);
     font-size: 14px;
     font-weight: 500;
-    transition: var(--transition);
     border: none;
 }
 
@@ -165,7 +162,6 @@
     font-size: 15px;
     line-height: 1.8;
     background-color: var(--card-bg);
-    transition: var(--transition);
 }
 
 .markdownEditor {
@@ -212,7 +208,6 @@
     padding: 10px 20px;
     border-radius: var(--border-radius);
     font-weight: 500;
-    transition: var(--transition);
     border: none;
     cursor: pointer;
     font-size: 14px;
@@ -275,7 +270,6 @@
     border-radius: 20px;
     font-size: 14px;
     color: var(--primary);
-    transition: var(--transition);
 }
 
 .tagItem:hover {
@@ -305,77 +299,7 @@
     gap: 12px;
 }
 
-/* Markdown预览样式 */
-.markdownPreview h1,
-.markdownPreview h2,
-.markdownPreview h3,
-.markdownPreview h4,
-.markdownPreview h5,
-.markdownPreview h6 {
-    color: var(--primary);
-    margin-top: 1.5em;
-    margin-bottom: 0.8em;
-    font-weight: 600;
-}
 
-.markdownPreview h1 {
-    border-bottom: 1px solid var(--border-secondary);
-    padding-bottom: 0.3em;
-}
-
-.markdownPreview code {
-    color: #e83e8c;
-    border-radius: 4px;
-    font-family: 'Fira Code', monospace;
-    font-size: 0.85em;
-}
-
-.markdownPreview pre {
-    background-color: var(--bg-secondary);
-    border-radius: var(--border-radius);
-    padding: 1em;
-    overflow-x: auto;
-}
-
-.markdownPreview blockquote {
-    border-left: 4px solid var(--primary);
-    background-color: var(--primary-light);
-    padding: 1em;
-    margin: 1em 0;
-    border-radius: 0 var(--border-radius) var(--border-radius) 0;
-    color: var(--text-secondary);
-}
-
-.markdownPreview table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 1em auto;
-    overflow: auto;
-    display: table;
-    max-width: 100%;
-}
-
-.markdownPreview table th,
-.markdownPreview table td {
-    padding: 0.75em;
-    border: 1px solid var(--border-primary);
-    text-align: center !important;
-}
-
-.markdownPreview table th {
-    background-color: var(--primary-light);
-    color: var(--primary);
-    font-weight: 600;
-}
-
-.markdownPreview table tr:nth-child(even) {
-    background-color: var(--bg-secondary);
-}
-
-.markdownPreview img {
-    max-width: 100%;
-    border-radius: var(--border-radius);
-}
 
 /* 响应式调整 */
 @media (max-width: 768px) {
@@ -756,8 +680,6 @@
     border-collapse: collapse;
     width: 100%;
     margin: 16px 0;
-    overflow-x: auto;
-    display: block;
 }
 
 .markdownPreview table th,
@@ -787,7 +709,6 @@
     box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2) !important;
     text-decoration: none !important;
     font-weight: 500 !important;
-    transition: all 0.2s ease !important;
 }
 
 .markdownPreview .inlineCode:hover {
@@ -831,7 +752,6 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 11px;
-    transition: all 0.2s ease;
 }
 
 .markdownPreview .copyButton:hover {
@@ -868,7 +788,6 @@
 .markdownPreview a {
     color: var(--link-primary);
     text-decoration: none;
-    transition: color 0.2s ease;
 }
 
 .markdownPreview a:hover {

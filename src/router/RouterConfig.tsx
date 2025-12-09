@@ -1,4 +1,5 @@
 import React from 'react';
+import NotFound404 from '../pages/error/NotFound404';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthPage from '../pages/auth/AuthPage';
 import IndexPage from '../pages/home/IndexPage';
@@ -9,6 +10,7 @@ import AdminLayout from '../pages/admin/AdminLayout';
 import Dashboard from '../pages/admin/Dashboard';
 import UserManagement from '../pages/admin/UserManagement';
 import ArticleManagement from '../pages/admin/ArticleManagement';
+import AssignmentManagement from '../pages/admin/AssignmentManagement';
 import CategoryManagement from '../pages/admin/CategoryManagement';
 import CommentManagement from '../pages/admin/CommentManagement';
 import MediaManagement from '../pages/admin/MediaManagement';
@@ -16,7 +18,12 @@ import PermissionManagement from '../pages/admin/PermissionManagement';
 import DataManagement from '../pages/admin/DataManagement';
 import Analytics from '../pages/admin/Analytics';
 import Settings from '../pages/admin/Settings';
+import OrganizationManagement from '../pages/admin/OrganizationManagement';
+import OrganizationList from '../pages/organization/OrganizationList';
+import OrganizationDetail from '../pages/organization/OrganizationDetail';
 import ArticleViewPage from '../pages/articleView/ArticleViewPage';
+import AssignmentSubmit from '../pages/assignment/AssignmentSubmit';
+import AssignmentList from '../pages/assignment/AssignmentList';
 
 const RouterConfig: React.FC = () => {
     return (
@@ -32,9 +39,20 @@ const RouterConfig: React.FC = () => {
 
             {/* 文章创建页 */}
             <Route path='/article/create' element={<ArticleCreate />} />
+            <Route path='/article/edit/:id' element={<ArticleCreate />} />
 
             {/* 文章详情页 */}
             <Route path="/article/:id" element={<ArticleViewPage />} />
+
+            {/* 作业列表页 */}
+            <Route path="/assignments" element={<AssignmentList />} />
+            {/* 作业提交页 */}
+            <Route path="/assignment/submit/:id" element={<AssignmentSubmit />} />
+
+            {/* 用户组织列表页 */}
+            <Route path="/organizations/list" element={<OrganizationList />} />
+            {/* 组织详情页 */}
+            <Route path="/organization/detail/:id" element={<OrganizationDetail />} />
 
             <Route path="/profile/:id" element={<Profile />} />
 
@@ -46,6 +64,8 @@ const RouterConfig: React.FC = () => {
                 <Route index element={<Dashboard />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="articles" element={<ArticleManagement />} />
+                <Route path="assignments" element={<AssignmentManagement />} />
+                                <Route path="organizations" element={<OrganizationManagement />} />
                 <Route path="comments" element={<CommentManagement />} />
                 <Route path="categories" element={<CategoryManagement />} />
                 <Route path="media" element={<MediaManagement />} />
@@ -56,7 +76,7 @@ const RouterConfig: React.FC = () => {
             </Route>
 
             {/* 404 页面 */}
-            <Route path="*" element={<div>页面不存在</div>} />
+            <Route path="*" element={<NotFound404 />} />
         </Routes>
     );
 };

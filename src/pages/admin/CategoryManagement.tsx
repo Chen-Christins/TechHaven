@@ -205,6 +205,7 @@ const CategoryManagement: React.FC = () => {
         try {
             // 调用后端API
             const response = await CategoryService.createCategory({
+                id: editingCategory ? editingCategory.id : undefined,
                 name: formData.name,
                 url: formData.slug,
                 color: formData.color,
@@ -514,7 +515,7 @@ const CategoryManagement: React.FC = () => {
                                         </div>
                                         <div>
                                             <h3 className={styles.categoryName}>{category.name}</h3>
-                                            <p className={styles.categorySlug}>/{category.slug}</p>
+                                            <p className={styles.categorySlug}>{category.slug}</p>
                                         </div>
                                     </div>
                                     <div className={styles.categoryStatus}>

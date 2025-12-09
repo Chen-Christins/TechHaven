@@ -83,17 +83,17 @@ const TagPanel: React.FC<TagPanelProps> = ({
 				) : (
 					<div className={styles.emptyPlaceholder} style={{ color: 'var(--text-secondary)' }}>暂无标签</div>
 				)}
-			</div>
 
-			{!loading && hiddenCount > 0 && (
-				<span
-					className={`${styles.tag} ${styles[`tag${tagSize.charAt(0).toUpperCase() + tagSize.slice(1)}`]}`}
-					style={{ backgroundColor: '#6b7280' }}
-					title={`还有 ${hiddenCount} 个标签`}
-				>
-					+{hiddenCount}
-				</span>
-			)}
+				{!loading && hiddenCount > 0 && (
+					<span
+						className={`${styles.tag} ${styles[`tag${tagSize.charAt(0).toUpperCase() + tagSize.slice(1)}`]}`}
+						style={{ backgroundColor: '#6b7280' }}
+						title={`还有 ${hiddenCount} 个标签`}
+					>
+						+{hiddenCount}
+					</span>
+				)}
+			</div>
 		</div>
 	);
 };

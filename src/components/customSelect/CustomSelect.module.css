@@ -14,7 +14,6 @@
     border: 1px solid var(--border-primary);
     border-radius: var(--border-radius);
     cursor: pointer;
-    transition: var(--transition);
     min-height: 46px;
 }
 
@@ -41,7 +40,6 @@
 }
 
 .arrow {
-    transition: var(--transition);
 }
 
 .selectOpen .arrow {
@@ -56,12 +54,11 @@
     background: var(--card-bg);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-lg);
-    z-index: 1000;
+    z-index: 9999;
     max-height: 300px;
     overflow: hidden;
     opacity: 0;
     transform: translateY(-10px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
     pointer-events: none;
 }
 
@@ -92,7 +89,6 @@
     border: 1px solid var(--border-primary);
     border-radius: 4px;
     outline: none;
-    transition: var(--transition);
     background-color: var(--input-bg);
     color: var(--text-primary);
 }
@@ -114,7 +110,6 @@
 .option {
     padding: 0.75rem 1rem;
     cursor: pointer;
-    transition: var(--transition);
     display: flex;
     align-items: center;
 }
@@ -182,7 +177,6 @@ div.adminCustomSelect .badge {
     margin-left: 0.5rem;
     cursor: pointer;
     opacity: 0.7;
-    transition: var(--transition);
 }
 
 .closeBtn:hover {
@@ -207,7 +201,6 @@ div.adminCustomSelect .badge {
     --warning-color: #f72585;
     --border-radius: 8px;
     --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    --transition: all 0.3s ease;
 }
 
 @media (max-width: 768px) {
@@ -238,7 +231,6 @@ div.adminCustomSelect .badge {
     border: none;
     border-radius: var(--border-radius);
     cursor: pointer;
-    transition: var(--transition);
     font-size: 14px;
     min-width: 38px;
     height: 46px;
@@ -317,7 +309,6 @@ div.adminCustomSelect .badge {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: var(--transition);
 }
 
 .addModalClose:hover {
@@ -352,7 +343,6 @@ div.adminCustomSelect .badge {
     border: 1px solid var(--border-primary);
     border-radius: var(--border-radius);
     font-size: 0.9rem;
-    transition: var(--transition);
     color: var(--text-primary);
 }
 
@@ -400,7 +390,6 @@ div.adminCustomSelect .badge {
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
-    transition: var(--transition);
     min-width: 80px;
 }
 

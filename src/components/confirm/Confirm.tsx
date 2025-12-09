@@ -9,6 +9,7 @@ import { createPortal } from 'react-dom';
 
 // 确认弹窗配置接口
 export interface ConfirmConfig {
+  id?: string;
   title?: ReactNode;
   content: ReactNode;
   confirmText?: string;

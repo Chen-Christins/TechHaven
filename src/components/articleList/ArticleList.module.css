@@ -29,7 +29,6 @@
     border-radius: 8px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-primary);
-    transition: all 0.3s ease;
 }
 
 .articleItem:hover {
@@ -51,6 +50,12 @@
     margin-bottom: 1rem;
 }
 
+.articleMeta span {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
 .articleSummary {
     color: var(--text-secondary);
     line-height: 1.6;
@@ -62,7 +67,6 @@
     color: var(--link-primary);
     text-decoration: none;
     font-weight: 500;
-    transition: color 0.3s;
     cursor: pointer;
 }
 
@@ -105,7 +109,6 @@
     color: var(--text-primary);
     font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -131,6 +134,14 @@
     padding: 0 8px;
     color: var(--text-tertiary);
     font-size: 0.9rem;
+}
+
+.typeBadge {
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary-color);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.85rem;
 }
 
 /* 响应式分页 */

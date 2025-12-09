@@ -997,7 +997,8 @@ const CommentManagement: React.FC = () => {
 
             {/* 评论列表 */}
             <div className={styles.commentsContainer}>
-                {currentItems.map((comment) => {
+                {currentItems.length > 0 ? (
+                    currentItems.map((comment) => {
                     const replies = getReplies(comment.id);
                     const hasReplies = replies.length > 0;
                     const showReplyList = showReplies.includes(comment.id);
@@ -1150,11 +1151,15 @@ const CommentManagement: React.FC = () => {
                             )}
                         </div>
                     );
-                })}
+                })) : (
+                    <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                        暂无数据
+                    </div>
+                )}
             </div>
 
             {/* 分页 */}
-            {totalPages > 1 && (
+            {totalPages >= 1 && (
                 <div className={styles.paginationContainer}>
                     <div className={styles.paginationInfo}>
                         显示 {startIndex + 1} - {Math.min(endIndex, filteredComments.length)} 条，

@@ -871,68 +871,76 @@ const DataManagement: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {currentItems.map((backup) => (
-                                        <tr key={backup.id}>
-                                            <td>
-                                                <div className={styles.recordInfo}>
-                                                    <div className={styles.recordIcon}>
-                                                        <FaArchive />
-                                                    </div>
-                                                    <div className={styles.recordDetails}>
-                                                        <div className={styles.recordName}>{backup.name}</div>
-                                                        <div className={styles.recordMeta}>
-                                                            <span><FaUser /> {backup.createdBy}</span>
+                                    {currentItems.length > 0 ? (
+                                        currentItems.map((backup) => (
+                                            <tr key={backup.id}>
+                                                <td>
+                                                    <div className={styles.recordInfo}>
+                                                        <div className={styles.recordIcon}>
+                                                            <FaArchive />
                                                         </div>
-                                                        <div className={styles.recordDescription}>{(backup as BackupRecord).description}</div>
+                                                        <div className={styles.recordDetails}>
+                                                            <div className={styles.recordName}>{backup.name}</div>
+                                                            <div className={styles.recordMeta}>
+                                                                <span><FaUser /> {backup.createdBy}</span>
+                                                            </div>
+                                                            <div className={styles.recordDescription}>{(backup as BackupRecord).description}</div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span className={`${styles.typeBadge} ${styles[backup.type]}`}>
-                                                    {backup.type === 'full' && '完整'}
-                                                    {backup.type === 'incremental' && '增量'}
-                                                    {backup.type === 'manual' && '手动'}
-                                                </span>
-                                            </td>
-                                            <td>{formatFileSize(backup.size)}</td>
-                                            <td>{(backup as BackupRecord).fileCount}</td>
-                                            <td>
-                                                <span className={`${styles.statusBadge} ${styles[backup.status]}`}>
-                                                    <span className={styles.statusIndicator}></span>
-                                                    {backup.status === 'completed' && '已完成'}
-                                                    {backup.status === 'processing' && '处理中'}
-                                                    {backup.status === 'failed' && '失败'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div className={styles.timeInfo}>
-                                                    <div><FaCalendar /> {formatDate(backup.createdAt)}</div>
-                                                    {(backup as BackupRecord).completedAt ? (
-                                                        <div><FaCheckCircle /> {formatDate((backup as BackupRecord).completedAt)}</div>
-                                                    ) : null}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div className={styles.actionButtons}>
-                                                    <button
-                                                        className={`${styles.actionButton} ${styles.download}`}
-                                                        title="下载备份"
-                                                        onClick={() => downloadFile(backup)}
-                                                        disabled={backup.status !== 'completed'}
-                                                    >
-                                                        <FaDownload />
-                                                    </button>
-                                                    <button
-                                                        className={`${styles.actionButton} ${styles.delete}`}
-                                                        title="删除记录"
-                                                        onClick={() => deleteRecord(backup)}
-                                                    >
-                                                        <FaTrash />
-                                                    </button>
-                                                </div>
+                                                </td>
+                                                <td>
+                                                    <span className={`${styles.typeBadge} ${styles[backup.type]}`}>
+                                                        {backup.type === 'full' && '完整'}
+                                                        {backup.type === 'incremental' && '增量'}
+                                                        {backup.type === 'manual' && '手动'}
+                                                    </span>
+                                                </td>
+                                                <td>{formatFileSize(backup.size)}</td>
+                                                <td>{(backup as BackupRecord).fileCount}</td>
+                                                <td>
+                                                    <span className={`${styles.statusBadge} ${styles[backup.status]}`}>
+                                                        <span className={styles.statusIndicator}></span>
+                                                        {backup.status === 'completed' && '已完成'}
+                                                        {backup.status === 'processing' && '处理中'}
+                                                        {backup.status === 'failed' && '失败'}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div className={styles.timeInfo}>
+                                                        <div><FaCalendar /> {formatDate(backup.createdAt)}</div>
+                                                        {(backup as BackupRecord).completedAt ? (
+                                                            <div><FaCheckCircle /> {formatDate((backup as BackupRecord).completedAt)}</div>
+                                                        ) : null}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div className={styles.actionButtons}>
+                                                        <button
+                                                            className={`${styles.actionButton} ${styles.download}`}
+                                                            title="下载备份"
+                                                            onClick={() => downloadFile(backup)}
+                                                            disabled={backup.status !== 'completed'}
+                                                        >
+                                                            <FaDownload />
+                                                        </button>
+                                                        <button
+                                                            className={`${styles.actionButton} ${styles.delete}`}
+                                                            title="删除记录"
+                                                            onClick={() => deleteRecord(backup)}
+                                                        >
+                                                            <FaTrash />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                                                暂无数据
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         ) : (
@@ -950,123 +958,133 @@ const DataManagement: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {currentItems.map((exportItem) => (
-                                        <tr key={exportItem.id}>
-                                            <td>
-                                                <div className={styles.recordInfo}>
-                                                    <div className={styles.recordIcon}>
-                                                        <FaFileExport />
-                                                    </div>
-                                                    <div className={styles.recordDetails}>
-                                                        <div className={styles.recordName}>{exportItem.name}</div>
-                                                        <div className={styles.recordMeta}>
-                                                            <span><FaUser /> {exportItem.createdBy}</span>
+                                    {currentItems.length > 0 ? (
+                                        currentItems.map((exportItem) => (
+                                            <tr key={exportItem.id}>
+                                                <td>
+                                                    <div className={styles.recordInfo}>
+                                                        <div className={styles.recordIcon}>
+                                                            <FaFileExport />
+                                                        </div>
+                                                        <div className={styles.recordDetails}>
+                                                            <div className={styles.recordName}>{exportItem.name}</div>
+                                                            <div className={styles.recordMeta}>
+                                                                <span><FaUser /> {exportItem.createdBy}</span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span className={`${styles.typeBadge} ${styles[exportItem.type]}`}>
-                                                    {exportItem.type === 'articles' && '文章'}
-                                                    {exportItem.type === 'users' && '用户'}
-                                                    {exportItem.type === 'comments' && '评论'}
-                                                    {exportItem.type === 'full' && '完整'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span className={styles.formatBadge}>
-                                                    {(exportItem as ExportRecord).format.toUpperCase()}
-                                                </span>
-                                            </td>
-                                            <td>{formatFileSize(exportItem.size)}</td>
-                                            <td>{(exportItem as ExportRecord).recordCount}</td>
-                                            <td>
-                                                <span className={`${styles.statusBadge} ${styles[exportItem.status]}`}>
-                                                    <span className={styles.statusIndicator}></span>
-                                                    {exportItem.status === 'completed' && '已完成'}
-                                                    {exportItem.status === 'processing' && '处理中'}
-                                                    {exportItem.status === 'failed' && '失败'}
-                                                </span>
-                                            </td>
-                                            <td>{formatDate(exportItem.createdAt)}</td>
-                                            <td>
-                                                <div className={styles.actionButtons}>
-                                                    <button
-                                                        className={`${styles.actionButton} ${styles.download}`}
-                                                        title="下载文件"
-                                                        onClick={() => downloadFile(exportItem)}
-                                                        disabled={exportItem.status !== 'completed'}
-                                                    >
-                                                        <FaDownload />
-                                                    </button>
-                                                    <button
-                                                        className={`${styles.actionButton} ${styles.delete}`}
-                                                        title="删除记录"
-                                                        onClick={() => deleteRecord(exportItem)}
-                                                    >
-                                                        <FaTrash />
-                                                    </button>
-                                                </div>
+                                                </td>
+                                                <td>
+                                                    <span className={`${styles.typeBadge} ${styles[exportItem.type]}`}>
+                                                        {exportItem.type === 'articles' && '文章'}
+                                                        {exportItem.type === 'users' && '用户'}
+                                                        {exportItem.type === 'comments' && '评论'}
+                                                        {exportItem.type === 'full' && '完整'}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span className={styles.formatBadge}>
+                                                        {(exportItem as ExportRecord).format.toUpperCase()}
+                                                    </span>
+                                                </td>
+                                                <td>{formatFileSize(exportItem.size)}</td>
+                                                <td>{(exportItem as ExportRecord).recordCount}</td>
+                                                <td>
+                                                    <span className={`${styles.statusBadge} ${styles[exportItem.status]}`}>
+                                                        <span className={styles.statusIndicator}></span>
+                                                        {exportItem.status === 'completed' && '已完成'}
+                                                        {exportItem.status === 'processing' && '处理中'}
+                                                        {exportItem.status === 'failed' && '失败'}
+                                                    </span>
+                                                </td>
+                                                <td>{formatDate(exportItem.createdAt)}</td>
+                                                <td>
+                                                    <div className={styles.actionButtons}>
+                                                        <button
+                                                            className={`${styles.actionButton} ${styles.download}`}
+                                                            title="下载文件"
+                                                            onClick={() => downloadFile(exportItem)}
+                                                            disabled={exportItem.status !== 'completed'}
+                                                        >
+                                                            <FaDownload />
+                                                        </button>
+                                                        <button
+                                                            className={`${styles.actionButton} ${styles.delete}`}
+                                                            title="删除记录"
+                                                            onClick={() => deleteRecord(exportItem)}
+                                                        >
+                                                            <FaTrash />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                                                暂无数据
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         )}
 
                         {/* 分页 */}
-                        <div className={styles.paginationContainer}>
-                            <div className={styles.paginationInfo}>
-                                显示 {startIndex + 1} - {Math.min(endIndex, currentData.length)} 条，
-                                共 {currentData.length} 条记录
-                            </div>
-                            <div className={styles.paginationControls}>
-                                <button
-                                    className={styles.paginationButton}
-                                    onClick={() => setCurrentPage(1)}
-                                    disabled={currentPage === 1}
-                                >
-                                    <FaAngleDoubleLeft />
-                                </button>
-                                <button
-                                    className={styles.paginationButton}
-                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                    disabled={currentPage === 1}
-                                >
-                                    <FaChevronLeft />
-                                </button>
+                        {totalPages >= 1 && (
+                            <div className={styles.paginationContainer}>
+                                <div className={styles.paginationInfo}>
+                                    显示 {startIndex + 1} - {Math.min(endIndex, currentData.length)} 条，
+                                    共 {currentData.length} 条记录
+                                </div>
+                                <div className={styles.paginationControls}>
+                                    <button
+                                        className={styles.paginationButton}
+                                        onClick={() => setCurrentPage(1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        <FaAngleDoubleLeft />
+                                    </button>
+                                    <button
+                                        className={styles.paginationButton}
+                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                    >
+                                        <FaChevronLeft />
+                                    </button>
 
-                                {getPageNumbers().map((page, index) => (
-                                    <React.Fragment key={index}>
-                                        {page === '...' ? (
-                                            <span className={styles.paginationEllipsis}>...</span>
-                                        ) : (
-                                            <button
-                                                className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
-                                                onClick={() => setCurrentPage(page as number)}
-                                            >
-                                                {page}
-                                            </button>
-                                        )}
-                                    </React.Fragment>
-                                ))}
+                                    {getPageNumbers().map((page, index) => (
+                                        <React.Fragment key={index}>
+                                            {page === '...' ? (
+                                                <span className={styles.paginationEllipsis}>...</span>
+                                            ) : (
+                                                <button
+                                                    className={`${styles.paginationButton} ${currentPage === page ? styles.active : ''}`}
+                                                    onClick={() => setCurrentPage(page as number)}
+                                                >
+                                                    {page}
+                                                </button>
+                                            )}
+                                        </React.Fragment>
+                                    ))}
 
-                                <button
-                                    className={styles.paginationButton}
-                                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                    disabled={currentPage === totalPages}
-                                >
-                                    <FaChevronRight />
-                                </button>
-                                <button
-                                    className={styles.paginationButton}
-                                    onClick={() => setCurrentPage(totalPages)}
-                                    disabled={currentPage === totalPages}
-                                >
-                                    <FaAngleDoubleRight />
-                                </button>
+                                    <button
+                                        className={styles.paginationButton}
+                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        <FaChevronRight />
+                                    </button>
+                                    <button
+                                        className={styles.paginationButton}
+                                        onClick={() => setCurrentPage(totalPages)}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        <FaAngleDoubleRight />
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </>
             )}

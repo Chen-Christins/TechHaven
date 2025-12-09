@@ -12,7 +12,10 @@ import {
     FaComments,
     FaTags,
     FaImages,
-    FaDatabase
+    FaDatabase,
+    FaLock,
+    FaClipboardList,
+    FaBuilding
 } from 'react-icons/fa';
 import styles from './AdminLayout.module.css';
 import ThemeToggle from '../../components/themeToggle/ThemeToggle';
@@ -57,6 +60,86 @@ const AdminLayout: React.FC = () => {
         return null;
     }
 
+    // 权限校验：非管理员禁止访问
+    if (user.role !== '管理员') {
+        return (
+            <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '100vh',
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                padding: '20px'
+            }}>
+                <div style={{
+                    fontSize: '64px',
+                    color: '#dc3545', // 使用红色表示警告
+                    marginBottom: '24px',
+                    opacity: 0.9
+                }}>
+                    <FaLock />
+                </div>
+                <h1 style={{
+                    fontSize: '28px',
+                    fontWeight: 'bold',
+                    marginBottom: '12px',
+                    color: 'var(--text-primary)'
+                }}>
+                    访问被拒绝
+                </h1>
+                <p style={{
+                    fontSize: '16px',
+                    color: 'var(--text-secondary)',
+                    marginBottom: '32px',
+                    textAlign: 'center',
+                    maxWidth: '480px',
+                    lineHeight: '1.6'
+                }}>
+                    抱歉，您没有权限访问此页面。该区域仅限管理员访问。<br/>
+                    如果您认为这是一个错误，请联系系统管理员或尝试重新登录。
+                </p>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                    <button 
+                        onClick={() => navigate('/')}
+                        style={{
+                            padding: '10px 24px',
+                            backgroundColor: 'var(--primary)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '15px',
+                            fontWeight: '500',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}
+                    >
+                        <FaHome /> 返回首页
+                    </button>
+                    <button 
+                        onClick={() => logout()}
+                        style={{
+                            padding: '10px 24px',
+                            backgroundColor: 'transparent',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--border-primary)',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '15px',
+                            fontWeight: '500',
+                        }}
+                    >
+                        切换账号
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     if (!user.avatar) {
         user.avatar = "https://picsum.photos/id/64/200"; // 默认头像
     }
@@ -74,6 +157,8 @@ const AdminLayout: React.FC = () => {
                 { id: 'dashboard', label: '仪表盘', icon: <FaHome />, path: '/admin' },
                 { id: 'users', label: '用户管理', icon: <FaUsers />, path: '/admin/users' },
                 { id: 'articles', label: '文章管理', icon: <FaFileAlt />, path: '/admin/articles' },
+                { id: 'assignments', label: '任务管理', icon: <FaClipboardList />, path: '/admin/assignments' },
+                { id: 'organizations', label: '组织管理', icon: <FaBuilding />, path: '/admin/organizations' },
                 { id: 'comments', label: '评论管理', icon: <FaComments />, path: '/admin/comments' },
             ]
         },
@@ -131,7 +216,6 @@ const AdminLayout: React.FC = () => {
                     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
                     pointer-events: none;
                     opacity: 0;
-                    transition: opacity 0.2s ease;
                     max-width: 200px;
                     text-align: center;
                 `;

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import {
     FaUserCircle,
     FaCog,
-    FaSignOutAlt
+    FaSignOutAlt,
+    FaHome,
 } from 'react-icons/fa';
 import styles from './UserDropdown.module.css';
 
@@ -108,6 +109,10 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
                         <div className={styles.dropdownItem} onClick={() => { closeDropdown(); navigate("/profile/1"); }}>
                             <FaUserCircle />
                             个人资料
+                        </div>
+                        <div className={styles.dropdownItem} onClick={() => { closeDropdown(); navigate("/"); }}>
+                            <FaHome />
+                            回到首页
                         </div>
                         {showAdminLink && (
                             <div className={styles.dropdownItem} onClick={() => { closeDropdown(); navigate("/admin"); }}>

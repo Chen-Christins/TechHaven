@@ -44,12 +44,12 @@ const CategoryPanel: React.FC = () => {
 				setCategories(rootCategories);
 				
 				// 默认展开第一个有子分类的分类
-				if (rootCategories.length > 0) {
-					const firstWithChildren = rootCategories.find(c => c.children && c.children.length > 0);
-					if (firstWithChildren) {
-						setExpanded({ [firstWithChildren.id]: true });
-					}
-				}
+				// if (rootCategories.length > 0) {
+				// 	const firstWithChildren = rootCategories.find(c => c.children && c.children.length > 0);
+				// 	if (firstWithChildren) {
+				// 		setExpanded({ [firstWithChildren.id]: true });
+				// 	}
+				// }
 			} catch (error) {
 				console.error('获取分类失败:', error);
 			}

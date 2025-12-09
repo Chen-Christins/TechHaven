@@ -56,7 +56,6 @@
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .addButton:hover {
@@ -80,7 +79,6 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    transition: all 0.2s ease;
 }
 
 .statCard:hover {
@@ -188,7 +186,6 @@
     border-radius: 8px;
     color: var(--text-primary);
     cursor: pointer;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -304,7 +301,6 @@
     border-radius: 12px;
     padding: 20px;
     border: 1px solid var(--border-color);
-    transition: all 0.2s ease;
     position: relative;
 }
 
@@ -428,7 +424,6 @@
     border-radius: 6px;
     color: var(--text-primary);
     cursor: pointer;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -499,7 +494,6 @@
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
-    transition: all 0.2s ease;
 }
 
 .closeButton:hover {
@@ -534,7 +528,6 @@
     background: var(--bg-primary);
     color: var(--text-primary);
     font-size: 14px;
-    transition: all 0.2s ease;
 }
 
 .formInput:focus,
@@ -596,7 +589,6 @@
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
     border: none;
 }
 

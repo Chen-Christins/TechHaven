@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaHome, FaPen, FaBars, FaSignOutAlt, FaUserCircle, FaStar, FaExternalLinkAlt, FaSignInAlt } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FaHome, FaPen, FaBars, FaSignOutAlt, FaUserCircle, FaStar, FaExternalLinkAlt, FaSignInAlt, FaBuilding, FaTasks } from 'react-icons/fa';
 import styles from './Navbar.module.css';
 import ThemeToggle from '../themeToggle/ThemeToggle';
 import AuthButtons from '../authButtons/AuthButtons';
@@ -8,8 +8,9 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 	// 获取认证状态
-	const { user, isAuthenticated, logout, token } = useAuth();
+	const { user, isAuthenticated, logout, token, loading } = useAuth();
 
 	// 状态管理
 	const [isScrolled, setIsScrolled] = useState(false); // 滚动状态（控制导航栏样式变化）
@@ -32,6 +33,8 @@ const Navbar: React.FC = () => {
 	// 导航链接数据（包含图标和路径）
 	const navLinks = [
 		{ label: "首页", icon: <FaHome />, path: "/" },
+		{ label: "任务", icon: <FaTasks />, path: "/assignments" },
+		{ label: "组织", icon: <FaBuilding />, path: "/organizations/list" },
 		// { label: "标签", icon: <FaTags />, path: "/tags" },
 		// { label: "关于", icon: <FaUser />, path: "/about" },
 	];
@@ -133,6 +136,19 @@ const Navbar: React.FC = () => {
 
 	// 渲染导航链接（桌面端）
 	const renderNavLinks = () => {
+		const isActive = (path: string) => {
+			if (path === '/') {
+				return location.pathname === '/' || location.pathname === '/index';
+			}
+			if (path === '/assignments') {
+				return location.pathname.startsWith('/assignments') || location.pathname.startsWith('/assignment');
+			}
+			if (path === '/organizations/list') {
+				return location.pathname.startsWith('/organizations') || location.pathname.startsWith('/organization');
+			}
+			return location.pathname === path;
+		};
+
 		return (
 			<ul className={styles.navLinks}>
 				{navLinks.map((link, index) => (
@@ -140,8 +156,7 @@ const Navbar: React.FC = () => {
 						<div
 							onClick={() => { navigate(link.path); }}
 							className={styles.navLink}
-							// 假设首页为当前活跃页
-							data-active={link.path === "/"}
+							data-active={isActive(link.path)}
 						>
 							<span className={styles.linkIcon}>{link.icon}</span>
 							<span className={styles.linkText}>{link.label}</span>
@@ -203,7 +218,17 @@ const Navbar: React.FC = () => {
 						</div>
 					</li>
 					{/* 移动端认证区域 */}
-					{!isAuthenticated && (
+					{loading ? (
+						// 认证状态加载中 - 显示占位符以避免状态切换的闪烁
+						<li className={styles.mobileNavItem}>
+							<div className={styles.mobileAuthSection}>
+								<div className={styles.mobileAuthButtonPlaceholder}>
+									<FaSignInAlt className={styles.mobileLinkIcon} />
+									<span className={styles.mobileLinkText}>加载中...</span>
+								</div>
+							</div>
+						</li>
+					) : !isAuthenticated ? (
 						<li className={styles.mobileNavItem}>
 							<div className={styles.mobileAuthSection}>
 								<div
@@ -215,7 +240,7 @@ const Navbar: React.FC = () => {
 								</div>
 							</div>
 						</li>
-					)}
+					) : null}
 				</ul>
 			</div>
 		);
@@ -251,7 +276,14 @@ const Navbar: React.FC = () => {
 					{/* 主题切换按钮 */}
 					<ThemeToggle />
 
-					{isAuthenticated && currentUser ? (
+					{loading ? (
+						// 认证状态加载中 - 显示占位符以避免状态切换的闪烁
+						<div className={styles.userAreaPlaceholder}>
+							<div className={styles.avatarContainer}>
+								<div className={styles.avatarPlaceholder}></div>
+							</div>
+						</div>
+					) : isAuthenticated && currentUser ? (
 						<>
 							<div className={styles.userArea} onClick={toggleUserMenu}>
 								{/* 用户头像 */}

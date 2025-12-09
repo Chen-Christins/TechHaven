@@ -12,12 +12,11 @@
     max-width: 1560px;
     margin: 2rem auto;
     padding: 0 1.8rem;
-    padding-top: 48px;
 }
 
 /* 导航栏骨架屏样式 */
 .navbarSkeleton {
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     right: 0;
@@ -31,7 +30,7 @@
 
 /* 导航栏实际容器 */
 .navbarActual {
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     right: 0;
@@ -41,13 +40,11 @@
 .navbarVisible {
     opacity: 1;
     transform: translateY(0);
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
 }
 
 .navbarHidden {
     opacity: 0;
     transform: translateY(-20px);
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
 }
 
 .navbarSkeleton .navContainer {
@@ -71,13 +68,11 @@
 .contentHidden {
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
 }
 
 .contentVisible {
     opacity: 1;
     transform: translateY(0);
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
 }
 
 /* 暗色主题下的导航栏骨架屏 */

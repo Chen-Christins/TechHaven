@@ -847,7 +847,8 @@ const MediaManagement: React.FC = () => {
             <div className={styles.filesContainer}>
                 {viewMode === 'grid' ? (
                     <div className={styles.filesGrid}>
-                        {currentItems.map(file => (
+                        {currentItems.length > 0 ? (
+                            currentItems.map(file => (
                             <div key={file.id} className={styles.fileCard}>
                                 <div className={styles.fileCheckbox}>
                                     <input
@@ -924,7 +925,12 @@ const MediaManagement: React.FC = () => {
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                        ))
+                    ) : (
+                        <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                            暂无数据
+                        </div>
+                    )}
                     </div>
                 ) : (
                     <div className={styles.filesList}>
@@ -944,8 +950,9 @@ const MediaManagement: React.FC = () => {
                             <div className={styles.listDownloads}>下载</div>
                             <div className={styles.listActions}>操作</div>
                         </div>
-                        {currentItems.map(file => (
-                            <div key={file.id} className={styles.listItem}>
+                        {currentItems.length > 0 ? (
+                            currentItems.map(file => (
+                                <div key={file.id} className={styles.listItem}>
                                 <div className={styles.listCheckbox}>
                                     <input
                                         type="checkbox"
@@ -999,12 +1006,17 @@ const MediaManagement: React.FC = () => {
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                        ))
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                            暂无数据
+                        </div>
+                    )}
                     </div>
                 )}
 
                 {/* 分页 */}
-                {totalPages > 1 && (
+                {totalPages >= 1 && (
                     <div className={styles.paginationContainer}>
                         <div className={styles.paginationInfo}>
                             显示 {startIndex + 1} - {Math.min(endIndex, filteredFiles.length)} 条，

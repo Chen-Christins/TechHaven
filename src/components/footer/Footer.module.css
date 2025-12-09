@@ -40,7 +40,6 @@
     color: var(--text-secondary);
     text-decoration: none;
     font-size: 14px;
-    transition: color 0.2s ease;
     position: relative;
 }
 
@@ -51,7 +50,6 @@
 .companyLink {
     color: var(--text-secondary);
     text-decoration: none;
-    transition: color 0.2s ease;
 }
 
 .companyLink:hover {
@@ -66,7 +64,6 @@
     bottom: -2px;
     left: 0;
     background-color: var(--primary);
-    transition: width 0.2s ease;
 }
 
 .link:hover::after {
@@ -86,7 +83,6 @@
 
 .socialIcon {
     color: var(--text-secondary);
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;

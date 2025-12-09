@@ -6,7 +6,6 @@
 	border: 1px solid var(--border-primary);
 	border-radius: 6px;
 	background-color: var(--input-bg);
-	transition: all 0.3s ease;
 	width: 100%;
 	/* 默认宽度100%，可由外部容器控制 */
 }
