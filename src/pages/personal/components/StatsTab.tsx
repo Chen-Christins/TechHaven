@@ -7,7 +7,6 @@ import {
     FaTag,
     FaChartBar
 } from 'react-icons/fa';
-import { useAuth } from '../../../contexts/AuthContext';
 import type { ArticleListItem } from '../../../types/index';
 import styles from '../PersonalCenter.module.css';
 

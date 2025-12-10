@@ -1,7 +1,7 @@
 import http from '../utils/http';
 
 /**
- * 创建作业参数
+ * 创建组织参数
  */
 export interface CreateOrganizationParams {
     id?: string | number;
@@ -12,7 +12,7 @@ export interface CreateOrganizationParams {
 }
 
 /**
- * 创建作业响应
+ * 创建组织响应
  */
 export interface CreateOrganizationResponse {
     id: number | string;
@@ -42,28 +42,28 @@ export interface GetAdminOrganizationsResponse {
 }
 
 /**
- * 删除作业参数
+ * 删除组织参数
  */
 export interface DeleteOrganizationParams {
     ids: string; // 逗号分隔的ID
 }
 
 /**
- * 删除作业响应
+ * 删除组织响应
  */
 export interface DeleteOrganizationResponse {
     ids: Array<number | string>;
 }
 
 /**
- * 获取作业列表参数
+ * 获取组织列表参数
  */
 export interface GetOrganizationListsParams {
     status?: number;
 }
 
 /**
- * 获取作业列表响应
+ * 获取组织列表响应
  */
 export interface GetOrganizationListsResponse {
     total: number;
@@ -77,14 +77,14 @@ export interface GetOrganizationListsResponse {
 }
 
 /**
- * 获取作业详情参数
+ * 获取组织详情参数
  */
 export interface GetOrganizationDetailParams {
     id: number | string;
 }
 
 /**
- * 获取作业详情响应
+ * 获取组织详情响应
  */
 export interface GetOrganizationDetailResponse {
     id: number | string;
@@ -92,15 +92,60 @@ export interface GetOrganizationDetailResponse {
     type: string;
     status: number | string;
     description: string;
+    user_in_org?: number;
+    user_role?: number;
+}
+
+export interface JoinOrganizationParams {
+    id: number | string;
+}
+
+export interface JoinOrganizationResponse {
+    id: number | string;
+    name: string;
+    type: string;
+    status: number | string;
+    description: string;
+    user_in_org: number;
+}
+
+export interface organizationUserListsParams {
+    id: number | string;
+    page_num: number;
+    page_size: number;
+    status: 0 | 1 | 2 | 3;
+}
+
+export interface organizationUserListsResponse {
+    total: number;
+    list: Array<{
+        id: number | string;
+        user_id: number | string;
+        name: string;
+        avatar: string;
+        email: string;
+        role: number;
+        join_time: number;
+    }>;
+}
+
+export interface organizationJoinCheckParams {
+    user_id: number | string;
+    org_id: number | string;
+    state: number;
+}
+
+export interface organizationJoinCheckResponse {
+    success: number;
 }
 
 /**
- * 学科与作业服务类
+ * 组织服务类
  */
-export class AssignmentService {
+export class OrganizationService {
 
     /**
-     * 创建作业 (Admin)
+     * 创建组织
      */
     static async createOrganization(params: CreateOrganizationParams): Promise<CreateOrganizationResponse> {
         const formData = new URLSearchParams();
@@ -123,7 +168,7 @@ export class AssignmentService {
     }
 
     /**
-     * 分页获取作业列表 (Admin)
+     * 分页获取组织列表 (Admin)
      */
     static async getAdminOrganizations(params: GetAdminOrganizationsParams): Promise<GetAdminOrganizationsResponse> {
         let url = `/organization/admin/lists?page_num=${params.page_num}&page_size=${params.page_size}`;
@@ -136,7 +181,7 @@ export class AssignmentService {
     }
 
     /**
-     * 删除作业 (Admin)
+     * 删除组织 (Admin)
      */
     static async deleteOrganizations(params: DeleteOrganizationParams): Promise<DeleteOrganizationResponse> {
         const formData = new URLSearchParams();
@@ -151,7 +196,7 @@ export class AssignmentService {
     }
 
     /**
-     * 获取作业列表
+     * 获取组织列表
      */
     static async getOrganizationLists(params: GetOrganizationListsParams): Promise<GetOrganizationListsResponse> {
         let url = '/organization/list?';
@@ -164,7 +209,7 @@ export class AssignmentService {
     }
 
     /**
-     * 获取作业详情
+     * 获取组织详情
      */
     static async getOrganizationDetail(params: GetOrganizationDetailParams): Promise<GetOrganizationDetailResponse> {
         const url = `/organization/detail?id=${params.id}`;
@@ -172,6 +217,42 @@ export class AssignmentService {
         const response = await http.get<GetOrganizationDetailResponse>(url);
         return response.data;
     }
+
+    /**
+     * 加入组织
+     */
+    static async joinOrganization(params: JoinOrganizationParams): Promise<JoinOrganizationResponse> {
+        const formData = new URLSearchParams();
+        formData.append('id', String(params.id));
+
+        const response = await http.post<JoinOrganizationResponse>('/organization/join', formData.toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        });
+        return response.data;
+    }
+
+    static async getOrganizationUserLists(params: organizationUserListsParams): Promise<organizationUserListsResponse> {
+        let url = `/organization/user_list?id=${params.id}&page_num=${params.page_num}&page_size=${params.page_size}&status=${params.status}`;
+
+        const response = await http.get<organizationUserListsResponse>(url);
+        return response.data;
+    }
+
+    static async organizationJoinCheck(params: organizationJoinCheckParams): Promise<organizationJoinCheckResponse> {
+        const formData = new URLSearchParams();
+        formData.append('user_id', String(params.user_id));
+        formData.append('org_id', String(params.org_id));
+        formData.append('state', String(params.state));
+
+        const response = await http.post<organizationJoinCheckResponse>('/organization/join_check', formData.toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        });
+        return response.data;
+    }
 }
 
-export default AssignmentService;
+export default OrganizationService;

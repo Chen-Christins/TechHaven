@@ -15,6 +15,7 @@ import styles from './OrganizationList.module.css';
 import OrganizationService from '../../services/organizationService';
 import message from '../../components/message/Message';
 import AuthRequired from '../../components/auth/AuthRequired';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Organization {
     id: string;
@@ -31,19 +32,22 @@ interface Organization {
 
 const OrganizationList: React.FC = () => {
     const navigate = useNavigate();
+    const { user: currentUser } = useAuth();
     const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
     const [loading, setLoading] = useState(true);
     const [organizations, setOrganizations] = useState<Organization[]>([]);
 
     useEffect(() => {
         const fetchOrgs = async () => {
+            if (!currentUser) {
+                return;
+            }
             setLoading(true);
             try {
                 let statusParam: number | undefined = undefined;
                 if (filter === 'active') statusParam = 1;
                 if (filter === 'inactive') statusParam = 0;
                 const res = await OrganizationService.getOrganizationLists(statusParam !== undefined ? { status: statusParam } : {});
-                console.log('Fetched organizations:', res);
                 const mapped = (res.list || []).map((item: any) => ({
                     id: String(item.id),
                     name: item.name,

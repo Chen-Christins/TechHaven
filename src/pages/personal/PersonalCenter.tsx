@@ -1,21 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
-    FaEdit,
-    FaTrash,
-    FaPlus,
-    FaEye,
-    FaSearch,
     FaTag,
     FaFileAlt,
     FaChartBar,
-    FaCalendarAlt,
-    FaThumbsUp,
-    FaComment,
     FaBars,
     FaTimes,
     FaUserLock,
-    FaLock,
-    FaArrowDown,
     FaUsers
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -23,18 +13,8 @@ import Loading from '../../components/loading/Loading';
 import Skeleton from '../../components/skeleton/Skeleton';
 import ThemeToggle from '../../components/themeToggle/ThemeToggle';
 import UserDropdown from '../../components/userDropdown/UserDropdown';
-import CustomSelect from '../../components/customSelect/CustomSelect';
 import Footer from '../../components/footer/Footer';
-import { confirm } from '../../components/confirm/Confirm';
-import { message } from '../../components/message/Message';
 import { useAuth } from '../../contexts/AuthContext';
-import type { SelectOption } from '../../types/index';
-import ArticleService from '../../services/articleService';
-import LabelService from '../../services/labelService';
-import { AssignmentService as OrganizationService } from '../../services/organizationService';
-import { formatToChinaTime } from '../../utils/utils';
-import type { ArticleListItem } from '../../types/index';
-import type { PersonalOrganization } from '../../types/organization';
 import styles from './PersonalCenter.module.css';
 import MyArticlesTab from './components/MyArticlesTab';
 import MyTagsTab from './components/MyTagsTab';
@@ -52,15 +32,6 @@ interface PersonalTag {
 }
 
 // 个人统计类型
-interface PersonalStats {
-    totalArticles: number;
-    publishedArticles: number;
-    privateArticles: number;
-    totalViews: number;
-    totalLikes: number;
-    totalComments: number;
-    totalTags: number;
-}
 
 // 标签数据暂时为空，后续可根据需要实现标签管理
 const mockPersonalTags: PersonalTag[] = [];
@@ -72,79 +43,17 @@ interface NavItem {
     path: string;
 }
 
-const STATE_MAP: Record<number, string> = {
-    1: 'reviewing',
-    2: 'published',
-    3: 'unallowed',
-    4: 'private',
-};
-
 const PersonalCenter: React.FC = () => {
     const navigate = useNavigate();
     const { user, isAuthenticated, logout, loading: authLoading } = useAuth();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'articles' | 'tags' | 'stats' | 'organizations'>('articles');
-    const [loading, setLoading] = useState(false);
+    const [loading] = useState(false);
 
-    // 文章管理状态 (needed for stats)
-    const [articles, setArticles] = useState<ArticleListItem[]>([]);
-    const [totalArticles, setTotalArticles] = useState(0);
-    const [searchTerm, setSearchTerm] = useState('');
 
     // 标签管理状态 (needed for stats)
     const [tags, setTags] = useState<PersonalTag[]>([]);
-
-    // 状态筛选选项
-    const statusOptions: SelectOption[] = [
-        { id: 'all', name: '全部状态', color: '#6c757d' },
-        { id: 'published', name: '已发布', color: '#28a745' },
-        { id: 'private', name: '私密', color: '#dc3545' },
-        { id: 'unallowed', name: '未通过', color: '#1474e2ff' },
-        { id: 'reviewing', name: '审核中', color: '#17a2b8' },
-    ];
-
-    // 获取状态对应的数值
-    const getStatusValue = (statusId: string): number | undefined => {
-        switch (statusId) {
-            case 'published': return 2;
-            case 'private': return 4;
-            case 'unallowed': return 3;
-            case 'reviewing': return 1;
-            default: return undefined; // 'all'
-        }
-    };
-
-    // 当前选中的状态选项
-    const [selectedStatus, setSelectedStatus] = useState<SelectOption | null>(statusOptions[0]);
-
-    // 文章管理状态
-    const [filteredArticles, setFilteredArticles] = useState<ArticleListItem[]>([]);
-    const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft' | 'private' | 'unallowed' | 'reviewing'>('all');
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5;
-
-    // 标签管理状态
-    const [tagsLoading, setTagsLoading] = useState(false);
-    const [showTagModal, setShowTagModal] = useState(false);
-    const [editingTag, setEditingTag] = useState<PersonalTag | null>(null);
-    const [tagForm, setTagForm] = useState({ name: '', description: '', color: '#61dafb' });
-    const [savingTag, setSavingTag] = useState(false);
-
-    // 统计数据状态
-    const [stats, setStats] = useState<PersonalStats>({
-        totalArticles: 0,
-        publishedArticles: 0,
-        privateArticles: 0,
-        totalViews: 0,
-        totalLikes: 0,
-        totalComments: 0,
-        totalTags: 0
-    });
-
-    // 组织管理状态
-    const [organizations, setOrganizations] = useState<PersonalOrganization[]>([]);
-    const [organizationsLoading, setOrganizationsLoading] = useState(false);
 
     // 用户数据（从认证上下文获取，与导航栏保持一致）
     const currentUser = user ? {
@@ -172,143 +81,11 @@ const PersonalCenter: React.FC = () => {
         { id: 'organizations', label: '我的组织', icon: <FaUsers />, path: '/personal/organizations' },
     ];
 
-    useEffect(() => {
-        const fetchArticleIds = async () => {
-            if (!user?.id) return;
-
-            try {
-                setLoading(true);
-                const stateValue = getStatusValue(statusFilter);
-                // 使用分页请求，每页5条
-                const response = await ArticleService.listArticlesByUserIdPages({
-                    user_id: user.id,
-                    page_from: currentPage,
-                    page_size: itemsPerPage,
-                    state: stateValue
-                });
-                
-                // 优先使用接口返回的total，如果是0也要使用
-                setTotalArticles(typeof response.total === 'number' ? response.total : response.list.length);
-                setArticles(response.list.map(article => ({
-                    id: article.id,
-                    title: article.title,
-                    author: article.author,
-                    summary: article.summary,
-                    state: STATE_MAP[article.state],
-                    type: article.type === 1 ? '原创' : '转载',
-                    publish_time: article.publish_time ? formatToChinaTime(article.publish_time) : '暂未发布',
-                    views: 0, // 后续可通过详情接口补全
-                    praise: 0, // 后续可通过详情接口补全
-                    favorites: 0, // 后续可通过详情接口补全
-                    category: '未分类', // 后续可通过详情接口补全
-                    tags: [] // 后续可通过详情接口补全
-                })));
-                
-            } catch (err) {
-                console.error('获取文章ID列表失败:', err);
-                setTotalArticles(0);
-            } finally {
-                setTimeout(() => setLoading(false), 200); // 延迟隐藏加载状态，避免闪烁
-            }
-        };
-        fetchArticleIds();
-    }, [user?.id, statusFilter, currentPage]);
 
     // 初始化标签数据
     useEffect(() => {
         setTags(mockPersonalTags);
     }, []);
-
-    // 在用户切换到 "我的标签" 标签页时加载标签数据（仅在已登录时）
-    useEffect(() => {
-        const fetchPersonalTags = async () => {
-            setTagsLoading(true);
-            if (!user || !user.id) {
-                setTags([]);
-                setTagsLoading(false);
-                return;
-            }
-
-            try {
-                const res = await LabelService.queryLabel({ user_id: user.id });
-                const mapped = (res || []).map((t: any) => ({
-                    id: t.id,
-                    name: t.name,
-                    description: t.desc || '暂无',
-                    articleCount: (t.article_count as number) || 0,
-                    color: t.color || '#61dafb',
-                    createTime: t.create_time ? formatToChinaTime(t.create_time) : '未知时间'
-                }));
-                setTags(mapped);
-            } catch (err) {
-                console.error('获取个人标签失败:', err);
-                setTags([]);
-            } finally {
-                setTagsLoading(false);
-            }
-        };
-
-        if (activeTab === 'tags') {
-            fetchPersonalTags();
-        }
-    }, [activeTab, user?.id]);
-
-    // 计算统计数据
-    useEffect(() => {
-        const calculatedStats: PersonalStats = {
-            totalArticles: totalArticles,
-            publishedArticles: articles.filter(a => a.state === 'published').length,
-            privateArticles: articles.filter(a => a.state === 'private').length,
-            totalViews: articles.reduce((sum, a) => sum + a.views, 0),
-            totalLikes: articles.reduce((sum, a) => sum + a.praise, 0),
-            totalComments: articles.reduce((sum, a) => sum + a.favorites, 0), // 使用favorites作为评论数
-            totalTags: tags.length
-        };
-        setStats(calculatedStats);
-    }, [articles, tags, totalArticles]);
-
-    // 在用户切换到 "我的组织" 标签页时加载组织数据（仅在已登录时）
-    useEffect(() => {
-        const fetchPersonalOrganizations = async () => {
-            setOrganizationsLoading(true);
-            if (!user || !user.id) {
-                setOrganizations([]);
-                setOrganizationsLoading(false);
-                return;
-            }
-
-            try {
-                // 调用组织服务获取组织列表
-                // 注意：真实的API可能需要获取用户加入的组织列表，这里先使用现有的API获取所有组织
-                const res = await OrganizationService.getOrganizationLists({ status: -1 });
-                // 模拟用户加入的组织数据，实际情况需要后端API支持
-                // 暂时显示所有组织，实际应用中需要获取用户加入的组织列表
-                const roles: ('会长' | '管理员' | '成员')[] = ['会长', '管理员', '成员'];
-                const mockUserOrganizations: PersonalOrganization[] = (res.list || []).map((org: any) => ({
-                    id: String(org.id),
-                    name: org.name || '未知组织',
-                    type: org.type || '未知类型',
-                    description: org.description || '暂无描述',
-                    memberCount: Math.floor(Math.random() * 100), // 模拟成员数
-                    role: roles[Math.floor(Math.random() * roles.length)], // 模拟角色
-                    createTime: org.create_time ? formatToChinaTime(org.create_time) : '未知时间',
-                    status: org.status === 1 || org.status === 'active' ? 'active' : 'inactive',
-                    avatar: org.avatar
-                }));
-
-                setOrganizations(mockUserOrganizations);
-            } catch (err) {
-                console.error('获取个人组织失败:', err);
-                setOrganizations([]);
-            } finally {
-                setOrganizationsLoading(false);
-            }
-        };
-
-        if (activeTab === 'organizations') {
-            fetchPersonalOrganizations();
-        }
-    }, [activeTab, user?.id]);
 
     // 清理tooltip
     useEffect(() => {
@@ -319,30 +96,6 @@ const PersonalCenter: React.FC = () => {
             }
         };
     }, []);
-
-    // 文章搜索和筛选
-    useEffect(() => {
-        let filtered = articles;
-
-        if (searchTerm) {
-            filtered = filtered.filter(article =>
-                article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                article.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                article.category.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-
-        // 状态筛选已移至服务端
-        // if (statusFilter !== 'all') {
-        //     filtered = filtered.filter(article => article.status === statusFilter);
-        // }
-
-        setFilteredArticles(filtered);
-        // 只有在搜索条件变化时才重置页码
-        if (searchTerm) {
-            setCurrentPage(1);
-        }
-    }, [searchTerm, articles]);
 
     // 如果正在验证身份，显示骨架屏
     if (authLoading) {
@@ -645,7 +398,7 @@ const PersonalCenter: React.FC = () => {
                         {activeTab === 'tags' && <MyTagsTab />}
 
                         {/* 数据统计 */}
-                        {activeTab === 'stats' && <StatsTab articles={articles} tags={tags} totalArticles={totalArticles} />}
+                        {activeTab === 'stats' && <StatsTab tags={tags} articles={[]} totalArticles={0} />}
 
                         {/* 我的组织 */}
                         {activeTab === 'organizations' && <MyOrganizationsTab />}

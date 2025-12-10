@@ -12,7 +12,6 @@ import {
     FaLock
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import Loading from '../../../components/loading/Loading';
 import CustomSelect from '../../../components/customSelect/CustomSelect';
 import { confirm } from '../../../components/confirm/Confirm';
 import { message } from '../../../components/message/Message';
@@ -22,13 +21,6 @@ import ArticleService from '../../../services/articleService';
 import { formatToChinaTime } from '../../../utils/utils';
 import type { ArticleListItem } from '../../../types/index';
 import styles from '../PersonalCenter.module.css';
-
-interface NavItem {
-    id: string;
-    label: string;
-    icon: React.ReactNode;
-    path: string;
-}
 
 const STATE_MAP: Record<number, string> = {
     1: 'reviewing',
@@ -41,7 +33,6 @@ const MyArticlesTab: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [articles, setArticles] = useState<ArticleListItem[]>([]);
-    const [filteredArticles, setFilteredArticles] = useState<ArticleListItem[]>([]);
     const [totalArticles, setTotalArticles] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft' | 'private' | 'unallowed' | 'reviewing'>('all');
@@ -71,59 +62,42 @@ const MyArticlesTab: React.FC = () => {
     // 当前选中的状态选项
     const [selectedStatus, setSelectedStatus] = useState<SelectOption | null>(statusOptions[0]);
 
-    // 文章搜索和筛选
-    useEffect(() => {
-        let filtered = articles;
-
-        if (searchTerm) {
-            filtered = filtered.filter(article =>
-                article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                article.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                article.category.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-
-        setFilteredArticles(filtered);
-        // 只有在搜索条件变化时才重置页码
-        if (searchTerm) {
-            setCurrentPage(1);
-        }
-    }, [searchTerm, articles]);
+    // 文章搜索和筛选逻辑改为渲染时处理，避免 setState 触发多次请求
 
     useEffect(() => {
         const fetchArticleIds = async () => {
             if (!user?.id) return;
-
             try {
                 const stateValue = getStatusValue(statusFilter);
-                // 使用分页请求，每页5条
                 const response = await ArticleService.listArticlesByUserIdPages({
                     user_id: user.id,
                     page_from: currentPage,
                     page_size: itemsPerPage,
                     state: stateValue
                 });
-
-                // 优先使用接口返回的total，如果是0也要使用
                 setTotalArticles(typeof response.total === 'number' ? response.total : response.list.length);
-                setArticles(response.list.map(article => ({
-                    id: article.id,
-                    title: article.title,
-                    author: article.author,
-                    summary: article.summary,
-                    state: STATE_MAP[article.state],
-                    type: article.type === 1 ? '原创' : '转载',
-                    publish_time: article.publish_time ? formatToChinaTime(article.publish_time) : '暂未发布',
-                    views: 0, // 后续可通过详情接口补全
-                    praise: 0, // 后续可通过详情接口补全
-                    favorites: 0, // 后续可通过详情接口补全
-                    category: '未分类', // 后续可通过详情接口补全
-                    tags: [] // 后续可通过详情接口补全
-                })));
-
+                if (response.list && response.list.length > 0) {
+                    setArticles(response.list.map(article => ({
+                        id: article.id,
+                        title: article.title,
+                        author: article.author,
+                        summary: article.summary,
+                        state: STATE_MAP[article.state],
+                        type: article.type === 1 ? '原创' : '转载',
+                        publish_time: article.publish_time ? formatToChinaTime(article.publish_time) : '暂未发布',
+                        views: 0,
+                        praise: 0,
+                        favorites: 0,
+                        category: '未分类',
+                        tags: []
+                    })));
+                } else {
+                    setArticles([]);
+                }
             } catch (err) {
                 console.error('获取文章ID列表失败:', err);
                 setTotalArticles(0);
+                setArticles([]);
             }
         };
         fetchArticleIds();
@@ -135,14 +109,22 @@ const MyArticlesTab: React.FC = () => {
         const newStatus = selectedOption ? (selectedOption.id as 'all' | 'published' | 'private' | 'unallowed' | 'reviewing') : 'all';
         setStatusFilter(newStatus);
         setCurrentPage(1);
-        setArticles([]); // 清空列表以显示加载状态
+        // 不再 setArticles([])，避免多次请求
     };
 
     // 分页计算
     const totalPages = Math.ceil(totalArticles / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + articles.length;
-    const currentArticles = filteredArticles;
+    // 渲染时本地筛选
+    const currentArticles = articles.filter(article => {
+        if (!searchTerm) return true;
+        return (
+            article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            article.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            article.category.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    });
 
     // 生成页码数组
     const getPageNumbers = () => {

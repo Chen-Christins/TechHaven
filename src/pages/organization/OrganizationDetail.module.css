@@ -506,6 +506,40 @@
     gap: 8px;
 }
 
+/* 刷新按钮样式 */
+.refreshButton {
+    padding: 6px 8px;
+    background: none;
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+}
+
+.refreshButton:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--primary);
+}
+
+.refreshButton.loading {
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* 申请加入按钮 */
 .joinBtn {
     padding: 8px 12px;
@@ -569,7 +603,6 @@
     font-weight: 500;
     cursor: pointer;
     position: relative;
-    transition: all 0.2s ease;
     border-bottom: 2px solid transparent;
 }
 

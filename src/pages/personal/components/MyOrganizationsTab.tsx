@@ -6,7 +6,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import Loading from '../../../components/loading/Loading';
 import { useAuth } from '../../../contexts/AuthContext';
-import { AssignmentService as OrganizationService } from '../../../services/organizationService';
+import { OrganizationService } from '../../../services/organizationService';
 import { formatToChinaTime } from '../../../utils/utils';
 import type { PersonalOrganization } from '../../../types/organization';
 import styles from '../PersonalCenter.module.css';

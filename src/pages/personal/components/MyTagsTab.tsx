@@ -5,7 +5,6 @@ import {
     FaEdit,
     FaTrash
 } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
 import Loading from '../../../components/loading/Loading';
 import { confirm } from '../../../components/confirm/Confirm';
 import { message } from '../../../components/message/Message';
@@ -25,7 +24,6 @@ interface PersonalTag {
 }
 
 const MyTagsTab: React.FC = () => {
-    const navigate = useNavigate();
     const { user } = useAuth();
     const [tags, setTags] = useState<PersonalTag[]>([]);
     const [tagsLoading, setTagsLoading] = useState(false);

@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { 
-    FaPlus, 
-    FaEdit, 
-    FaTrash, 
-    FaSearch, 
-    FaFilter, 
-    FaAngleDoubleLeft, 
-    FaAngleDoubleRight, 
-    FaChevronLeft, 
-    FaChevronRight, 
+import {
+    FaPlus,
+    FaEdit,
+    FaTrash,
+    FaSearch,
+    FaFilter,
+    FaAngleDoubleLeft,
+    FaAngleDoubleRight,
+    FaChevronLeft,
+    FaChevronRight,
     FaBuilding,
     FaCheckCircle,
     FaTimesCircle,
@@ -69,7 +69,7 @@ const OrganizationManagement: React.FC = () => {
                 params.status = STATUS_STR_MAP_NUMBER[statusFilter];
             }
             const res = await OrganizationService.getAdminOrganizations(params);
-            const mappedList: Organization[] = (res.list || []).map(item => ({
+            const mappedList: Organization[] = (res.list || []).map((item: { id: any; name: any; type: any; status: any; create_time: number; description: any; }) => ({
                 id: String(item.id),
                 name: item.name,
                 type: item.type,
@@ -277,8 +277,8 @@ const OrganizationManagement: React.FC = () => {
                 <div className={styles.filterForm}>
                     <div className={styles.filterGroup}>
                         <label className={styles.filterLabel}>搜索组织</label>
-                        <Input 
-                            placeholder="搜索组织名称..." 
+                        <Input
+                            placeholder="搜索组织名称..."
                             value={searchTerm}
                             onChange={(value) => setSearchTerm(value)}
                             prefix={<FaSearch />}
@@ -295,10 +295,10 @@ const OrganizationManagement: React.FC = () => {
                                 { id: 'active', name: '正常', color: 'var(--success)' },
                                 { id: 'inactive', name: '停用', color: 'var(--error)' }
                             ]}
-                            value={{ 
-                                id: statusFilter, 
+                            value={{
+                                id: statusFilter,
                                 name: statusFilter === 'all' ? '所有状态' : statusFilter === 'active' ? '正常' : '停用',
-                                color: '' 
+                                color: ''
                             }}
                             onChange={(option) => setStatusFilter(option ? String(option.id) : 'all')}
                             placeholder="状态筛选"
@@ -341,22 +341,22 @@ const OrganizationManagement: React.FC = () => {
                                     <td style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>{item.createdAt}</td>
                                     <td>
                                         <div className={styles.actionButtons}>
-                                            <button 
-                                                className={styles.actionBtn} 
+                                            <button
+                                                className={styles.actionBtn}
                                                 title="预览"
                                                 onClick={() => openPreviewModal(item)}
                                             >
                                                 <FaEye />
                                             </button>
-                                            <button 
-                                                className={styles.actionBtn} 
+                                            <button
+                                                className={styles.actionBtn}
                                                 title="编辑"
                                                 onClick={() => openEditModal(item)}
                                             >
                                                 <FaEdit />
                                             </button>
-                                            <button 
-                                                className={`${styles.actionBtn} ${styles.delete}`} 
+                                            <button
+                                                className={`${styles.actionBtn} ${styles.delete}`}
                                                 title="删除"
                                                 onClick={() => handleDelete(item.id)}
                                             >
@@ -382,21 +382,21 @@ const OrganizationManagement: React.FC = () => {
                             共 {total} 条记录
                         </span>
                         <div className={styles.pageButtons}>
-                            <button 
+                            <button
                                 className={styles.pageBtn}
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage(1)}
                             >
                                 <FaAngleDoubleLeft />
                             </button>
-                            <button 
+                            <button
                                 className={styles.pageBtn}
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage(prev => prev - 1)}
                             >
                                 <FaChevronLeft />
                             </button>
-                            
+
                             {getPageNumbers().map((page, index) => (
                                 <React.Fragment key={index}>
                                     {page === '...' ? (
@@ -412,14 +412,14 @@ const OrganizationManagement: React.FC = () => {
                                 </React.Fragment>
                             ))}
 
-                            <button 
+                            <button
                                 className={styles.pageBtn}
                                 disabled={currentPage === totalPages}
                                 onClick={() => setCurrentPage(prev => prev + 1)}
                             >
                                 <FaChevronRight />
                             </button>
-                            <button 
+                            <button
                                 className={styles.pageBtn}
                                 disabled={currentPage === totalPages}
                                 onClick={() => setCurrentPage(totalPages)}
@@ -450,19 +450,19 @@ const OrganizationManagement: React.FC = () => {
             >
                 <div className={styles.formGroup}>
                     <label className={styles.formLabel}>组织名称 *</label>
-                    <Input 
-                        placeholder="请输入组织名称" 
+                    <Input
+                        placeholder="请输入组织名称"
                         value={formData.name || ''}
-                        onChange={(value) => setFormData({...formData, name: value})}
+                        onChange={(value) => setFormData({ ...formData, name: value })}
                         className={styles.formInput}
                     />
                 </div>
                 <div className={styles.formGroup}>
                     <label className={styles.formLabel}>组织类型 *</label>
-                    <Input 
-                        placeholder="请输入组织类型，如学校、企业" 
+                    <Input
+                        placeholder="请输入组织类型，如学校、企业"
                         value={formData.type || ''}
-                        onChange={(value) => setFormData({...formData, type: value})}
+                        onChange={(value) => setFormData({ ...formData, type: value })}
                         className={styles.formInput}
                     />
                 </div>
@@ -475,22 +475,22 @@ const OrganizationManagement: React.FC = () => {
                             { id: 'inactive', name: '停用', color: 'var(--error)' }
                         ]}
                         value={{
-                            id: formData.status || 'active', 
+                            id: formData.status || 'active',
                             name: formData.status === 'active' ? '正常' : '停用',
-                            color: '' 
+                            color: ''
                         }}
-                        onChange={(option) => setFormData({...formData, status: option?.id as any})}
+                        onChange={(option) => setFormData({ ...formData, status: option?.id as any })}
                         placeholder="请选择状态"
                         hideBadge={true}
                     />
                 </div>
                 <div className={styles.formGroup}>
                     <label className={styles.formLabel}>组织描述</label>
-                    <textarea 
+                    <textarea
                         className={styles.formTextarea}
                         placeholder="请输入组织描述..."
                         value={formData.description || ''}
-                        onChange={(e) => setFormData({...formData, description: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     />
                 </div>
             </Modal>
@@ -508,28 +508,28 @@ const OrganizationManagement: React.FC = () => {
                 }
             >
                 {previewOrg && (
-                    <div className={styles.previewCard} style={{padding: '32px 24px', borderRadius: '16px', background: 'var(--bg-primary)', boxShadow: '0 2px 16px rgba(0,0,0,0.12)'}}>
-                        <div style={{display: 'flex', alignItems: 'center', marginBottom: '18px'}}>
-                            <div style={{fontSize: '2.2rem', color: 'var(--primary)', marginRight: '18px'}}>
+                    <div className={styles.previewCard} style={{ padding: '32px 24px', borderRadius: '16px', background: 'var(--bg-primary)', boxShadow: '0 2px 16px rgba(0,0,0,0.12)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '18px' }}>
+                            <div style={{ fontSize: '2.2rem', color: 'var(--primary)', marginRight: '18px' }}>
                                 <FaBuilding />
                             </div>
                             <div>
-                                <div style={{fontWeight: 600, fontSize: '1.3rem', marginBottom: '2px'}}>{previewOrg.name}</div>
-                                <div style={{fontSize: '1rem', color: 'var(--text-secondary)'}}>{previewOrg.type}</div>
+                                <div style={{ fontWeight: 600, fontSize: '1.3rem', marginBottom: '2px' }}>{previewOrg.name}</div>
+                                <div style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>{previewOrg.type}</div>
                             </div>
                         </div>
-                        <div style={{marginBottom: '14px'}}>
-                            <span style={{marginRight: '16px'}}>{getStatusBadge(previewOrg.status)}</span>
-                            <span style={{color: 'var(--text-secondary)', fontSize: '13px', marginRight: '16px'}}>
+                        <div style={{ marginBottom: '14px' }}>
+                            <span style={{ marginRight: '16px' }}>{getStatusBadge(previewOrg.status)}</span>
+                            <span style={{ color: 'var(--text-secondary)', fontSize: '13px', marginRight: '16px' }}>
                                 创建时间：{previewOrg.createdAt}
                             </span>
-                            <span style={{color: 'var(--text-secondary)', fontSize: '13px'}}>
+                            <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
                                 成员人数：{previewOrg.memberCount}
                             </span>
                         </div>
-                        <div style={{marginBottom: '10px'}}>
-                            <strong style={{fontSize: '1rem'}}>描述：</strong>
-                            <div style={{marginTop: '6px', color: 'var(--text-primary)', fontSize: '1rem', lineHeight: '1.7'}}>
+                        <div style={{ marginBottom: '10px' }}>
+                            <strong style={{ fontSize: '1rem' }}>描述：</strong>
+                            <div style={{ marginTop: '6px', color: 'var(--text-primary)', fontSize: '1rem', lineHeight: '1.7' }}>
                                 {previewOrg.description || '暂无描述'}
                             </div>
                         </div>
