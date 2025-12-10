@@ -14,7 +14,9 @@ import {
     FaEye,
     FaCheck,
     FaTimes,
-    FaSync
+    FaSync,
+    FaUserMinus,
+    FaCog
 } from 'react-icons/fa';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
@@ -71,7 +73,7 @@ const MAP_ROLE_TO_TEXT: Record<number, string> = {
     3: "会长"
 };
 
-const PAGE_SIZE = 1;
+const PAGE_SIZE = 15;
 
 const OrganizationDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -144,7 +146,6 @@ const OrganizationDetail: React.FC = () => {
     // Function to fetch organization members using the new API (真正分页)
     const fetchMembersList = useCallback(async (pageNum: number = 1) => {
         if (!currentUser || !id) return;
-
         // 设置刷新状态
         setIsRefreshing(true);
 
@@ -155,7 +156,6 @@ const OrganizationDetail: React.FC = () => {
                 page_size: PAGE_SIZE,
                 status: 1 // status 1 means approved/active members
             });
-
             if (res && res.list) {
                 const members: Member[] = res.list.map(item => ({
                     id: String(item.id),
@@ -215,21 +215,18 @@ const OrganizationDetail: React.FC = () => {
     useEffect(() => {
         if (!id || !currentUser) return;
 
-        // 当 org 的基本信息发生变化，或在切换页面、刷新等时，获取相应数据
-        if (org?.id && org?.user_role) { // 确保 org 的基本信息已加载
-            if (!showPendingRequests) {
-                // 显示成员列表时，获取成员数据
-                fetchMembersList(page);
-            } else {
-                // 显示待处理请求时，获取待处理请求数据
-                const role = org.user_role;
-                if ((role === '管理员' || role === '会长')) {
-                    fetchPendingRequests(pendingRequestsPage);
-                }
+        if (!showPendingRequests) {
+            // 显示成员列表时，获取成员数据（所有用户都可以看到成员列表）
+            fetchMembersList(page);
+        } else {
+            // 显示待处理请求时，获取待处理请求数据
+            const role = org?.user_role;
+            if ((role === '管理员' || role === '会长')) {
+                fetchPendingRequests(pendingRequestsPage);
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id, currentUser, org?.id, org?.user_role, page, refreshTrigger, showPendingRequests, pendingRequestsPage, pendingRequestsRefreshTrigger]);
+    }, [id, currentUser, org?.id, page, refreshTrigger, showPendingRequests, pendingRequestsPage, pendingRequestsRefreshTrigger]);
 
     // Function to fetch pending join requests if user is an admin/leader (真正分页)
     const fetchPendingRequests = async (pageNum: number = 1) => {
@@ -306,6 +303,192 @@ const OrganizationDetail: React.FC = () => {
             console.error(action === 'accept' ? '接受请求失败' : '拒绝请求失败:', err);
             message.error(action === 'accept' ? '接受请求失败' : '拒绝请求失败');
         }
+    };
+
+    // Function to handle kicking a member
+    const handleKickMember = async (member: Member) => {
+        const ok = await confirm({
+            title: '确认踢出',
+            content: `确定要将 ${member.name} 踢出组织吗？`,
+            confirmText: '踢出',
+            cancelText: '取消',
+        });
+        if (!ok) return;
+
+        try {
+            await OrganizationService.kickOrganizationMember({
+                user_id: member.user_id || member.id,
+                org_id: id!
+            });
+
+            // Remove member from local state
+            setOrg(prevOrg => prevOrg ? {
+                ...prevOrg,
+                members: prevOrg.members.filter(m => m.id !== member.id),
+                memberCount: Math.max(0, prevOrg.memberCount - 1)
+            } : prevOrg);
+
+            // Update stats
+            setStats(prevStats => ({
+                ...prevStats,
+                totalMembers: Math.max(0, prevStats.totalMembers - 1),
+                activeMembers: Math.max(0, prevStats.activeMembers - 1),
+                leaderMembers: member.role === '会长' ? Math.max(0, prevStats.leaderMembers - 1) : prevStats.leaderMembers,
+                deputyMembers: member.role === '管理员' ? Math.max(0, prevStats.deputyMembers - 1) : prevStats.deputyMembers,
+                regularMembers: member.role === '成员' ? Math.max(0, prevStats.regularMembers - 1) : prevStats.regularMembers
+            }));
+
+            message.success(`已将 ${member.name} 踢出组织`);
+        } catch (err) {
+            console.error('踢出成员失败:', err);
+            message.error('踢出成员失败');
+        }
+    };
+
+    // Function to handle setting member role
+    const handleSetMemberRole = async (member: Member) => {
+        const roleOptions = [
+            { value: 1, label: '成员' },
+            { value: 2, label: '管理员' },
+            { value: 3, label: '会长' }
+        ];
+
+        const currentRole = roleOptions.find(r => r.label === member.role)?.value || 1;
+
+        // 创建一个简单的角色选择界面
+        const roleSelection = document.createElement('div');
+        roleSelection.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 300px;
+        `;
+
+        roleSelection.innerHTML = `
+            <h3 style="margin: 0 0 15px 0; color: #333;">设置 ${member.name} 的角色</h3>
+            <div style="margin-bottom: 15px;">
+                ${roleOptions.map((role) => `
+                    <label style="display: block; margin-bottom: 8px; cursor: pointer;">
+                        <input type="radio" name="role" value="${role.value}" ${role.value === currentRole ? 'checked' : ''} />
+                        ${role.label}
+                    </label>
+                `).join('')}
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="cancelRole" style="padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">取消</button>
+                <button id="confirmRole" style="padding: 8px 16px; border: none; background: #007bff; color: white; border-radius: 4px; cursor: pointer;">确认</button>
+            </div>
+        `;
+
+        // 添加遮罩层
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        `;
+
+        document.body.appendChild(overlay);
+        document.body.appendChild(roleSelection);
+
+        return new Promise<void>((resolve) => {
+            const cancelBtn = document.getElementById('cancelRole') as HTMLButtonElement;
+            const confirmBtn = document.getElementById('confirmRole') as HTMLButtonElement;
+
+            const cleanup = () => {
+                document.body.removeChild(overlay);
+                document.body.removeChild(roleSelection);
+                resolve();
+            };
+
+            cancelBtn.onclick = cleanup;
+
+            confirmBtn.onclick = async () => {
+                const selectedInput = roleSelection.querySelector('input[name="role"]:checked') as HTMLInputElement;
+                if (!selectedInput) {
+                    message.error('请选择一个角色');
+                    return;
+                }
+
+                const newRoleValue = parseInt(selectedInput.value);
+                if (newRoleValue === currentRole) {
+                    message.warn('该用户已经是这个角色');
+                    cleanup();
+                    return;
+                }
+
+                try {
+                    await OrganizationService.setOrganizationMemberRole({
+                        user_id: member.user_id || member.id,
+                        org_id: id!,
+                        role: newRoleValue
+                    });
+
+                    // Update member role in local state
+                    setOrg(prevOrg => prevOrg ? {
+                        ...prevOrg,
+                        members: prevOrg.members.map(m =>
+                            m.id === member.id ? { ...m, role: MAP_ROLE_TO_TEXT[newRoleValue] } : m
+                        )
+                    } : prevOrg);
+
+                    // Update stats
+                    const oldRoleLabel = member.role;
+                    const newRoleLabel = MAP_ROLE_TO_TEXT[newRoleValue];
+
+                    setStats(prevStats => {
+                        const newStats = { ...prevStats };
+
+                        // Decrease old role count
+                        if (oldRoleLabel === '会长') newStats.leaderMembers = Math.max(0, newStats.leaderMembers - 1);
+                        else if (oldRoleLabel === '管理员') newStats.deputyMembers = Math.max(0, newStats.deputyMembers - 1);
+                        else if (oldRoleLabel === '成员') newStats.regularMembers = Math.max(0, newStats.regularMembers - 1);
+
+                        // Increase new role count
+                        if (newRoleLabel === '会长') newStats.leaderMembers += 1;
+                        else if (newRoleLabel === '管理员') newStats.deputyMembers += 1;
+                        else if (newRoleLabel === '成员') newStats.regularMembers += 1;
+
+                        return newStats;
+                    });
+
+                    message.success(`已将 ${member.name} 的角色设置为 ${newRoleLabel}`);
+                } catch (err) {
+                    console.error('设置角色失败:', err);
+                    message.error('设置角色失败');
+                }
+
+                cleanup();
+            };
+
+            overlay.onclick = cleanup;
+        });
+    };
+
+    // Function to check if current user can manage a specific member
+    const canManageMember = (member: Member) => {
+        if (!userRole || userRole === 'guest' || userRole === 'member') return false;
+
+        // 管理员不能管理会长和其他管理员
+        if (userRole === 'admin') {
+            if (member.role === '会长') return false;
+            if (member.role === '管理员' && member.name !== currentUser?.name) return false;
+        }
+
+        // 会长不能踢自己
+        if (userRole === 'leader' && member.name === currentUser?.name) return false;
+
+        return true;
     };
 
     const handleJoin = async () => {
@@ -521,6 +704,24 @@ const OrganizationDetail: React.FC = () => {
                                                                             <button className={styles.actionButton} title="查看详情">
                                                                                 <FaEye />
                                                                             </button>
+                                                                            {canManageMember(member) && (
+                                                                                <>
+                                                                                    <button
+                                                                                        className={`${styles.actionButton} ${styles.kickButton}`}
+                                                                                        title="踢出组织"
+                                                                                        onClick={() => handleKickMember(member)}
+                                                                                    >
+                                                                                        <FaUserMinus />
+                                                                                    </button>
+                                                                                    <button
+                                                                                        className={`${styles.actionButton} ${styles.roleButton}`}
+                                                                                        title="设置角色"
+                                                                                        onClick={() => handleSetMemberRole(member)}
+                                                                                    >
+                                                                                        <FaCog />
+                                                                                    </button>
+                                                                                </>
+                                                                            )}
                                                                         </div>
                                                                     </td>
                                                                 </tr>

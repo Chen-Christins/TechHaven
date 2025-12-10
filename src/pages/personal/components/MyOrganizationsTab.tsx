@@ -27,25 +27,20 @@ const MyOrganizationsTab: React.FC = () => {
             }
 
             try {
-                // 调用组织服务获取组织列表
-                // 注意：真实的API可能需要获取用户加入的组织列表，这里先使用现有的API获取所有组织
-                const res = await OrganizationService.getOrganizationLists({ status: -1 });
-                // 模拟用户加入的组织数据，实际情况需要后端API支持
-                // 暂时显示所有组织，实际应用中需要获取用户加入的组织列表
-                const roles: ('会长' | '管理员' | '成员')[] = ['会长', '管理员', '成员'];
-                const mockUserOrganizations: PersonalOrganization[] = (res.list || []).map((org: any) => ({
-                    id: String(org.id),
-                    name: org.name || '未知组织',
+                // 使用最新接口获取用户加入的组织列表
+                const res = await OrganizationService.userOrganizationLists();
+                const orgs: PersonalOrganization[] = (res.list || []).map((org: any) => ({
+                    id: String(org.org_id),
+                    name: org.org_name || '未知组织',
                     type: org.type || '未知类型',
-                    description: org.description || '暂无描述',
-                    memberCount: Math.floor(Math.random() * 100), // 模拟成员数
-                    role: roles[Math.floor(Math.random() * roles.length)], // 模拟角色
-                    createTime: org.create_time ? formatToChinaTime(org.create_time) : '未知时间',
-                    status: org.status === 1 || org.status === 'active' ? 'active' : 'inactive',
-                    avatar: org.avatar
+                    description: org.org_description || '暂无描述',
+                    memberCount: org.count ?? 0,
+                    role: org.role === 3 ? '会长' : org.role === 2 ? '管理员' : '成员',
+                    createTime: org.join_time ? formatToChinaTime(org.join_time) : '未知时间',
+                    status: 'active', // 该接口无状态字段，默认 active
+                    avatar: undefined // 该接口无头像字段
                 }));
-
-                setOrganizations(mockUserOrganizations);
+                setOrganizations(orgs);
             } catch (err) {
                 console.error('获取个人组织失败:', err);
                 setOrganizations([]);

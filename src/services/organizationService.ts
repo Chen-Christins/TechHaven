@@ -38,6 +38,7 @@ export interface GetAdminOrganizationsResponse {
         status: number | string;
         description: string;
         create_time: number;
+        count: number;
     }>;
 }
 
@@ -73,6 +74,7 @@ export interface GetOrganizationListsResponse {
         type: string;
         status: number | string;
         description: string;
+        count: number;
     }>;
 }
 
@@ -139,6 +141,40 @@ export interface organizationJoinCheckResponse {
     success: number;
 }
 
+export interface organizationKickParams {
+    user_id: number | string;
+    org_id: number | string;
+}
+
+export interface organizationKickResponse {
+    success: number;
+}
+
+export interface organizationSetRoleParams {
+    user_id: number | string;
+    org_id: number | string;
+    role: number;
+}
+
+export interface organizationSetRoleResponse {
+    success: number;
+}
+
+export interface userOrganizationListsParams {
+}
+
+export interface userOrganizationListsResponse {
+    list: Array<{
+        id: number | string;
+        org_id: number | string;
+        org_name: string;
+        org_description: string;
+        type: string;
+        role: number;
+        join_time: number;
+        count: number;
+    }>;
+}
 /**
  * 组织服务类
  */
@@ -247,6 +283,46 @@ export class OrganizationService {
         formData.append('state', String(params.state));
 
         const response = await http.post<organizationJoinCheckResponse>('/organization/join_check', formData.toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        });
+        return response.data;
+    }
+
+    static async userOrganizationLists(): Promise<userOrganizationListsResponse> {
+        let url = `/user/organization/list`;
+
+        const response = await http.get<userOrganizationListsResponse>(url);
+        return response.data;
+    }
+
+    /**
+     * 踢出组织成员
+     */
+    static async kickOrganizationMember(params: organizationKickParams): Promise<organizationKickResponse> {
+        const formData = new URLSearchParams();
+        formData.append('user_id', String(params.user_id));
+        formData.append('org_id', String(params.org_id));
+
+        const response = await http.post<organizationKickResponse>('/organization/kick', formData.toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        });
+        return response.data;
+    }
+
+    /**
+     * 设置组织成员角色
+     */
+    static async setOrganizationMemberRole(params: organizationSetRoleParams): Promise<organizationSetRoleResponse> {
+        const formData = new URLSearchParams();
+        formData.append('user_id', String(params.user_id));
+        formData.append('org_id', String(params.org_id));
+        formData.append('role', String(params.role));
+
+        const response = await http.post<organizationSetRoleResponse>('/organization/set_role', formData.toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },

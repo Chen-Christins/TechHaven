@@ -637,6 +637,26 @@
     color: white;
 }
 
+.actionButton.kickButton {
+    background-color: var(--error-light);
+    color: var(--error);
+}
+
+.actionButton.kickButton:hover {
+    background-color: var(--error);
+    color: white;
+}
+
+.actionButton.roleButton {
+    background-color: var(--warn-light);
+    color: var(--warning);
+}
+
+.actionButton.roleButton:hover {
+    background-color: var(--warning);
+    color: white;
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
     .detailCard {

@@ -69,14 +69,16 @@ const OrganizationManagement: React.FC = () => {
                 params.status = STATUS_STR_MAP_NUMBER[statusFilter];
             }
             const res = await OrganizationService.getAdminOrganizations(params);
-            const mappedList: Organization[] = (res.list || []).map((item: { id: any; name: any; type: any; status: any; create_time: number; description: any; }) => ({
+            const mappedList: Organization[] = (res.list || []).map((item: {
+                count: any; id: any; name: any; type: any; status: any; create_time: number; description: any; 
+            }) => ({
                 id: String(item.id),
                 name: item.name,
                 type: item.type,
                 status: STATUS_NUMBER_MAP_STR[Number(item.status)] as 'active' | 'inactive',
                 createdAt: dayjs.unix(item.create_time).format('YYYY-MM-DD'),
                 description: item.description,
-                memberCount: 0 // 如有成员数字段可填
+                memberCount: item.count // 如有成员数字段可填
             }));
             setOrganizations(mappedList);
             setTotal(res.total);

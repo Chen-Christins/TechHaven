@@ -24,11 +24,7 @@ interface Organization {
     status: 'active' | 'inactive';
     description?: string;
     memberCount: number;
-    // Add other fields if necessary, e.g., createdAt, owner
 }
-
-// 移除 mock 数据，使用真实接口
-
 
 const OrganizationList: React.FC = () => {
     const navigate = useNavigate();
@@ -54,7 +50,7 @@ const OrganizationList: React.FC = () => {
                     type: item.type,
                     status: item.status === 1 ? 'active' : 'inactive' as 'active' | 'inactive',
                     description: item.description,
-                    memberCount: item.memberCount || 0 // 如果接口有成员数字段
+                    memberCount: item.count || 0 // 如果接口有成员数字段
                 }));
                 setOrganizations(mapped);
             } catch (e) {
