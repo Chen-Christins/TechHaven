@@ -142,6 +142,7 @@ export interface organizationJoinCheckResponse {
 }
 
 export interface organizationKickParams {
+    id: number | string;
     user_id: number | string;
     org_id: number | string;
 }
@@ -151,13 +152,21 @@ export interface organizationKickResponse {
 }
 
 export interface organizationSetRoleParams {
+    id: number | string;
     user_id: number | string;
     org_id: number | string;
     role: number;
 }
 
 export interface organizationSetRoleResponse {
-    success: number;
+    id: number | string;
+    user_id: number | string;
+    name: string;
+    avatar: string;
+    email: string;
+    role: number;
+    status: number;
+    join_time: number;
 }
 
 export interface userOrganizationListsParams {
@@ -302,10 +311,11 @@ export class OrganizationService {
      */
     static async kickOrganizationMember(params: organizationKickParams): Promise<organizationKickResponse> {
         const formData = new URLSearchParams();
+        formData.append('id', String(params.id));
         formData.append('user_id', String(params.user_id));
         formData.append('org_id', String(params.org_id));
 
-        const response = await http.post<organizationKickResponse>('/organization/kick', formData.toString(), {
+        const response = await http.post<organizationKickResponse>('/organization/user_kick', formData.toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
@@ -318,11 +328,12 @@ export class OrganizationService {
      */
     static async setOrganizationMemberRole(params: organizationSetRoleParams): Promise<organizationSetRoleResponse> {
         const formData = new URLSearchParams();
+        formData.append('id', String(params.id));
         formData.append('user_id', String(params.user_id));
         formData.append('org_id', String(params.org_id));
         formData.append('role', String(params.role));
 
-        const response = await http.post<organizationSetRoleResponse>('/organization/set_role', formData.toString(), {
+        const response = await http.post<organizationSetRoleResponse>('/organization/user_switch_role', formData.toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },

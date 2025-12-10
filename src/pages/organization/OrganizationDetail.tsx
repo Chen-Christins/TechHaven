@@ -28,10 +28,11 @@ import OrganizationService from '../../services/organizationService';
 import type { GetOrganizationDetailResponse, JoinOrganizationResponse } from '../../services/organizationService';
 import message from '../../components/message/Message';
 import { confirm } from '../../components/confirm/Confirm';
+import Modal from '../../components/modal/Modal';
 
 interface Member {
     id: string;
-    user_id?: string;
+    user_id: string;
     name: string;
     avatar?: string;
     role?: string;
@@ -99,6 +100,9 @@ const OrganizationDetail: React.FC = () => {
     const [refreshTrigger, setRefreshTrigger] = useState(0); // 用于强制刷新的触发器
     const [isRefreshing, setIsRefreshing] = useState(false); // 刷新状态
     const [pendingRequestsRefreshTrigger, setPendingRequestsRefreshTrigger] = useState(0); // 用于强制刷新待处理请求的触发器
+    const [roleModalVisible, setRoleModalVisible] = useState(false);
+    const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+    const [selectedRole, setSelectedRole] = useState(1);
 
     // Determine if current user is admin/leader of the organization
     const checkUserRole = useCallback((role: string | undefined) => {
@@ -146,6 +150,7 @@ const OrganizationDetail: React.FC = () => {
     // Function to fetch organization members using the new API (真正分页)
     const fetchMembersList = useCallback(async (pageNum: number = 1) => {
         if (!currentUser || !id) return;
+
         // 设置刷新状态
         setIsRefreshing(true);
 
@@ -159,6 +164,7 @@ const OrganizationDetail: React.FC = () => {
             if (res && res.list) {
                 const members: Member[] = res.list.map(item => ({
                     id: String(item.id),
+                    user_id: String(item.user_id),
                     name: item.name,
                     avatar: item.avatar,
                     role: MAP_ROLE_TO_TEXT[item.role],
@@ -177,8 +183,8 @@ const OrganizationDetail: React.FC = () => {
                 });
 
                 setOrg(prevOrg => prevOrg ? { ...prevOrg, members, memberCount: res.total || 0 } : prevOrg);
-            } else {
-                // 如果没有响应数据，仍然更新状态为0
+            } else if (res && res.list && res.list.length === 0) {
+                // 如果有响应但列表为空，更新为空状态
                 setMembersTotal(0);
                 setStats({
                     totalMembers: 0,
@@ -190,43 +196,35 @@ const OrganizationDetail: React.FC = () => {
 
                 setOrg(prevOrg => prevOrg ? { ...prevOrg, members: [], memberCount: 0 } : prevOrg);
             }
+            // 如果没有响应数据，保持当前状态不变，避免清空已有数据
         } catch (error) {
             console.error('获取组织成员列表失败:', error);
             message.error('获取成员列表失败');
 
-            // 在错误情况下也需要更新状态
-            setMembersTotal(0);
-            setStats({
-                totalMembers: 0,
-                activeMembers: 0,
-                leaderMembers: 0,
-                deputyMembers: 0,
-                regularMembers: 0
-            });
-
-            setOrg(prevOrg => prevOrg ? { ...prevOrg, members: [], memberCount: 0 } : prevOrg);
+            // 在错误情况下，不清空已有数据，保持当前状态
+            // 这样可以避免网络错误导致成员列表突然消失
         } finally {
             // 确保在完成请求后重置刷新状态
             setIsRefreshing(false);
         }
     }, [id, currentUser]);
 
-    // 成员列表分页请求，依赖 id、page、currentUser、org 的基本属性（不包括 members）、refreshTrigger、showPendingRequests、pendingRequestsPage、pendingRequestsRefreshTrigger
+    // 成员列表
     useEffect(() => {
         if (!id || !currentUser) return;
-
         if (!showPendingRequests) {
-            // 显示成员列表时，获取成员数据（所有用户都可以看到成员列表）
             fetchMembersList(page);
-        } else {
-            // 显示待处理请求时，获取待处理请求数据
-            const role = org?.user_role;
-            if ((role === '管理员' || role === '会长')) {
-                fetchPendingRequests(pendingRequestsPage);
-            }
+        }
+    }, [id, currentUser, org?.id, page, refreshTrigger, showPendingRequests, fetchMembersList]);
+
+    // 待处理请求
+    useEffect(() => {
+        if (!id || !currentUser) return;
+        if (showPendingRequests && (org?.user_role === '管理员' || org?.user_role === '会长')) {
+            fetchPendingRequests(pendingRequestsPage);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id, currentUser, org?.id, page, refreshTrigger, showPendingRequests, pendingRequestsPage, pendingRequestsRefreshTrigger]);
+    }, [id, currentUser, org?.id, showPendingRequests, pendingRequestsPage, pendingRequestsRefreshTrigger]);
 
     // Function to fetch pending join requests if user is an admin/leader (真正分页)
     const fetchPendingRequests = async (pageNum: number = 1) => {
@@ -317,7 +315,8 @@ const OrganizationDetail: React.FC = () => {
 
         try {
             await OrganizationService.kickOrganizationMember({
-                user_id: member.user_id || member.id,
+                id: member.id,
+                user_id: member.user_id,
                 org_id: id!
             });
 
@@ -340,13 +339,12 @@ const OrganizationDetail: React.FC = () => {
 
             message.success(`已将 ${member.name} 踢出组织`);
         } catch (err) {
-            console.error('踢出成员失败:', err);
             message.error('踢出成员失败');
         }
     };
 
     // Function to handle setting member role
-    const handleSetMemberRole = async (member: Member) => {
+    const handleSetMemberRole = (member: Member) => {
         const roleOptions = [
             { value: 1, label: '成员' },
             { value: 2, label: '管理员' },
@@ -355,140 +353,126 @@ const OrganizationDetail: React.FC = () => {
 
         const currentRole = roleOptions.find(r => r.label === member.role)?.value || 1;
 
-        // 创建一个简单的角色选择界面
-        const roleSelection = document.createElement('div');
-        roleSelection.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            z-index: 1000;
-            min-width: 300px;
-        `;
+        setSelectedMember(member);
+        setSelectedRole(currentRole);
+        setRoleModalVisible(true);
+    };
 
-        roleSelection.innerHTML = `
-            <h3 style="margin: 0 0 15px 0; color: #333;">设置 ${member.name} 的角色</h3>
-            <div style="margin-bottom: 15px;">
-                ${roleOptions.map((role) => `
-                    <label style="display: block; margin-bottom: 8px; cursor: pointer;">
-                        <input type="radio" name="role" value="${role.value}" ${role.value === currentRole ? 'checked' : ''} />
-                        ${role.label}
-                    </label>
-                `).join('')}
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button id="cancelRole" style="padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">取消</button>
-                <button id="confirmRole" style="padding: 8px 16px; border: none; background: #007bff; color: white; border-radius: 4px; cursor: pointer;">确认</button>
-            </div>
-        `;
+    // Function to confirm role selection
+    const handleConfirmRole = async () => {
+        if (!selectedMember) return;
 
-        // 添加遮罩层
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-        `;
+        const roleOptions = [
+            { value: 1, label: '成员' },
+            { value: 2, label: '管理员' },
+            { value: 3, label: '会长' }
+        ];
 
-        document.body.appendChild(overlay);
-        document.body.appendChild(roleSelection);
+        const currentRole = roleOptions.find(r => r.label === selectedMember.role)?.value || 1;
 
-        return new Promise<void>((resolve) => {
-            const cancelBtn = document.getElementById('cancelRole') as HTMLButtonElement;
-            const confirmBtn = document.getElementById('confirmRole') as HTMLButtonElement;
+        if (selectedRole === currentRole) {
+            message.warn('该用户已经是这个角色');
+            setRoleModalVisible(false);
+            return;
+        }
 
-            const cleanup = () => {
-                document.body.removeChild(overlay);
-                document.body.removeChild(roleSelection);
-                resolve();
-            };
+        try {
+            await OrganizationService.setOrganizationMemberRole({
+                id: selectedMember.id,
+                user_id: selectedMember.user_id!,
+                org_id: id!,
+                role: selectedRole
+            });
 
-            cancelBtn.onclick = cleanup;
 
-            confirmBtn.onclick = async () => {
-                const selectedInput = roleSelection.querySelector('input[name="role"]:checked') as HTMLInputElement;
-                if (!selectedInput) {
-                    message.error('请选择一个角色');
-                    return;
-                }
+            // Update member role in local state
+            setOrg(prevOrg => prevOrg ? {
+                ...prevOrg,
+                members: prevOrg.members.map(m =>
+                    m.id === selectedMember.id ? { ...m, role: MAP_ROLE_TO_TEXT[selectedRole] } : m
+                )
+            } : prevOrg);
 
-                const newRoleValue = parseInt(selectedInput.value);
-                if (newRoleValue === currentRole) {
-                    message.warn('该用户已经是这个角色');
-                    cleanup();
-                    return;
-                }
+            // Update stats
+            const oldRoleLabel = selectedMember.role;
+            const newRoleLabel = MAP_ROLE_TO_TEXT[selectedRole];
 
-                try {
-                    await OrganizationService.setOrganizationMemberRole({
-                        user_id: member.user_id || member.id,
-                        org_id: id!,
-                        role: newRoleValue
-                    });
+            setStats(prevStats => {
+                const newStats = { ...prevStats };
 
-                    // Update member role in local state
-                    setOrg(prevOrg => prevOrg ? {
-                        ...prevOrg,
-                        members: prevOrg.members.map(m =>
-                            m.id === member.id ? { ...m, role: MAP_ROLE_TO_TEXT[newRoleValue] } : m
-                        )
-                    } : prevOrg);
+                // Decrease old role count
+                if (oldRoleLabel === '会长') newStats.leaderMembers = Math.max(0, newStats.leaderMembers - 1);
+                else if (oldRoleLabel === '管理员') newStats.deputyMembers = Math.max(0, newStats.deputyMembers - 1);
+                else if (oldRoleLabel === '成员') newStats.regularMembers = Math.max(0, newStats.regularMembers - 1);
 
-                    // Update stats
-                    const oldRoleLabel = member.role;
-                    const newRoleLabel = MAP_ROLE_TO_TEXT[newRoleValue];
+                // Increase new role count
+                if (newRoleLabel === '会长') newStats.leaderMembers += 1;
+                else if (newRoleLabel === '管理员') newStats.deputyMembers += 1;
+                else if (newRoleLabel === '成员') newStats.regularMembers += 1;
 
-                    setStats(prevStats => {
-                        const newStats = { ...prevStats };
+                return newStats;
+            });
 
-                        // Decrease old role count
-                        if (oldRoleLabel === '会长') newStats.leaderMembers = Math.max(0, newStats.leaderMembers - 1);
-                        else if (oldRoleLabel === '管理员') newStats.deputyMembers = Math.max(0, newStats.deputyMembers - 1);
-                        else if (oldRoleLabel === '成员') newStats.regularMembers = Math.max(0, newStats.regularMembers - 1);
-
-                        // Increase new role count
-                        if (newRoleLabel === '会长') newStats.leaderMembers += 1;
-                        else if (newRoleLabel === '管理员') newStats.deputyMembers += 1;
-                        else if (newRoleLabel === '成员') newStats.regularMembers += 1;
-
-                        return newStats;
-                    });
-
-                    message.success(`已将 ${member.name} 的角色设置为 ${newRoleLabel}`);
-                } catch (err) {
-                    console.error('设置角色失败:', err);
-                    message.error('设置角色失败');
-                }
-
-                cleanup();
-            };
-
-            overlay.onclick = cleanup;
-        });
+            message.success(`已将 ${selectedMember.name} 的角色设置为 ${newRoleLabel}`);
+            setRoleModalVisible(false);
+        } catch (err) {
+            console.error('设置角色失败:', err);
+            message.error('设置角色失败');
+        }
     };
 
     // Function to check if current user can manage a specific member
     const canManageMember = (member: Member) => {
         if (!userRole || userRole === 'guest' || userRole === 'member') return false;
 
-        // 管理员不能管理会长和其他管理员
+        // 管理员不能管理会长和自己
         if (userRole === 'admin') {
             if (member.role === '会长') return false;
-            if (member.role === '管理员' && member.name !== currentUser?.name) return false;
+            if (member.role === '管理员' && member.name === currentUser?.name) return false;
         }
 
-        // 会长不能踢自己
+        // 会长不能管理自己
         if (userRole === 'leader' && member.name === currentUser?.name) return false;
 
         return true;
+    };
+
+    // Function to check if current user can set role for a specific member
+    const canSetRole = (member: Member) => {
+        if (!userRole || userRole === 'guest' || userRole === 'member') return false;
+
+        // 管理员不能设置会长角色，也不能管理会长和自己
+        if (userRole === 'admin') {
+            if (member.role === '会长') return false;
+            if (member.name === currentUser?.name) return false; // 不能设置自己的角色
+            return true; // 管理员只能设置普通成员为管理员
+        }
+
+        // 会长可以设置任何人的角色（除了自己）
+        if (userRole === 'leader') {
+            return member.name !== currentUser?.name;
+        }
+
+        return false;
+    };
+
+    // Function to get available role options based on current user's role
+    const getAvailableRoleOptions = () => {
+        if (userRole === 'admin') {
+            // 管理员只能设置成员为管理员，不能设置会长
+            return [
+                { value: 1, label: '成员', icon: <FaUser />, description: '普通组织成员' },
+                { value: 2, label: '管理员', icon: <FaUserShield />, description: '拥有管理权限' }
+            ];
+        } else if (userRole === 'leader') {
+            // 会长可以设置任何角色
+            return [
+                { value: 1, label: '成员', icon: <FaUser />, description: '普通组织成员' },
+                { value: 2, label: '管理员', icon: <FaUserShield />, description: '拥有管理权限' },
+                { value: 3, label: '会长', icon: <FaCrown />, description: '组织最高权限' }
+            ];
+        }
+        return [];
     };
 
     const handleJoin = async () => {
@@ -512,35 +496,39 @@ const OrganizationDetail: React.FC = () => {
             // The join API returns updated organization information
             const joinRes: JoinOrganizationResponse = await OrganizationService.joinOrganization({ id: id! });
 
-            // Use the response directly to update the organization status
-            const orgDetail: OrganizationDetail = {
-                id: String(joinRes.id),
-                name: joinRes.name,
-                type: joinRes.type,
-                status: joinRes.status === 1 || joinRes.status === 'active' ? 'active' : 'inactive',
-                description: joinRes.description,
-                memberCount: 0, // Initialize to 0, since members aren't returned in the join response
-                members: [], // Use mock data temporarily
-                user_in_org: (typeof joinRes.user_in_org !== 'undefined' && joinRes.user_in_org >= 0 ? MAP_STATUS_TO_TEXT[joinRes.user_in_org] : undefined)
-            };
-            setOrg(orgDetail);
+            // Update organization status but preserve existing member data
+            setOrg(prevOrg => {
+                if (!prevOrg) return prevOrg;
+
+                return {
+                    ...prevOrg,
+                    user_in_org: (typeof joinRes.user_in_org !== 'undefined' && joinRes.user_in_org >= 0 ? MAP_STATUS_TO_TEXT[joinRes.user_in_org] : undefined)
+                };
+            });
             message.success('已申请加入组织');
         } catch (e) {
             message.error('申请加入失败');
-            // If the join failed, refresh the organization data to ensure consistency
-            if (org && currentUser) {  // 添加 currentUser 检查
-                const res: GetOrganizationDetailResponse = await OrganizationService.getOrganizationDetail({ id: id! });
-                const orgDetail: OrganizationDetail = {
-                    id: String(res.id),
-                    name: res.name,
-                    type: res.type,
-                    status: res.status === 1 || res.status === 'active' ? 'active' : 'inactive',
-                    description: res.description,
-                    memberCount: Array.isArray((res as any).members) ? (res as any).members.length : 0,
-                    members: Array.isArray((res as any).members) ? (res as any).members : [],
-                    user_in_org: res.user_in_org ? MAP_STATUS_TO_TEXT[res.user_in_org] : undefined
-                };
-                setOrg(orgDetail);
+            // Refresh the organization data to ensure consistency
+            if (id && currentUser) {
+                try {
+                    const res: GetOrganizationDetailResponse = await OrganizationService.getOrganizationDetail({ id });
+                    const orgDetail: OrganizationDetail = {
+                        id: String(res.id),
+                        name: res.name,
+                        type: res.type,
+                        status: res.status === 1 || res.status === 'active' ? 'active' : 'inactive',
+                        description: res.description,
+                        memberCount: Array.isArray((res as any).members) ? (res as any).members.length : 0,
+                        members: Array.isArray((res as any).members) ? (res as any).members : [],
+                        user_in_org: res.user_in_org ? MAP_STATUS_TO_TEXT[res.user_in_org] : undefined,
+                        user_role: (typeof res.user_role !== 'undefined' && res.user_role > 0 ? MAP_ROLE_TO_TEXT[res.user_role] : undefined)
+                    };
+                    setOrg(orgDetail);
+                    const role = checkUserRole(orgDetail.user_role);
+                    setUserRole(role);
+                } catch (refreshError) {
+                    console.error('刷新组织数据失败:', refreshError);
+                }
             }
         }
     };
@@ -566,7 +554,7 @@ const OrganizationDetail: React.FC = () => {
                                                 <span className={org.status === 'active' ? styles.statusActive : styles.statusInactive}>
                                                     {org.status === 'active' ? <FaCheckCircle /> : <FaLock />} {org.status === 'active' ? '正常' : '停用'}
                                                 </span>
-                                                {org.user_in_org ? (
+                                                {org.user_in_org === '已加入' || org.user_in_org === '申请中' ? (
                                                     <span className={styles.joined}>{org.user_in_org}</span>
                                                 ) : (
                                                     <button
@@ -575,7 +563,7 @@ const OrganizationDetail: React.FC = () => {
                                                         disabled={org.status !== 'active'}
                                                         title={org.status !== 'active' ? '该组织已停用，无法加入' : ''}
                                                     >
-                                                        <FaPlus /> 申请加入
+                                                        <FaPlus /> {org.user_in_org === '已退出' ? '重新加入' : '申请加入'}
                                                     </button>
                                                 )}
                                             </div>
@@ -701,7 +689,8 @@ const OrganizationDetail: React.FC = () => {
                                                                     <td>{member.joinTime || '-'}</td>
                                                                     <td>
                                                                         <div className={styles.actionButtons}>
-                                                                            <button className={styles.actionButton} title="查看详情">
+                                                                            <button className={`${styles.actionButton} ${styles.viewButton}`}
+                                                                                title="查看详情">
                                                                                 <FaEye />
                                                                             </button>
                                                                             {canManageMember(member) && (
@@ -713,13 +702,15 @@ const OrganizationDetail: React.FC = () => {
                                                                                     >
                                                                                         <FaUserMinus />
                                                                                     </button>
-                                                                                    <button
-                                                                                        className={`${styles.actionButton} ${styles.roleButton}`}
-                                                                                        title="设置角色"
-                                                                                        onClick={() => handleSetMemberRole(member)}
-                                                                                    >
-                                                                                        <FaCog />
-                                                                                    </button>
+                                                                                    {canSetRole(member) && (
+                                                                                        <button
+                                                                                            className={`${styles.actionButton} ${styles.roleButton}`}
+                                                                                            title="设置角色"
+                                                                                            onClick={() => handleSetMemberRole(member)}
+                                                                                        >
+                                                                                            <FaCog />
+                                                                                        </button>
+                                                                                    )}
                                                                                 </>
                                                                             )}
                                                                         </div>
@@ -900,6 +891,66 @@ const OrganizationDetail: React.FC = () => {
                 </AuthRequired>
             </div>
             <Footer companyName="TechBlog" startYear={2025} />
+
+            {/* Role Selection Modal */}
+            <Modal
+                visible={roleModalVisible}
+                title={`设置 ${selectedMember?.name} 的角色`}
+                onClose={() => setRoleModalVisible(false)}
+                footer={
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                        <button
+                            onClick={() => setRoleModalVisible(false)}
+                            className={styles.cancelButton}
+                        >
+                            取消
+                        </button>
+                        <button
+                            onClick={handleConfirmRole}
+                            className={styles.confirmButton}
+                        >
+                            确认
+                        </button>
+                    </div>
+                }
+                width="450px"
+                size="small"
+            >
+                <div className={styles.roleSelectionContainer}>
+                    <p className={styles.roleSelectionDescription}>
+                        请为 {selectedMember?.name} 选择合适的角色
+                    </p>
+                    <div className={styles.roleOptions}>
+                        {getAvailableRoleOptions().map((role) => (
+                            <label
+                                key={role.value}
+                                className={`${styles.roleOption} ${selectedRole === role.value ? styles.selectedRole : ''}`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="role"
+                                    value={role.value}
+                                    checked={selectedRole === role.value}
+                                    onChange={(e) => setSelectedRole(parseInt(e.target.value))}
+                                    style={{ display: 'none' }}
+                                />
+                                <div className={styles.roleOptionContent}>
+                                    <div className={styles.roleIcon}>
+                                        {role.icon}
+                                    </div>
+                                    <div className={styles.roleInfo}>
+                                        <div className={styles.roleLabel}>{role.label}</div>
+                                        <div className={styles.roleDescription}>{role.description}</div>
+                                    </div>
+                                    <div className={styles.roleRadio}>
+                                        <div className={styles.radioCircle}></div>
+                                    </div>
+                                </div>
+                            </label>
+                        ))}
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

@@ -642,6 +642,15 @@
     color: var(--error);
 }
 
+.actionButton.viewButton {
+    background-color: var(--primary-light);
+    color: var(--primary);
+}
+.actionButton.viewButton:hover {
+    background-color: var(--primary);
+    color: white;
+}
+
 .actionButton.kickButton:hover {
     background-color: var(--error);
     color: white;
@@ -743,4 +752,161 @@
     max-width: 400px;
     margin-left: auto;
     margin-right: auto;
+}
+
+/* 角色选择模态框样式 */
+.roleSelectionContainer {
+    padding: 8px 0;
+}
+
+.roleSelectionDescription {
+    margin: 0 0 20px 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    text-align: center;
+}
+
+.roleOptions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.roleOption {
+    display: block;
+    padding: 16px;
+    border: 2px solid var(--border-primary);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--card-bg);
+}
+
+.roleOption:hover {
+    border-color: var(--primary-light);
+    background: var(--bg-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+.roleOption.selectedRole {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.1));
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.roleOptionContent {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.roleIcon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 18px;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+}
+
+.roleOption.selectedRole .roleIcon {
+    color: var(--primary);
+    background: var(--primary-light);
+}
+
+.roleInfo {
+    flex: 1;
+}
+
+.roleLabel {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.roleDescription {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.roleRadio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.radioCircle {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-primary);
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.roleOption.selectedRole .radioCircle {
+    border-color: var(--primary);
+    background: var(--primary);
+}
+
+.roleOption.selectedRole .radioCircle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    background: white;
+    border-radius: 50%;
+}
+
+/* 按钮样式 */
+.cancelButton {
+    padding: 10px 20px;
+    border: 2px solid var(--border-primary);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.cancelButton:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--bg-hover);
+    transform: translateY(-1px);
+}
+
+.confirmButton {
+    padding: 10px 20px;
+    border: none;
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    color: white;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.confirmButton:hover {
+    background: linear-gradient(135deg, var(--primary-hover), var(--accent));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.confirmButton:active {
+    transform: translateY(0);
 }
