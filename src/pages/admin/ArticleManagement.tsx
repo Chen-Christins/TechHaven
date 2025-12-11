@@ -186,7 +186,7 @@ const ArticleManagement: React.FC = () => {
                     id: String(article.id),
                     title: article.title,
                     slug: "asdasdsad", // 占位符，API未提供
-                    summary: article.summary + "...",
+                    summary: article.summary.substring(0, 45) + "...",
                     author: article.author,
                     authorEmail: article.email,
                     authorRole: ROLE_MAP[article.author_role] || '用户', // 使用API提供的author_role字段
@@ -647,20 +647,29 @@ const ArticleManagement: React.FC = () => {
                             currentArticles.map((article) => (
                                 <tr key={article.id} className={`${article.featured ? styles.featured : ''}`}>
                                     <td>
-                                        <div className={styles.articleInfo}>
-                                            <div className={styles.articleDetails}>
-                                                {article.featured && (
-                                                    <span className={styles.featuredTag}>
-                                                        <FaStar /> 置顶
-                                                    </span>
-                                                )}
-                                                <div className={styles.articleTitle}>{article.title}</div>
-                                                <div className={styles.articleSummary}>{article.summary}</div>
-                                                {article.isReported && (
-                                                    <span className={styles.reportedTag}>
-                                                        <FaFlag /> 举报 {article.reportCount}
-                                                    </span>
-                                                )}
+                                        <div className={styles.userInfo}>
+                                            <div className={styles.userAvatar} style={{ background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <FaFileAlt />
+                                            </div>
+                                            <div className={styles.userDetails}>
+                                                <div className={styles.userName}>{article.title}</div>
+                                                <div className={styles.userEmail}>
+                                                    {article.featured && (
+                                                        <span className={styles.featuredTag}>
+                                                            <FaStar /> 置顶
+                                                        </span>
+                                                    )}
+                                                    {article.summary && (
+                                                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                                                            {article.summary}
+                                                        </span>
+                                                    )}
+                                                    {article.isReported && (
+                                                        <span className={styles.reportedTag} style={{ marginLeft: '8px' }}>
+                                                            <FaFlag /> 举报 {article.reportCount}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </td>

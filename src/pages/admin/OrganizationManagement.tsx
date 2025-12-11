@@ -335,7 +335,21 @@ const OrganizationManagement: React.FC = () => {
                             currentData.map(item => (
                                 <tr key={item.id}>
                                     <td>
-                                        <div style={{ fontWeight: 500 }}>{item.name}</div>
+                                        <div className={styles.userInfo}>
+                                            <div className={styles.userAvatar} style={{ background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <FaBuilding />
+                                            </div>
+                                            <div className={styles.userDetails}>
+                                                <div className={styles.userName}>{item.name}</div>
+                                                <div className={styles.userEmail}>
+                                                    {item.description && (
+                                                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                                                            {item.description}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td>{item.type}</td>
                                     <td>{item.memberCount}</td>

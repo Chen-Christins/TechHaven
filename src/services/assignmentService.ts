@@ -10,6 +10,7 @@ export interface CreateAssignmentParams {
     end_time: string;
     file_size: number;
     status: number | string;
+    priority: number;
     file_type: string;
     description: string;
 }
@@ -43,6 +44,7 @@ export interface GetAdminAssignmentsResponse {
         subject_name: string;
         end_time: number;
         status: string;
+        priority: number;
         create_time: number;
         file_size: number;
         file_type: string;
@@ -82,6 +84,7 @@ export class AssignmentService {
         formData.append('end_time', params.end_time);
         formData.append('file_size', String(params.file_size));
         formData.append('status', String(params.status));
+        formData.append('priority', String(params.priority));
         formData.append('file_type', params.file_type);
         formData.append('description', params.description);
 

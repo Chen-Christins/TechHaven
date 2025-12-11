@@ -16,7 +16,16 @@ import {
     FaTimes,
     FaSync,
     FaUserMinus,
-    FaCog
+    FaCog,
+    FaTasks,
+    FaEdit,
+    FaTrash,
+    FaCalendarAlt,
+    FaFlag,
+    FaUserPlus,
+    FaHourglassHalf,
+    FaPlayCircle,
+    FaStopCircle
 } from 'react-icons/fa';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
@@ -61,6 +70,23 @@ interface MemberStats {
     regularMembers: number;
 }
 
+interface Task {
+    id: number | string;
+    title: string;
+    description: string;
+    status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+    priority: 'low' | 'medium' | 'high' | 'urgent';
+    assignee: string;
+    assignee_name?: string;
+    creator: string | number;
+    creator_name: string;
+    created_at: string;
+    updated_at?: string;
+    due_date: string;
+    tags: string[];
+    org_id: number | string;
+}
+
 const MAP_STATUS_TO_TEXT: Record<number, string> = {
     0: "申请中",
     1: "已加入",
@@ -103,6 +129,27 @@ const OrganizationDetail: React.FC = () => {
     const [roleModalVisible, setRoleModalVisible] = useState(false);
     const [selectedMember, setSelectedMember] = useState<Member | null>(null);
     const [selectedRole, setSelectedRole] = useState(1);
+
+    // 任务相关状态
+    const [showTasks, setShowTasks] = useState(false);
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [tasksLoading, setTasksLoading] = useState(false);
+    const [tasksPage, setTasksPage] = useState(1);
+    const [tasksTotal, setTasksTotal] = useState(0);
+    const [taskRefreshTrigger, setTaskRefreshTrigger] = useState(0);
+    const [taskModalVisible, setTaskModalVisible] = useState(false);
+    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+    const [taskFormMode, setTaskFormMode] = useState<'create' | 'edit'>('create');
+
+    // 任务表单状态
+    const [taskForm, setTaskForm] = useState({
+        title: '',
+        description: '',
+        priority: 'medium' as Task['priority'],
+        assignee: '',
+        due_date: '',
+        tags: [] as string[]
+    });
 
     // Determine if current user is admin/leader of the organization
     const checkUserRole = useCallback((role: string | undefined) => {
@@ -475,6 +522,271 @@ const OrganizationDetail: React.FC = () => {
         return [];
     };
 
+    // 任务相关函数
+    const fetchTasksList = useCallback(async (pageNum: number = 1) => {
+        if (!currentUser || !id) return;
+
+        setTasksLoading(true);
+        try {
+            // 使用mock数据
+            await new Promise(resolve => setTimeout(resolve, 500)); // 模拟网络延迟
+
+            const mockTasks: Task[] = [
+                {
+                    id: '1',
+                    title: '完成前端页面重构',
+                    description: '使用React重构组织管理页面，提升用户体验',
+                    status: 'in_progress',
+                    priority: 'high',
+                    assignee: 'user1',
+                    assignee_name: '张三',
+                    creator: 'admin',
+                    creator_name: '管理员',
+                    created_at: '2025-12-01T10:00:00Z',
+                    updated_at: '2025-12-10T15:30:00Z',
+                    due_date: '2025-12-15',
+                    tags: ['前端', '重构', '紧急'],
+                    org_id: id
+                },
+                {
+                    id: '2',
+                    title: '优化数据库查询性能',
+                    description: '优化成员列表查询SQL，减少响应时间',
+                    status: 'pending',
+                    priority: 'medium',
+                    assignee: 'user2',
+                    assignee_name: '李四',
+                    creator: 'admin',
+                    creator_name: '管理员',
+                    created_at: '2025-12-05T09:00:00Z',
+                    due_date: '2025-12-20',
+                    tags: ['后端', '数据库', '优化'],
+                    org_id: id
+                },
+                {
+                    id: '3',
+                    title: '编写API文档',
+                    description: '为新版本API编写详细的接口文档',
+                    status: 'completed',
+                    priority: 'low',
+                    assignee: 'user3',
+                    assignee_name: '王五',
+                    creator: 'admin',
+                    creator_name: '管理员',
+                    created_at: '2025-11-28T14:00:00Z',
+                    updated_at: '2025-12-08T11:20:00Z',
+                    due_date: '2025-12-10',
+                    tags: ['文档', 'API'],
+                    org_id: id
+                },
+                {
+                    id: '4',
+                    title: '修复登录页面bug',
+                    description: '修复在某些浏览器上登录按钮无法点击的问题',
+                    status: 'pending',
+                    priority: 'urgent',
+                    assignee: '',
+                    creator: 'admin',
+                    creator_name: '管理员',
+                    created_at: '2025-12-09T16:00:00Z',
+                    due_date: '2025-12-12',
+                    tags: ['bug', '前端', '紧急'],
+                    org_id: id
+                },
+                {
+                    id: '5',
+                    title: '实现消息推送功能',
+                    description: '为用户添加实时消息推送功能，支持浏览器通知',
+                    status: 'cancelled',
+                    priority: 'medium',
+                    assignee: 'user1',
+                    assignee_name: '张三',
+                    creator: 'admin',
+                    creator_name: '管理员',
+                    created_at: '2025-11-20T10:00:00Z',
+                    updated_at: '2025-12-07T09:15:00Z',
+                    due_date: '2025-12-05',
+                    tags: ['功能', '推送', 'WebSocket'],
+                    org_id: id
+                }
+            ];
+
+            // 模拟分页
+            const pageSize = 10;
+            const startIndex = (pageNum - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const paginatedTasks = mockTasks.slice(startIndex, endIndex);
+
+            if (pageNum === 1) {
+                setTasks(paginatedTasks);
+            } else {
+                setTasks(prev => [...prev, ...paginatedTasks]);
+            }
+
+            setTasksTotal(mockTasks.length);
+            setTasksPage(pageNum);
+        } catch (error) {
+            console.error('获取任务列表失败:', error);
+            message.error('获取任务列表失败');
+        } finally {
+            setTasksLoading(false);
+        }
+    }, [currentUser, id]);
+
+    // 切换任务列表显示
+    const toggleTasks = () => {
+        setShowTasks(!showTasks);
+        if (!showTasks && tasks.length === 0) {
+            fetchTasksList(1);
+        }
+    };
+
+    // 创建任务
+    const handleCreateTask = () => {
+        setSelectedTask(null);
+        setTaskFormMode('create');
+        setTaskForm({
+            title: '',
+            description: '',
+            priority: 'medium',
+            assignee: '',
+            due_date: '',
+            tags: []
+        });
+        setTaskModalVisible(true);
+    };
+
+    // 编辑任务
+    const handleEditTask = (task: Task) => {
+        setSelectedTask(task);
+        setTaskFormMode('edit');
+        setTaskForm({
+            title: task.title,
+            description: task.description || '',
+            priority: task.priority,
+            assignee: task.assignee || '',
+            due_date: task.due_date || '',
+            tags: task.tags || []
+        });
+        setTaskModalVisible(true);
+    };
+
+    // 删除任务
+    const handleDeleteTask = async (task: Task) => {
+        const ok = await confirm({
+            title: '确认删除',
+            content: `确定要删除任务 "${task.title}" 吗？`,
+            confirmText: '删除',
+            cancelText: '取消',
+        });
+        if (!ok) return;
+
+        try {
+            // Mock删除操作
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            // 从本地状态中移除任务
+            setTasks(prev => prev.filter(t => t.id !== task.id));
+            setTasksTotal(prev => Math.max(0, prev - 1));
+
+            message.success('任务删除成功');
+        } catch (error) {
+            console.error('删除任务失败:', error);
+            message.error('删除任务失败');
+        }
+    };
+
+    // 更新任务状态
+    const handleUpdateTaskStatus = async (task: Task, newStatus: Task['status']) => {
+        // 检查权限：只有会长和管理员可以更新任务状态
+        if (!userRole || (userRole !== 'leader' && userRole !== 'admin')) {
+            message.warn('您没有权限更新任务状态');
+            return;
+        }
+
+        try {
+            // Mock更新操作
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            // 更新本地状态
+            setTasks(prev => prev.map(t =>
+                t.id === task.id ? { ...t, status: newStatus } : t
+            ));
+
+            message.success('任务状态更新成功');
+        } catch (error) {
+            console.error('更新任务状态失败:', error);
+            message.error('更新任务状态失败');
+        }
+    };
+
+    // 检查是否可以管理任务
+    const canManageTask = () => {
+        return userRole === 'leader' || userRole === 'admin';
+    };
+
+    // 提交任务表单
+    const handleTaskSubmit = async () => {
+        if (!taskForm.title.trim()) {
+            message.error('请输入任务标题');
+            return;
+        }
+
+        if (!currentUser || !id) return;
+
+        try {
+            // Mock提交操作
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            if (taskFormMode === 'create') {
+                // 创建新任务的mock数据
+                const newTask: Task = {
+                    id: Date.now().toString(),
+                    title: taskForm.title.trim(),
+                    description: taskForm.description.trim(),
+                    status: 'pending',
+                    priority: taskForm.priority,
+                    assignee: taskForm.assignee.trim() || '',
+                    assignee_name: taskForm.assignee.trim(),
+                    creator: currentUser.id || 'current_user',
+                    creator_name: currentUser.name || '当前用户',
+                    created_at: new Date().toISOString(),
+                    due_date: taskForm.due_date,
+                    tags: taskForm.tags.filter(tag => tag.trim()),
+                    org_id: id
+                };
+
+                // 添加到本地状态
+                setTasks(prev => [newTask, ...prev]);
+                setTasksTotal(prev => prev + 1);
+                message.success('任务创建成功');
+            } else {
+                // 更新现有任务
+                setTasks(prev => prev.map(task =>
+                    task.id === selectedTask?.id
+                        ? {
+                            ...task,
+                            title: taskForm.title.trim(),
+                            description: taskForm.description.trim() || task.description,
+                            priority: taskForm.priority,
+                            assignee: taskForm.assignee.trim() || task.assignee,
+                            assignee_name: taskForm.assignee.trim() || task.assignee_name,
+                            due_date: taskForm.due_date || task.due_date,
+                            tags: taskForm.tags.filter(tag => tag.trim()),
+                            updated_at: new Date().toISOString()
+                        }
+                        : task
+                ));
+                message.success('任务更新成功');
+            }
+
+            setTaskModalVisible(false);
+        } catch (error) {
+            console.error(`${taskFormMode === 'create' ? '创建' : '更新'}任务失败:`, error);
+            message.error(`${taskFormMode === 'create' ? '创建' : '更新'}任务失败`);
+        }
+    };
+
     const handleJoin = async () => {
         if (!currentUser) {
             message.warn('请先登录后再申请加入组织');
@@ -609,22 +921,52 @@ const OrganizationDetail: React.FC = () => {
                                         {userRole === 'leader' || userRole === 'admin' ? (
                                             <div className={styles.tabsHeader}>
                                                 <button
-                                                    className={`${styles.tabButton} ${!showPendingRequests ? styles.activeTab : ''}`}
-                                                    onClick={() => setShowPendingRequests(false)}
+                                                    className={`${styles.tabButton} ${!showPendingRequests && !showTasks ? styles.activeTab : ''}`}
+                                                    onClick={() => {
+                                                        setShowPendingRequests(false);
+                                                        setShowTasks(false);
+                                                    }}
                                                 >
                                                     成员列表
                                                 </button>
-                                                    <button
-                                                        className={`${styles.tabButton} ${showPendingRequests ? styles.activeTab : ''}`}
-                                                        onClick={() => setShowPendingRequests(true)}
+                                                <button
+                                                    className={`${styles.tabButton} ${showPendingRequests ? styles.activeTab : ''}`}
+                                                    onClick={() => {
+                                                        setShowPendingRequests(true);
+                                                        setShowTasks(false);
+                                                    }}
                                                 >
                                                     待处理请求
                                                 </button>
+                                                <button
+                                                    className={`${styles.tabButton} ${showTasks ? styles.activeTab : ''}`}
+                                                    onClick={() => {
+                                                        setShowPendingRequests(false);
+                                                        toggleTasks();
+                                                    }}
+                                                >
+                                                    任务列表
+                                                </button>
                                             </div>
-                                        ) : null}
+                                        ) : (
+                                            <div className={styles.tabsHeader}>
+                                                <button
+                                                    className={`${styles.tabButton} ${!showTasks ? styles.activeTab : ''}`}
+                                                    onClick={() => setShowTasks(false)}
+                                                >
+                                                    成员列表
+                                                </button>
+                                                <button
+                                                    className={`${styles.tabButton} ${showTasks ? styles.activeTab : ''}`}
+                                                    onClick={toggleTasks}
+                                                >
+                                                    任务列表
+                                                </button>
+                                            </div>
+                                        )}
 
                                         {/* 成员列表视图 */}
-                                        {!showPendingRequests && (
+                                        {!showPendingRequests && !showTasks && (
                                             <>
                                                 {! (userRole === 'leader' || userRole === 'admin') ? (
                                                     <div className={styles.tableHeader}>
@@ -882,6 +1224,187 @@ const OrganizationDetail: React.FC = () => {
                                                 )}
                                             </>
                                         )}
+
+                                        {/* 任务列表视图 */}
+                                        {showTasks && (
+                                            <>
+                                                <div className={styles.tableHeader}>
+                                                    <h3 className={styles.tableTitle}>任务列表</h3>
+                                                    <div className={styles.tableActions}>
+                                                        <button
+                                                            className={styles.refreshButton}
+                                                            onClick={() => fetchTasksList(1)}
+                                                            title="刷新任务列表"
+                                                        >
+                                                            <FaSync />
+                                                        </button>
+                                                        {(userRole === 'leader' || userRole === 'admin') && (
+                                                            <button
+                                                                className={styles.createButton}
+                                                                onClick={handleCreateTask}
+                                                            >
+                                                                <FaPlus /> 创建任务
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {tasksLoading ? (
+                                                    <p>正在加载任务列表...</p>
+                                                ) : tasks.length === 0 ? (
+                                                    <div className={styles.emptyState}>
+                                                        <FaTasks className={styles.emptyIcon} />
+                                                        <h3 className={styles.emptyTitle}>暂无任务</h3>
+                                                        <p className={styles.emptySubtext}>
+                                                            {(userRole === 'leader' || userRole === 'admin')
+                                                                ? '点击"创建任务"按钮来创建第一个任务'
+                                                                : '当前组织还没有发布任何任务'
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                ) : (
+                                                    <table className={styles.usersTable}>
+                                                        <thead>
+                                                            <tr>
+                                                                <th style={{ textAlign: 'left' }}>任务信息</th>
+                                                                <th>负责人</th>
+                                                                <th>截止时间</th>
+                                                                <th>状态</th>
+                                                                <th>操作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {tasks.length > 0 ? (
+                                                                tasks.map(task => (
+                                                                    <tr key={task.id} className={styles.tableRow}>
+                                                                        <td>
+                                                                            <div className={styles.userInfo}>
+                                                                                <div className={styles.userAvatar} style={{ background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                                    <FaTasks />
+                                                                                </div>
+                                                                                <div className={styles.userDetails}>
+                                                                                    <div className={styles.userName}>{task.title}</div>
+                                                                                    <div className={styles.userEmail}>
+                                                                                        <span className={`${styles.priorityBadge} ${styles[task.priority]}`}>
+                                                                                            <FaFlag />
+                                                                                            {task.priority === 'low' && '低'}
+                                                                                            {task.priority === 'medium' && '中'}
+                                                                                            {task.priority === 'high' && '高'}
+                                                                                            {task.priority === 'urgent' && '紧急'}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    {task.description && (
+                                                                                        <div className={styles.userEmail} style={{ marginTop: '4px', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                                                                                            {task.description}
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style={{ textAlign: 'center' }}>
+                                                                            {task.assignee_name || (
+                                                                                <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>未分配</span>
+                                                                            )}
+                                                                        </td>
+                                                                        <td style={{ textAlign: 'center' }}>
+                                                                            {task.due_date ? (
+                                                                                <span style={{ color: 'var(--warning)', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+                                                                                    <FaCalendarAlt />
+                                                                                    {new Date(task.due_date).toLocaleDateString()}
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>无截止日期</span>
+                                                                            )}
+                                                                        </td>
+                                                                        <td style={{ textAlign: 'center' }}>
+                                                                            <span className={`${styles.statusBadge} ${styles[task.status]}`}>
+                                                                                {task.status === 'pending' && <FaHourglassHalf />}
+                                                                                {task.status === 'in_progress' && <FaPlayCircle />}
+                                                                                {task.status === 'completed' && <FaCheckCircle />}
+                                                                                {task.status === 'cancelled' && <FaStopCircle />}
+                                                                                {task.status === 'pending' && '待处理'}
+                                                                                {task.status === 'in_progress' && '进行中'}
+                                                                                {task.status === 'completed' && '已完成'}
+                                                                                {task.status === 'cancelled' && '已取消'}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td style={{ textAlign: 'center' }}>
+                                                                            <div className={styles.actionButtons} style={{ justifyContent: 'center' }}>
+                                                                                <button
+                                                                                    className={styles.actionButton}
+                                                                                    title="查看详情"
+                                                                                    onClick={() => handleEditTask(task)}
+                                                                                >
+                                                                                    <FaEye />
+                                                                                </button>
+                                                                                {canManageTask() && (
+                                                                                    <>
+                                                                                        <button
+                                                                                            className={styles.actionButton}
+                                                                                            title="编辑任务"
+                                                                                            onClick={() => handleEditTask(task)}
+                                                                                        >
+                                                                                            <FaEdit />
+                                                                                        </button>
+                                                                                        <button
+                                                                                            className={`${styles.actionButton} ${styles.rejectButton}`}
+                                                                                            title="删除任务"
+                                                                                            onClick={() => handleDeleteTask(task)}
+                                                                                        >
+                                                                                            <FaTrash />
+                                                                                        </button>
+                                                                                    </>
+                                                                                )}
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))
+                                                            ) : (
+                                                                <tr>
+                                                                    <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                                                                        暂无任务
+                                                                    </td>
+                                                                </tr>
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                )}
+                                                {/* 分页区块 - 任务列表 */}
+                                                {tasksTotal > 0 && (
+                                                    <div className={styles.pagination}>
+                                                        <div className={styles.paginationInfo}>
+                                                            显示 {(tasksPage - 1) * 10 + 1} - {Math.min(tasksPage * 10, tasksTotal)} 条，
+                                                            共 {tasksTotal} 条记录
+                                                        </div>
+                                                        <div className={styles.paginationControls}>
+                                                            <button
+                                                                className={styles.paginationButton}
+                                                                disabled={tasksPage === 1}
+                                                                onClick={() => fetchTasksList(tasksPage - 1)}
+                                                            >
+                                                                上一页
+                                                            </button>
+                                                            {Array.from({ length: Math.ceil(tasksTotal / 10) }, (_, i) => (
+                                                                <button
+                                                                    key={i + 1}
+                                                                    className={`${styles.paginationButton} ${tasksPage === i + 1 ? styles.active : ''}`}
+                                                                    onClick={() => fetchTasksList(i + 1)}
+                                                                >
+                                                                    {i + 1}
+                                                                </button>
+                                                            ))}
+                                                            <button
+                                                                className={styles.paginationButton}
+                                                                disabled={tasksPage === Math.ceil(tasksTotal / 10)}
+                                                                onClick={() => fetchTasksList(tasksPage + 1)}
+                                                            >
+                                                                下一页
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
                                     </div>
                                     {/* 申请加入按钮已移至header最右侧 */}
                                 </>
@@ -948,6 +1471,122 @@ const OrganizationDetail: React.FC = () => {
                                 </div>
                             </label>
                         ))}
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Task Form Modal */}
+            <Modal
+                visible={taskModalVisible}
+                title={taskFormMode === 'create' ? '创建任务' : '编辑任务'}
+                onClose={() => setTaskModalVisible(false)}
+                footer={
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                        <button
+                            onClick={() => setTaskModalVisible(false)}
+                            className={styles.cancelButton}
+                        >
+                            取消
+                        </button>
+                        <button
+                            onClick={handleTaskSubmit}
+                            className={styles.confirmButton}
+                        >
+                            {taskFormMode === 'create' ? '创建' : '保存'}
+                        </button>
+                    </div>
+                }
+                width="600px"
+                size="medium"
+            >
+                <div className={styles.taskFormContainer}>
+                    <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>
+                            <FaTasks /> 任务标题 *
+                        </label>
+                        <input
+                            type="text"
+                            className={styles.formInput}
+                            placeholder="请输入任务标题"
+                            value={taskForm.title}
+                            onChange={(e) => setTaskForm(prev => ({ ...prev, title: e.target.value }))}
+                            maxLength={100}
+                        />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>
+                            <FaEdit /> 任务描述
+                        </label>
+                        <textarea
+                            className={styles.formTextarea}
+                            placeholder="请输入任务描述"
+                            value={taskForm.description}
+                            onChange={(e) => setTaskForm(prev => ({ ...prev, description: e.target.value }))}
+                            rows={3}
+                            maxLength={500}
+                        />
+                    </div>
+
+                    <div className={styles.formRow}>
+                        <div className={styles.formGroup}>
+                            <label className={styles.formLabel}>
+                                <FaFlag /> 优先级
+                            </label>
+                            <select
+                                className={styles.formSelect}
+                                value={taskForm.priority}
+                                onChange={(e) => setTaskForm(prev => ({ ...prev, priority: e.target.value as Task['priority'] }))}
+                            >
+                                <option value="low">低</option>
+                                <option value="medium">中</option>
+                                <option value="high">高</option>
+                                <option value="urgent">紧急</option>
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.formLabel}>
+                                <FaUserPlus /> 负责人
+                            </label>
+                            <input
+                                type="text"
+                                className={styles.formInput}
+                                placeholder="请输入负责人用户名或ID"
+                                value={taskForm.assignee}
+                                onChange={(e) => setTaskForm(prev => ({ ...prev, assignee: e.target.value }))}
+                            />
+                        </div>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>
+                            <FaCalendarAlt /> 截止日期
+                        </label>
+                        <input
+                            type="date"
+                            className={styles.formInput}
+                            value={taskForm.due_date}
+                            onChange={(e) => setTaskForm(prev => ({ ...prev, due_date: e.target.value }))}
+                            min={new Date().toISOString().split('T')[0]}
+                        />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>
+                            <FaFlag /> 标签
+                        </label>
+                        <input
+                            type="text"
+                            className={styles.formInput}
+                            placeholder="请输入标签，用逗号分隔"
+                            value={taskForm.tags.join(', ')}
+                            onChange={(e) => setTaskForm(prev => ({
+                                ...prev,
+                                tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag)
+                            }))}
+                        />
+                        <small className={styles.formHint}>多个标签用逗号分隔，如：前端, 紧急, 优化</small>
                     </div>
                 </div>
             </Modal>

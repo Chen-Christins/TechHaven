@@ -56,7 +56,7 @@ const IndexPage: React.FC = () => {
                 // 稍后延迟移除骨架屏，确保过渡动画完成
                 setTimeout(() => {
                     setIsInitialLoad(false);
-                }, 300);
+                }, 100);
             }, 100);
 
             return () => clearTimeout(timer);

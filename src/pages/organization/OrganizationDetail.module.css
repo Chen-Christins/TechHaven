@@ -531,6 +531,32 @@
     animation: rotate 1s linear infinite;
 }
 
+.createButton {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.createButton:hover {
+    background: linear-gradient(135deg, var(--primary-hover), var(--accent));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.createButton:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
 @keyframes rotate {
     from {
         transform: rotate(0deg);
@@ -778,7 +804,6 @@
     border: 2px solid var(--border-primary);
     border-radius: 12px;
     cursor: pointer;
-    transition: all 0.2s ease;
     background: var(--card-bg);
 }
 
@@ -846,7 +871,6 @@
     border: 2px solid var(--border-primary);
     border-radius: 50%;
     position: relative;
-    transition: all 0.2s ease;
 }
 
 .roleOption.selectedRole .radioCircle {
@@ -876,7 +900,6 @@
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
     min-width: 80px;
 }
 
@@ -896,7 +919,6 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
     min-width: 80px;
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
@@ -909,4 +931,184 @@
 
 .confirmButton:active {
     transform: translateY(0);
+}
+
+/* 任务相关样式 - 复用待处理请求列表样式 */
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.statusBadge.pending {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.statusBadge.in_progress {
+    background: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+}
+
+.statusBadge.completed {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.statusBadge.cancelled {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+}
+
+.priorityBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.priorityBadge.low {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+}
+
+.priorityBadge.medium {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.priorityBadge.high {
+    background: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+}
+
+.priorityBadge.urgent {
+    background: rgba(220, 53, 69, 0.15);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.unassigned {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 13px;
+}
+
+.noDueDate {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 13px;
+}
+
+.deleteButton {
+    color: var(--danger);
+}
+
+.deleteButton:hover {
+    color: var(--danger-hover);
+    background: rgba(220, 53, 69, 0.1);
+}
+
+/* 任务表单样式 */
+.taskFormContainer {
+    padding: 8px 0;
+}
+
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.formRow {
+    display: flex;
+    gap: 16px;
+}
+
+.formRow .formGroup {
+    flex: 1;
+}
+
+.formLabel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.formInput,
+.formTextarea,
+.formSelect {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border-primary);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    box-sizing: border-box;
+}
+
+.formInput:focus,
+.formTextarea:focus,
+.formSelect:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.formTextarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.formSelect {
+    cursor: pointer;
+}
+
+.formHint {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.formInput::placeholder,
+.formTextarea::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+/* 任务状态选择器样式 */
+.statusSelect {
+    padding: 6px 8px;
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    font-size: 12px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    min-width: 80px;
+}
+
+.statusSelect:hover {
+    border-color: var(--primary);
+}
+
+.statusSelect:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }

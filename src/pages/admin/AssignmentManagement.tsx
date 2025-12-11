@@ -13,7 +13,8 @@ import {
     FaTimesCircle,
     FaFilter,
     FaAngleDoubleLeft,
-    FaAngleDoubleRight
+    FaAngleDoubleRight,
+    FaFlag
 } from 'react-icons/fa';
 import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
@@ -39,6 +40,7 @@ interface Assignment {
     totalStudents: number;
     createdAt: string;
     description?: string;
+    priority: 'low' | 'medium' | 'high' | 'urgent';
     maxFileSize?: number; // MB
     allowedTypes?: string[];
 }
@@ -49,10 +51,24 @@ const STATE_STR_MAP_NUMBER: Record<string, number> = {
     "closed": 2
 };
 
+const PRIORITY_STR_MAP_NUMBER: Record<string, number> = {
+    "low": 1,
+    "medium": 2,
+    "high": 3,
+    "urgent": 4
+};
+
 const STATE_NUMBER_MAP_STR: Record<number, string> = {
     0: "draft",
     1: "active",
     2: "closed"
+};
+
+const PRIORITY_NUMBER_MAP_STR: Record<number, string> = {
+    1: "low",
+    2: "medium",
+    3: "high",
+    4: "urgent"
 };
 
 const AssignmentManagement: React.FC = () => {
@@ -73,6 +89,7 @@ const AssignmentManagement: React.FC = () => {
         deadline: '',
         status: 'draft',
         description: '',
+        priority: 'medium',
         maxFileSize: 50,
         allowedTypes: []
     });
@@ -103,6 +120,7 @@ const AssignmentManagement: React.FC = () => {
                 totalStudents: 0, // 暂无数据
                 createdAt: dayjs.unix(item.create_time).format('YYYY-MM-DD'),
                 description: item.description,
+                priority: PRIORITY_NUMBER_MAP_STR[item.priority] as 'low' | 'medium' | 'high' | 'urgent',
                 maxFileSize: item.file_size,
                 allowedTypes: item.file_type ? item.file_type.split(',') : []
             }));
@@ -129,6 +147,7 @@ const AssignmentManagement: React.FC = () => {
             courseName: assignment.courseName,
             deadline: assignment.deadline,
             status: assignment.status,
+            priority: assignment.priority,
             description: assignment.description || '',
             maxFileSize: assignment.maxFileSize || 50,
             allowedTypes: assignment.allowedTypes || []
@@ -145,7 +164,7 @@ const AssignmentManagement: React.FC = () => {
 
     // 处理表单提交
     const handleSubmit = async () => {
-        if (!formData.title || !formData.courseName || !formData.deadline || !formData.maxFileSize || !formData.description || !formData.allowedTypes || formData.allowedTypes.length === 0) {
+        if (!formData.title || !formData.courseName || !formData.deadline || !formData.priority || !formData.maxFileSize || !formData.description || !formData.allowedTypes || formData.allowedTypes.length === 0) {
             message.error('请填写完整信息');
             return;
         }
@@ -162,7 +181,8 @@ const AssignmentManagement: React.FC = () => {
                     file_size: formData.maxFileSize || 50,
                     status: String(STATE_STR_MAP_NUMBER[formData.status || 'draft']),
                     file_type: formData.allowedTypes?.join(',') || '',
-                    description: formData.description || ''
+                    description: formData.description || '',
+                    priority: PRIORITY_STR_MAP_NUMBER[formData.priority || 'medium']
                 });
                 await fetchAssignments(); // 刷新列表
                 message.success('作业更新成功');
@@ -174,6 +194,7 @@ const AssignmentManagement: React.FC = () => {
                     end_time: String(dayjs(formData.deadline).unix()),
                     file_size: formData.maxFileSize || 50,
                     status: String(STATE_STR_MAP_NUMBER[formData.status || 'draft']),
+                    priority: PRIORITY_STR_MAP_NUMBER[formData.priority || 'medium'],
                     file_type: formData.allowedTypes?.join(',') || '',
                     description: formData.description || ''
                 });
@@ -380,8 +401,9 @@ const AssignmentManagement: React.FC = () => {
                 <table className={styles.assignmentTable}>
                     <thead>
                         <tr>
-                            <th>任务标题</th>
+                            <th style={{ textAlign: 'left' }}>任务信息</th>
                             <th>所属课程</th>
+                            <th>优先级</th>
                             <th>截止时间</th>
                             <th>提交情况</th>
                             <th>状态</th>
@@ -394,9 +416,32 @@ const AssignmentManagement: React.FC = () => {
                             currentData.map(item => (
                                 <tr key={item.id}>
                                     <td>
-                                        <div style={{ fontWeight: 500 }}>{item.title}</div>
+                                        <div className={styles.userInfo}>
+                                            <div className={styles.userAvatar} style={{ background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <FaBookOpen />
+                                            </div>
+                                            <div className={styles.userDetails}>
+                                                <div className={styles.userName}>{item.title}</div>
+                                                <div className={styles.userEmail}>
+                                                    {item.description && (
+                                                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                                                            {item.description}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td>{item.courseName}</td>
+                                    <td style={{ textAlign: 'center' }}>
+                                        <span className={`${styles.priorityBadge} ${styles[item.priority]}`}>
+                                            <FaFlag />
+                                            {item.priority === 'low' && '低'}
+                                            {item.priority === 'medium' && '中'}
+                                            {item.priority === 'high' && '高'}
+                                            {item.priority === 'urgent' && '紧急'}
+                                        </span>
+                                    </td>
                                     <td>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-secondary)' }}>
                                             <FaClock /> {item.deadline}
@@ -575,25 +620,49 @@ const AssignmentManagement: React.FC = () => {
                         />
                     </div>
                 </div>
-                <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>作业状态 *</label>
-                    <CustomSelect
-                        name="状态选择"
-                        options={[
-                            { id: 'active', name: '进行中', color: 'var(--success)' },
-                            { id: 'closed', name: '已结束', color: 'var(--error)' },
-                            { id: 'draft', name: '草稿', color: 'var(--warning)' }
-                        ]}
-                        value={{ 
-                            id: formData.status || 'draft', 
-                            name: formData.status === 'active' ? '进行中' : 
-                                  formData.status === 'closed' ? '已结束' : '草稿',
-                            color: '' 
-                        }}
-                        onChange={(option) => setFormData({...formData, status: option?.id as any})}
-                        placeholder="请选择状态"
-                        hideBadge={true}
-                    />
+                <div style={{ display: 'flex', gap: '20px' }}>
+                    <div className={styles.formGroup} style={{ flex: 1 }}>
+                        <label className={styles.formLabel}>作业状态 *</label>
+                        <CustomSelect
+                            name="状态选择"
+                            options={[
+                                { id: 'active', name: '进行中', color: 'var(--success)' },
+                                { id: 'closed', name: '已结束', color: 'var(--error)' },
+                                { id: 'draft', name: '草稿', color: 'var(--warning)' }
+                            ]}
+                            value={{
+                                id: formData.status || 'draft',
+                                name: formData.status === 'active' ? '进行中' :
+                                      formData.status === 'closed' ? '已结束' : '草稿',
+                                color: ''
+                            }}
+                            onChange={(option) => setFormData({...formData, status: option?.id as any})}
+                            placeholder="请选择状态"
+                            hideBadge={true}
+                        />
+                    </div>
+                    <div className={styles.formGroup} style={{ flex: 1 }}>
+                        <label className={styles.formLabel}>优先级 *</label>
+                        <CustomSelect
+                            name="优先级选择"
+                            options={[
+                                { id: 'low', name: '低', color: '#6c757d' },
+                                { id: 'medium', name: '中', color: '#ffc107' },
+                                { id: 'high', name: '高', color: '#ff9800' },
+                                { id: 'urgent', name: '紧急', color: '#dc3545' }
+                            ]}
+                            value={{
+                                id: formData.priority || 'medium',
+                                name: formData.priority === 'low' ? '低' :
+                                      formData.priority === 'medium' ? '中' :
+                                      formData.priority === 'high' ? '高' : '紧急',
+                                color: ''
+                            }}
+                            onChange={(option) => setFormData({...formData, priority: option?.id as any})}
+                            placeholder="请选择优先级"
+                            hideBadge={true}
+                        />
+                    </div>
                 </div>
                 <div className={styles.formGroup}>
                     <label className={styles.formLabel}>允许文件格式 (用逗号分隔) *</label>
@@ -649,7 +718,18 @@ const AssignmentManagement: React.FC = () => {
                             </div>
                             <div className={styles.detailGroup}>
                                 <div className={styles.detailLabel}>当前状态</div>
-                                <div className={styles.detailValue}>{getStatusBadge(currentAssignment.status)}</div>
+                                <div className={styles.detailValue}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        {getStatusBadge(currentAssignment.status)}
+                                        <span className={`${styles.priorityBadge} ${styles[currentAssignment.priority]}`} style={{ marginLeft: '8px' }}>
+                                            <FaFlag />
+                                            {currentAssignment.priority === 'low' && '低'}
+                                            {currentAssignment.priority === 'medium' && '中'}
+                                            {currentAssignment.priority === 'high' && '高'}
+                                            {currentAssignment.priority === 'urgent' && '紧急'}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
