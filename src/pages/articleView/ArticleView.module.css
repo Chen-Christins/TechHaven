@@ -50,8 +50,12 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .content {
@@ -227,7 +231,6 @@
     padding: 0;
 }
 
-
 .markdownBody pre {
     background-color: var(--code-block-bg);
     border-radius: 6px;
@@ -326,7 +329,7 @@
     border-radius: 6px !important;
     padding: 0.2em 0.4em !important;
     font-size: 0.85em !important;
-    font-family: 'SFMono-Regular', Consolas, 'Monaco', 'Liberation Mono', 'Menlo', monospace !important;
+    font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace !important;
     border: 1px solid rgba(59, 130, 246, 0.3) !important;
     display: inline !important;
     white-space: nowrap !important;
@@ -385,7 +388,7 @@
     .markdownBody h6 {
         scroll-margin-top: 80px;
     }
-    
+
     /* 移动端图片调整 */
     .markdownBody img {
         margin: 12px auto;
@@ -399,11 +402,11 @@
         gap: 16px;
         padding-top: 80px;
     }
-    
+
     .article {
         padding: 16px;
     }
-    
+
     .markdownBody img {
         margin: 8px auto;
         border-radius: 4px;

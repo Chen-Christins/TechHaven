@@ -157,7 +157,7 @@
 }
 
 .tabButton::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -292,7 +292,7 @@
 }
 
 .settingCard::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -521,7 +521,7 @@
 }
 
 .switchSlider::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 3px;
     left: 3px;

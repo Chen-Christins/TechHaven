@@ -1,6 +1,6 @@
-import React from 'react';
-import styles from './PageSkeleton.module.css';
-import Skeleton from '../skeleton/Skeleton';
+import React from "react";
+import styles from "./PageSkeleton.module.css";
+import Skeleton from "../skeleton/Skeleton";
 
 const PageSkeleton: React.FC = () => {
     return (

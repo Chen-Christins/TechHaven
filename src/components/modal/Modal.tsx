@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { FaTimes } from 'react-icons/fa';
-import styles from './Modal.module.css';
+import React, { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import { FaTimes } from "react-icons/fa";
+import styles from "./Modal.module.css";
 
 interface ModalProps {
     visible: boolean;
@@ -10,7 +10,7 @@ interface ModalProps {
     children: React.ReactNode;
     footer?: React.ReactNode;
     width?: number | string;
-    size?: 'small' | 'medium' | 'large';
+    size?: "small" | "medium" | "large";
     closeOnMaskClick?: boolean;
 }
 
@@ -21,26 +21,26 @@ const Modal: React.FC<ModalProps> = ({
     children,
     footer,
     width,
-    size = 'medium',
-    closeOnMaskClick = true
+    size = "medium",
+    closeOnMaskClick = true,
 }) => {
     const modalRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && visible) {
+            if (e.key === "Escape" && visible) {
                 onClose();
             }
         };
 
         if (visible) {
-            document.body.style.overflow = 'hidden';
-            document.addEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = "hidden";
+            document.addEventListener("keydown", handleKeyDown);
         }
 
         return () => {
-            document.body.style.overflow = '';
-            document.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = "";
+            document.removeEventListener("keydown", handleKeyDown);
         };
     }, [visible, onClose]);
 
@@ -52,13 +52,13 @@ const Modal: React.FC<ModalProps> = ({
         }
     };
 
-    const modalStyle = width ? { width, maxWidth: '95%' } : {};
-    const sizeClass = size === 'large' ? styles.large : size === 'small' ? styles.small : '';
+    const modalStyle = width ? { width, maxWidth: "95%" } : {};
+    const sizeClass = size === "large" ? styles.large : size === "small" ? styles.small : "";
 
     return createPortal(
         <div className={styles.overlay} onClick={handleMaskClick}>
-            <div 
-                className={`${styles.modal} ${sizeClass}`} 
+            <div
+                className={`${styles.modal} ${sizeClass}`}
                 style={modalStyle}
                 ref={modalRef}
                 role="dialog"
@@ -70,17 +70,11 @@ const Modal: React.FC<ModalProps> = ({
                         <FaTimes />
                     </button>
                 </div>
-                <div className={styles.content}>
-                    {children}
-                </div>
-                {footer && (
-                    <div className={styles.footer}>
-                        {footer}
-                    </div>
-                )}
+                <div className={styles.content}>{children}</div>
+                {footer && <div className={styles.footer}>{footer}</div>}
             </div>
         </div>,
-        document.body
+        document.body,
     );
 };
 

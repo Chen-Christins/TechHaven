@@ -1,8 +1,8 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import { FaLock, FaSignInAlt } from 'react-icons/fa';
-import styles from './AuthRequired.module.css';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { FaLock, FaSignInAlt } from "react-icons/fa";
+import styles from "./AuthRequired.module.css";
 
 interface AuthRequiredProps {
     children: React.ReactNode;
@@ -13,9 +13,9 @@ interface AuthRequiredProps {
 
 const AuthRequired: React.FC<AuthRequiredProps> = ({
     children,
-    message = '您需要登录后才能查看此内容。',
-    title = '请先登录',
-    buttonText = '立即登录'
+    message = "您需要登录后才能查看此内容。",
+    title = "请先登录",
+    buttonText = "立即登录",
 }) => {
     const navigate = useNavigate();
     const { isAuthenticated, loading: authLoading } = useAuth();
@@ -23,7 +23,15 @@ const AuthRequired: React.FC<AuthRequiredProps> = ({
     // 如果正在加载认证状态，则显示加载状态
     if (authLoading) {
         return (
-            <div className={styles.authRequired} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+            <div
+                className={styles.authRequired}
+                style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    minHeight: "60vh",
+                }}
+            >
                 {/* 加载中... */}
             </div>
         );
@@ -43,10 +51,7 @@ const AuthRequired: React.FC<AuthRequiredProps> = ({
                 </div>
                 <h2 className={styles.emptyText}>{title}</h2>
                 <p className={styles.emptySubtext}>{message}</p>
-                <button
-                    onClick={() => navigate('/auth')}
-                    className={styles.loginBtn}
-                >
+                <button onClick={() => navigate("/auth")} className={styles.loginBtn}>
                     <FaSignInAlt /> {buttonText}
                 </button>
             </div>

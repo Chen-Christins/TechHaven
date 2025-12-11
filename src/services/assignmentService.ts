@@ -1,4 +1,4 @@
-import http from '../utils/http';
+import http from "../utils/http";
 
 /**
  * 创建作业参数
@@ -70,27 +70,26 @@ export interface DeleteAssignmentResponse {
  * 学科与作业服务类
  */
 export class AssignmentService {
-
     /**
      * 创建作业 (Admin)
      */
     static async createAssignment(params: CreateAssignmentParams): Promise<CreateAssignmentResponse> {
         const formData = new URLSearchParams();
-        if (params.id !== undefined && params.id !== null && params.id !== '') {
-            formData.append('id', String(params.id));
+        if (params.id !== undefined && params.id !== null && params.id !== "") {
+            formData.append("id", String(params.id));
         }
-        formData.append('name', params.name);
-        formData.append('subject_name', params.subject_name);
-        formData.append('end_time', params.end_time);
-        formData.append('file_size', String(params.file_size));
-        formData.append('status', String(params.status));
-        formData.append('priority', String(params.priority));
-        formData.append('file_type', params.file_type);
-        formData.append('description', params.description);
+        formData.append("name", params.name);
+        formData.append("subject_name", params.subject_name);
+        formData.append("end_time", params.end_time);
+        formData.append("file_size", String(params.file_size));
+        formData.append("status", String(params.status));
+        formData.append("priority", String(params.priority));
+        formData.append("file_type", params.file_type);
+        formData.append("description", params.description);
 
-        const response = await http.post<CreateAssignmentResponse>('/assignment/create', formData.toString(), {
+        const response = await http.post<CreateAssignmentResponse>("/assignment/create", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
         return response.data;
@@ -114,17 +113,15 @@ export class AssignmentService {
      */
     static async deleteAssignments(params: DeleteAssignmentParams): Promise<DeleteAssignmentResponse> {
         const formData = new URLSearchParams();
-        formData.append('ids', params.ids);
+        formData.append("ids", params.ids);
 
-        const response = await http.post<DeleteAssignmentResponse>('/assignment/delete', formData.toString(), {
+        const response = await http.post<DeleteAssignmentResponse>("/assignment/delete", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
         return response.data;
     }
-
-    
 }
 
 export default AssignmentService;

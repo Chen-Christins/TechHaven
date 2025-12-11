@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import styles from './Footer.module.css';
+import React from "react";
+import { Link } from "react-router-dom";
+import styles from "./Footer.module.css";
 
 export interface FooterLink {
     text: string;
@@ -21,7 +21,7 @@ export interface FooterProps {
     /**
      * 作者名称
      */
-    authorName?: string,
+    authorName?: string;
     /**
      * 起始年份
      */
@@ -49,16 +49,14 @@ export interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({
-    companyName = 'Your Company',
+    companyName = "Your Company",
     //   authorName = 'Author',
     startYear = new Date().getFullYear(),
     copyrightText,
-    className = ''
+    className = "",
 }) => {
     const currentYear = new Date().getFullYear();
-    const yearText = startYear === currentYear
-        ? currentYear.toString()
-        : `${startYear}-${currentYear}`;
+    const yearText = startYear === currentYear ? currentYear.toString() : `${startYear}-${currentYear}`;
 
     return (
         <footer className={`${styles.footer} ${className}`}>
@@ -67,7 +65,11 @@ const Footer: React.FC<FooterProps> = ({
                     <div className={styles.copyright}>
                         {copyrightText || (
                             <>
-                                © {yearText} <Link to="/" className={styles.companyLink}>{companyName}</Link> Inc. All rights reversed.
+                                © {yearText}{" "}
+                                <Link to="/" className={styles.companyLink}>
+                                    {companyName}
+                                </Link>{" "}
+                                Inc. All rights reversed.
                             </>
                         )}
                     </div>

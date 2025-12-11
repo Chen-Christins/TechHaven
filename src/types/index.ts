@@ -1,4 +1,3 @@
-
 // 文章类型
 export interface Article {
     author: string;
@@ -40,7 +39,7 @@ export interface UserProfile {
     bio: string;
     account: string;
     email: string;
-    role: 'admin' | 'editor' | 'user';
+    role: "admin" | "editor" | "user";
     location: string;
     website?: string;
     joinDate: string;
@@ -61,16 +60,16 @@ export interface StatsData {
 
 // 二级分类类型（支持父分类→子分类）
 export interface Category {
-    id: number | string;           // 分类唯一标识
-    name: string;         // 分类名称
-    count?: number;        // 该分类下的文章总数（含子分类）
+    id: number | string; // 分类唯一标识
+    name: string; // 分类名称
+    count?: number; // 该分类下的文章总数（含子分类）
     children?: Category[]; // 子分类（可选，二级分类）
     color: string;
 }
 
 export interface ArticleFormData {
     title: string;
-    articleType: 'original' | 'repost';
+    articleType: "original" | "repost";
     category: Category | null;
     tags: Tag[];
     content: string;
@@ -116,15 +115,17 @@ export interface SelectChangeEventDetail {
     name: string;
 }
 
-// 作业/任务类型
 export interface Assignment {
-    name: string;
-    subject_name: string;
-    end_time: string;
-    create_time: string;
-    file_size: number;
-    status: string;
-    submission_count: number;
-    file_type: string;
-    description: string;
+    id: string;
+    title: string;
+    courseName: string;
+    deadline: string;
+    status: "active" | "draft" | "closed";
+    submissionCount: number;
+    totalStudents: number;
+    createdAt: string;
+    description?: string;
+    priority: "low" | "medium" | "high" | "urgent";
+    maxFileSize?: number; // MB
+    allowedTypes?: string[];
 }

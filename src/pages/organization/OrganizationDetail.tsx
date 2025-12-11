@@ -1,113 +1,46 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import {
-    FaBuilding,
-    FaCheckCircle,
-    FaLock,
-    FaUserFriends,
-    FaArrowLeft,
-    FaPlus,
-    FaUser,
-    FaCrown,
-    FaUserShield,
-    FaUserAlt,
-    FaEye,
-    FaCheck,
-    FaTimes,
-    FaSync,
-    FaUserMinus,
-    FaCog,
-    FaTasks,
-    FaEdit,
-    FaTrash,
-    FaCalendarAlt,
-    FaFlag,
-    FaUserPlus,
-    FaHourglassHalf,
-    FaPlayCircle,
-    FaStopCircle
-} from 'react-icons/fa';
-import Navbar from '../../components/navbar/Navbar';
-import Footer from '../../components/footer/Footer';
-import OrganizationDetailSkeleton from '../../components/organization/OrganizationDetailSkeleton';
-import AuthRequired from '../../components/auth/AuthRequired';
-import { useAuth } from '../../contexts/AuthContext';
-import styles from './OrganizationDetail.module.css';
-import OrganizationService from '../../services/organizationService';
-import type { GetOrganizationDetailResponse, JoinOrganizationResponse } from '../../services/organizationService';
-import message from '../../components/message/Message';
-import { confirm } from '../../components/confirm/Confirm';
-import Modal from '../../components/modal/Modal';
-
-interface Member {
-    id: string;
-    user_id: string;
-    name: string;
-    avatar?: string;
-    role?: string;
-    status?: 'active' | 'inactive';
-    email?: string;
-    joinTime?: string;
-}
-
-interface OrganizationDetail {
-    id: string;
-    name: string;
-    type: string;
-    status: 'active' | 'inactive';
-    description?: string;
-    memberCount: number;
-    members: Member[];
-    user_in_org?: string;
-    user_role?: string;
-}
-
-interface MemberStats {
-    totalMembers: number;
-    activeMembers: number;
-    leaderMembers: number;
-    deputyMembers: number;
-    regularMembers: number;
-}
-
-interface Task {
-    id: number | string;
-    title: string;
-    description: string;
-    status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
-    priority: 'low' | 'medium' | 'high' | 'urgent';
-    assignee: string;
-    assignee_name?: string;
-    creator: string | number;
-    creator_name: string;
-    created_at: string;
-    updated_at?: string;
-    due_date: string;
-    tags: string[];
-    org_id: number | string;
-}
+import React, { useEffect, useState, useCallback } from "react";
+import { useParams } from "react-router-dom";
+import Navbar from "../../components/navbar/Navbar";
+import Footer from "../../components/footer/Footer";
+import OrganizationDetailSkeleton from "../../components/organization/OrganizationDetailSkeleton";
+import AuthRequired from "../../components/auth/AuthRequired";
+import { useAuth } from "../../contexts/AuthContext";
+import styles from "./OrganizationDetail.module.css";
+import OrganizationService from "../../services/organizationService";
+import type { GetOrganizationDetailResponse, JoinOrganizationResponse } from "../../services/organizationService";
+import message from "../../components/message/Message";
+import { confirm } from "../../components/confirm/Confirm";
+import OrganizationInfo from "../../components/organization/OrganizationInfo";
+import OrganizationTabs from "../../components/organization/OrganizationTabs";
+import type {
+    Member,
+    OrganizationDetail as OrganizationDetailType,
+    MemberStats,
+    Task,
+} from "../../components/organization/types";
+import { FaUser, FaUserShield, FaCrown } from "react-icons/fa";
+// import type { Assignment } from '../../types';
 
 const MAP_STATUS_TO_TEXT: Record<number, string> = {
     0: "申请中",
     1: "已加入",
     2: "已拒绝",
-    3: "已退出"
+    3: "已退出",
 };
 
 const MAP_ROLE_TO_TEXT: Record<number, string> = {
     1: "成员",
     2: "管理员",
-    3: "会长"
+    3: "会长",
 };
 
 const PAGE_SIZE = 15;
 
 const OrganizationDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
     const { user: currentUser } = useAuth();
     const [loading, setLoading] = useState(true);
-    const [org, setOrg] = useState<OrganizationDetail | null>(null);
+    const [org, setOrg] = useState<OrganizationDetailType | null>(null);
     const [page, setPage] = useState(1);
     const [membersTotal, setMembersTotal] = useState(0);
     const [stats, setStats] = useState<MemberStats>({
@@ -115,9 +48,9 @@ const OrganizationDetail: React.FC = () => {
         activeMembers: 0,
         leaderMembers: 0,
         deputyMembers: 0,
-        regularMembers: 0
+        regularMembers: 0,
     });
-    const [userRole, setUserRole] = useState<'leader' | 'admin' | 'member' | 'guest' | null>(null);
+    const [userRole, setUserRole] = useState<"leader" | "admin" | "member" | "guest" | null>(null);
     const [showPendingRequests, setShowPendingRequests] = useState(false);
     const [pendingRequests, setPendingRequests] = useState<Member[]>([]);
     const [pendingRequestsLoading, setPendingRequestsLoading] = useState(false);
@@ -127,39 +60,29 @@ const OrganizationDetail: React.FC = () => {
     const [isRefreshing, setIsRefreshing] = useState(false); // 刷新状态
     const [pendingRequestsRefreshTrigger, setPendingRequestsRefreshTrigger] = useState(0); // 用于强制刷新待处理请求的触发器
     const [roleModalVisible, setRoleModalVisible] = useState(false);
+    const [taskPreviewModalVisible, setTaskPreviewModalVisible] = useState(false);
     const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+    const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
     const [selectedRole, setSelectedRole] = useState(1);
-
     // 任务相关状态
     const [showTasks, setShowTasks] = useState(false);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [tasksLoading, setTasksLoading] = useState(false);
     const [tasksPage, setTasksPage] = useState(1);
     const [tasksTotal, setTasksTotal] = useState(0);
-    const [taskRefreshTrigger, setTaskRefreshTrigger] = useState(0);
-    const [taskModalVisible, setTaskModalVisible] = useState(false);
-    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-    const [taskFormMode, setTaskFormMode] = useState<'create' | 'edit'>('create');
-
-    // 任务表单状态
-    const [taskForm, setTaskForm] = useState({
-        title: '',
-        description: '',
-        priority: 'medium' as Task['priority'],
-        assignee: '',
-        due_date: '',
-        tags: [] as string[]
-    });
 
     // Determine if current user is admin/leader of the organization
-    const checkUserRole = useCallback((role: string | undefined) => {
-        if (!currentUser) return null;
+    const checkUserRole = useCallback(
+        (role: string | undefined) => {
+            if (!currentUser) return null;
 
-        if (role === '会长') return 'leader';
-        if (role === '管理员') return 'admin';
-        if (role === '成员') return 'member';
-        return 'guest';
-    }, [currentUser]);
+            if (role === "会长") return "leader";
+            if (role === "管理员") return "admin";
+            if (role === "成员") return "member";
+            return "guest";
+        },
+        [currentUser],
+    );
 
     // 获取组织详情
     useEffect(() => {
@@ -167,94 +90,102 @@ const OrganizationDetail: React.FC = () => {
             if (!currentUser) return;
             setLoading(true);
             try {
-                if (!id) throw new Error('无效的组织ID');
+                if (!id) throw new Error("无效的组织ID");
                 const res: GetOrganizationDetailResponse = await OrganizationService.getOrganizationDetail({ id });
                 // 只填充基础信息，不填充成员，不主动请求成员列表
-                const orgDetail: OrganizationDetail = {
+                const orgDetail: OrganizationDetailType = {
                     id: String(res.id),
                     name: res.name,
                     type: res.type,
-                    status: res.status === 1 || res.status === 'active' ? 'active' : 'inactive',
+                    status: res.status === 1 || res.status === "active" ? "active" : "inactive",
                     description: res.description,
                     memberCount: 0,
                     members: [],
-                    user_in_org: (typeof res.user_in_org !== 'undefined' && res.user_in_org >= 0 ? MAP_STATUS_TO_TEXT[res.user_in_org] : undefined),
-                    user_role: (typeof res.user_role !== 'undefined' && res.user_role > 0 ? MAP_ROLE_TO_TEXT[res.user_role] : undefined)
+                    user_in_org:
+                        typeof res.user_in_org !== "undefined" && res.user_in_org >= 0
+                            ? MAP_STATUS_TO_TEXT[res.user_in_org]
+                            : undefined,
+                    user_role:
+                        typeof res.user_role !== "undefined" && res.user_role > 0
+                            ? MAP_ROLE_TO_TEXT[res.user_role]
+                            : undefined,
                 };
                 setOrg(orgDetail);
                 const role = checkUserRole(orgDetail.user_role);
                 setUserRole(role);
             } catch (e) {
-                message.error('获取组织详情失败');
+                message.error("获取组织详情失败");
             } finally {
                 setLoading(false);
             }
         };
         fetchDetail();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, currentUser, checkUserRole]);
 
     // Function to fetch organization members using the new API (真正分页)
-    const fetchMembersList = useCallback(async (pageNum: number = 1) => {
-        if (!currentUser || !id) return;
+    const fetchMembersList = useCallback(
+        async (pageNum: number = 1) => {
+            if (!currentUser || !id) return;
 
-        // 设置刷新状态
-        setIsRefreshing(true);
+            // 设置刷新状态
+            setIsRefreshing(true);
 
-        try {
-            const res = await OrganizationService.getOrganizationUserLists({
-                id: id,
-                page_num: pageNum,
-                page_size: PAGE_SIZE,
-                status: 1 // status 1 means approved/active members
-            });
-            if (res && res.list) {
-                const members: Member[] = res.list.map(item => ({
-                    id: String(item.id),
-                    user_id: String(item.user_id),
-                    name: item.name,
-                    avatar: item.avatar,
-                    role: MAP_ROLE_TO_TEXT[item.role],
-                    status: 'active',
-                    email: item.email,
-                    joinTime: new Date(item.join_time * 1000).toISOString().split('T')[0]
-                }));
-
-                setMembersTotal(res.total || 0);
-                setStats({
-                    totalMembers: res.total || 0,
-                    activeMembers: members.length,
-                    leaderMembers: members.filter(m => m.role === '会长').length,
-                    deputyMembers: members.filter(m => m.role === '管理员').length,
-                    regularMembers: members.filter(m => m.role === '成员').length
+            try {
+                const res = await OrganizationService.getOrganizationUserLists({
+                    id: id,
+                    page_num: pageNum,
+                    page_size: PAGE_SIZE,
+                    status: 1, // status 1 means approved/active members
                 });
+                if (res && res.list) {
+                    const members: Member[] = res.list.map((item) => ({
+                        id: String(item.id),
+                        user_id: String(item.user_id),
+                        name: item.name,
+                        avatar: item.avatar,
+                        role: MAP_ROLE_TO_TEXT[item.role],
+                        status: "active",
+                        email: item.email,
+                        joinTime: new Date(item.join_time * 1000).toISOString().split("T")[0],
+                    }));
 
-                setOrg(prevOrg => prevOrg ? { ...prevOrg, members, memberCount: res.total || 0 } : prevOrg);
-            } else if (res && res.list && res.list.length === 0) {
-                // 如果有响应但列表为空，更新为空状态
-                setMembersTotal(0);
-                setStats({
-                    totalMembers: 0,
-                    activeMembers: 0,
-                    leaderMembers: 0,
-                    deputyMembers: 0,
-                    regularMembers: 0
-                });
+                    setMembersTotal(res.total || 0);
+                    setStats({
+                        totalMembers: res.total || 0,
+                        activeMembers: members.length,
+                        leaderMembers: members.filter((m) => m.role === "会长").length,
+                        deputyMembers: members.filter((m) => m.role === "管理员").length,
+                        regularMembers: members.filter((m) => m.role === "成员").length,
+                    });
 
-                setOrg(prevOrg => prevOrg ? { ...prevOrg, members: [], memberCount: 0 } : prevOrg);
+                    setOrg((prevOrg) => (prevOrg ? { ...prevOrg, members, memberCount: res.total || 0 } : prevOrg));
+                } else if (res && res.list && res.list.length === 0) {
+                    // 如果有响应但列表为空，更新为空状态
+                    setMembersTotal(0);
+                    setStats({
+                        totalMembers: 0,
+                        activeMembers: 0,
+                        leaderMembers: 0,
+                        deputyMembers: 0,
+                        regularMembers: 0,
+                    });
+
+                    setOrg((prevOrg) => (prevOrg ? { ...prevOrg, members: [], memberCount: 0 } : prevOrg));
+                }
+                // 如果没有响应数据，保持当前状态不变，避免清空已有数据
+            } catch (error) {
+                console.error("获取组织成员列表失败:", error);
+                message.error("获取成员列表失败");
+
+                // 在错误情况下，不清空已有数据，保持当前状态
+                // 这样可以避免网络错误导致成员列表突然消失
+            } finally {
+                // 确保在完成请求后重置刷新状态
+                setIsRefreshing(false);
             }
-            // 如果没有响应数据，保持当前状态不变，避免清空已有数据
-        } catch (error) {
-            console.error('获取组织成员列表失败:', error);
-            message.error('获取成员列表失败');
-
-            // 在错误情况下，不清空已有数据，保持当前状态
-            // 这样可以避免网络错误导致成员列表突然消失
-        } finally {
-            // 确保在完成请求后重置刷新状态
-            setIsRefreshing(false);
-        }
-    }, [id, currentUser]);
+        },
+        [id, currentUser],
+    );
 
     // 成员列表
     useEffect(() => {
@@ -267,7 +198,7 @@ const OrganizationDetail: React.FC = () => {
     // 待处理请求
     useEffect(() => {
         if (!id || !currentUser) return;
-        if (showPendingRequests && (org?.user_role === '管理员' || org?.user_role === '会长')) {
+        if (showPendingRequests && (org?.user_role === "管理员" || org?.user_role === "会长")) {
             fetchPendingRequests(pendingRequestsPage);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -275,88 +206,98 @@ const OrganizationDetail: React.FC = () => {
 
     // Function to fetch pending join requests if user is an admin/leader (真正分页)
     const fetchPendingRequests = async (pageNum: number = 1) => {
-        if (!currentUser || !id || !userRole || (userRole !== 'leader' && userRole !== 'admin')) return;
+        if (!currentUser || !id || !userRole || (userRole !== "leader" && userRole !== "admin")) return;
         setPendingRequestsLoading(true);
         try {
             const pendingRes = await OrganizationService.getOrganizationUserLists({
                 id: id,
                 page_num: pageNum,
                 page_size: PAGE_SIZE,
-                status: 0
+                status: 0,
             });
-            const pendingRequests: (Member & { user_id: string })[] = (pendingRes.list || []).map(item => ({
+            const pendingRequests: (Member & { user_id: string })[] = (pendingRes.list || []).map((item) => ({
                 id: String(item.id),
                 name: item.name,
                 avatar: item.avatar,
-                role: 'pending',
-                status: 'active',
+                role: "pending",
+                status: "active",
                 email: item.email,
-                joinTime: new Date(item.join_time * 1000).toISOString().split('T')[0],
-                user_id: String(item.user_id)
+                joinTime: new Date(item.join_time * 1000).toISOString().split("T")[0],
+                user_id: String(item.user_id),
             }));
             setPendingRequestsTotal(pendingRes.total || pendingRequests.length);
             setPendingRequests(pendingRequests);
         } catch (err) {
-            console.error('获取待处理请求失败:', err);
-            message.error('获取待处理请求失败');
+            console.error("获取待处理请求失败:", err);
+            message.error("获取待处理请求失败");
         } finally {
             setPendingRequestsLoading(false);
         }
     };
 
     // Function to handle accept/reject a pending request
-    const handleActionPendingRequest = async (requestId: string, action: 'accept' | 'reject') => {
+    const handleActionPendingRequest = async (requestId: string, action: "accept" | "reject") => {
         const ok = await confirm({
-            title: action === 'accept' ? '确认接受' : '确认拒绝',
-            content: action === 'accept' ? '确定要接受该用户加入组织吗？' : '确定要拒绝该用户加入组织吗？',
-            confirmText: action === 'accept' ? '接受' : '拒绝',
-            cancelText: '取消',
+            title: action === "accept" ? "确认接受" : "确认拒绝",
+            content: action === "accept" ? "确定要接受该用户加入组织吗？" : "确定要拒绝该用户加入组织吗？",
+            confirmText: action === "accept" ? "接受" : "拒绝",
+            cancelText: "取消",
         });
         if (!ok) return;
 
         try {
             // 审核接口 state: 1=同意, 2=拒绝
-            const state = action === 'accept' ? 1 : 2;
+            const state = action === "accept" ? 1 : 2;
             // 查找 user_id
-            const pending = pendingRequests.find(req => req.id === requestId);
-            if (!pending) throw new Error('未找到待处理用户');
+            const pending = pendingRequests.find((req) => req.id === requestId);
+            if (!pending) throw new Error("未找到待处理用户");
             await OrganizationService.organizationJoinCheck({
-                user_id: String(pending.user_id ?? ''),
+                user_id: String(pending.user_id ?? ""),
                 org_id: id!,
-                state
+                state,
             });
             // Update local state to remove the request
-            setPendingRequests(prev => prev.filter(req => req.id !== requestId));
+            setPendingRequests((prev) => prev.filter((req) => req.id !== requestId));
 
-            if (action === 'accept') {
-                message.success('已接受用户加入组织');
+            if (action === "accept") {
+                message.success("已接受用户加入组织");
             } else {
-                message.success('已拒绝用户加入组织');
+                message.success("已拒绝用户加入组织");
             }
             // 审核后刷新待处理请求列表
-            setPendingRequestsRefreshTrigger(prev => prev + 1);
+            setPendingRequestsRefreshTrigger((prev) => prev + 1);
             // 如果接受请求，同时更新组织详情以获取最新的成员计数
-            if (action === 'accept' && id && currentUser) {
+            if (action === "accept" && id && currentUser) {
                 const res: GetOrganizationDetailResponse = await OrganizationService.getOrganizationDetail({ id: id! });
-                setOrg(prevOrg => prevOrg ? {
-                    ...prevOrg,
-                    user_in_org: (typeof res.user_in_org !== 'undefined' && res.user_in_org >= 0 ? MAP_STATUS_TO_TEXT[res.user_in_org] : undefined),
-                    user_role: (typeof res.user_role !== 'undefined' && res.user_role > 0 ? MAP_ROLE_TO_TEXT[res.user_role] : undefined)
-                } : prevOrg);
+                setOrg((prevOrg) =>
+                    prevOrg
+                        ? {
+                              ...prevOrg,
+                              user_in_org:
+                                  typeof res.user_in_org !== "undefined" && res.user_in_org >= 0
+                                      ? MAP_STATUS_TO_TEXT[res.user_in_org]
+                                      : undefined,
+                              user_role:
+                                  typeof res.user_role !== "undefined" && res.user_role > 0
+                                      ? MAP_ROLE_TO_TEXT[res.user_role]
+                                      : undefined,
+                          }
+                        : prevOrg,
+                );
             }
         } catch (err) {
-            console.error(action === 'accept' ? '接受请求失败' : '拒绝请求失败:', err);
-            message.error(action === 'accept' ? '接受请求失败' : '拒绝请求失败');
+            console.error(action === "accept" ? "接受请求失败" : "拒绝请求失败:", err);
+            message.error(action === "accept" ? "接受请求失败" : "拒绝请求失败");
         }
     };
 
     // Function to handle kicking a member
     const handleKickMember = async (member: Member) => {
         const ok = await confirm({
-            title: '确认踢出',
+            title: "确认踢出",
             content: `确定要将 ${member.name} 踢出组织吗？`,
-            confirmText: '踢出',
-            cancelText: '取消',
+            confirmText: "踢出",
+            cancelText: "取消",
         });
         if (!ok) return;
 
@@ -364,41 +305,48 @@ const OrganizationDetail: React.FC = () => {
             await OrganizationService.kickOrganizationMember({
                 id: member.id,
                 user_id: member.user_id,
-                org_id: id!
+                org_id: id!,
             });
 
             // Remove member from local state
-            setOrg(prevOrg => prevOrg ? {
-                ...prevOrg,
-                members: prevOrg.members.filter(m => m.id !== member.id),
-                memberCount: Math.max(0, prevOrg.memberCount - 1)
-            } : prevOrg);
+            setOrg((prevOrg: OrganizationDetailType | null) =>
+                prevOrg
+                    ? {
+                          ...prevOrg,
+                          members: prevOrg.members.filter((m: Member) => m.id !== member.id),
+                          memberCount: Math.max(0, prevOrg.memberCount - 1),
+                      }
+                    : prevOrg,
+            );
 
             // Update stats
-            setStats(prevStats => ({
+            setStats((prevStats) => ({
                 ...prevStats,
                 totalMembers: Math.max(0, prevStats.totalMembers - 1),
                 activeMembers: Math.max(0, prevStats.activeMembers - 1),
-                leaderMembers: member.role === '会长' ? Math.max(0, prevStats.leaderMembers - 1) : prevStats.leaderMembers,
-                deputyMembers: member.role === '管理员' ? Math.max(0, prevStats.deputyMembers - 1) : prevStats.deputyMembers,
-                regularMembers: member.role === '成员' ? Math.max(0, prevStats.regularMembers - 1) : prevStats.regularMembers
+                leaderMembers:
+                    member.role === "会长" ? Math.max(0, prevStats.leaderMembers - 1) : prevStats.leaderMembers,
+                deputyMembers:
+                    member.role === "管理员" ? Math.max(0, prevStats.deputyMembers - 1) : prevStats.deputyMembers,
+                regularMembers:
+                    member.role === "成员" ? Math.max(0, prevStats.regularMembers - 1) : prevStats.regularMembers,
             }));
 
             message.success(`已将 ${member.name} 踢出组织`);
         } catch (err) {
-            message.error('踢出成员失败');
+            message.error("踢出成员失败");
         }
     };
 
     // Function to handle setting member role
     const handleSetMemberRole = (member: Member) => {
         const roleOptions = [
-            { value: 1, label: '成员' },
-            { value: 2, label: '管理员' },
-            { value: 3, label: '会长' }
+            { value: 1, label: "成员" },
+            { value: 2, label: "管理员" },
+            { value: 3, label: "会长" },
         ];
 
-        const currentRole = roleOptions.find(r => r.label === member.role)?.value || 1;
+        const currentRole = roleOptions.find((r) => r.label === member.role)?.value || 1;
 
         setSelectedMember(member);
         setSelectedRole(currentRole);
@@ -410,15 +358,15 @@ const OrganizationDetail: React.FC = () => {
         if (!selectedMember) return;
 
         const roleOptions = [
-            { value: 1, label: '成员' },
-            { value: 2, label: '管理员' },
-            { value: 3, label: '会长' }
+            { value: 1, label: "成员" },
+            { value: 2, label: "管理员" },
+            { value: 3, label: "会长" },
         ];
 
-        const currentRole = roleOptions.find(r => r.label === selectedMember.role)?.value || 1;
+        const currentRole = roleOptions.find((r) => r.label === selectedMember.role)?.value || 1;
 
         if (selectedRole === currentRole) {
-            message.warn('该用户已经是这个角色');
+            message.warn("该用户已经是这个角色");
             setRoleModalVisible(false);
             return;
         }
@@ -428,34 +376,37 @@ const OrganizationDetail: React.FC = () => {
                 id: selectedMember.id,
                 user_id: selectedMember.user_id!,
                 org_id: id!,
-                role: selectedRole
+                role: selectedRole,
             });
 
-
             // Update member role in local state
-            setOrg(prevOrg => prevOrg ? {
-                ...prevOrg,
-                members: prevOrg.members.map(m =>
-                    m.id === selectedMember.id ? { ...m, role: MAP_ROLE_TO_TEXT[selectedRole] } : m
-                )
-            } : prevOrg);
+            setOrg((prevOrg: OrganizationDetailType | null) =>
+                prevOrg
+                    ? {
+                          ...prevOrg,
+                          members: prevOrg.members.map((m: Member) =>
+                              m.id === selectedMember.id ? { ...m, role: MAP_ROLE_TO_TEXT[selectedRole] } : m,
+                          ),
+                      }
+                    : prevOrg,
+            );
 
             // Update stats
             const oldRoleLabel = selectedMember.role;
             const newRoleLabel = MAP_ROLE_TO_TEXT[selectedRole];
 
-            setStats(prevStats => {
+            setStats((prevStats) => {
                 const newStats = { ...prevStats };
 
                 // Decrease old role count
-                if (oldRoleLabel === '会长') newStats.leaderMembers = Math.max(0, newStats.leaderMembers - 1);
-                else if (oldRoleLabel === '管理员') newStats.deputyMembers = Math.max(0, newStats.deputyMembers - 1);
-                else if (oldRoleLabel === '成员') newStats.regularMembers = Math.max(0, newStats.regularMembers - 1);
+                if (oldRoleLabel === "会长") newStats.leaderMembers = Math.max(0, newStats.leaderMembers - 1);
+                else if (oldRoleLabel === "管理员") newStats.deputyMembers = Math.max(0, newStats.deputyMembers - 1);
+                else if (oldRoleLabel === "成员") newStats.regularMembers = Math.max(0, newStats.regularMembers - 1);
 
                 // Increase new role count
-                if (newRoleLabel === '会长') newStats.leaderMembers += 1;
-                else if (newRoleLabel === '管理员') newStats.deputyMembers += 1;
-                else if (newRoleLabel === '成员') newStats.regularMembers += 1;
+                if (newRoleLabel === "会长") newStats.leaderMembers += 1;
+                else if (newRoleLabel === "管理员") newStats.deputyMembers += 1;
+                else if (newRoleLabel === "成员") newStats.regularMembers += 1;
 
                 return newStats;
             });
@@ -463,40 +414,40 @@ const OrganizationDetail: React.FC = () => {
             message.success(`已将 ${selectedMember.name} 的角色设置为 ${newRoleLabel}`);
             setRoleModalVisible(false);
         } catch (err) {
-            console.error('设置角色失败:', err);
-            message.error('设置角色失败');
+            console.error("设置角色失败:", err);
+            message.error("设置角色失败");
         }
     };
 
     // Function to check if current user can manage a specific member
     const canManageMember = (member: Member) => {
-        if (!userRole || userRole === 'guest' || userRole === 'member') return false;
+        if (!userRole || userRole === "guest" || userRole === "member") return false;
 
         // 管理员不能管理会长和自己
-        if (userRole === 'admin') {
-            if (member.role === '会长') return false;
-            if (member.role === '管理员' && member.name === currentUser?.name) return false;
+        if (userRole === "admin") {
+            if (member.role === "会长") return false;
+            if (member.role === "管理员" && member.name === currentUser?.name) return false;
         }
 
         // 会长不能管理自己
-        if (userRole === 'leader' && member.name === currentUser?.name) return false;
+        if (userRole === "leader" && member.name === currentUser?.name) return false;
 
         return true;
     };
 
     // Function to check if current user can set role for a specific member
     const canSetRole = (member: Member) => {
-        if (!userRole || userRole === 'guest' || userRole === 'member') return false;
+        if (!userRole || userRole === "guest" || userRole === "member") return false;
 
         // 管理员不能设置会长角色，也不能管理会长和自己
-        if (userRole === 'admin') {
-            if (member.role === '会长') return false;
+        if (userRole === "admin") {
+            if (member.role === "会长") return false;
             if (member.name === currentUser?.name) return false; // 不能设置自己的角色
             return true; // 管理员只能设置普通成员为管理员
         }
 
         // 会长可以设置任何人的角色（除了自己）
-        if (userRole === 'leader') {
+        if (userRole === "leader") {
             return member.name !== currentUser?.name;
         }
 
@@ -505,303 +456,178 @@ const OrganizationDetail: React.FC = () => {
 
     // Function to get available role options based on current user's role
     const getAvailableRoleOptions = () => {
-        if (userRole === 'admin') {
+        if (userRole === "admin") {
             // 管理员只能设置成员为管理员，不能设置会长
             return [
-                { value: 1, label: '成员', icon: <FaUser />, description: '普通组织成员' },
-                { value: 2, label: '管理员', icon: <FaUserShield />, description: '拥有管理权限' }
+                {
+                    value: 1,
+                    label: "成员",
+                    icon: <FaUser />,
+                    description: "普通组织成员",
+                },
+                {
+                    value: 2,
+                    label: "管理员",
+                    icon: <FaUserShield />,
+                    description: "拥有管理权限",
+                },
             ];
-        } else if (userRole === 'leader') {
+        } else if (userRole === "leader") {
             // 会长可以设置任何角色
             return [
-                { value: 1, label: '成员', icon: <FaUser />, description: '普通组织成员' },
-                { value: 2, label: '管理员', icon: <FaUserShield />, description: '拥有管理权限' },
-                { value: 3, label: '会长', icon: <FaCrown />, description: '组织最高权限' }
+                {
+                    value: 1,
+                    label: "成员",
+                    icon: <FaUser />,
+                    description: "普通组织成员",
+                },
+                {
+                    value: 2,
+                    label: "管理员",
+                    icon: <FaUserShield />,
+                    description: "拥有管理权限",
+                },
+                {
+                    value: 3,
+                    label: "会长",
+                    icon: <FaCrown />,
+                    description: "组织最高权限",
+                },
             ];
         }
         return [];
     };
-
     // 任务相关函数
-    const fetchTasksList = useCallback(async (pageNum: number = 1) => {
-        if (!currentUser || !id) return;
+    const fetchTasksList = useCallback(
+        async (pageNum: number = 1) => {
+            if (!currentUser || !id) return;
 
-        setTasksLoading(true);
-        try {
-            // 使用mock数据
-            await new Promise(resolve => setTimeout(resolve, 500)); // 模拟网络延迟
+            setTasksLoading(true);
+            try {
+                // 使用mock数据
+                await new Promise((resolve) => setTimeout(resolve, 500)); // 模拟网络延迟
 
-            const mockTasks: Task[] = [
-                {
-                    id: '1',
-                    title: '完成前端页面重构',
-                    description: '使用React重构组织管理页面，提升用户体验',
-                    status: 'in_progress',
-                    priority: 'high',
-                    assignee: 'user1',
-                    assignee_name: '张三',
-                    creator: 'admin',
-                    creator_name: '管理员',
-                    created_at: '2025-12-01T10:00:00Z',
-                    updated_at: '2025-12-10T15:30:00Z',
-                    due_date: '2025-12-15',
-                    tags: ['前端', '重构', '紧急'],
-                    org_id: id
-                },
-                {
-                    id: '2',
-                    title: '优化数据库查询性能',
-                    description: '优化成员列表查询SQL，减少响应时间',
-                    status: 'pending',
-                    priority: 'medium',
-                    assignee: 'user2',
-                    assignee_name: '李四',
-                    creator: 'admin',
-                    creator_name: '管理员',
-                    created_at: '2025-12-05T09:00:00Z',
-                    due_date: '2025-12-20',
-                    tags: ['后端', '数据库', '优化'],
-                    org_id: id
-                },
-                {
-                    id: '3',
-                    title: '编写API文档',
-                    description: '为新版本API编写详细的接口文档',
-                    status: 'completed',
-                    priority: 'low',
-                    assignee: 'user3',
-                    assignee_name: '王五',
-                    creator: 'admin',
-                    creator_name: '管理员',
-                    created_at: '2025-11-28T14:00:00Z',
-                    updated_at: '2025-12-08T11:20:00Z',
-                    due_date: '2025-12-10',
-                    tags: ['文档', 'API'],
-                    org_id: id
-                },
-                {
-                    id: '4',
-                    title: '修复登录页面bug',
-                    description: '修复在某些浏览器上登录按钮无法点击的问题',
-                    status: 'pending',
-                    priority: 'urgent',
-                    assignee: '',
-                    creator: 'admin',
-                    creator_name: '管理员',
-                    created_at: '2025-12-09T16:00:00Z',
-                    due_date: '2025-12-12',
-                    tags: ['bug', '前端', '紧急'],
-                    org_id: id
-                },
-                {
-                    id: '5',
-                    title: '实现消息推送功能',
-                    description: '为用户添加实时消息推送功能，支持浏览器通知',
-                    status: 'cancelled',
-                    priority: 'medium',
-                    assignee: 'user1',
-                    assignee_name: '张三',
-                    creator: 'admin',
-                    creator_name: '管理员',
-                    created_at: '2025-11-20T10:00:00Z',
-                    updated_at: '2025-12-07T09:15:00Z',
-                    due_date: '2025-12-05',
-                    tags: ['功能', '推送', 'WebSocket'],
-                    org_id: id
+                const mockTasks: Task[] = [
+                    {
+                        id: "1",
+                        title: "完成前端页面重构",
+                        description: "使用React重构组织管理页面，提升用户体验",
+                        status: "in_progress",
+                        priority: "high",
+                        assignee: "user1",
+                        assignee_name: "张三",
+                        creator: "admin",
+                        creator_name: "管理员",
+                        created_at: "2025-12-01T10:00:00Z",
+                        updated_at: "2025-12-10T15:30:00Z",
+                        due_date: "2025-12-15",
+                        org_id: 1,
+                    },
+                    {
+                        id: "2",
+                        title: "完成前端页面重构",
+                        description: "使用React重构组织管理页面，提升用户体验",
+                        status: "in_progress",
+                        priority: "high",
+                        assignee: "user1",
+                        assignee_name: "李四",
+                        creator: "admin",
+                        creator_name: "管理员",
+                        created_at: "2025-12-01T10:00:00Z",
+                        updated_at: "2025-12-10T15:30:00Z",
+                        due_date: "2025-12-16",
+                        org_id: 1,
+                    },
+                ];
+
+                // 模拟分页
+                const pageSize = 10;
+                const startIndex = (pageNum - 1) * pageSize;
+                const endIndex = startIndex + pageSize;
+                const paginatedTasks = mockTasks.slice(startIndex, endIndex);
+
+                if (pageNum === 1) {
+                    setTasks(paginatedTasks);
+                } else {
+                    setTasks((prev) => [...prev, ...paginatedTasks]);
                 }
-            ];
 
-            // 模拟分页
-            const pageSize = 10;
-            const startIndex = (pageNum - 1) * pageSize;
-            const endIndex = startIndex + pageSize;
-            const paginatedTasks = mockTasks.slice(startIndex, endIndex);
-
-            if (pageNum === 1) {
-                setTasks(paginatedTasks);
-            } else {
-                setTasks(prev => [...prev, ...paginatedTasks]);
+                setTasks(mockTasks);
+                setTasksTotal(mockTasks.length);
+                setTasksPage(pageNum);
+            } catch (error) {
+                console.error("获取任务列表失败:", error);
+                message.error("获取任务列表失败");
+            } finally {
+                setTasksLoading(false);
             }
-
-            setTasksTotal(mockTasks.length);
-            setTasksPage(pageNum);
-        } catch (error) {
-            console.error('获取任务列表失败:', error);
-            message.error('获取任务列表失败');
-        } finally {
-            setTasksLoading(false);
-        }
-    }, [currentUser, id]);
-
-    // 切换任务列表显示
-    const toggleTasks = () => {
-        setShowTasks(!showTasks);
-        if (!showTasks && tasks.length === 0) {
-            fetchTasksList(1);
-        }
-    };
+        },
+        [currentUser, id],
+    );
 
     // 创建任务
     const handleCreateTask = () => {
-        setSelectedTask(null);
-        setTaskFormMode('create');
-        setTaskForm({
-            title: '',
-            description: '',
-            priority: 'medium',
-            assignee: '',
-            due_date: '',
-            tags: []
-        });
-        setTaskModalVisible(true);
+        // 暂时禁用任务创建功能
+        message.info("任务创建功能暂时不可用");
+    };
+
+    // 预览任务
+    const handleViewTask = (_task: Task) => {
+        setTaskPreviewModalVisible(true);
+        setSelectedTask(_task);
     };
 
     // 编辑任务
-    const handleEditTask = (task: Task) => {
-        setSelectedTask(task);
-        setTaskFormMode('edit');
-        setTaskForm({
-            title: task.title,
-            description: task.description || '',
-            priority: task.priority,
-            assignee: task.assignee || '',
-            due_date: task.due_date || '',
-            tags: task.tags || []
-        });
-        setTaskModalVisible(true);
+    const handleEditTask = (_task: Task) => {
+        // 暂时禁用任务编辑功能
+        message.info("任务编辑功能暂时不可用");
     };
 
     // 删除任务
     const handleDeleteTask = async (task: Task) => {
         const ok = await confirm({
-            title: '确认删除',
+            title: "确认删除",
             content: `确定要删除任务 "${task.title}" 吗？`,
-            confirmText: '删除',
-            cancelText: '取消',
+            confirmText: "删除",
+            cancelText: "取消",
         });
         if (!ok) return;
 
         try {
             // Mock删除操作
-            await new Promise(resolve => setTimeout(resolve, 300));
+            await new Promise((resolve) => setTimeout(resolve, 300));
 
             // 从本地状态中移除任务
-            setTasks(prev => prev.filter(t => t.id !== task.id));
-            setTasksTotal(prev => Math.max(0, prev - 1));
+            setTasks((prev) => prev.filter((t) => t.id !== task.id));
+            setTasksTotal((prev) => Math.max(0, prev - 1));
 
-            message.success('任务删除成功');
+            message.success("任务删除成功");
         } catch (error) {
-            console.error('删除任务失败:', error);
-            message.error('删除任务失败');
-        }
-    };
-
-    // 更新任务状态
-    const handleUpdateTaskStatus = async (task: Task, newStatus: Task['status']) => {
-        // 检查权限：只有会长和管理员可以更新任务状态
-        if (!userRole || (userRole !== 'leader' && userRole !== 'admin')) {
-            message.warn('您没有权限更新任务状态');
-            return;
-        }
-
-        try {
-            // Mock更新操作
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            // 更新本地状态
-            setTasks(prev => prev.map(t =>
-                t.id === task.id ? { ...t, status: newStatus } : t
-            ));
-
-            message.success('任务状态更新成功');
-        } catch (error) {
-            console.error('更新任务状态失败:', error);
-            message.error('更新任务状态失败');
+            console.error("删除任务失败:", error);
+            message.error("删除任务失败");
         }
     };
 
     // 检查是否可以管理任务
     const canManageTask = () => {
-        return userRole === 'leader' || userRole === 'admin';
-    };
-
-    // 提交任务表单
-    const handleTaskSubmit = async () => {
-        if (!taskForm.title.trim()) {
-            message.error('请输入任务标题');
-            return;
-        }
-
-        if (!currentUser || !id) return;
-
-        try {
-            // Mock提交操作
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            if (taskFormMode === 'create') {
-                // 创建新任务的mock数据
-                const newTask: Task = {
-                    id: Date.now().toString(),
-                    title: taskForm.title.trim(),
-                    description: taskForm.description.trim(),
-                    status: 'pending',
-                    priority: taskForm.priority,
-                    assignee: taskForm.assignee.trim() || '',
-                    assignee_name: taskForm.assignee.trim(),
-                    creator: currentUser.id || 'current_user',
-                    creator_name: currentUser.name || '当前用户',
-                    created_at: new Date().toISOString(),
-                    due_date: taskForm.due_date,
-                    tags: taskForm.tags.filter(tag => tag.trim()),
-                    org_id: id
-                };
-
-                // 添加到本地状态
-                setTasks(prev => [newTask, ...prev]);
-                setTasksTotal(prev => prev + 1);
-                message.success('任务创建成功');
-            } else {
-                // 更新现有任务
-                setTasks(prev => prev.map(task =>
-                    task.id === selectedTask?.id
-                        ? {
-                            ...task,
-                            title: taskForm.title.trim(),
-                            description: taskForm.description.trim() || task.description,
-                            priority: taskForm.priority,
-                            assignee: taskForm.assignee.trim() || task.assignee,
-                            assignee_name: taskForm.assignee.trim() || task.assignee_name,
-                            due_date: taskForm.due_date || task.due_date,
-                            tags: taskForm.tags.filter(tag => tag.trim()),
-                            updated_at: new Date().toISOString()
-                        }
-                        : task
-                ));
-                message.success('任务更新成功');
-            }
-
-            setTaskModalVisible(false);
-        } catch (error) {
-            console.error(`${taskFormMode === 'create' ? '创建' : '更新'}任务失败:`, error);
-            message.error(`${taskFormMode === 'create' ? '创建' : '更新'}任务失败`);
-        }
+        return userRole === "leader" || userRole === "admin";
     };
 
     const handleJoin = async () => {
         if (!currentUser) {
-            message.warn('请先登录后再申请加入组织');
+            message.warn("请先登录后再申请加入组织");
             return;
         }
 
-        if (org?.status !== 'active') {
-            message.warn('该组织已停用，无法申请加入');
+        if (org?.status !== "active") {
+            message.warn("该组织已停用，无法申请加入");
             return;
         }
         const ok = await confirm({
-            title: '申请加入组织',
-            content: '确定要申请加入该组织吗？',
-            confirmText: '确认加入',
-            cancelText: '取消',
+            title: "申请加入组织",
+            content: "确定要申请加入该组织吗？",
+            confirmText: "确认加入",
+            cancelText: "取消",
         });
         if (!ok) return;
         try {
@@ -809,603 +635,109 @@ const OrganizationDetail: React.FC = () => {
             const joinRes: JoinOrganizationResponse = await OrganizationService.joinOrganization({ id: id! });
 
             // Update organization status but preserve existing member data
-            setOrg(prevOrg => {
+            setOrg((prevOrg: OrganizationDetailType | null) => {
                 if (!prevOrg) return prevOrg;
 
                 return {
                     ...prevOrg,
-                    user_in_org: (typeof joinRes.user_in_org !== 'undefined' && joinRes.user_in_org >= 0 ? MAP_STATUS_TO_TEXT[joinRes.user_in_org] : undefined)
+                    user_in_org:
+                        typeof joinRes.user_in_org !== "undefined" && joinRes.user_in_org >= 0
+                            ? MAP_STATUS_TO_TEXT[joinRes.user_in_org]
+                            : undefined,
                 };
             });
-            message.success('已申请加入组织');
+            message.success("已申请加入组织");
         } catch (e) {
-            message.error('申请加入失败');
+            message.error("申请加入失败");
             // Refresh the organization data to ensure consistency
             if (id && currentUser) {
                 try {
                     const res: GetOrganizationDetailResponse = await OrganizationService.getOrganizationDetail({ id });
-                    const orgDetail: OrganizationDetail = {
+                    const orgDetail: OrganizationDetailType = {
                         id: String(res.id),
                         name: res.name,
                         type: res.type,
-                        status: res.status === 1 || res.status === 'active' ? 'active' : 'inactive',
+                        status: res.status === 1 || res.status === "active" ? "active" : "inactive",
                         description: res.description,
                         memberCount: Array.isArray((res as any).members) ? (res as any).members.length : 0,
                         members: Array.isArray((res as any).members) ? (res as any).members : [],
                         user_in_org: res.user_in_org ? MAP_STATUS_TO_TEXT[res.user_in_org] : undefined,
-                        user_role: (typeof res.user_role !== 'undefined' && res.user_role > 0 ? MAP_ROLE_TO_TEXT[res.user_role] : undefined)
+                        user_role:
+                            typeof res.user_role !== "undefined" && res.user_role > 0
+                                ? MAP_ROLE_TO_TEXT[res.user_role]
+                                : undefined,
                     };
                     setOrg(orgDetail);
                     const role = checkUserRole(orgDetail.user_role);
                     setUserRole(role);
                 } catch (refreshError) {
-                    console.error('刷新组织数据失败:', refreshError);
+                    console.error("刷新组织数据失败:", refreshError);
                 }
             }
         }
     };
-
 
     return (
         <div className={styles.container}>
             <Navbar />
             <div className={styles.mainContent}>
                 <AuthRequired message="您需要登录后才能查看组织详情。">
-                    {(loading || !org) ? <OrganizationDetailSkeleton /> : (
+                    {loading || !org ? (
+                        <OrganizationDetailSkeleton />
+                    ) : (
                         <div className={styles.detailCard}>
                             {org && (
                                 <>
-                                    <div className={styles.cardHeader}>
-                                        <button className={styles.backBtn} onClick={() => navigate(-1)}><FaArrowLeft /> 返回</button>
-                                        <div className={styles.headerContent}>
-                                            <div className={styles.titleGroup}>
-                                                <h1 className={styles.pageTitle}><FaBuilding /> {org.name}</h1>
-                                                <span className={styles.orgType}>{org.type}</span>
-                                            </div>
-                                            <div className={styles.headerRight}>
-                                                <span className={org.status === 'active' ? styles.statusActive : styles.statusInactive}>
-                                                    {org.status === 'active' ? <FaCheckCircle /> : <FaLock />} {org.status === 'active' ? '正常' : '停用'}
-                                                </span>
-                                                {org.user_in_org === '已加入' || org.user_in_org === '申请中' ? (
-                                                    <span className={styles.joined}>{org.user_in_org}</span>
-                                                ) : (
-                                                    <button
-                                                        className={styles.joinBtn}
-                                                        onClick={handleJoin}
-                                                        disabled={org.status !== 'active'}
-                                                        title={org.status !== 'active' ? '该组织已停用，无法加入' : ''}
-                                                    >
-                                                        <FaPlus /> {org.user_in_org === '已退出' ? '重新加入' : '申请加入'}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className={styles.description}>{org.description}</div>
+                                    <OrganizationInfo org={org} stats={stats} onJoin={handleJoin} />
 
-                                    {/* 统计卡片 */}
-                                    <div className={styles.statsContainer}>
-                                        <div className={styles.statCard}>
-                                            <div className={`${styles.statIcon} ${styles.primary}`}>
-                                                <FaUserFriends />
-                                            </div>
-                                            <div className={styles.statValue}>{stats.totalMembers}</div>
-                                            <div className={styles.statLabel}>总成员数</div>
-                                        </div>
-                                        <div className={styles.statCard}>
-                                            <div className={`${styles.statIcon} ${styles.success}`}>
-                                                <FaCheckCircle />
-                                            </div>
-                                            <div className={styles.statValue}>{stats.activeMembers}</div>
-                                            <div className={styles.statLabel}>活跃成员</div>
-                                        </div>
-                                        <div className={styles.statCard}>
-                                            <div className={`${styles.statIcon} ${styles.warning}`}>
-                                                <FaUser />
-                                            </div>
-                                            <div className={styles.statValue}>{stats.leaderMembers}</div>
-                                            <div className={styles.statLabel}>负责人</div>
-                                        </div>
-                                        <div className={styles.statCard}>
-                                            <div className={`${styles.statIcon} ${styles.error}`}>
-                                                <FaUserAlt />
-                                            </div>
-                                            <div className={styles.statValue}>{stats.regularMembers}</div>
-                                            <div className={styles.statLabel}>普通成员</div>
-                                        </div>
-                                    </div>
-
-                                    {/* 成员表格和管理员请求处理 */}
-                                    <div className={styles.tableContainer}>
-                                        {/* Tab切换按钮 */}
-                                        {userRole === 'leader' || userRole === 'admin' ? (
-                                            <div className={styles.tabsHeader}>
-                                                <button
-                                                    className={`${styles.tabButton} ${!showPendingRequests && !showTasks ? styles.activeTab : ''}`}
-                                                    onClick={() => {
-                                                        setShowPendingRequests(false);
-                                                        setShowTasks(false);
-                                                    }}
-                                                >
-                                                    成员列表
-                                                </button>
-                                                <button
-                                                    className={`${styles.tabButton} ${showPendingRequests ? styles.activeTab : ''}`}
-                                                    onClick={() => {
-                                                        setShowPendingRequests(true);
-                                                        setShowTasks(false);
-                                                    }}
-                                                >
-                                                    待处理请求
-                                                </button>
-                                                <button
-                                                    className={`${styles.tabButton} ${showTasks ? styles.activeTab : ''}`}
-                                                    onClick={() => {
-                                                        setShowPendingRequests(false);
-                                                        toggleTasks();
-                                                    }}
-                                                >
-                                                    任务列表
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className={styles.tabsHeader}>
-                                                <button
-                                                    className={`${styles.tabButton} ${!showTasks ? styles.activeTab : ''}`}
-                                                    onClick={() => setShowTasks(false)}
-                                                >
-                                                    成员列表
-                                                </button>
-                                                <button
-                                                    className={`${styles.tabButton} ${showTasks ? styles.activeTab : ''}`}
-                                                    onClick={toggleTasks}
-                                                >
-                                                    任务列表
-                                                </button>
-                                            </div>
-                                        )}
-
-                                        {/* 成员列表视图 */}
-                                        {!showPendingRequests && !showTasks && (
-                                            <>
-                                                {! (userRole === 'leader' || userRole === 'admin') ? (
-                                                    <div className={styles.tableHeader}>
-                                                        <h3 className={styles.tableTitle}>成员列表</h3>
-                                                        <div className={styles.tableActions}>
-                                                            <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                                                                共 {stats.totalMembers} 个成员
-                                                            </span>
-                                                            <button
-                                                                className={`${styles.refreshButton} ${isRefreshing ? styles.loading : ''}`}
-                                                                title="刷新成员列表"
-                                                                onClick={() => setRefreshTrigger(prev => prev + 1)}
-                                                                disabled={isRefreshing}
-                                                                style={{ marginLeft: '8px' }}
-                                                            >
-                                                                <FaSync />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                ) : null}
-                                                <table className={styles.usersTable}>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>用户信息</th>
-                                                            <th>角色</th>
-                                                            <th>状态</th>
-                                                            <th>加入时间</th>
-                                                            <th>操作</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {org?.members && org.members.length > 0 ? (
-                                                            org.members.map(member => (
-                                                                <tr key={member.id} className={styles.tableRow}>
-                                                                    <td>
-                                                                        <div className={styles.userInfo}>
-                                                                            <img
-                                                                                src={member.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=random`}
-                                                                                alt={member.name}
-                                                                                className={styles.userAvatar}
-                                                                            />
-                                                                            <div className={styles.userDetails}>
-                                                                                <div className={styles.userName}>{member.name}</div>
-                                                                                {member.email && <div className={styles.userEmail}>{member.email}</div>}
-                                                                            </div>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td>
-                                                                        <span className={`${styles.roleBadge} ${member.role === '会长' ? styles.admin : member.role === '管理员' ? styles.moderator : styles.user}`}>
-                                                                            {member.role === '会长' && <FaCrown style={{ color: '#f7b500', marginRight: 4 }} />}
-                                                                            {member.role === '管理员' && <FaUserShield style={{ color: '#4caf50', marginRight: 4 }} />}
-                                                                            {member.role === '成员' && <FaUser style={{ color: '#2196f3', marginRight: 4 }} />}
-                                                                            {member.role || '成员'}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td>
-                                                                        <span className={`${styles.statusBadge} ${member.status === 'active' ? styles.active : styles.inactive}`}>
-                                                                            <span className={styles.statusIndicator}></span>
-                                                                            {member.status === 'active' ? '活跃' : '非活跃'}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td>{member.joinTime || '-'}</td>
-                                                                    <td>
-                                                                        <div className={styles.actionButtons}>
-                                                                            <button className={`${styles.actionButton} ${styles.viewButton}`}
-                                                                                title="查看详情">
-                                                                                <FaEye />
-                                                                            </button>
-                                                                            {canManageMember(member) && (
-                                                                                <>
-                                                                                    <button
-                                                                                        className={`${styles.actionButton} ${styles.kickButton}`}
-                                                                                        title="踢出组织"
-                                                                                        onClick={() => handleKickMember(member)}
-                                                                                    >
-                                                                                        <FaUserMinus />
-                                                                                    </button>
-                                                                                    {canSetRole(member) && (
-                                                                                        <button
-                                                                                            className={`${styles.actionButton} ${styles.roleButton}`}
-                                                                                            title="设置角色"
-                                                                                            onClick={() => handleSetMemberRole(member)}
-                                                                                        >
-                                                                                            <FaCog />
-                                                                                        </button>
-                                                                                    )}
-                                                                                </>
-                                                                            )}
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                            ))
-                                                        ) : (
-                                                            <tr>
-                                                                <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
-                                                                    暂无成员
-                                                                </td>
-                                                            </tr>
-                                                        )}
-                                                    </tbody>
-                                                </table>
-                                                {/* 分页区块 */}
-                                                {membersTotal > 0 && (
-                                                    <div className={styles.pagination}>
-                                                        <div className={styles.paginationInfo}>
-                                                            显示 {(page - 1) * PAGE_SIZE + 1} - {Math.min(page * PAGE_SIZE, membersTotal)} 条，
-                                                            共 {membersTotal} 条记录
-                                                        </div>
-                                                        <div className={styles.paginationControls}>
-                                                            <button
-                                                                className={styles.paginationButton}
-                                                                disabled={page === 1}
-                                                                onClick={() => setPage(page - 1)}
-                                                            >
-                                                                上一页
-                                                            </button>
-                                                            {Array.from({ length: Math.ceil(membersTotal / PAGE_SIZE) }, (_, i) => (
-                                                                <button
-                                                                    key={i + 1}
-                                                                    className={`${styles.paginationButton} ${page === i + 1 ? styles.active : ''}`}
-                                                                    onClick={() => setPage(i + 1)}
-                                                                >
-                                                                    {i + 1}
-                                                                </button>
-                                                            ))}
-                                                            <button
-                                                                className={styles.paginationButton}
-                                                                disabled={page === Math.ceil(membersTotal / PAGE_SIZE)}
-                                                                onClick={() => setPage(page + 1)}
-                                                            >
-                                                                下一页
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </>
-                                        )}
-
-                                        {/* 待处理请求视图 - 仅对管理员/会长显示 */}
-                                        {showPendingRequests && (userRole === 'leader' || userRole === 'admin') && (
-                                            <>
-                                                {userRole === 'leader' || userRole === 'admin' ? (
-                                                    <div className={styles.tableHeader}>
-                                                        <h3 className={styles.tableTitle}>待处理请求</h3>
-                                                        <div className={styles.tableActions}>
-                                                            <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                                                                共 {pendingRequests.length} 个请求
-                                                            </span>
-                                                            <button
-                                                                className={`${styles.refreshButton} ${pendingRequestsLoading ? styles.loading : ''}`}
-                                                                title="刷新待处理请求"
-                                                                onClick={() => setPendingRequestsRefreshTrigger(prev => prev + 1)}
-                                                                disabled={pendingRequestsLoading}
-                                                                style={{ marginLeft: '8px' }}
-                                                            >
-                                                                <FaSync />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                ) : null}
-                                                {pendingRequestsLoading ? (
-                                                    <div style={{ padding: '20px', textAlign: 'center' }}>
-                                                        <p>正在加载待处理请求...</p>
-                                                    </div>
-                                                ) : (
-                                                    <table className={styles.usersTable}>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>用户信息</th>
-                                                                <th>申请时间</th>
-                                                                <th>操作</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {pendingRequests.length > 0 ? (
-                                                                pendingRequests.map(request => (
-                                                                        <tr key={request.id} className={styles.tableRow}>
-                                                                            <td>
-                                                                                <div className={styles.userInfo}>
-                                                                                    <img
-                                                                                        src={request.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(request.name)}&background=random`}
-                                                                                        alt={request.name}
-                                                                                        className={styles.userAvatar}
-                                                                                    />
-                                                                                    <div className={styles.userDetails}>
-                                                                                        <div className={styles.userName}>{request.name}</div>
-                                                                                        {request.email && <div className={styles.userEmail}>{request.email}</div>}
-                                                                                    </div>
-                                                                                </div>
-                                                                            </td>
-                                                                            <td>{request.joinTime || '-'}</td>
-                                                                            <td>
-                                                                                <div className={styles.actionButtons}>
-                                                                                    <button
-                                                                                        className={`${styles.actionButton} ${styles.acceptButton}`}
-                                                                                        title="接受"
-                                                                                        onClick={() => handleActionPendingRequest(request.id, 'accept')}
-                                                                                    >
-                                                                                        <FaCheck />
-                                                                                    </button>
-                                                                                    <button
-                                                                                        className={`${styles.actionButton} ${styles.rejectButton}`}
-                                                                                        title="拒绝"
-                                                                                        onClick={() => handleActionPendingRequest(request.id, 'reject')}
-                                                                                    >
-                                                                                        <FaTimes />
-                                                                                    </button>
-                                                                                </div>
-                                                                            </td>
-                                                                        </tr>
-                                                                    ))
-                                                            ) : (
-                                                                <tr>
-                                                                    <td colSpan={3} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
-                                                                        暂无待处理请求
-                                                                    </td>
-                                                                </tr>
-                                                            )}
-                                                        </tbody>
-                                                    </table>
-                                                )}
-                                                {/* 分页区块 - 待处理请求 */}
-                                                {pendingRequestsTotal > 0 && (
-                                                    <div className={styles.pagination}>
-                                                        <div className={styles.paginationInfo}>
-                                                            显示 {(pendingRequestsPage - 1) * PAGE_SIZE + 1} - {Math.min(pendingRequestsPage * PAGE_SIZE, pendingRequestsTotal)} 条，
-                                                            共 {pendingRequestsTotal} 条记录
-                                                        </div>
-                                                        <div className={styles.paginationControls}>
-                                                            <button
-                                                                className={styles.paginationButton}
-                                                                disabled={pendingRequestsPage === 1}
-                                                                onClick={() => setPendingRequestsPage(pendingRequestsPage - 1)}
-                                                            >
-                                                                上一页
-                                                            </button>
-                                                            {Array.from({ length: Math.ceil(pendingRequestsTotal / PAGE_SIZE) }, (_, i) => (
-                                                                <button
-                                                                    key={i + 1}
-                                                                    className={`${styles.paginationButton} ${pendingRequestsPage === i + 1 ? styles.active : ''}`}
-                                                                    onClick={() => setPendingRequestsPage(i + 1)}
-                                                                >
-                                                                    {i + 1}
-                                                                </button>
-                                                            ))}
-                                                            <button
-                                                                className={styles.paginationButton}
-                                                                disabled={pendingRequestsPage === Math.ceil(pendingRequestsTotal / PAGE_SIZE)}
-                                                                onClick={() => setPendingRequestsPage(pendingRequestsPage + 1)}
-                                                            >
-                                                                下一页
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </>
-                                        )}
-
-                                        {/* 任务列表视图 */}
-                                        {showTasks && (
-                                            <>
-                                                <div className={styles.tableHeader}>
-                                                    <h3 className={styles.tableTitle}>任务列表</h3>
-                                                    <div className={styles.tableActions}>
-                                                        <button
-                                                            className={styles.refreshButton}
-                                                            onClick={() => fetchTasksList(1)}
-                                                            title="刷新任务列表"
-                                                        >
-                                                            <FaSync />
-                                                        </button>
-                                                        {(userRole === 'leader' || userRole === 'admin') && (
-                                                            <button
-                                                                className={styles.createButton}
-                                                                onClick={handleCreateTask}
-                                                            >
-                                                                <FaPlus /> 创建任务
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {tasksLoading ? (
-                                                    <p>正在加载任务列表...</p>
-                                                ) : tasks.length === 0 ? (
-                                                    <div className={styles.emptyState}>
-                                                        <FaTasks className={styles.emptyIcon} />
-                                                        <h3 className={styles.emptyTitle}>暂无任务</h3>
-                                                        <p className={styles.emptySubtext}>
-                                                            {(userRole === 'leader' || userRole === 'admin')
-                                                                ? '点击"创建任务"按钮来创建第一个任务'
-                                                                : '当前组织还没有发布任何任务'
-                                                            }
-                                                        </p>
-                                                    </div>
-                                                ) : (
-                                                    <table className={styles.usersTable}>
-                                                        <thead>
-                                                            <tr>
-                                                                <th style={{ textAlign: 'left' }}>任务信息</th>
-                                                                <th>负责人</th>
-                                                                <th>截止时间</th>
-                                                                <th>状态</th>
-                                                                <th>操作</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {tasks.length > 0 ? (
-                                                                tasks.map(task => (
-                                                                    <tr key={task.id} className={styles.tableRow}>
-                                                                        <td>
-                                                                            <div className={styles.userInfo}>
-                                                                                <div className={styles.userAvatar} style={{ background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                                    <FaTasks />
-                                                                                </div>
-                                                                                <div className={styles.userDetails}>
-                                                                                    <div className={styles.userName}>{task.title}</div>
-                                                                                    <div className={styles.userEmail}>
-                                                                                        <span className={`${styles.priorityBadge} ${styles[task.priority]}`}>
-                                                                                            <FaFlag />
-                                                                                            {task.priority === 'low' && '低'}
-                                                                                            {task.priority === 'medium' && '中'}
-                                                                                            {task.priority === 'high' && '高'}
-                                                                                            {task.priority === 'urgent' && '紧急'}
-                                                                                        </span>
-                                                                                    </div>
-                                                                                    {task.description && (
-                                                                                        <div className={styles.userEmail} style={{ marginTop: '4px', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-                                                                                            {task.description}
-                                                                                        </div>
-                                                                                    )}
-                                                                                </div>
-                                                                            </div>
-                                                                        </td>
-                                                                        <td style={{ textAlign: 'center' }}>
-                                                                            {task.assignee_name || (
-                                                                                <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>未分配</span>
-                                                                            )}
-                                                                        </td>
-                                                                        <td style={{ textAlign: 'center' }}>
-                                                                            {task.due_date ? (
-                                                                                <span style={{ color: 'var(--warning)', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
-                                                                                    <FaCalendarAlt />
-                                                                                    {new Date(task.due_date).toLocaleDateString()}
-                                                                                </span>
-                                                                            ) : (
-                                                                                <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>无截止日期</span>
-                                                                            )}
-                                                                        </td>
-                                                                        <td style={{ textAlign: 'center' }}>
-                                                                            <span className={`${styles.statusBadge} ${styles[task.status]}`}>
-                                                                                {task.status === 'pending' && <FaHourglassHalf />}
-                                                                                {task.status === 'in_progress' && <FaPlayCircle />}
-                                                                                {task.status === 'completed' && <FaCheckCircle />}
-                                                                                {task.status === 'cancelled' && <FaStopCircle />}
-                                                                                {task.status === 'pending' && '待处理'}
-                                                                                {task.status === 'in_progress' && '进行中'}
-                                                                                {task.status === 'completed' && '已完成'}
-                                                                                {task.status === 'cancelled' && '已取消'}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td style={{ textAlign: 'center' }}>
-                                                                            <div className={styles.actionButtons} style={{ justifyContent: 'center' }}>
-                                                                                <button
-                                                                                    className={styles.actionButton}
-                                                                                    title="查看详情"
-                                                                                    onClick={() => handleEditTask(task)}
-                                                                                >
-                                                                                    <FaEye />
-                                                                                </button>
-                                                                                {canManageTask() && (
-                                                                                    <>
-                                                                                        <button
-                                                                                            className={styles.actionButton}
-                                                                                            title="编辑任务"
-                                                                                            onClick={() => handleEditTask(task)}
-                                                                                        >
-                                                                                            <FaEdit />
-                                                                                        </button>
-                                                                                        <button
-                                                                                            className={`${styles.actionButton} ${styles.rejectButton}`}
-                                                                                            title="删除任务"
-                                                                                            onClick={() => handleDeleteTask(task)}
-                                                                                        >
-                                                                                            <FaTrash />
-                                                                                        </button>
-                                                                                    </>
-                                                                                )}
-                                                                            </div>
-                                                                        </td>
-                                                                    </tr>
-                                                                ))
-                                                            ) : (
-                                                                <tr>
-                                                                    <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
-                                                                        暂无任务
-                                                                    </td>
-                                                                </tr>
-                                                            )}
-                                                        </tbody>
-                                                    </table>
-                                                )}
-                                                {/* 分页区块 - 任务列表 */}
-                                                {tasksTotal > 0 && (
-                                                    <div className={styles.pagination}>
-                                                        <div className={styles.paginationInfo}>
-                                                            显示 {(tasksPage - 1) * 10 + 1} - {Math.min(tasksPage * 10, tasksTotal)} 条，
-                                                            共 {tasksTotal} 条记录
-                                                        </div>
-                                                        <div className={styles.paginationControls}>
-                                                            <button
-                                                                className={styles.paginationButton}
-                                                                disabled={tasksPage === 1}
-                                                                onClick={() => fetchTasksList(tasksPage - 1)}
-                                                            >
-                                                                上一页
-                                                            </button>
-                                                            {Array.from({ length: Math.ceil(tasksTotal / 10) }, (_, i) => (
-                                                                <button
-                                                                    key={i + 1}
-                                                                    className={`${styles.paginationButton} ${tasksPage === i + 1 ? styles.active : ''}`}
-                                                                    onClick={() => fetchTasksList(i + 1)}
-                                                                >
-                                                                    {i + 1}
-                                                                </button>
-                                                            ))}
-                                                            <button
-                                                                className={styles.paginationButton}
-                                                                disabled={tasksPage === Math.ceil(tasksTotal / 10)}
-                                                                onClick={() => fetchTasksList(tasksPage + 1)}
-                                                            >
-                                                                下一页
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </>
-                                        )}
-                                    </div>
+                                    <OrganizationTabs
+                                        org={org}
+                                        userRole={userRole}
+                                        currentUser={currentUser}
+                                        showPendingRequests={showPendingRequests}
+                                        showTasks={showTasks}
+                                        members={org?.members || []}
+                                        membersTotal={membersTotal}
+                                        page={page}
+                                        isRefreshing={isRefreshing}
+                                        pendingRequests={pendingRequests}
+                                        pendingRequestsTotal={pendingRequestsTotal}
+                                        pendingRequestsPage={pendingRequestsPage}
+                                        pendingRequestsLoading={pendingRequestsLoading}
+                                        tasks={tasks}
+                                        tasksTotal={tasksTotal}
+                                        tasksPage={tasksPage}
+                                        tasksLoading={tasksLoading}
+                                        roleModalVisible={roleModalVisible}
+                                        taskPreviewModalVisible={taskPreviewModalVisible}
+                                        selectedMember={selectedMember}
+                                        selectedRole={selectedRole}
+                                        getAvailableRoleOptions={getAvailableRoleOptions}
+                                        onTabChange={(showPending, showTasks) => {
+                                            setShowPendingRequests(showPending);
+                                            setShowTasks(showTasks);
+                                        }}
+                                        onRefreshMembers={() => setRefreshTrigger((prev) => prev + 1)}
+                                        onRefreshPending={() => setPendingRequestsRefreshTrigger((prev) => prev + 1)}
+                                        onPageChange={setPage}
+                                        onPendingPageChange={setPendingRequestsPage}
+                                        onActionPendingRequest={handleActionPendingRequest}
+                                        onKickMember={handleKickMember}
+                                        onSetMemberRole={handleSetMemberRole}
+                                        onRoleModalClose={() => setRoleModalVisible(false)}
+                                        onTaskPreviewModalClose={() => setTaskPreviewModalVisible(false)}
+                                        onRoleChange={setSelectedRole}
+                                        onConfirmRole={handleConfirmRole}
+                                        onCreateTask={handleCreateTask}
+                                        onRefreshTasks={(page) => fetchTasksList(page || 1)}
+                                        onEditTask={handleEditTask}
+                                        onViewTask={handleViewTask}
+                                        onDeleteTask={handleDeleteTask}
+                                        canManageMember={canManageMember}
+                                        canSetRole={canSetRole}
+                                        canManageTask={canManageTask}
+                                        selectedTask={selectedTask}
+                                    />
                                     {/* 申请加入按钮已移至header最右侧 */}
                                 </>
                             )}
@@ -1414,182 +746,6 @@ const OrganizationDetail: React.FC = () => {
                 </AuthRequired>
             </div>
             <Footer companyName="TechBlog" startYear={2025} />
-
-            {/* Role Selection Modal */}
-            <Modal
-                visible={roleModalVisible}
-                title={`设置 ${selectedMember?.name} 的角色`}
-                onClose={() => setRoleModalVisible(false)}
-                footer={
-                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                        <button
-                            onClick={() => setRoleModalVisible(false)}
-                            className={styles.cancelButton}
-                        >
-                            取消
-                        </button>
-                        <button
-                            onClick={handleConfirmRole}
-                            className={styles.confirmButton}
-                        >
-                            确认
-                        </button>
-                    </div>
-                }
-                width="450px"
-                size="small"
-            >
-                <div className={styles.roleSelectionContainer}>
-                    <p className={styles.roleSelectionDescription}>
-                        请为 {selectedMember?.name} 选择合适的角色
-                    </p>
-                    <div className={styles.roleOptions}>
-                        {getAvailableRoleOptions().map((role) => (
-                            <label
-                                key={role.value}
-                                className={`${styles.roleOption} ${selectedRole === role.value ? styles.selectedRole : ''}`}
-                            >
-                                <input
-                                    type="radio"
-                                    name="role"
-                                    value={role.value}
-                                    checked={selectedRole === role.value}
-                                    onChange={(e) => setSelectedRole(parseInt(e.target.value))}
-                                    style={{ display: 'none' }}
-                                />
-                                <div className={styles.roleOptionContent}>
-                                    <div className={styles.roleIcon}>
-                                        {role.icon}
-                                    </div>
-                                    <div className={styles.roleInfo}>
-                                        <div className={styles.roleLabel}>{role.label}</div>
-                                        <div className={styles.roleDescription}>{role.description}</div>
-                                    </div>
-                                    <div className={styles.roleRadio}>
-                                        <div className={styles.radioCircle}></div>
-                                    </div>
-                                </div>
-                            </label>
-                        ))}
-                    </div>
-                </div>
-            </Modal>
-
-            {/* Task Form Modal */}
-            <Modal
-                visible={taskModalVisible}
-                title={taskFormMode === 'create' ? '创建任务' : '编辑任务'}
-                onClose={() => setTaskModalVisible(false)}
-                footer={
-                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                        <button
-                            onClick={() => setTaskModalVisible(false)}
-                            className={styles.cancelButton}
-                        >
-                            取消
-                        </button>
-                        <button
-                            onClick={handleTaskSubmit}
-                            className={styles.confirmButton}
-                        >
-                            {taskFormMode === 'create' ? '创建' : '保存'}
-                        </button>
-                    </div>
-                }
-                width="600px"
-                size="medium"
-            >
-                <div className={styles.taskFormContainer}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>
-                            <FaTasks /> 任务标题 *
-                        </label>
-                        <input
-                            type="text"
-                            className={styles.formInput}
-                            placeholder="请输入任务标题"
-                            value={taskForm.title}
-                            onChange={(e) => setTaskForm(prev => ({ ...prev, title: e.target.value }))}
-                            maxLength={100}
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>
-                            <FaEdit /> 任务描述
-                        </label>
-                        <textarea
-                            className={styles.formTextarea}
-                            placeholder="请输入任务描述"
-                            value={taskForm.description}
-                            onChange={(e) => setTaskForm(prev => ({ ...prev, description: e.target.value }))}
-                            rows={3}
-                            maxLength={500}
-                        />
-                    </div>
-
-                    <div className={styles.formRow}>
-                        <div className={styles.formGroup}>
-                            <label className={styles.formLabel}>
-                                <FaFlag /> 优先级
-                            </label>
-                            <select
-                                className={styles.formSelect}
-                                value={taskForm.priority}
-                                onChange={(e) => setTaskForm(prev => ({ ...prev, priority: e.target.value as Task['priority'] }))}
-                            >
-                                <option value="low">低</option>
-                                <option value="medium">中</option>
-                                <option value="high">高</option>
-                                <option value="urgent">紧急</option>
-                            </select>
-                        </div>
-
-                        <div className={styles.formGroup}>
-                            <label className={styles.formLabel}>
-                                <FaUserPlus /> 负责人
-                            </label>
-                            <input
-                                type="text"
-                                className={styles.formInput}
-                                placeholder="请输入负责人用户名或ID"
-                                value={taskForm.assignee}
-                                onChange={(e) => setTaskForm(prev => ({ ...prev, assignee: e.target.value }))}
-                            />
-                        </div>
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>
-                            <FaCalendarAlt /> 截止日期
-                        </label>
-                        <input
-                            type="date"
-                            className={styles.formInput}
-                            value={taskForm.due_date}
-                            onChange={(e) => setTaskForm(prev => ({ ...prev, due_date: e.target.value }))}
-                            min={new Date().toISOString().split('T')[0]}
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>
-                            <FaFlag /> 标签
-                        </label>
-                        <input
-                            type="text"
-                            className={styles.formInput}
-                            placeholder="请输入标签，用逗号分隔"
-                            value={taskForm.tags.join(', ')}
-                            onChange={(e) => setTaskForm(prev => ({
-                                ...prev,
-                                tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag)
-                            }))}
-                        />
-                        <small className={styles.formHint}>多个标签用逗号分隔，如：前端, 紧急, 优化</small>
-                    </div>
-                </div>
-            </Modal>
         </div>
     );
 };

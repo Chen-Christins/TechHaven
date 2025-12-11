@@ -366,11 +366,11 @@
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .filterGroup {
         flex-direction: column;
     }
-    
+
     .tableContainer {
         overflow-x: auto;
     }

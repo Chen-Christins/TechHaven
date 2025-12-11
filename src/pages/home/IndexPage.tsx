@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import styles from './IndexPage.module.css';
-import ArticleList from '../../components/articleList/ArticleList';
-import StatsPanel from '../../components/StatsPanel/StatsPanel';
-import SubscribeBox from '../../components/SubscribeBox/SubscribeBox';
-import Calendar from '../../components/calendar/Calendar';
-import CategoryPanel from '../../components/categoryPanel/CategoryPanel';
-import Navbar from '../../components/navbar/Navbar';
-import Footer from '../../components/footer/Footer';
-import TagPanel from '../../components/tagPanel/TagPanel';
-import SearchPanel from '../../components/searchArticle/SearchArticle';
-import BackToTop from '../../components/backToTop/BackToTop';
-import LabelService from '../../services/labelService';
-import PageSkeleton from '../../components/pageSkeleton/PageSkeleton';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useState, useEffect } from "react";
+import styles from "./IndexPage.module.css";
+import ArticleList from "../../components/articleList/ArticleList";
+import StatsPanel from "../../components/StatsPanel/StatsPanel";
+import SubscribeBox from "../../components/SubscribeBox/SubscribeBox";
+import Calendar from "../../components/calendar/Calendar";
+import CategoryPanel from "../../components/categoryPanel/CategoryPanel";
+import Navbar from "../../components/navbar/Navbar";
+import Footer from "../../components/footer/Footer";
+import TagPanel from "../../components/tagPanel/TagPanel";
+import SearchPanel from "../../components/searchArticle/SearchArticle";
+import BackToTop from "../../components/backToTop/BackToTop";
+import LabelService from "../../services/labelService";
+import PageSkeleton from "../../components/pageSkeleton/PageSkeleton";
+import { useAuth } from "../../contexts/AuthContext";
 
 const IndexPage: React.FC = () => {
     const { user, loading: authLoading } = useAuth();
@@ -34,10 +34,14 @@ const IndexPage: React.FC = () => {
 
             try {
                 const res = await LabelService.queryLabel({ user_id: user.id });
-                const mapped = (res || []).map((t: any) => ({ id: t.id, name: t.name, color: t.color || '#61dafb' }));
+                const mapped = (res || []).map((t: any) => ({
+                    id: t.id,
+                    name: t.name,
+                    color: t.color || "#61dafb",
+                }));
                 setTags(mapped);
             } catch (err) {
-                console.error('获取标签失败:', err);
+                console.error("获取标签失败:", err);
                 setTags([]);
             } finally {
                 setTagsLoading(false);
@@ -82,10 +86,7 @@ const IndexPage: React.FC = () => {
                     <div className={styles.rightColumn}>
                         {/* 标签面板可能仍在加载，显示局部加载状态 */}
                         <SearchPanel />
-                        <TagPanel
-                            tags={tags}
-                            loading={tagsLoading}
-                        />
+                        <TagPanel tags={tags} loading={tagsLoading} />
                         <SubscribeBox />
                         <CategoryPanel />
                         <StatsPanel />

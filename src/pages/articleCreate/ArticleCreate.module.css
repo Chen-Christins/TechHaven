@@ -49,7 +49,7 @@
 }
 
 .formSection {
-    margin-bottom: 1.0rem;
+    margin-bottom: 1rem;
 }
 
 .formSectionTitle {
@@ -169,7 +169,7 @@
     resize: none;
     color: var(--text-primary);
     border: 1px solid var(--border-primary);
-    font-family: 'Fira Code', 'Courier New', monospace;
+    font-family: "Fira Code", "Courier New", monospace;
 }
 
 .markdownEditor:focus {
@@ -298,8 +298,6 @@
     justify-content: flex-end;
     gap: 12px;
 }
-
-
 
 /* 响应式调整 */
 @media (max-width: 768px) {
@@ -597,7 +595,7 @@
     padding: 12px;
     overflow-x: auto;
     margin: 0;
-    font-family: 'SFMono-Regular', Consolas, 'Monaco', 'Liberation Mono', 'Menlo', monospace;
+    font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace;
     font-size: 12px;
     line-height: 1.4;
     color: var(--text-primary);
@@ -700,7 +698,7 @@
     border-radius: 6px !important;
     padding: 0.2em 0.4em !important;
     font-size: 0.85em !important;
-    font-family: 'SFMono-Regular', Consolas, 'Monaco', 'Liberation Mono', 'Menlo', monospace !important;
+    font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace !important;
     border: 1px solid rgba(59, 130, 246, 0.3) !important;
     display: inline !important;
     white-space: nowrap !important;
@@ -763,7 +761,7 @@
     padding: 16px;
     overflow-x: auto;
     margin: 0;
-    font-family: 'SFMono-Regular', Consolas, 'Monaco', 'Liberation Mono', 'Menlo', monospace;
+    font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace;
     font-size: 14px;
     line-height: 1.5;
     color: var(--text-primary);
@@ -964,10 +962,22 @@
 
 /* 复制成功提示动画 */
 @keyframes fadeInOut {
-    0% { opacity: 0; transform: translateY(10px); }
-    20% { opacity: 1; transform: translateY(0); }
-    80% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-10px); }
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    20% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    80% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
 }
 
 .copySuccessMessage {

@@ -1,14 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import {
-    FaFileAlt,
-    FaEye,
-    FaThumbsUp,
-    FaComment,
-    FaTag,
-    FaChartBar
-} from 'react-icons/fa';
-import type { ArticleListItem } from '../../../types/index';
-import styles from '../PersonalCenter.module.css';
+import React, { useState, useEffect } from "react";
+import { FaFileAlt, FaEye, FaThumbsUp, FaComment, FaTag, FaChartBar } from "react-icons/fa";
+import type { ArticleListItem } from "../../../types/index";
+import styles from "../PersonalCenter.module.css";
 
 // 个人统计类型
 interface PersonalStats {
@@ -24,10 +17,10 @@ interface PersonalStats {
 interface PersonalTag {
     id: number;
     name: string;
-    description?: string | '暂无';
+    description?: string | "暂无";
     articleCount?: number | 0;
     color: string;
-    createTime?: string | '未知时间';
+    createTime?: string | "未知时间";
 }
 
 interface Props {
@@ -44,19 +37,19 @@ const StatsTab: React.FC<Props> = ({ articles, tags, totalArticles }) => {
         totalViews: 0,
         totalLikes: 0,
         totalComments: 0,
-        totalTags: 0
+        totalTags: 0,
     });
 
     // 计算统计数据
     useEffect(() => {
         const calculatedStats: PersonalStats = {
             totalArticles: totalArticles,
-            publishedArticles: articles.filter(a => a.state === 'published').length,
-            privateArticles: articles.filter(a => a.state === 'private').length,
+            publishedArticles: articles.filter((a) => a.state === "published").length,
+            privateArticles: articles.filter((a) => a.state === "private").length,
             totalViews: articles.reduce((sum, a) => sum + a.views, 0),
             totalLikes: articles.reduce((sum, a) => sum + a.praise, 0),
             totalComments: articles.reduce((sum, a) => sum + a.favorites, 0), // 使用favorites作为评论数
-            totalTags: tags.length
+            totalTags: tags.length,
         };
         setStats(calculatedStats);
     }, [articles, tags, totalArticles]);
@@ -136,15 +129,25 @@ const StatsTab: React.FC<Props> = ({ articles, tags, totalArticles }) => {
                     </div>
                     <div className={styles.tableRow}>
                         <span>平均浏览量</span>
-                        <span>{stats.totalArticles > 0 ? Math.round(stats.totalViews / stats.totalArticles) : 0} 次/篇</span>
+                        <span>
+                            {stats.totalArticles > 0 ? Math.round(stats.totalViews / stats.totalArticles) : 0} 次/篇
+                        </span>
                     </div>
                     <div className={styles.tableRow}>
                         <span>平均点赞数</span>
-                        <span>{stats.publishedArticles > 0 ? Math.round(stats.totalLikes / stats.publishedArticles) : 0} 个/篇</span>
+                        <span>
+                            {stats.publishedArticles > 0 ? Math.round(stats.totalLikes / stats.publishedArticles) : 0}{" "}
+                            个/篇
+                        </span>
                     </div>
                     <div className={styles.tableRow}>
                         <span>平均评论数</span>
-                        <span>{stats.publishedArticles > 0 ? Math.round(stats.totalComments / stats.publishedArticles) : 0} 条/篇</span>
+                        <span>
+                            {stats.publishedArticles > 0
+                                ? Math.round(stats.totalComments / stats.publishedArticles)
+                                : 0}{" "}
+                            条/篇
+                        </span>
                     </div>
                 </div>
             </div>

@@ -6,7 +6,6 @@
     background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
 }
 
-
 /* 主内容骨架 */
 .mainSkeleton {
     flex: 1;
@@ -152,17 +151,17 @@
 }
 
 /* 暗色主题适配（支持 data-theme） */
-:root[data-theme='dark'] .pageSkeleton {
+:root[data-theme="dark"] .pageSkeleton {
     background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
 }
 
-:root[data-theme='dark'] .articleCardSkeleton,
-:root[data-theme='dark'] .searchPanelSkeleton,
-:root[data-theme='dark'] .tagPanelSkeleton,
-:root[data-theme='dark'] .subscribeSkeleton,
-:root[data-theme='dark'] .categorySkeleton,
-:root[data-theme='dark'] .statsSkeleton,
-:root[data-theme='dark'] .calendarSkeleton {
+:root[data-theme="dark"] .articleCardSkeleton,
+:root[data-theme="dark"] .searchPanelSkeleton,
+:root[data-theme="dark"] .tagPanelSkeleton,
+:root[data-theme="dark"] .subscribeSkeleton,
+:root[data-theme="dark"] .categorySkeleton,
+:root[data-theme="dark"] .statsSkeleton,
+:root[data-theme="dark"] .calendarSkeleton {
     background: rgba(26, 26, 26, 0.8);
     border-color: rgba(255, 255, 255, 0.1);
     box-shadow:
@@ -170,16 +169,16 @@
         0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-:root[data-theme='dark'] .articleHeader,
-:root[data-theme='dark'] .categoryItem {
+:root[data-theme="dark"] .articleHeader,
+:root[data-theme="dark"] .categoryItem {
     border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-:root[data-theme='dark'] .categoryItem:hover {
+:root[data-theme="dark"] .categoryItem:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
-:root[data-theme='dark'] .footerSkeleton {
+:root[data-theme="dark"] .footerSkeleton {
     background: rgba(26, 26, 26, 0.9);
     border-top-color: rgba(255, 255, 255, 0.1);
 }

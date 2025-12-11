@@ -1,4 +1,4 @@
-import http from '../utils/http';
+import http from "../utils/http";
 
 /**
  * 创建组织参数
@@ -169,8 +169,7 @@ export interface organizationSetRoleResponse {
     join_time: number;
 }
 
-export interface userOrganizationListsParams {
-}
+export interface userOrganizationListsParams {}
 
 export interface userOrganizationListsResponse {
     list: Array<{
@@ -188,25 +187,24 @@ export interface userOrganizationListsResponse {
  * 组织服务类
  */
 export class OrganizationService {
-
     /**
      * 创建组织
      */
     static async createOrganization(params: CreateOrganizationParams): Promise<CreateOrganizationResponse> {
         const formData = new URLSearchParams();
-        if (params.id !== undefined && params.id !== null && params.id !== '') {
-            formData.append('id', String(params.id));
+        if (params.id !== undefined && params.id !== null && params.id !== "") {
+            formData.append("id", String(params.id));
         }
-        formData.append('name', params.name);
-        formData.append('type', params.type);
-        formData.append('status', String(params.status));
+        formData.append("name", params.name);
+        formData.append("type", params.type);
+        formData.append("status", String(params.status));
         if (params.description) {
-            formData.append('desc', params.description);
+            formData.append("desc", params.description);
         }
 
-        const response = await http.post<CreateOrganizationResponse>('/organization/create', formData.toString(), {
+        const response = await http.post<CreateOrganizationResponse>("/organization/create", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
         return response.data;
@@ -230,11 +228,11 @@ export class OrganizationService {
      */
     static async deleteOrganizations(params: DeleteOrganizationParams): Promise<DeleteOrganizationResponse> {
         const formData = new URLSearchParams();
-        formData.append('ids', params.ids);
+        formData.append("ids", params.ids);
 
-        const response = await http.post<DeleteOrganizationResponse>('/organization/delete', formData.toString(), {
+        const response = await http.post<DeleteOrganizationResponse>("/organization/delete", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
         return response.data;
@@ -244,7 +242,7 @@ export class OrganizationService {
      * 获取组织列表
      */
     static async getOrganizationLists(params: GetOrganizationListsParams): Promise<GetOrganizationListsResponse> {
-        let url = '/organization/list?';
+        let url = "/organization/list?";
         if (params.status != -1 && params.status !== undefined && params.status !== null) {
             url += `status=${params.status}`;
         }
@@ -268,18 +266,18 @@ export class OrganizationService {
      */
     static async joinOrganization(params: JoinOrganizationParams): Promise<JoinOrganizationResponse> {
         const formData = new URLSearchParams();
-        formData.append('id', String(params.id));
+        formData.append("id", String(params.id));
 
-        const response = await http.post<JoinOrganizationResponse>('/organization/join', formData.toString(), {
+        const response = await http.post<JoinOrganizationResponse>("/organization/join", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
         return response.data;
     }
 
     static async getOrganizationUserLists(params: organizationUserListsParams): Promise<organizationUserListsResponse> {
-        let url = `/organization/user_list?id=${params.id}&page_num=${params.page_num}&page_size=${params.page_size}&status=${params.status}`;
+        const url = `/organization/user_list?id=${params.id}&page_num=${params.page_num}&page_size=${params.page_size}&status=${params.status}`;
 
         const response = await http.get<organizationUserListsResponse>(url);
         return response.data;
@@ -287,20 +285,24 @@ export class OrganizationService {
 
     static async organizationJoinCheck(params: organizationJoinCheckParams): Promise<organizationJoinCheckResponse> {
         const formData = new URLSearchParams();
-        formData.append('user_id', String(params.user_id));
-        formData.append('org_id', String(params.org_id));
-        formData.append('state', String(params.state));
+        formData.append("user_id", String(params.user_id));
+        formData.append("org_id", String(params.org_id));
+        formData.append("state", String(params.state));
 
-        const response = await http.post<organizationJoinCheckResponse>('/organization/join_check', formData.toString(), {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+        const response = await http.post<organizationJoinCheckResponse>(
+            "/organization/join_check",
+            formData.toString(),
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
             },
-        });
+        );
         return response.data;
     }
 
     static async userOrganizationLists(): Promise<userOrganizationListsResponse> {
-        let url = `/user/organization/list`;
+        const url = `/user/organization/list`;
 
         const response = await http.get<userOrganizationListsResponse>(url);
         return response.data;
@@ -311,13 +313,13 @@ export class OrganizationService {
      */
     static async kickOrganizationMember(params: organizationKickParams): Promise<organizationKickResponse> {
         const formData = new URLSearchParams();
-        formData.append('id', String(params.id));
-        formData.append('user_id', String(params.user_id));
-        formData.append('org_id', String(params.org_id));
+        formData.append("id", String(params.id));
+        formData.append("user_id", String(params.user_id));
+        formData.append("org_id", String(params.org_id));
 
-        const response = await http.post<organizationKickResponse>('/organization/user_kick', formData.toString(), {
+        const response = await http.post<organizationKickResponse>("/organization/user_kick", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
         return response.data;
@@ -328,16 +330,20 @@ export class OrganizationService {
      */
     static async setOrganizationMemberRole(params: organizationSetRoleParams): Promise<organizationSetRoleResponse> {
         const formData = new URLSearchParams();
-        formData.append('id', String(params.id));
-        formData.append('user_id', String(params.user_id));
-        formData.append('org_id', String(params.org_id));
-        formData.append('role', String(params.role));
+        formData.append("id", String(params.id));
+        formData.append("user_id", String(params.user_id));
+        formData.append("org_id", String(params.org_id));
+        formData.append("role", String(params.role));
 
-        const response = await http.post<organizationSetRoleResponse>('/organization/user_switch_role', formData.toString(), {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+        const response = await http.post<organizationSetRoleResponse>(
+            "/organization/user_switch_role",
+            formData.toString(),
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
             },
-        });
+        );
         return response.data;
     }
 }

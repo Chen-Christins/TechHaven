@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import ArticleView from './ArticleView';
-import ArticleService from '../../services/articleService';
-import Navbar from '../../components/navbar/Navbar';
-import Footer from '../../components/footer/Footer';
-import BackToTop from '../../components/backToTop/BackToTop';
-import { formatToChinaTime } from '../../utils/utils';
-import { useAuth } from '../../contexts/AuthContext';
-import AuthRequired from '../../components/auth/AuthRequired';
-import ArticleErrorView from '../../components/articleView/ArticleErrorView';
-import SkeletonArticleView from '../../components/articleView/SkeletonArticleView';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import ArticleView from "./ArticleView";
+import ArticleService from "../../services/articleService";
+import Navbar from "../../components/navbar/Navbar";
+import Footer from "../../components/footer/Footer";
+import BackToTop from "../../components/backToTop/BackToTop";
+import { formatToChinaTime } from "../../utils/utils";
+import { useAuth } from "../../contexts/AuthContext";
+import AuthRequired from "../../components/auth/AuthRequired";
+import ArticleErrorView from "../../components/articleView/ArticleErrorView";
+import SkeletonArticleView from "../../components/articleView/SkeletonArticleView";
 
 const ArticleViewPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -23,7 +23,7 @@ const ArticleViewPage: React.FC = () => {
         // 只有在认证加载完成且用户已认证时才加载文章
         if (!authLoading && isAuthenticated) {
             if (!id) {
-                setError('文章ID缺失');
+                setError("文章ID缺失");
                 return;
             }
 
@@ -43,8 +43,8 @@ const ArticleViewPage: React.FC = () => {
                     // 成功获取数据后，不立即隐藏骨架屏
                     // 让渲染逻辑处理从骨架屏到内容的过渡
                 } catch (err: any) {
-                    console.error('获取文章失败', err);
-                    setError(err?.message || '获取文章失败');
+                    console.error("获取文章失败", err);
+                    setError(err?.message || "获取文章失败");
                     hasError = true;
                 } finally {
                     clearTimeout(skeletonTimer); // 清除定时器
@@ -63,19 +63,19 @@ const ArticleViewPage: React.FC = () => {
     return (
         <div>
             <Navbar />
-            <div style={{ minHeight: 'calc(100vh - 64px)' }}>
+            <div style={{ minHeight: "calc(100vh - 64px)" }}>
                 <AuthRequired>
                     {authLoading ? (
-                        <div style={{ padding: '2rem', textAlign: 'center' }}>正在加载认证状态...</div>
+                        <div style={{ padding: "2rem", textAlign: "center" }}>正在加载认证状态...</div>
                     ) : (
                         <>
-                            {showSkeleton && !article && !error && (  // 只在没有文章和错误时显示骨架屏
-                                <SkeletonArticleView />
-                            )}
+                            {showSkeleton &&
+                                !article &&
+                                !error && ( // 只在没有文章和错误时显示骨架屏
+                                    <SkeletonArticleView />
+                                )}
 
-                            {!loading && error && (
-                                <ArticleErrorView error={error} />
-                            )}
+                            {!loading && error && <ArticleErrorView error={error} />}
 
                             {!loading && !error && article && (
                                 <ArticleView
@@ -85,7 +85,11 @@ const ArticleViewPage: React.FC = () => {
                                     views={article.views ?? 0}
                                     praises={article.praise ?? article.praises ?? 0}
                                     update_time={formatToChinaTime(Number(article.update_time))}
-                                    pushlish_time={article.publish_time ? formatToChinaTime(Number(article.publish_time)) : '暂未发布'}
+                                    pushlish_time={
+                                        article.publish_time
+                                            ? formatToChinaTime(Number(article.publish_time))
+                                            : "暂未发布"
+                                    }
                                 />
                             )}
                         </>

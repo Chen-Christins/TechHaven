@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
-import * as echarts from 'echarts';
+import React, { useRef, useEffect, useState } from "react";
+import * as echarts from "echarts";
 import {
     FaUsers,
     FaFileAlt,
@@ -15,10 +15,10 @@ import {
     FaFilter,
     FaGlobe,
     FaClock,
-    FaMousePointer
-} from 'react-icons/fa';
-import styles from './Analytics.module.css';
-import CustomSelect from '../../components/customSelect/CustomSelect';
+    FaMousePointer,
+} from "react-icons/fa";
+import styles from "./Analytics.module.css";
+import CustomSelect from "../../components/customSelect/CustomSelect";
 
 interface AnalyticsData {
     overview: {
@@ -37,7 +37,13 @@ interface AnalyticsData {
         pageViews: Array<{ date: string; value: number; label: string }>;
     };
     content: {
-        popularArticles: Array<{ id: number; title: string; views: number; likes: number; comments: number }>;
+        popularArticles: Array<{
+            id: number;
+            title: string;
+            views: number;
+            likes: number;
+            comments: number;
+        }>;
         categories: Array<{ name: string; count: number; percentage: number }>;
     };
     traffic: {
@@ -48,23 +54,23 @@ interface AnalyticsData {
 }
 
 const Analytics: React.FC = () => {
-    const [selectedPeriod, setSelectedPeriod] = useState('7天');
-    const [selectedMetric, setSelectedMetric] = useState('visits');
+    const [selectedPeriod, setSelectedPeriod] = useState("7天");
+    const [selectedMetric, setSelectedMetric] = useState("visits");
     const [isLoading, setIsLoading] = useState(false);
 
     // 时间范围选项
     const periodOptions = [
-        { id: '7天', name: '最近7天', color: '#4361ee' },
-        { id: '30天', name: '最近30天', color: '#4361ee' },
-        { id: '90天', name: '最近90天', color: '#4361ee' },
-        { id: '1年', name: '最近1年', color: '#4361ee' }
+        { id: "7天", name: "最近7天", color: "#4361ee" },
+        { id: "30天", name: "最近30天", color: "#4361ee" },
+        { id: "90天", name: "最近90天", color: "#4361ee" },
+        { id: "1年", name: "最近1年", color: "#4361ee" },
     ];
 
     // 指标类型选项
     const metricOptions = [
-        { id: 'visits', name: '访问量', color: '#7209b7' },
-        { id: 'users', name: '用户数', color: '#7209b7' },
-        { id: 'pageViews', name: '页面浏览量', color: '#7209b7' }
+        { id: "visits", name: "访问量", color: "#7209b7" },
+        { id: "users", name: "用户数", color: "#7209b7" },
+        { id: "pageViews", name: "页面浏览量", color: "#7209b7" },
     ];
 
     // 图表引用
@@ -84,133 +90,163 @@ const Analytics: React.FC = () => {
             totalComments: 3892,
             totalViews: 256789,
             totalLikes: 12456,
-            avgSessionDuration: '4:32',
-            bounceRate: '32.5%',
-            newUsers: 847
+            avgSessionDuration: "4:32",
+            bounceRate: "32.5%",
+            newUsers: 847,
         },
         trends: {
             visits: [
-                { date: '11-15', value: 2820, label: '周一' },
-                { date: '11-16', value: 2932, label: '周二' },
-                { date: '11-17', value: 2901, label: '周三' },
-                { date: '11-18', value: 3134, label: '周四' },
-                { date: '11-19', value: 3290, label: '周五' },
-                { date: '11-20', value: 3330, label: '周六' },
-                { date: '11-21', value: 2892, label: '周日' }
+                { date: "11-15", value: 2820, label: "周一" },
+                { date: "11-16", value: 2932, label: "周二" },
+                { date: "11-17", value: 2901, label: "周三" },
+                { date: "11-18", value: 3134, label: "周四" },
+                { date: "11-19", value: 3290, label: "周五" },
+                { date: "11-20", value: 3330, label: "周六" },
+                { date: "11-21", value: 2892, label: "周日" },
             ],
             users: [
-                { date: '11-15', value: 1820, label: '周一' },
-                { date: '11-16', value: 1932, label: '周二' },
-                { date: '11-17', value: 1901, label: '周三' },
-                { date: '11-18', value: 2134, label: '周四' },
-                { date: '11-19', value: 2290, label: '周五' },
-                { date: '11-20', value: 2330, label: '周六' },
-                { date: '11-21', value: 1892, label: '周日' }
+                { date: "11-15", value: 1820, label: "周一" },
+                { date: "11-16", value: 1932, label: "周二" },
+                { date: "11-17", value: 1901, label: "周三" },
+                { date: "11-18", value: 2134, label: "周四" },
+                { date: "11-19", value: 2290, label: "周五" },
+                { date: "11-20", value: 2330, label: "周六" },
+                { date: "11-21", value: 1892, label: "周日" },
             ],
             pageViews: [
-                { date: '11-15', value: 5820, label: '周一' },
-                { date: '11-16', value: 5932, label: '周二' },
-                { date: '11-17', value: 5901, label: '周三' },
-                { date: '11-18', value: 6134, label: '周四' },
-                { date: '11-19', value: 6290, label: '周五' },
-                { date: '11-20', value: 6330, label: '周六' },
-                { date: '11-21', value: 5892, label: '周日' }
-            ]
+                { date: "11-15", value: 5820, label: "周一" },
+                { date: "11-16", value: 5932, label: "周二" },
+                { date: "11-17", value: 5901, label: "周三" },
+                { date: "11-18", value: 6134, label: "周四" },
+                { date: "11-19", value: 6290, label: "周五" },
+                { date: "11-20", value: 6330, label: "周六" },
+                { date: "11-21", value: 5892, label: "周日" },
+            ],
         },
         content: {
             popularArticles: [
-                { id: 1, title: 'React 18 新特性详解', views: 5432, likes: 234, comments: 45 },
-                { id: 2, title: 'TypeScript 最佳实践指南', views: 4211, likes: 189, comments: 32 },
-                { id: 3, title: '前端性能优化技巧', views: 3897, likes: 167, comments: 28 },
-                { id: 4, title: 'Vite 构建工具使用教程', views: 3456, likes: 145, comments: 23 },
-                { id: 5, title: 'CSS Grid 布局完全指南', views: 2987, likes: 123, comments: 19 }
+                {
+                    id: 1,
+                    title: "React 18 新特性详解",
+                    views: 5432,
+                    likes: 234,
+                    comments: 45,
+                },
+                {
+                    id: 2,
+                    title: "TypeScript 最佳实践指南",
+                    views: 4211,
+                    likes: 189,
+                    comments: 32,
+                },
+                {
+                    id: 3,
+                    title: "前端性能优化技巧",
+                    views: 3897,
+                    likes: 167,
+                    comments: 28,
+                },
+                {
+                    id: 4,
+                    title: "Vite 构建工具使用教程",
+                    views: 3456,
+                    likes: 145,
+                    comments: 23,
+                },
+                {
+                    id: 5,
+                    title: "CSS Grid 布局完全指南",
+                    views: 2987,
+                    likes: 123,
+                    comments: 19,
+                },
             ],
             categories: [
-                { name: '前端开发', count: 456, percentage: 31.3 },
-                { name: '后端技术', count: 342, percentage: 23.5 },
-                { name: '开发工具', count: 289, percentage: 19.8 },
-                { name: '设计相关', count: 234, percentage: 16.1 },
-                { name: '其他', count: 135, percentage: 9.3 }
-            ]
+                { name: "前端开发", count: 456, percentage: 31.3 },
+                { name: "后端技术", count: 342, percentage: 23.5 },
+                { name: "开发工具", count: 289, percentage: 19.8 },
+                { name: "设计相关", count: 234, percentage: 16.1 },
+                { name: "其他", count: 135, percentage: 9.3 },
+            ],
         },
         traffic: {
             sources: [
-                { name: '直接访问', value: 45, percentage: 35.2 },
-                { name: '搜索引擎', value: 38, percentage: 29.7 },
-                { name: '社交媒体', value: 25, percentage: 19.5 },
-                { name: '外链引用', value: 20, percentage: 15.6 }
+                { name: "直接访问", value: 45, percentage: 35.2 },
+                { name: "搜索引擎", value: 38, percentage: 29.7 },
+                { name: "社交媒体", value: 25, percentage: 19.5 },
+                { name: "外链引用", value: 20, percentage: 15.6 },
             ],
             devices: [
-                { name: '桌面端', value: 65, percentage: 50.8 },
-                { name: '移动端', value: 48, percentage: 37.5 },
-                { name: '平板端', value: 15, percentage: 11.7 }
+                { name: "桌面端", value: 65, percentage: 50.8 },
+                { name: "移动端", value: 48, percentage: 37.5 },
+                { name: "平板端", value: 15, percentage: 11.7 },
             ],
             locations: [
-                { country: '中国', users: 8234, percentage: 64.1 },
-                { country: '美国', users: 2134, percentage: 16.6 },
-                { country: '日本', users: 1234, percentage: 9.6 },
-                { country: '英国', users: 876, percentage: 6.8 },
-                { country: '其他', users: 369, percentage: 2.9 }
-            ]
-        }
+                { country: "中国", users: 8234, percentage: 64.1 },
+                { country: "美国", users: 2134, percentage: 16.6 },
+                { country: "日本", users: 1234, percentage: 9.6 },
+                { country: "英国", users: 876, percentage: 6.8 },
+                { country: "其他", users: 369, percentage: 2.9 },
+            ],
+        },
     };
 
     // 概览统计卡片
     const overviewStats = [
         {
-            title: '总用户数',
+            title: "总用户数",
             value: analyticsData.overview.totalUsers.toLocaleString(),
-            change: '+12.5%',
-            changeType: 'positive' as const,
+            change: "+12.5%",
+            changeType: "positive" as const,
             icon: <FaUsers />,
-            iconColor: 'blue',
-            description: '新增用户: ' + analyticsData.overview.newUsers
+            iconColor: "blue",
+            description: "新增用户: " + analyticsData.overview.newUsers,
         },
         {
-            title: '文章总数',
+            title: "文章总数",
             value: analyticsData.overview.totalArticles.toLocaleString(),
-            change: '+8.3%',
-            changeType: 'positive' as const,
+            change: "+8.3%",
+            changeType: "positive" as const,
             icon: <FaFileAlt />,
-            iconColor: 'green',
-            description: '本月新增: 45'
+            iconColor: "green",
+            description: "本月新增: 45",
         },
         {
-            title: '总评论数',
+            title: "总评论数",
             value: analyticsData.overview.totalComments.toLocaleString(),
-            change: '-2.1%',
-            changeType: 'negative' as const,
+            change: "-2.1%",
+            changeType: "negative" as const,
             icon: <FaComments />,
-            iconColor: 'orange',
-            description: '今日新增: 12'
+            iconColor: "orange",
+            description: "今日新增: 12",
         },
         {
-            title: '总访问量',
+            title: "总访问量",
             value: analyticsData.overview.totalViews.toLocaleString(),
-            change: '+18.7%',
-            changeType: 'positive' as const,
+            change: "+18.7%",
+            changeType: "positive" as const,
             icon: <FaEye />,
-            iconColor: 'purple',
-            description: '今日访问: 2,892'
+            iconColor: "purple",
+            description: "今日访问: 2,892",
         },
         {
-            title: '平均停留时间',
+            title: "平均停留时间",
             value: analyticsData.overview.avgSessionDuration,
-            change: '+5.2%',
-            changeType: 'positive' as const,
+            change: "+5.2%",
+            changeType: "positive" as const,
             icon: <FaClock />,
-            iconColor: 'cyan',
-            description: '较上周期'
+            iconColor: "cyan",
+            description: "较上周期",
         },
         {
-            title: '跳出率',
+            title: "跳出率",
             value: analyticsData.overview.bounceRate,
-            change: '-3.4%',
-            changeType: 'positive' as const,
+            change: "-3.4%",
+            changeType: "positive" as const,
             icon: <FaMousePointer />,
-            iconColor: 'red',
-            description: '较上周期'
-        }
+            iconColor: "red",
+            description: "较上周期",
+        },
     ];
 
     // 初始化趋势图表
@@ -224,62 +260,64 @@ const Analytics: React.FC = () => {
 
         const option = {
             tooltip: {
-                trigger: 'axis',
+                trigger: "axis",
                 axisPointer: {
-                    type: 'cross'
-                }
+                    type: "cross",
+                },
             },
             legend: {
-                data: [selectedMetric === 'visits' ? '访问量' : selectedMetric === 'users' ? '用户数' : '页面浏览量'],
-                bottom: 0
+                data: [selectedMetric === "visits" ? "访问量" : selectedMetric === "users" ? "用户数" : "页面浏览量"],
+                bottom: 0,
             },
             grid: {
                 top: 20,
                 bottom: 60,
                 left: 60,
-                right: 40
+                right: 40,
             },
             xAxis: {
-                type: 'category',
-                data: data.map(item => item.label),
+                type: "category",
+                data: data.map((item) => item.label),
                 axisLine: {
                     lineStyle: {
-                        color: '#e0e0e0'
-                    }
-                }
+                        color: "#e0e0e0",
+                    },
+                },
             },
             yAxis: {
-                type: 'value',
+                type: "value",
                 axisLine: {
                     lineStyle: {
-                        color: '#e0e0e0'
-                    }
+                        color: "#e0e0e0",
+                    },
                 },
                 splitLine: {
                     lineStyle: {
-                        color: '#f0f0f0'
-                    }
-                }
+                        color: "#f0f0f0",
+                    },
+                },
             },
-            series: [{
-                name: selectedMetric === 'visits' ? '访问量' : selectedMetric === 'users' ? '用户数' : '页面浏览量',
-                type: 'line',
-                data: data.map(item => item.value),
-                smooth: true,
-                lineStyle: {
-                    width: 3,
-                    color: '#4f46e5'
+            series: [
+                {
+                    name: selectedMetric === "visits" ? "访问量" : selectedMetric === "users" ? "用户数" : "页面浏览量",
+                    type: "line",
+                    data: data.map((item) => item.value),
+                    smooth: true,
+                    lineStyle: {
+                        width: 3,
+                        color: "#4f46e5",
+                    },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: "rgba(79, 70, 229, 0.3)" },
+                            { offset: 1, color: "rgba(79, 70, 229, 0.05)" },
+                        ]),
+                    },
+                    itemStyle: {
+                        color: "#4f46e5",
+                    },
                 },
-                areaStyle: {
-                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: 'rgba(79, 70, 229, 0.3)' },
-                        { offset: 1, color: 'rgba(79, 70, 229, 0.05)' }
-                    ])
-                },
-                itemStyle: {
-                    color: '#4f46e5'
-                }
-            }]
+            ],
         };
 
         chart.setOption(option);
@@ -294,31 +332,33 @@ const Analytics: React.FC = () => {
 
         const option = {
             tooltip: {
-                trigger: 'item',
-                formatter: '{a} <br/>{b}: {c}% ({d}%)'
+                trigger: "item",
+                formatter: "{a} <br/>{b}: {c}% ({d}%)",
             },
             legend: {
-                orient: 'vertical',
-                left: 'left',
-                data: analyticsData.traffic.sources.map(item => item.name)
+                orient: "vertical",
+                left: "left",
+                data: analyticsData.traffic.sources.map((item) => item.name),
             },
-            series: [{
-                name: '流量来源',
-                type: 'pie',
-                radius: ['40%', '70%'],
-                center: ['60%', '50%'],
-                data: analyticsData.traffic.sources.map(item => ({
-                    value: item.value,
-                    name: item.name
-                })),
-                emphasis: {
-                    itemStyle: {
-                        shadowBlur: 10,
-                        shadowOffsetX: 0,
-                        shadowColor: 'rgba(0, 0, 0, 0.5)'
-                    }
-                }
-            }]
+            series: [
+                {
+                    name: "流量来源",
+                    type: "pie",
+                    radius: ["40%", "70%"],
+                    center: ["60%", "50%"],
+                    data: analyticsData.traffic.sources.map((item) => ({
+                        value: item.value,
+                        name: item.name,
+                    })),
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: "rgba(0, 0, 0, 0.5)",
+                        },
+                    },
+                },
+            ],
         };
 
         chart.setOption(option);
@@ -333,58 +373,60 @@ const Analytics: React.FC = () => {
 
         const option = {
             tooltip: {
-                trigger: 'axis',
+                trigger: "axis",
                 axisPointer: {
-                    type: 'shadow'
-                }
+                    type: "shadow",
+                },
             },
             grid: {
                 top: 20,
                 bottom: 40,
                 left: 60,
-                right: 40
+                right: 40,
             },
             xAxis: {
-                type: 'category',
-                data: analyticsData.traffic.devices.map(item => item.name),
+                type: "category",
+                data: analyticsData.traffic.devices.map((item) => item.name),
                 axisLine: {
                     lineStyle: {
-                        color: '#e0e0e0'
-                    }
-                }
+                        color: "#e0e0e0",
+                    },
+                },
             },
             yAxis: {
-                type: 'value',
+                type: "value",
                 axisLine: {
                     lineStyle: {
-                        color: '#e0e0e0'
-                    }
+                        color: "#e0e0e0",
+                    },
                 },
                 splitLine: {
                     lineStyle: {
-                        color: '#f0f0f0'
-                    }
-                }
-            },
-            series: [{
-                name: '用户数',
-                type: 'bar',
-                data: analyticsData.traffic.devices.map(item => item.value),
-                itemStyle: {
-                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: '#667eea' },
-                        { offset: 1, color: '#764ba2' }
-                    ])
+                        color: "#f0f0f0",
+                    },
                 },
-                emphasis: {
+            },
+            series: [
+                {
+                    name: "用户数",
+                    type: "bar",
+                    data: analyticsData.traffic.devices.map((item) => item.value),
                     itemStyle: {
                         color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                            { offset: 0, color: '#5a67d8' },
-                            { offset: 1, color: '#667eea' }
-                        ])
-                    }
-                }
-            }]
+                            { offset: 0, color: "#667eea" },
+                            { offset: 1, color: "#764ba2" },
+                        ]),
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: "#5a67d8" },
+                                { offset: 1, color: "#667eea" },
+                            ]),
+                        },
+                    },
+                },
+            ],
         };
 
         chart.setOption(option);
@@ -402,9 +444,9 @@ const Analytics: React.FC = () => {
         initPieChart();
         initBarChart();
 
-        window.addEventListener('resize', handleResize);
+        window.addEventListener("resize", handleResize);
         return () => {
-            window.removeEventListener('resize', handleResize);
+            window.removeEventListener("resize", handleResize);
             trendChartInstance.current?.dispose();
             pieChartInstance.current?.dispose();
             barChartInstance.current?.dispose();
@@ -430,14 +472,12 @@ const Analytics: React.FC = () => {
                         <FaChartBar />
                         统计分析
                     </h1>
-                    <p className={styles.pageDescription}>
-                        查看网站访问量、用户行为和内容表现等详细统计数据
-                    </p>
+                    <p className={styles.pageDescription}>查看网站访问量、用户行为和内容表现等详细统计数据</p>
                 </div>
                 <div className={styles.headerActions}>
                     <button className={styles.exportButton} onClick={exportData} disabled={isLoading}>
                         <FaDownload />
-                        {isLoading ? '导出中...' : '导出报告'}
+                        {isLoading ? "导出中..." : "导出报告"}
                     </button>
                 </div>
             </div>
@@ -449,8 +489,8 @@ const Analytics: React.FC = () => {
                         <FaCalendarAlt className={styles.controlIcon} />
                         <CustomSelect
                             name="时间范围"
-                            value={periodOptions.find(option => option.id === selectedPeriod) || null}
-                            onChange={(selectedOption) => setSelectedPeriod(String(selectedOption?.id || '7天'))}
+                            value={periodOptions.find((option) => option.id === selectedPeriod) || null}
+                            onChange={(selectedOption) => setSelectedPeriod(String(selectedOption?.id || "7天"))}
                             options={periodOptions}
                             hideBadge={true}
                             placeholder="选择时间范围"
@@ -460,8 +500,8 @@ const Analytics: React.FC = () => {
                         <FaFilter className={styles.controlIcon} />
                         <CustomSelect
                             name="指标类型"
-                            value={metricOptions.find(option => option.id === selectedMetric) || null}
-                            onChange={(selectedOption) => setSelectedMetric(String(selectedOption?.id || 'visits'))}
+                            value={metricOptions.find((option) => option.id === selectedMetric) || null}
+                            onChange={(selectedOption) => setSelectedMetric(String(selectedOption?.id || "visits"))}
                             options={metricOptions}
                             hideBadge={true}
                             placeholder="选择指标类型"
@@ -474,14 +514,18 @@ const Analytics: React.FC = () => {
             <div className={styles.overviewGrid}>
                 {overviewStats.map((stat, index) => (
                     <div key={index} className={styles.statCard}>
-                        <div className={`${styles.statIcon} ${styles[stat.iconColor]}`}>
-                            {stat.icon}
-                        </div>
+                        <div className={`${styles.statIcon} ${styles[stat.iconColor]}`}>{stat.icon}</div>
                         <div className={styles.statContent}>
                             <div className={styles.statTitle}>{stat.title}</div>
                             <div className={styles.statValue}>{stat.value}</div>
                             <div className={`${styles.statChange} ${styles[stat.changeType]}`}>
-                                {stat.changeType === 'positive' ? <FaArrowUp /> : stat.changeType === 'negative' ? <FaArrowDown /> : <FaMinus />}
+                                {stat.changeType === "positive" ? (
+                                    <FaArrowUp />
+                                ) : stat.changeType === "negative" ? (
+                                    <FaArrowDown />
+                                ) : (
+                                    <FaMinus />
+                                )}
                                 {stat.change}
                             </div>
                             <div className={styles.statDescription}>{stat.description}</div>
@@ -497,7 +541,11 @@ const Analytics: React.FC = () => {
                     <div className={styles.chartCard}>
                         <div className={styles.chartHeader}>
                             <h3 className={styles.chartTitle}>
-                                {selectedMetric === 'visits' ? '访问量趋势' : selectedMetric === 'users' ? '用户数趋势' : '页面浏览量趋势'}
+                                {selectedMetric === "visits"
+                                    ? "访问量趋势"
+                                    : selectedMetric === "users"
+                                      ? "用户数趋势"
+                                      : "页面浏览量趋势"}
                             </h3>
                         </div>
                         <div ref={trendChartRef} className={styles.chartContainer} />

@@ -1,44 +1,44 @@
 /* SimpleBar 滚动条美化 - 亮色主题 */
 .simplebar-scrollbar {
-	background: linear-gradient(90deg, #e0e6ed 0%, #cfd8e3 100%);
-	border-radius: 6px;
-	width: 5px;
-	min-width: 5px;
+    background: linear-gradient(90deg, #e0e6ed 0%, #cfd8e3 100%);
+    border-radius: 6px;
+    width: 5px;
+    min-width: 5px;
 }
 .simplebar-scrollbar:before {
-	background: transparent;
+    background: transparent;
 }
 .simplebar-scrollbar.simplebar-visible {
-	background: linear-gradient(90deg, #bfc8d6 0%, #a3b1c2 100%);
-	width: 6px;
-	min-width: 6px;
+    background: linear-gradient(90deg, #bfc8d6 0%, #a3b1c2 100%);
+    width: 6px;
+    min-width: 6px;
     max-width: 6px;
 }
 .simplebar-track {
-	background: #f8f9fb;
+    background: #f8f9fb;
     width: 6px;
-	max-width: 6px;
+    max-width: 6px;
     min-width: 6px;
 }
 
 /* SimpleBar 滚动条美化 - 暗色主题 */
 [data-theme="dark"] .simplebar-scrollbar {
-	background: linear-gradient(90deg, #353a40 0%, #444b55 100%);
-	border-radius: 6px;
-	width: 5px;
-	min-width: 5px;
+    background: linear-gradient(90deg, #353a40 0%, #444b55 100%);
+    border-radius: 6px;
+    width: 5px;
+    min-width: 5px;
 }
 [data-theme="dark"] .simplebar-scrollbar:before {
-	background: transparent;
+    background: transparent;
 }
 [data-theme="dark"] .simplebar-scrollbar.simplebar-visible {
-	background: linear-gradient(90deg, #555e6b 0%, #444b55 100%);
-	width: 6px;
-	min-width: 6px;
+    background: linear-gradient(90deg, #555e6b 0%, #444b55 100%);
+    width: 6px;
+    min-width: 6px;
     max-width: 6px;
 }
 [data-theme="dark"] .simplebar-track {
-	background: #23272e;
+    background: #23272e;
     width: 6px;
     max-width: 6px;
     min-width: 6px;

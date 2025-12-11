@@ -26,7 +26,7 @@
 }
 
 .pageHeader::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -228,7 +228,8 @@
     overflow: hidden;
 }
 
-.uploadArea:hover, .uploadArea.active {
+.uploadArea:hover,
+.uploadArea.active {
     border-color: var(--primary);
     background: var(--primary-bg);
     transform: translateY(-2px);

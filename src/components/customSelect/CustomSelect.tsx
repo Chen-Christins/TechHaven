@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import type { CustomSelectProps, SelectOption } from '../../types/index';
-import styles from './CustomSelect.module.css';
+import React, { useState, useRef, useEffect } from "react";
+import type { CustomSelectProps, SelectOption } from "../../types/index";
+import styles from "./CustomSelect.module.css";
 
 const CustomSelect: React.FC<CustomSelectProps> = ({
     name,
@@ -9,13 +9,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     placeholder = `请选择${name}...`,
     value,
     onChange,
-    className = '',
-    hideBadge = false
+    className = "",
+    hideBadge = false,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [openUpwards, setOpenUpwards] = useState(false);
     const [selectedOption, setSelectedOption] = useState<SelectOption | null>(value || null);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState("");
     const [selectedIndex, setSelectedIndex] = useState(-1);
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -25,7 +25,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     useEffect(() => {
         if (value !== undefined) {
             setSelectedOption(value);
-            const index = value ? options.findIndex(opt => opt.id === value.id) : -1;
+            const index = value ? options.findIndex((opt) => opt.id === value.id) : -1;
             setSelectedIndex(index);
         }
     }, [value, options]);
@@ -38,9 +38,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             }
         };
 
-        document.addEventListener('click', handleClickOutside);
+        document.addEventListener("click", handleClickOutside);
         return () => {
-            document.removeEventListener('click', handleClickOutside);
+            document.removeEventListener("click", handleClickOutside);
         };
     }, []);
 
@@ -67,7 +67,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         }
 
         setIsOpen(true);
-        setSearchTerm('');
+        setSearchTerm("");
         // 延迟focus以确保dropdown已经打开
         setTimeout(() => {
             searchInputRef.current?.focus();
@@ -82,13 +82,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         setSearchTerm(e.target.value);
     };
 
-    const filteredOptions = options.filter(option =>
-        option.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredOptions = options.filter((option) => option.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const selectOption = (option: SelectOption) => {
         const oldIndex = selectedIndex;
-        const newIndex = options.findIndex(opt => opt.id === option.id);
+        const newIndex = options.findIndex((opt) => opt.id === option.id);
 
         setSelectedOption(option);
         setSelectedIndex(newIndex);
@@ -118,25 +116,19 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     const isPlaceholder = !selectedOption;
 
     return (
-        <div
-            ref={containerRef}
-            className={`${styles.container} ${className}`}
-        >
+        <div ref={containerRef} className={`${styles.container} ${className}`}>
             {/* 选择框 */}
-            <div
-                className={`${styles.select} ${isOpen ? styles.selectOpen : ''}`}
-                onClick={toggleDropdown}
-            >
-                <div className={`${styles.value} ${isPlaceholder ? styles.placeholder : ''}`}>
-                    {getDisplayValue()}
-                </div>
+            <div className={`${styles.select} ${isOpen ? styles.selectOpen : ""}`} onClick={toggleDropdown}>
+                <div className={`${styles.value} ${isPlaceholder ? styles.placeholder : ""}`}>{getDisplayValue()}</div>
                 <div className={styles.arrow}>
                     <i className="bi bi-chevron-down"></i>
                 </div>
             </div>
 
             {/* 下拉框 */}
-            <div className={`${styles.dropdown} ${isOpen ? styles.dropdownOpen : ''} ${openUpwards ? styles.dropdownUp : ''}`}>
+            <div
+                className={`${styles.dropdown} ${isOpen ? styles.dropdownOpen : ""} ${openUpwards ? styles.dropdownUp : ""}`}
+            >
                 <div className={styles.search}>
                     <input
                         ref={searchInputRef}
@@ -149,27 +141,19 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                 </div>
                 <div className={styles.options}>
                     {filteredOptions.length === 0 ? (
-                        <div className={styles.noResults}>
-                            未找到匹配的{name}
-                        </div>
+                        <div className={styles.noResults}>未找到匹配的{name}</div>
                     ) : (
-                        filteredOptions.map(option => (
+                        filteredOptions.map((option) => (
                             <div
                                 key={option.id}
-                                className={`${styles.option} ${selectedOption?.id === option.id ? styles.optionSelected : ''
-                                    }`}
+                                className={`${styles.option} ${selectedOption?.id === option.id ? styles.optionSelected : ""}`}
                                 onClick={() => selectOption(option)}
                             >
                                 {option.color && (
-                                    <div
-                                        className={styles.tagColor}
-                                        style={{ backgroundColor: option.color }}
-                                    />
+                                    <div className={styles.tagColor} style={{ backgroundColor: option.color }} />
                                 )}
                                 <div className={styles.optionText}>{option.name}</div>
-                                {showDate && option.date && (
-                                    <div className={styles.optionCount}>{option.date}</div>
-                                )}
+                                {showDate && option.date && <div className={styles.optionCount}>{option.date}</div>}
                             </div>
                         ))
                     )}
@@ -180,11 +164,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             {selectedOption && !hideBadge && (
                 <div className={styles.badge}>
                     <span>{selectedOption.name}</span>
-                    <span
-                        className={styles.closeBtn}
-                        title="清除选择"
-                        onClick={clearSelection}
-                    >
+                    <span className={styles.closeBtn} title="清除选择" onClick={clearSelection}>
                         <i className="bi bi-x"></i>
                     </span>
                 </div>

@@ -1,12 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-    FaUserCircle,
-    FaCog,
-    FaSignOutAlt,
-    FaHome,
-} from 'react-icons/fa';
-import styles from './UserDropdown.module.css';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaUserCircle, FaCog, FaSignOutAlt, FaHome } from "react-icons/fa";
+import styles from "./UserDropdown.module.css";
 
 interface User {
     name: string;
@@ -22,12 +17,7 @@ interface UserDropdownProps {
     className?: string;
 }
 
-const UserDropdown: React.FC<UserDropdownProps> = ({
-    user,
-    onLogout,
-    showAdminLink = false,
-    className = ''
-}) => {
+const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout, showAdminLink = false, className = "" }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
@@ -40,11 +30,11 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
         };
 
         if (isOpen) {
-            document.addEventListener('mousedown', handleClickOutside);
+            document.addEventListener("mousedown", handleClickOutside);
         }
 
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [isOpen]);
 
@@ -66,26 +56,30 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
     };
 
     return (
-        <div
-            ref={dropdownRef}
-            className={`${styles.userDropdown} ${className}`}
-        >
+        <div ref={dropdownRef} className={`${styles.userDropdown} ${className}`}>
             {/* 用户显示区域 */}
             <div className={styles.userDisplay} onClick={toggleDropdown}>
                 <img
-                    src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
+                    src={
+                        user.avatar ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`
+                    }
                     alt={user.name}
                     className={styles.userAvatar}
                 />
                 <div className={styles.userDetails}>
                     <div className={styles.userName}>{user.name}</div>
-                    {user.role && (
-                        <div className={styles.userRole}>{user.role}</div>
-                    )}
+                    {user.role && <div className={styles.userRole}>{user.role}</div>}
                 </div>
-                <div className={`${styles.dropdownArrow} ${isOpen ? styles.open : ''}`}>
+                <div className={`${styles.dropdownArrow} ${isOpen ? styles.open : ""}`}>
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path
+                            d="M2 4L6 8L10 4"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
                     </svg>
                 </div>
             </div>
@@ -95,7 +89,10 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
                 <div className={styles.dropdown}>
                     <div className={styles.dropdownHeader}>
                         <img
-                            src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
+                            src={
+                                user.avatar ||
+                                `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`
+                            }
                             alt={user.name}
                             className={styles.dropdownAvatar}
                         />
@@ -106,16 +103,34 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
                     </div>
                     <div className={styles.dropdownDivider}></div>
                     <div className={styles.dropdownMenu}>
-                        <div className={styles.dropdownItem} onClick={() => { closeDropdown(); navigate("/profile/1"); }}>
+                        <div
+                            className={styles.dropdownItem}
+                            onClick={() => {
+                                closeDropdown();
+                                navigate("/profile/1");
+                            }}
+                        >
                             <FaUserCircle />
                             个人资料
                         </div>
-                        <div className={styles.dropdownItem} onClick={() => { closeDropdown(); navigate("/"); }}>
+                        <div
+                            className={styles.dropdownItem}
+                            onClick={() => {
+                                closeDropdown();
+                                navigate("/");
+                            }}
+                        >
                             <FaHome />
                             回到首页
                         </div>
                         {showAdminLink && (
-                            <div className={styles.dropdownItem} onClick={() => { closeDropdown(); navigate("/admin"); }}>
+                            <div
+                                className={styles.dropdownItem}
+                                onClick={() => {
+                                    closeDropdown();
+                                    navigate("/admin");
+                                }}
+                            >
                                 <FaCog />
                                 管理后台
                             </div>

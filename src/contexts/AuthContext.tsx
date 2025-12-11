@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { AuthService } from '../services/authService';
-import { tokenManager, getTokenFromCookie } from '../utils/http';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { AuthService } from "../services/authService";
+import { tokenManager, getTokenFromCookie } from "../utils/http";
 
 // 用户信息类型
 export interface User {
@@ -31,10 +31,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // 状态映射
 const ROLE_MAP: Record<string, string> = {
-    1: '用户',
-    2: '管理员',
-    3: '编辑',
-    4: '审核员',
+    1: "用户",
+    2: "管理员",
+    3: "编辑",
+    4: "审核员",
 };
 
 // 认证提供者组件
@@ -57,9 +57,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     try {
                         const userResponse = await AuthService.getUserInfo();
 
-                        if (userResponse.data && userResponse.code === '200') {
+                        if (userResponse.data && userResponse.code === "200") {
                             const userData = userResponse.data;
-                            userData.role = ROLE_MAP[userData.role] || '用户';
+                            userData.role = ROLE_MAP[userData.role] || "用户";
                             setUser(userData);
                         } else {
                             setToken(null);
@@ -88,7 +88,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             const response = await AuthService.login(authId, password);
 
-            if (response.code === '200') {
+            if (response.code === "200") {
                 let userToken = (response as any)?.token || (response.data as any)?.token;
 
                 if (!userToken) {
@@ -111,12 +111,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 try {
                     const userResponse = await AuthService.getUserInfo();
 
-                    if (userResponse.data && userResponse.code === '200') {
+                    if (userResponse.data && userResponse.code === "200") {
                         const updatedUser = userResponse.data;
-                        updatedUser.role = ROLE_MAP[updatedUser.role] || '用户';
+                        updatedUser.role = ROLE_MAP[updatedUser.role] || "用户";
                         setUser(updatedUser);
                     } else {
-                        console.warn('⚠️ 用户信息接口返回异常:', userResponse);
+                        console.warn("⚠️ 用户信息接口返回异常:", userResponse);
                     }
                 } catch (userError) {
                     // console.warn('⚠️ 获取最新用户信息失败，使用登录返回的用户信息:', userError);
@@ -126,9 +126,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                         // 转换为User类型
                         const fallbackUser: User = {
                             ...fallbackUserData,
-                            account: fallbackUserData.username || fallbackUserData.account || '',
+                            account: fallbackUserData.username || fallbackUserData.account || "",
                             login_time: fallbackUserData.login_time || new Date().toISOString(),
-                            status: fallbackUserData.status || 'active'
+                            status: fallbackUserData.status || "active",
                         };
                         setUser(fallbackUser);
                         // console.log('🔄 使用登录响应的用户信息:', fallbackUser);
@@ -136,10 +136,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     }
                 }
             } else {
-                console.warn('⚠️ 登录响应状态异常:', response);
+                console.warn("⚠️ 登录响应状态异常:", response);
             }
         } catch (error: any) {
-            setLoginError(error.message || '登录失败');
+            setLoginError(error.message || "登录失败");
             throw error;
         } finally {
             setLoading(false);
@@ -158,7 +158,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             tokenManager.clearToken();
             setLoginError(null);
         } catch (error) {
-            console.error('登出失败:', error);
+            console.error("登出失败:", error);
             // 即使后端登出失败，也清除本地状态
             setUser(null);
             setToken(null);
@@ -194,7 +194,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useAuth = (): AuthContextType => {
     const context = useContext(AuthContext);
     if (context === undefined) {
-        throw new Error('useAuth必须在AuthProvider内部使用');
+        throw new Error("useAuth必须在AuthProvider内部使用");
     }
     return context;
 };

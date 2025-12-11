@@ -1,4 +1,4 @@
-import http from '../utils/http';
+import http from "../utils/http";
 
 /**
  * 文章分页查询请求参数类型
@@ -184,7 +184,7 @@ export class ArticleService {
         if (params.page_size) url += `&page_size=${params.page_size}`;
         if (params.state !== undefined) url += `&state=${params.state}`;
         if (params.user_id) url += `&user_id=${params.user_id}`;
-        
+
         const response = await http.get<ListArticlesResponse>(url);
         return response.data;
     }
@@ -195,7 +195,7 @@ export class ArticleService {
         if (params.state !== undefined) {
             url += `&state=${params.state}`;
         }
-        if (params.category_id !== undefined && params.category_id !== '') {
+        if (params.category_id !== undefined && params.category_id !== "") {
             url += `&category_id=${params.category_id}`;
         }
         if (params.role !== undefined) {
@@ -204,10 +204,10 @@ export class ArticleService {
         if (params.days !== undefined) {
             url += `&days=${params.days}`;
         }
-        if (params.keyword !== undefined && params.keyword !== '') {
+        if (params.keyword !== undefined && params.keyword !== "") {
             url += `&keyword=${encodeURIComponent(params.keyword)}`;
         }
-        
+
         const response = await http.get<ListAdminArticlesResponse>(url);
         return response.data;
     }
@@ -217,16 +217,16 @@ export class ArticleService {
      */
     static async publishArticle(params: PublishArticleParams): Promise<PublishArticleResponse> {
         const formData = new URLSearchParams();
-        formData.append('id', String(params.id));
-        formData.append('publish_time', String(params.publish_time));
-        const response = await http.post<PublishArticleResponse>('/article/publish', formData.toString(), {
+        formData.append("id", String(params.id));
+        formData.append("publish_time", String(params.publish_time));
+        const response = await http.post<PublishArticleResponse>("/article/publish", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
         return {
             code: response.code,
-            msg: response.message
+            msg: response.message,
         };
     }
 
@@ -243,15 +243,15 @@ export class ArticleService {
      */
     static async createArticle(params: CreateArticleParams): Promise<CreateArticleResponse> {
         const formData = new URLSearchParams();
-        formData.append('title', params.title);
-        formData.append('content', params.content);
-        formData.append('type', String(params.type));
-        if (params.label) formData.append('label', params.label);
-        if (params.category) formData.append('category', params.category);
-        
-        const response = await http.post<CreateArticleResponse>('/article/create', formData.toString(), {
+        formData.append("title", params.title);
+        formData.append("content", params.content);
+        formData.append("type", String(params.type));
+        if (params.label) formData.append("label", params.label);
+        if (params.category) formData.append("category", params.category);
+
+        const response = await http.post<CreateArticleResponse>("/article/create", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
         return response.data;
@@ -262,10 +262,10 @@ export class ArticleService {
      */
     static async deleteArticle(params: DeleteArticleParams): Promise<DeleteArticleResponse> {
         const formData = new URLSearchParams();
-        formData.append('ids', params.ids);
-        const response = await http.post<DeleteArticleResponse>('/article/delete', formData.toString(), {
+        formData.append("ids", params.ids);
+        const response = await http.post<DeleteArticleResponse>("/article/delete", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
         return response.data;
@@ -276,12 +276,12 @@ export class ArticleService {
      */
     static async verifyArticle(params: VerifyArticleParams) {
         const formData = new URLSearchParams();
-        formData.append('id', String(params.id));
-        formData.append('state', String(params.state));
-        
-        return http.post('/article/verify', formData.toString(), {
+        formData.append("id", String(params.id));
+        formData.append("state", String(params.state));
+
+        return http.post("/article/verify", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
     }
@@ -291,13 +291,13 @@ export class ArticleService {
      */
     static async updateArticleContent(params: UpdateArticleContentParams) {
         const formData = new URLSearchParams();
-        formData.append('id', String(params.id));
-        formData.append('title', params.title);
-        formData.append('content', params.content);
-        
-        return http.post('/article/update', formData.toString(), {
+        formData.append("id", String(params.id));
+        formData.append("title", params.title);
+        formData.append("content", params.content);
+
+        return http.post("/article/update", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
     }
@@ -307,26 +307,30 @@ export class ArticleService {
      */
     static async updateArticleCategories(params: UpdateArticleCategoryParams): Promise<UpdateArticleCategoryResponse> {
         const formData = new URLSearchParams();
-        formData.append('id', String(params.id));
-        formData.append('add_category_ids', params.add_category_ids);
-        formData.append('del_category_ids', params.del_category_ids);
-        
-        const response = await http.post<UpdateArticleCategoryResponse>('/article/update_category', formData.toString(), {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+        formData.append("id", String(params.id));
+        formData.append("add_category_ids", params.add_category_ids);
+        formData.append("del_category_ids", params.del_category_ids);
+
+        const response = await http.post<UpdateArticleCategoryResponse>(
+            "/article/update_category",
+            formData.toString(),
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
             },
-        });
+        );
         return response.data;
     }
 
     static async switchArticleState(params: SwitchArticleStateParams) {
         const formData = new URLSearchParams();
-        formData.append('id', String(params.id));
-        formData.append('new_state', String(params.state));
-        
-        return http.post('/article/switch_state', formData.toString(), {
+        formData.append("id", String(params.id));
+        formData.append("new_state", String(params.state));
+
+        return http.post("/article/switch_state", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
     }

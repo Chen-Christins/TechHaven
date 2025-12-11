@@ -1,14 +1,14 @@
-import React from 'react';
-import type { StatsData } from '../../types/index';
-import { FaUsers, FaEye, FaChartLine, FaUserCheck } from 'react-icons/fa';
-import styles from './StatsPanel.module.css';
+import React from "react";
+import type { StatsData } from "../../types/index";
+import { FaUsers, FaEye, FaChartLine, FaUserCheck } from "react-icons/fa";
+import styles from "./StatsPanel.module.css";
 
 // 模拟统计数据
 const mockStats: StatsData = {
     onlineUsers: 28,
     totalVisits: 15682,
     todayVisits: 326,
-    totalVisitors: 8945
+    totalVisitors: 8945,
 };
 
 const StatsPanel: React.FC = () => {
@@ -36,7 +36,7 @@ const StatsPanel: React.FC = () => {
             value: mockStats.totalVisitors.toLocaleString(),
             icon: <FaUserCheck className={styles.statIcon} />,
             color: styles.visitors,
-        }
+        },
     ];
 
     return (

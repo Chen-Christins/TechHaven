@@ -1,6 +1,6 @@
-import React from 'react';
-import styles from './SearchArticle.module.css';
-import SearchBox from '../searchBox/SearchBox';
+import React from "react";
+import styles from "./SearchArticle.module.css";
+import SearchBox from "../searchBox/SearchBox";
 
 const SearchPanel: React.FC = () => {
     const handleSearch = (_value: string) => {

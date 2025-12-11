@@ -103,7 +103,7 @@
 }
 
 .navLink[data-active="true"]::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 0;
@@ -484,9 +484,9 @@
     }
 
     .mobileNavLinks {
-      list-style: none;
-      margin: 0;
-      padding: 0.2rem 0;
+        list-style: none;
+        margin: 0;
+        padding: 0.2rem 0;
     }
 }
 
@@ -531,7 +531,7 @@
 }
 
 .recommendButton[data-active="true"]::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 0;
@@ -632,7 +632,7 @@
 }
 
 .mobileAuthButton::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: -100%;

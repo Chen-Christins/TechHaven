@@ -1,5 +1,5 @@
 .calendar {
-	background-color: var(--card-bg);
+    background-color: var(--card-bg);
     border-radius: 8px;
     padding: 1.2rem;
     box-shadow: var(--shadow-sm);
@@ -8,89 +8,89 @@
 }
 
 .panelTitle {
-	font-size: 1.2rem;
-	color: var(--text-primary);
-	margin-bottom: 0.8rem;
-	border-bottom: 1px solid var(--border-primary);
-	padding-bottom: 0.5rem;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border-primary);
+    padding-bottom: 0.5rem;
 }
 
 .calendarHeader {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
 }
 
 .monthBtn {
-	background: none;
-	border: none;
-	color: var(--primary);
-	font-size: 1.2rem;
-	cursor: pointer;
-	padding: 0.2rem 0.5rem;
-	border-radius: 4px;
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
 }
 
 .monthBtn:hover {
-	background-color: var(--bg-hover);
+    background-color: var(--bg-hover);
 }
 
 .monthYear {
-	font-size: 1rem;
-	font-weight: 500;
-	color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
 }
 
 .weekDays {
-	display: grid;
-	grid-template-columns: repeat(7, 1fr);
-	gap: 4px;
-	margin-bottom: 4px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
 }
 
 .weekDay {
-	text-align: center;
-	font-size: 0.9rem;
-	color: var(--text-secondary);
-	padding: 0.3rem 0;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    padding: 0.3rem 0;
 }
 
 .calendarDays {
-	display: grid;
-	grid-template-columns: repeat(7, 1fr);
-	gap: 4px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
 }
 
 .calendarDay {
-	text-align: center;
-	padding: 0.5rem 0;
-	border-radius: 4px;
-	position: relative;
-	cursor: pointer;
-	color: var(--text-primary);
+    text-align: center;
+    padding: 0.5rem 0;
+    border-radius: 4px;
+    position: relative;
+    cursor: pointer;
+    color: var(--text-primary);
 }
 
 .calendarDay:hover {
-	background-color: var(--bg-hover);
+    background-color: var(--bg-hover);
 }
 
 .otherMonth {
-	color: var(--text-tertiary);
+    color: var(--text-tertiary);
 }
 
 .hasArticle {
-	color: var(--primary);
-	font-weight: 500;
+    color: var(--primary);
+    font-weight: 500;
 }
 
 .articleDot {
-	position: absolute;
-	bottom: 3px;
-	left: 50%;
-	transform: translateX(-50%);
-	width: 6px;
-	height: 6px;
-	background-color: var(--primary);
-	border-radius: 50%;
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background-color: var(--primary);
+    border-radius: 50%;
 }

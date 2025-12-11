@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
     FaTags,
     FaPlus,
@@ -10,14 +10,14 @@ import {
     FaArrowUp,
     FaArrowDown,
     FaCheckCircle,
-    FaLayerGroup
-} from 'react-icons/fa';
-import styles from './CategoryManagement.module.css';
-import CustomSelect from '../../components/customSelect/CustomSelect';
-import SearchBox from '../../components/searchBox/SearchBox';
-import Button from '../../components/button/Button';
-import { confirm } from '../../components/confirm/Confirm';
-import CategoryService from '../../services/categoryService';
+    FaLayerGroup,
+} from "react-icons/fa";
+import styles from "./CategoryManagement.module.css";
+import CustomSelect from "../../components/customSelect/CustomSelect";
+import SearchBox from "../../components/searchBox/SearchBox";
+import Button from "../../components/button/Button";
+import { confirm } from "../../components/confirm/Confirm";
+import CategoryService from "../../services/categoryService";
 
 interface Category {
     id: string | number;
@@ -31,7 +31,7 @@ interface Category {
     views: number;
     createdAt: string;
     updatedAt: string;
-    status: 'active' | 'inactive';
+    status: "active" | "inactive";
     children?: Category[];
     level: number;
 }
@@ -43,62 +43,68 @@ interface CategoryFormData {
     color: string;
     icon: string;
     parentId: string;
-    status: 'active' | 'inactive';
+    status: "active" | "inactive";
 }
 
 const CategoryManagement: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [sortBy, setSortBy] = useState<'name' | 'articleCount' | 'views' | 'createdAt'>('name');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [searchTerm, setSearchTerm] = useState("");
+    const [sortBy, setSortBy] = useState<"name" | "articleCount" | "views" | "createdAt">("name");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [selectedCategories, setSelectedCategories] = useState<(string | number)[]>([]);
     const [formData, setFormData] = useState<CategoryFormData>({
-        name: '',
-        slug: '',
-        description: '',
-        color: '#4361ee',
-        icon: '',
-        parentId: '',
-        status: 'active'
+        name: "",
+        slug: "",
+        description: "",
+        color: "#4361ee",
+        icon: "",
+        parentId: "",
+        status: "active",
     });
 
     // 排序选项
     const sortOptions = [
-        { id: 'name', name: '按名称', color: '#007bff' },
-        { id: 'articleCount', name: '按文章数', color: '#007bff' },
-        { id: 'views', name: '按浏览量', color: '#007bff' },
-        { id: 'createdAt', name: '按创建时间', color: '#007bff' }
+        { id: "name", name: "按名称", color: "#007bff" },
+        { id: "articleCount", name: "按文章数", color: "#007bff" },
+        { id: "views", name: "按浏览量", color: "#007bff" },
+        { id: "createdAt", name: "按创建时间", color: "#007bff" },
     ];
 
     // 状态选项
     const statusOptions = [
-        { id: 'active', name: '活跃', color: '#28a745' },
-        { id: 'inactive', name: '停用', color: '#dc3545' }
+        { id: "active", name: "活跃", color: "#28a745" },
+        { id: "inactive", name: "停用", color: "#dc3545" },
     ];
 
     // 动态获取父级分类选项
     const getParentCategoryOptions = () => {
-        const parentOptions = [{ id: '', name: '无（顶级分类）', color: '#6c757d' }];
-        const activeCategories = categories.filter(cat => cat.level === 0 && cat.status === 'active');
-        parentOptions.push(...activeCategories.map(cat => ({ id: cat.id.toString(), name: cat.name, color: '#17a2b8' })));
+        const parentOptions = [{ id: "", name: "无（顶级分类）", color: "#6c757d" }];
+        const activeCategories = categories.filter((cat) => cat.level === 0 && cat.status === "active");
+        parentOptions.push(
+            ...activeCategories.map((cat) => ({
+                id: cat.id.toString(),
+                name: cat.name,
+                color: "#17a2b8",
+            })),
+        );
         return parentOptions;
     };
 
     // 图标选项
     const iconOptions = [
-        { name: '默认', value: '' },
-        { name: '技术', value: '💻' },
-        { name: '生活', value: '🌟' },
-        { name: '旅行', value: '✈️' },
-        { name: '美食', value: '🍔' },
-        { name: '设计', value: '🎨' },
-        { name: '音乐', value: '🎵' },
-        { name: '运动', value: '⚽' },
-        { name: '读书', value: '📚' },
-        { name: '摄影', value: '📷' }
+        { name: "默认", value: "" },
+        { name: "技术", value: "💻" },
+        { name: "生活", value: "🌟" },
+        { name: "旅行", value: "✈️" },
+        { name: "美食", value: "🍔" },
+        { name: "设计", value: "🎨" },
+        { name: "音乐", value: "🎵" },
+        { name: "运动", value: "⚽" },
+        { name: "读书", value: "📚" },
+        { name: "摄影", value: "📷" },
     ];
 
     useEffect(() => {
@@ -111,27 +117,27 @@ const CategoryManagement: React.FC = () => {
             const response = await CategoryService.queryCategory();
             // @ts-ignore
             const categoryList = response.list || [];
-            
+
             const mappedCategories: Category[] = categoryList.map((item: any) => ({
                 id: item.id,
                 name: item.name,
                 slug: item.url,
-                description: item.description || '',
+                description: item.description || "",
                 color: item.color,
                 icon: item.icon,
                 parentId: item.parent_id,
                 articleCount: 0, // 暂时没有这个字段
                 views: 0, // 暂时没有这个字段
-                createdAt: new Date().toISOString().split('T')[0], // 暂时没有这个字段
-                updatedAt: new Date().toISOString().split('T')[0], // 暂时没有这个字段
-                status: item.status === 1 ? 'active' : 'inactive',
+                createdAt: new Date().toISOString().split("T")[0], // 暂时没有这个字段
+                updatedAt: new Date().toISOString().split("T")[0], // 暂时没有这个字段
+                status: item.status === 1 ? "active" : "inactive",
                 level: item.parent_id ? 1 : 0,
-                children: []
+                children: [],
             }));
-            
+
             setCategories(mappedCategories);
         } catch (error) {
-            console.error('加载分类失败:', error);
+            console.error("加载分类失败:", error);
         } finally {
             setIsLoading(false);
         }
@@ -141,24 +147,24 @@ const CategoryManagement: React.FC = () => {
     const generateSlug = (name: string) => {
         return name
             .toLowerCase()
-            .replace(/[^\w\s-]/g, '')
-            .replace(/[\s_-]+/g, '-')
-            .replace(/^-+|-+$/g, '');
+            .replace(/[^\w\s-]/g, "")
+            .replace(/[\s_-]+/g, "-")
+            .replace(/^-+|-+$/g, "");
     };
 
     // 处理表单输入
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [name]: value
+            [name]: value,
         }));
 
         // 自动生成slug
-        if (name === 'name') {
-            setFormData(prev => ({
+        if (name === "name") {
+            setFormData((prev) => ({
                 ...prev,
-                slug: generateSlug(value)
+                slug: generateSlug(value),
             }));
         }
     };
@@ -172,20 +178,20 @@ const CategoryManagement: React.FC = () => {
                 slug: category.slug,
                 description: category.description,
                 color: category.color,
-                icon: category.icon || '',
-                parentId: category.parentId?.toString() || '',
-                status: category.status
+                icon: category.icon || "",
+                parentId: category.parentId?.toString() || "",
+                status: category.status,
             });
         } else {
             setEditingCategory(null);
             setFormData({
-                name: '',
-                slug: '',
-                description: '',
-                color: '#4361ee',
-                icon: '',
-                parentId: '',
-                status: 'active'
+                name: "",
+                slug: "",
+                description: "",
+                color: "#4361ee",
+                icon: "",
+                parentId: "",
+                status: "active",
             });
         }
         setShowModal(true);
@@ -212,16 +218,22 @@ const CategoryManagement: React.FC = () => {
                 icon: formData.icon,
                 description: formData.description,
                 parent_id: formData.parentId,
-                status: formData.status === 'active' ? 1 : 0
+                status: formData.status === "active" ? 1 : 0,
             });
 
             if (editingCategory) {
                 // 编辑模式
-                setCategories(prev => prev.map(cat =>
-                    cat.id === editingCategory.id
-                        ? { ...cat, ...formData, updatedAt: new Date().toISOString().split('T')[0] }
-                        : cat
-                ));
+                setCategories((prev) =>
+                    prev.map((cat) =>
+                        cat.id === editingCategory.id
+                            ? {
+                                  ...cat,
+                                  ...formData,
+                                  updatedAt: new Date().toISOString().split("T")[0],
+                              }
+                            : cat,
+                    ),
+                );
             } else {
                 // 新增模式
                 const newCategory: Category = {
@@ -234,17 +246,17 @@ const CategoryManagement: React.FC = () => {
                     parentId: response.parent_id,
                     articleCount: 0,
                     views: 0,
-                    createdAt: new Date().toISOString().split('T')[0],
-                    updatedAt: new Date().toISOString().split('T')[0],
+                    createdAt: new Date().toISOString().split("T")[0],
+                    updatedAt: new Date().toISOString().split("T")[0],
                     status: formData.status,
-                    level: formData.parentId ? 1 : 0
+                    level: formData.parentId ? 1 : 0,
                 };
-                setCategories(prev => [...prev, newCategory]);
+                setCategories((prev) => [...prev, newCategory]);
             }
 
             closeModal();
         } catch (error) {
-            console.error('保存分类失败:', error);
+            console.error("保存分类失败:", error);
         } finally {
             setIsLoading(false);
         }
@@ -253,116 +265,124 @@ const CategoryManagement: React.FC = () => {
     // 删除分类
     const deleteCategories = async () => {
         await confirm({
-            title: '确认删除',
+            title: "确认删除",
             content: (
                 <div>
                     <p>确定要删除选中的 {selectedCategories.length} 个分类吗？</p>
-                    <p style={{ color: 'var(--danger-color)', fontWeight: 500 }}>
+                    <p style={{ color: "var(--danger-color)", fontWeight: 500 }}>
                         注意：删除分类不会删除相关文章，但文章将失去分类归属。
                     </p>
                 </div>
             ),
-            confirmText: '确认删除',
-            cancelText: '取消',
+            confirmText: "确认删除",
+            cancelText: "取消",
             onConfirm: async () => {
                 setIsLoading(true);
                 try {
                     await CategoryService.deleteCategory({
-                        ids: selectedCategories.join(',')
+                        ids: selectedCategories.join(","),
                     });
 
-                    setCategories(prev => prev.filter(cat => !selectedCategories.includes(cat.id)));
+                    setCategories((prev) => prev.filter((cat) => !selectedCategories.includes(cat.id)));
                     setSelectedCategories([]);
                 } catch (error) {
-                    console.error('删除分类失败:', error);
+                    console.error("删除分类失败:", error);
                 } finally {
                     setIsLoading(false);
                 }
-            }
+            },
         });
     };
 
     // 切换分类状态
     const toggleCategoryStatus = async (category: Category) => {
-        const newStatus = category.status === 'active' ? 'inactive' : 'active';
+        const newStatus = category.status === "active" ? "inactive" : "active";
         try {
             await CategoryService.createCategory({
                 name: category.name,
                 url: category.slug,
                 color: category.color,
-                icon: category.icon || '',
+                icon: category.icon || "",
                 description: category.description,
                 parent_id: category.parentId,
-                status: newStatus === 'active' ? 1 : 0
+                status: newStatus === "active" ? 1 : 0,
             });
 
-            setCategories(prev => prev.map(cat =>
-                cat.id === category.id
-                    ? { ...cat, status: newStatus, updatedAt: new Date().toISOString().split('T')[0] }
-                    : cat
-            ));
+            setCategories((prev) =>
+                prev.map((cat) =>
+                    cat.id === category.id
+                        ? {
+                              ...cat,
+                              status: newStatus,
+                              updatedAt: new Date().toISOString().split("T")[0],
+                          }
+                        : cat,
+                ),
+            );
         } catch (error) {
-            console.error('切换状态失败:', error);
+            console.error("切换状态失败:", error);
         }
     };
 
     // 删除单个分类
     const deleteCategory = async (category: Category) => {
         await confirm({
-            title: '确认删除分类',
+            title: "确认删除分类",
             content: (
                 <div>
-                    <p>确定要删除分类 "<strong>{category.name}</strong>" 吗？</p>
-                    <p style={{ color: 'var(--danger-color)', fontWeight: 500 }}>
+                    <p>
+                        确定要删除分类 "<strong>{category.name}</strong>" 吗？
+                    </p>
+                    <p style={{ color: "var(--danger-color)", fontWeight: 500 }}>
                         注意：删除分类不会删除相关文章，但文章将失去分类归属。
                     </p>
                 </div>
             ),
-            confirmText: '确认删除',
-            cancelText: '取消',
+            confirmText: "确认删除",
+            cancelText: "取消",
             onConfirm: async () => {
                 setIsLoading(true);
                 try {
                     await CategoryService.deleteCategory({
-                        ids: String(category.id)
+                        ids: String(category.id),
                     });
-                    setCategories(prev => prev.filter(cat => cat.id !== category.id));
+                    setCategories((prev) => prev.filter((cat) => cat.id !== category.id));
                 } catch (error) {
-                    console.error('删除分类失败:', error);
+                    console.error("删除分类失败:", error);
                 } finally {
                     setIsLoading(false);
                 }
-            }
+            },
         });
     };
 
     // 排序和过滤分类
     const filteredAndSortedCategories = categories
-        .filter(category =>
-            category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            category.description.toLowerCase().includes(searchTerm.toLowerCase())
+        .filter(
+            (category) =>
+                category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                category.description.toLowerCase().includes(searchTerm.toLowerCase()),
         )
         .sort((a, b) => {
             let comparison = 0;
             const aValue = a[sortBy];
             const bValue = b[sortBy];
 
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
+            if (typeof aValue === "string" && typeof bValue === "string") {
                 comparison = aValue.localeCompare(bValue);
             } else {
                 comparison = (aValue || 0) > (bValue || 0) ? 1 : -1;
             }
 
-            return sortOrder === 'asc' ? comparison : -comparison;
+            return sortOrder === "asc" ? comparison : -comparison;
         });
 
-    
     // 统计数据
     const stats = {
         totalCategories: categories.length,
-        activeCategories: categories.filter(cat => cat.status === 'active').length,
+        activeCategories: categories.filter((cat) => cat.status === "active").length,
         totalArticles: categories.reduce((sum, cat) => sum + cat.articleCount, 0),
-        totalViews: categories.reduce((sum, cat) => sum + cat.views, 0)
+        totalViews: categories.reduce((sum, cat) => sum + cat.views, 0),
     };
 
     return (
@@ -374,15 +394,10 @@ const CategoryManagement: React.FC = () => {
                         <FaTags />
                         分类管理
                     </h1>
-                    <p className={styles.pageDescription}>
-                        管理博客文章分类，创建层级结构，优化内容组织
-                    </p>
+                    <p className={styles.pageDescription}>管理博客文章分类，创建层级结构，优化内容组织</p>
                 </div>
                 <div className={styles.headerActions}>
-                    <button
-                        className={styles.addButton}
-                        onClick={() => openModal()}
-                    >
+                    <button className={styles.addButton} onClick={() => openModal()}>
                         <FaPlus />
                         新增分类
                     </button>
@@ -447,7 +462,7 @@ const CategoryManagement: React.FC = () => {
                         <span className={styles.filterLabel}>排序：</span>
                         <CustomSelect
                             name="排序方式"
-                            value={sortOptions.find(option => option.id === sortBy) || null}
+                            value={sortOptions.find((option) => option.id === sortBy) || null}
                             onChange={(selectedOption) => setSortBy(selectedOption?.id as any)}
                             options={sortOptions}
                             hideBadge={true}
@@ -456,9 +471,9 @@ const CategoryManagement: React.FC = () => {
                         />
                         <button
                             className={styles.sortButton}
-                            onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                            onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
                         >
-                            {sortOrder === 'asc' ? <FaArrowUp /> : <FaArrowDown />}
+                            {sortOrder === "asc" ? <FaArrowUp /> : <FaArrowDown />}
                         </button>
                     </div>
 
@@ -476,11 +491,7 @@ const CategoryManagement: React.FC = () => {
 
                 <div className={styles.toolbarRight}>
                     {selectedCategories.length > 0 && (
-                        <Button
-                            className={styles.deleteButton}
-                            onClick={deleteCategories}
-                            color='error'
-                        >
+                        <Button className={styles.deleteButton} onClick={deleteCategories} color="error">
                             <FaTrash />
                             删除 ({selectedCategories.length})
                         </Button>
@@ -503,14 +514,17 @@ const CategoryManagement: React.FC = () => {
                     </div>
                 ) : (
                     <div className={styles.categoryGrid}>
-                        {filteredAndSortedCategories.map(category => (
+                        {filteredAndSortedCategories.map((category) => (
                             <div
                                 key={category.id}
-                                className={`${styles.categoryCard} ${category.status === 'inactive' ? styles.inactive : ''}`}
+                                className={`${styles.categoryCard} ${category.status === "inactive" ? styles.inactive : ""}`}
                             >
                                 <div className={styles.categoryHeader}>
                                     <div className={styles.categoryInfo}>
-                                        <div className={styles.categoryIcon} style={{ backgroundColor: category.color }}>
+                                        <div
+                                            className={styles.categoryIcon}
+                                            style={{ backgroundColor: category.color }}
+                                        >
                                             {category.icon || <FaTags />}
                                         </div>
                                         <div>
@@ -520,14 +534,12 @@ const CategoryManagement: React.FC = () => {
                                     </div>
                                     <div className={styles.categoryStatus}>
                                         <span className={`${styles.statusBadge} ${styles[category.status]}`}>
-                                            {category.status === 'active' ? '活跃' : '停用'}
+                                            {category.status === "active" ? "活跃" : "停用"}
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className={styles.categoryDescription}>
-                                    {category.description}
-                                </div>
+                                <div className={styles.categoryDescription}>{category.description}</div>
 
                                 <div className={styles.categoryStats}>
                                     <div className={styles.stat}>
@@ -541,7 +553,7 @@ const CategoryManagement: React.FC = () => {
                                 </div>
 
                                 <div className={styles.categoryActions}>
-                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                    <div style={{ display: "flex", gap: "8px" }}>
                                         <Button
                                             color="primary"
                                             variant="ghost"
@@ -558,9 +570,9 @@ const CategoryManagement: React.FC = () => {
                                             size="small"
                                             onClick={() => toggleCategoryStatus(category)}
                                             className={styles.actionButton}
-                                            aria-label={category.status === 'active' ? '停用分类' : '启用分类'}
+                                            aria-label={category.status === "active" ? "停用分类" : "启用分类"}
                                         >
-                                            {category.status === 'active' ? <FaTimes /> : <FaCheckCircle />}
+                                            {category.status === "active" ? <FaTimes /> : <FaCheckCircle />}
                                         </Button>
                                         <Button
                                             color="error"
@@ -579,9 +591,11 @@ const CategoryManagement: React.FC = () => {
                                         checked={selectedCategories.includes(category.id)}
                                         onChange={(e) => {
                                             if (e.target.checked) {
-                                                setSelectedCategories(prev => [...prev, category.id]);
+                                                setSelectedCategories((prev) => [...prev, category.id]);
                                             } else {
-                                                setSelectedCategories(prev => prev.filter(id => id !== category.id));
+                                                setSelectedCategories((prev) =>
+                                                    prev.filter((id) => id !== category.id),
+                                                );
                                             }
                                         }}
                                     />
@@ -597,9 +611,7 @@ const CategoryManagement: React.FC = () => {
                 <div className={styles.modalOverlay} onClick={closeModal}>
                     <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h2 className={styles.modalTitle}>
-                                {editingCategory ? '编辑分类' : '新增分类'}
-                            </h2>
+                            <h2 className={styles.modalTitle}>{editingCategory ? "编辑分类" : "新增分类"}</h2>
                             <button className={styles.closeButton} onClick={closeModal}>
                                 <FaTimes />
                             </button>
@@ -652,7 +664,12 @@ const CategoryManagement: React.FC = () => {
                                             type="color"
                                             className={styles.colorInput}
                                             value={formData.color}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+                                            onChange={(e) =>
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    color: e.target.value,
+                                                }))
+                                            }
                                         />
                                         <div
                                             className={styles.colorPreview}
@@ -665,14 +682,28 @@ const CategoryManagement: React.FC = () => {
                                     <label className={styles.formLabel}>图标</label>
                                     <CustomSelect
                                         name="图标"
-                                        value={iconOptions.find(icon => icon.value === formData.icon) ? { 
-                                                id: iconOptions.find(icon => icon.value === formData.icon)!.value,
-                                                name: iconOptions.find(icon => icon.value === formData.icon)!.name,
-                                                color: '#007bff' 
-                                            } : null
+                                        value={
+                                            iconOptions.find((icon) => icon.value === formData.icon)
+                                                ? {
+                                                      id: iconOptions.find((icon) => icon.value === formData.icon)!
+                                                          .value,
+                                                      name: iconOptions.find((icon) => icon.value === formData.icon)!
+                                                          .name,
+                                                      color: "#007bff",
+                                                  }
+                                                : null
                                         }
-                                        onChange={(selectedOption) => setFormData(prev => ({ ...prev, icon: String(selectedOption?.id || '') }))}
-                                        options={iconOptions.map(icon => ({ id: icon.value, name: `${icon.name} ${icon.value}`, color: '#007bff' }))}
+                                        onChange={(selectedOption) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                icon: String(selectedOption?.id || ""),
+                                            }))
+                                        }
+                                        options={iconOptions.map((icon) => ({
+                                            id: icon.value,
+                                            name: `${icon.name} ${icon.value}`,
+                                            color: "#007bff",
+                                        }))}
                                         hideBadge={true}
                                         placeholder="选择图标"
                                     />
@@ -684,8 +715,17 @@ const CategoryManagement: React.FC = () => {
                                     <label className={styles.formLabel}>父级分类</label>
                                     <CustomSelect
                                         name="父级分类"
-                                        value={getParentCategoryOptions().find(option => option.id === formData.parentId) || null}
-                                        onChange={(selectedOption) => setFormData(prev => ({ ...prev, parentId: String(selectedOption?.id || '') }))}
+                                        value={
+                                            getParentCategoryOptions().find(
+                                                (option) => option.id === formData.parentId,
+                                            ) || null
+                                        }
+                                        onChange={(selectedOption) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                parentId: String(selectedOption?.id || ""),
+                                            }))
+                                        }
                                         options={getParentCategoryOptions()}
                                         hideBadge={true}
                                         placeholder="选择父级分类"
@@ -696,8 +736,13 @@ const CategoryManagement: React.FC = () => {
                                     <label className={styles.formLabel}>状态</label>
                                     <CustomSelect
                                         name="状态"
-                                        value={statusOptions.find(option => option.id === formData.status) || null}
-                                        onChange={(selectedOption) => setFormData(prev => ({ ...prev, status: selectedOption?.id as 'active' | 'inactive' || 'active' }))}
+                                        value={statusOptions.find((option) => option.id === formData.status) || null}
+                                        onChange={(selectedOption) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                status: (selectedOption?.id as "active" | "inactive") || "active",
+                                            }))
+                                        }
                                         options={statusOptions}
                                         hideBadge={true}
                                         placeholder="选择状态"
@@ -714,12 +759,8 @@ const CategoryManagement: React.FC = () => {
                                 >
                                     取消
                                 </button>
-                                <button
-                                    type="submit"
-                                    className={styles.saveButton}
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? '保存中...' : '保存'}
+                                <button type="submit" className={styles.saveButton} disabled={isLoading}>
+                                    {isLoading ? "保存中..." : "保存"}
                                 </button>
                             </div>
                         </form>

@@ -1,17 +1,13 @@
-import React from 'react';
-import styles from './Loading.module.css';
+import React from "react";
+import styles from "./Loading.module.css";
 
 interface LoadingProps {
-    size?: 'small' | 'medium' | 'large';
+    size?: "small" | "medium" | "large";
     text?: string;
     overlay?: boolean;
 }
 
-const Loading: React.FC<LoadingProps> = ({
-    size = 'medium',
-    text = '加载中...',
-    overlay = false
-}) => {
+const Loading: React.FC<LoadingProps> = ({ size = "medium", text = "加载中...", overlay = false }) => {
     const content = (
         <div className={`${styles.loadingContainer} ${styles[size]}`}>
             <div className={styles.spinner}>
@@ -25,11 +21,7 @@ const Loading: React.FC<LoadingProps> = ({
     );
 
     if (overlay) {
-        return (
-            <div className={styles.loadingOverlay}>
-                {content}
-            </div>
-        );
+        return <div className={styles.loadingOverlay}>{content}</div>;
     }
 
     return content;

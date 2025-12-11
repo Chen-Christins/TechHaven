@@ -1,7 +1,7 @@
 .adminLayout {
     min-height: 100vh;
     background-color: var(--bg-primary);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .adminContainer {
@@ -227,7 +227,7 @@
 }
 
 .adminNavLink.active::before {
-    content: '';
+    content: "";
     position: absolute;
     left: -8px;
     top: 50%;
@@ -294,10 +294,9 @@
     height: 22px;
 }
 
-
 /* 侧边栏底部装饰 */
 .adminSidebar::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 0;
@@ -747,7 +746,7 @@
 /* 中等屏幕优化 (包含875px) */
 @media (max-width: 1024px) {
     .adminSidebar.collapsed .toggleSidebarBtn {
-        right: -16px;  /* 增加偏移确保完全显示 */
+        right: -16px; /* 增加偏移确保完全显示 */
         width: 30px;
         height: 30px;
     }

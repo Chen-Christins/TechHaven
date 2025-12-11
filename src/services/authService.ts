@@ -5,8 +5,8 @@ import http, {
     type ForgetPasswordParams,
     type SendCodeParams,
     type HttpResponse,
-    CodeType
-} from '../utils/http';
+    CodeType,
+} from "../utils/http";
 
 /**
  * 用户信息接口
@@ -61,18 +61,18 @@ export class AuthService {
     static async login(authId: string, password: string) {
         const params: LoginParams = {
             auth_id: authId,
-            passwd: password
+            passwd: password,
         };
 
         try {
             // 使用form-urlencoded格式发送登录请求
             const formData = new URLSearchParams();
-            formData.append('auth_id', params.auth_id);
-            formData.append('passwd', params.passwd);
+            formData.append("auth_id", params.auth_id);
+            formData.append("passwd", params.passwd);
 
-            const response = await http.post<LoginResponse>('/user/login', formData.toString(), {
+            const response = await http.post<LoginResponse>("/user/login", formData.toString(), {
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    "Content-Type": "application/x-www-form-urlencoded",
                 },
             });
 
@@ -91,23 +91,23 @@ export class AuthService {
      */
     static async sendVerificationCode(email: string, type: CodeType) {
         // 获取用户代理字符串
-        const userAgent = navigator.userAgent || 'Unknown';
+        const userAgent = navigator.userAgent || "Unknown";
 
         const params: SendCodeParams = {
             email,
             agent: userAgent,
-            type
+            type,
         };
 
         // 使用form-urlencoded格式发送请求
         const formData = new URLSearchParams();
-        formData.append('email', params.email);
-        formData.append('agent', params.agent);
-        formData.append('type', params.type);
+        formData.append("email", params.email);
+        formData.append("agent", params.agent);
+        formData.append("type", params.type);
 
-        return http.post('/user/send_code', formData.toString(), {
+        return http.post("/user/send_code", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
     }
@@ -159,19 +159,19 @@ export class AuthService {
             account: params.account,
             email: params.email,
             passwd: params.passwd,
-            auth_code: params.auth_code
+            auth_code: params.auth_code,
         };
 
         // 使用 form-urlencoded 格式发送请求
         const formData = new URLSearchParams();
-        formData.append('account', registerParams.account);
-        formData.append('email', registerParams.email);
-        formData.append('passwd', registerParams.passwd);
-        formData.append('auth_code', registerParams.auth_code);
+        formData.append("account", registerParams.account);
+        formData.append("email", registerParams.email);
+        formData.append("passwd", registerParams.passwd);
+        formData.append("auth_code", registerParams.auth_code);
 
-        return http.post('/user/create', formData.toString(), {
+        return http.post("/user/create", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
     }
@@ -181,7 +181,7 @@ export class AuthService {
      */
     static logout() {
         // 调用后端的登出接口
-        return http.get('/user/logout');
+        return http.get("/user/logout");
     }
 
     /**
@@ -190,7 +190,7 @@ export class AuthService {
      * @returns 用户信息
      */
     static async getUserInfo(userId?: number | string): Promise<HttpResponse<UserInfo>> {
-        const url = userId ? `/user/info?user_id=${userId}` : '/user/info';
+        const url = userId ? `/user/info?user_id=${userId}` : "/user/info";
         return http.get<UserInfo>(url);
     }
 
@@ -199,12 +199,12 @@ export class AuthService {
      * @returns 用户ID列表
      */
     static async listUsers(): Promise<Array<number | string>> {
-        const response = await http.get<{ ids: Array<number | string> }>('/user/list');
+        const response = await http.get<{ ids: Array<number | string> }>("/user/list");
         return response.data.ids;
     }
 
     static async listUsersAdmin(params: UserAdminListParams): Promise<UserAdminListResponse> {
-        const response = await http.get<UserAdminListResponse>('/user/admin/lists', { params });
+        const response = await http.get<UserAdminListResponse>("/user/admin/lists", { params });
         return response.data;
     }
 
@@ -225,12 +225,12 @@ export class AuthService {
      */
     static async updateUserProfile(name?: string, passwd?: string) {
         const formData = new URLSearchParams();
-        if (name) formData.append('name', name);
-        if (passwd) formData.append('passwd', passwd);
+        if (name) formData.append("name", name);
+        if (passwd) formData.append("passwd", passwd);
 
-        return http.post('/user/update', formData.toString(), {
+        return http.post("/user/update", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
     }
@@ -240,9 +240,11 @@ export class AuthService {
      * @param userIds 用户ID列表
      * @returns 用户信息列表
      */
-    static async queryUsersBatch(userIds: Array<number | string>): Promise<Array<{ id: number | string, name: string }>> {
-        const idsStr = userIds.join(',');
-        const response = await http.get<Array<{ id: number | string, name: string }>>(`/user/query?user_ids=${idsStr}`);
+    static async queryUsersBatch(
+        userIds: Array<number | string>,
+    ): Promise<Array<{ id: number | string; name: string }>> {
+        const idsStr = userIds.join(",");
+        const response = await http.get<Array<{ id: number | string; name: string }>>(`/user/query?user_ids=${idsStr}`);
         return response.data;
     }
 
@@ -257,18 +259,18 @@ export class AuthService {
         const params: ForgetPasswordParams = {
             email,
             passwd: newPassword,
-            auth_code: authCode
+            auth_code: authCode,
         };
 
         // 使用form-urlencoded格式发送请求
         const formData = new URLSearchParams();
-        formData.append('email', params.email);
-        formData.append('passwd', params.passwd);
-        formData.append('auth_code', params.auth_code);
+        formData.append("email", params.email);
+        formData.append("passwd", params.passwd);
+        formData.append("auth_code", params.auth_code);
 
-        return http.post('/user/forget_passwd', formData.toString(), {
+        return http.post("/user/forget_passwd", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
     }

@@ -1,4 +1,4 @@
-import http from '../utils/http';
+import http from "../utils/http";
 
 /**
  * 查询分类响应类型
@@ -68,7 +68,7 @@ export class CategoryService {
      * @returns 分类详情列表
      */
     static async queryCategory(): Promise<CategoryInfo> {
-        let url = '/category/admin/query';
+        const url = "/category/admin/query";
 
         const response = await http.get<CategoryInfo>(url);
         return response.data;
@@ -81,10 +81,10 @@ export class CategoryService {
      */
     static async deleteCategory(params: DeleteCategoryParams): Promise<DeleteCategoryResponse> {
         const formData = new URLSearchParams();
-        formData.append('ids', params.ids);
-        const response = await http.post<DeleteCategoryResponse>('/category/admin/delete', formData.toString(), {
+        formData.append("ids", params.ids);
+        const response = await http.post<DeleteCategoryResponse>("/category/admin/delete", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
         return response.data;
@@ -97,25 +97,25 @@ export class CategoryService {
      */
     static async createCategory(params: CreateCategoryParams): Promise<CreateCategoryResponse> {
         const formData = new URLSearchParams();
-        if (params.id !== undefined && params.id !== null && params.id !== '') {
-            formData.append('id', String(params.id));
+        if (params.id !== undefined && params.id !== null && params.id !== "") {
+            formData.append("id", String(params.id));
         }
-        formData.append('name', params.name);
-        formData.append('color', params.color);
-        formData.append('icon', params.icon);
-        formData.append('url', params.url);
+        formData.append("name", params.name);
+        formData.append("color", params.color);
+        formData.append("icon", params.icon);
+        formData.append("url", params.url);
         if (params.description) {
-            formData.append('desc', params.description);
+            formData.append("desc", params.description);
         }
         if (params.status !== undefined) {
-            formData.append('status', String(params.status));
+            formData.append("status", String(params.status));
         }
-        if (params.parent_id !== undefined && params.parent_id !== null && params.parent_id !== '') {
-            formData.append('parent_id', String(params.parent_id));
+        if (params.parent_id !== undefined && params.parent_id !== null && params.parent_id !== "") {
+            formData.append("parent_id", String(params.parent_id));
         }
-        const response = await http.post<CreateCategoryResponse>('/category/admin/create', formData.toString(), {
+        const response = await http.post<CreateCategoryResponse>("/category/admin/create", formData.toString(), {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                "Content-Type": "application/x-www-form-urlencoded",
             },
         });
         return response.data;

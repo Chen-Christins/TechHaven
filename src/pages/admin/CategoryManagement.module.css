@@ -258,8 +258,12 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .emptyState {
@@ -749,10 +753,21 @@
     animation: slideIn 0.3s ease-out;
 }
 
-.categoryCard:nth-child(1) { animation-delay: 0.1s; }
-.categoryCard:nth-child(2) { animation-delay: 0.2s; }
-.categoryCard:nth-child(3) { animation-delay: 0.3s; }
-.categoryCard:nth-child(4) { animation-delay: 0.4s; }
-.categoryCard:nth-child(5) { animation-delay: 0.5s; }
-.categoryCard:nth-child(6) { animation-delay: 0.6s; }
-
+.categoryCard:nth-child(1) {
+    animation-delay: 0.1s;
+}
+.categoryCard:nth-child(2) {
+    animation-delay: 0.2s;
+}
+.categoryCard:nth-child(3) {
+    animation-delay: 0.3s;
+}
+.categoryCard:nth-child(4) {
+    animation-delay: 0.4s;
+}
+.categoryCard:nth-child(5) {
+    animation-delay: 0.5s;
+}
+.categoryCard:nth-child(6) {
+    animation-delay: 0.6s;
+}

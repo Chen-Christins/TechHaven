@@ -1,4 +1,4 @@
-import http from '../utils/http';
+import http from "../utils/http";
 
 /**
  * 文件上传参数
@@ -19,14 +19,14 @@ export class FileService {
      */
     static async uploadFile(params: UploadFileParams) {
         const formData = new FormData();
-        formData.append('dir_name', params.dir_name);
+        formData.append("dir_name", params.dir_name);
         params.files.forEach((file) => {
-            formData.append('file', file);
+            formData.append("file", file);
         });
 
-        return http.post('/file/upload', formData, {
+        return http.post("/file/upload", formData, {
             headers: {
-                'Content-Type': 'multipart/form-data',
+                "Content-Type": "multipart/form-data",
             },
         });
     }

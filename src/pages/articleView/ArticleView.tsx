@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import ReactMarkdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import remarkGfm from 'remark-gfm';
-import 'katex/dist/katex.min.css';
-import mermaid from 'mermaid';
-import styles from './ArticleView.module.css';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import remarkGfm from "remark-gfm";
+import "katex/dist/katex.min.css";
+import mermaid from "mermaid";
+import styles from "./ArticleView.module.css";
 
 interface Heading {
     id: string;
@@ -29,33 +29,36 @@ interface ArticleViewProps {
 // 初始化 Mermaid 配置
 mermaid.initialize({
     startOnLoad: false,
-    theme: 'default',
-    securityLevel: 'loose',
-    fontFamily: 'monospace',
+    theme: "default",
+    securityLevel: "loose",
+    fontFamily: "monospace",
     fontSize: 14,
     flowchart: {
         useMaxWidth: true,
         htmlLabels: true,
-        curve: 'basis'
-    }
+        curve: "basis",
+    },
 });
 
 // Mermaid 图表组件
 const MermaidComponent: React.FC<{ code: string }> = ({ code }) => {
     const elementRef = useRef<HTMLDivElement>(null);
-    const [error, setError] = useState<string>('');
+    const [error, setError] = useState<string>("");
 
     useEffect(() => {
         if (elementRef.current) {
             try {
                 const id = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-                mermaid.render(id, code).then(({ svg }) => {
-                    if (elementRef.current) {
-                        elementRef.current.innerHTML = svg;
-                    }
-                }).catch((err) => {
-                    setError(`Mermaid 渲染错误: ${err.message}`);
-                });
+                mermaid
+                    .render(id, code)
+                    .then(({ svg }) => {
+                        if (elementRef.current) {
+                            elementRef.current.innerHTML = svg;
+                        }
+                    })
+                    .catch((err) => {
+                        setError(`Mermaid 渲染错误: ${err.message}`);
+                    });
             } catch (err: any) {
                 setError(`Mermaid 渲染错误: ${err.message}`);
             }
@@ -88,10 +91,10 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     update_time,
     pushlish_time,
     content,
-    className = ''
+    className = "",
 }) => {
     const [headings, setHeadings] = useState<Heading[]>([]);
-    const [activeId, setActiveId] = useState<string>('');
+    const [activeId, setActiveId] = useState<string>("");
     const [isContentReady, setIsContentReady] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
     const observerRef = useRef<IntersectionObserver | null>(null);
@@ -100,10 +103,10 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     const generateId = (text: string): string => {
         return text
             .toLowerCase()
-            .replace(/[^a-z0-9\u4e00-\u9fa5\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/^-|-$/g, '');
+            .replace(/[^a-z0-9\u4e00-\u9fa5\s-]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/-+/g, "-")
+            .replace(/^-|-$/g, "");
     };
 
     // 提取标题
@@ -143,7 +146,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
         }
 
         const options: IntersectionObserverInit = {
-            rootMargin: '-20% 0px -60% 0px',
+            rootMargin: "-20% 0px -60% 0px",
             threshold: 0.1,
         };
 
@@ -179,15 +182,15 @@ const ArticleView: React.FC<ArticleViewProps> = ({
         const element = document.getElementById(id);
         if (element) {
             element.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
+                behavior: "smooth",
+                block: "start",
             });
 
             // 更新活跃ID
             setActiveId(id);
 
             // 更新URL的hash（可选）
-            window.history.pushState(null, '', `#${id}`);
+            window.history.pushState(null, "", `#${id}`);
         }
     }, []);
 
@@ -198,50 +201,80 @@ const ArticleView: React.FC<ArticleViewProps> = ({
         });
     }, []);
 
-    
     // 创建标题组件
     const createHeadingComponent = (level: number) => {
         return ({ children, ...props }: HeadingComponentProps) => {
-            const text = React.Children.toArray(children).join('');
+            const text = React.Children.toArray(children).join("");
             const id = generateId(text);
 
             switch (level) {
                 case 1:
-                    return <h1 id={id} {...props}>{children}</h1>;
+                    return (
+                        <h1 id={id} {...props}>
+                            {children}
+                        </h1>
+                    );
                 case 2:
-                    return <h2 id={id} {...props}>{children}</h2>;
+                    return (
+                        <h2 id={id} {...props}>
+                            {children}
+                        </h2>
+                    );
                 case 3:
-                    return <h3 id={id} {...props}>{children}</h3>;
+                    return (
+                        <h3 id={id} {...props}>
+                            {children}
+                        </h3>
+                    );
                 case 4:
-                    return <h4 id={id} {...props}>{children}</h4>;
+                    return (
+                        <h4 id={id} {...props}>
+                            {children}
+                        </h4>
+                    );
                 case 5:
-                    return <h5 id={id} {...props}>{children}</h5>;
+                    return (
+                        <h5 id={id} {...props}>
+                            {children}
+                        </h5>
+                    );
                 case 6:
-                    return <h6 id={id} {...props}>{children}</h6>;
+                    return (
+                        <h6 id={id} {...props}>
+                            {children}
+                        </h6>
+                    );
                 default:
-                    return <h2 id={id} {...props}>{children}</h2>;
+                    return (
+                        <h2 id={id} {...props}>
+                            {children}
+                        </h2>
+                    );
             }
         };
     };
 
     // 简化段落组件 - 不要干预代码块处理
-    const ParagraphComponent: React.FC<React.HTMLAttributes<HTMLParagraphElement> & { node?: any }> =
-        ({ children, ...props }) => {
+    const ParagraphComponent: React.FC<React.HTMLAttributes<HTMLParagraphElement> & { node?: any }> = ({
+        children,
+        ...props
+    }) => {
         return <p {...props}>{children}</p>;
     };
 
     const getTocItemClass = (level: number, id: string) => {
         const baseClass = styles.tocItem;
-        const levelClass = level === 1 ? styles.tocItemH1 :
-            level === 2 ? styles.tocItemH2 :
-                styles.tocItemH3;
-        const activeClass = id === activeId ? styles.active : '';
+        const levelClass = level === 1 ? styles.tocItemH1 : level === 2 ? styles.tocItemH2 : styles.tocItemH3;
+        const activeClass = id === activeId ? styles.active : "";
 
         return `${baseClass} ${levelClass} ${activeClass}`.trim();
     };
 
     return (
-        <div className={`${styles.container} ${className} ${!isContentReady ? styles.loading : styles.ready}`} ref={contentRef}>
+        <div
+            className={`${styles.container} ${className} ${!isContentReady ? styles.loading : styles.ready}`}
+            ref={contentRef}
+        >
             {headings.length > 0 && (
                 <aside className={styles.sidebar}>
                     <nav className={styles.toc}>
@@ -271,7 +304,9 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                         <span>点赞量: {praises}</span>
                         <span>更新时间: {update_time}</span>
                     </div>
-                    <div className={`${styles.markdownBody} ${!isContentReady ? styles.contentLoading : styles.contentReady}`}>
+                    <div
+                        className={`${styles.markdownBody} ${!isContentReady ? styles.contentLoading : styles.contentReady}`}
+                    >
                         {!isContentReady && (
                             <div className={styles.loadingIndicator}>
                                 <div className={styles.spinner}></div>
@@ -293,8 +328,8 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                                 h6: createHeadingComponent(6),
                                 // 只对代码块进行自定义处理
                                 code: ({ className, children }) => {
-                                    const codeContent = String(children || '');
-                                    const language = className?.replace('language-', '') || '';
+                                    const codeContent = String(children || "");
+                                    const language = className?.replace("language-", "") || "";
 
                                     // 如果没有语言标识，认为是行内代码
                                     if (!className) {
@@ -302,7 +337,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                                     }
 
                                     // 如果是 Mermaid 代码，使用 MermaidComponent
-                                    if (language === 'mermaid') {
+                                    if (language === "mermaid") {
                                         return (
                                             <div className={styles.mermaidWrapper}>
                                                 <div className={styles.codeHeader}>
@@ -338,15 +373,15 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                                                 showLineNumbers={true}
                                                 customStyle={{
                                                     margin: 0,
-                                                    borderRadius: '0 0 8px 8px',
-                                                    fontSize: '14px'
+                                                    borderRadius: "0 0 8px 8px",
+                                                    fontSize: "14px",
                                                 }}
                                             >
                                                 {codeContent}
                                             </SyntaxHighlighter>
                                         </div>
                                     );
-                                }
+                                },
                             }}
                             skipHtml={false}
                             unwrapDisallowed={false}
