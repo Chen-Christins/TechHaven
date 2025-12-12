@@ -133,7 +133,7 @@ const AssignmentManagement: React.FC = () => {
                 maxFileSize: item.file_size,
                 allowedTypes: item.file_type ? item.file_type.split(",") : [],
             }));
-
+            console.log("任务列表数据:", mappedList);
             setAssignments(mappedList);
             setTotal(res.total);
         } catch (error) {

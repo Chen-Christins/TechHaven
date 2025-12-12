@@ -58,6 +58,7 @@ interface OrganizationTabsProps {
     onRefreshPending: () => void;
     onPageChange: (newPage: number) => void;
     onPendingPageChange: (newPage: number) => void;
+    onTasksPageChange: (newPage: number) => void;
     onActionPendingRequest: (requestId: string, action: "accept" | "reject") => void;
     onKickMember: (member: Member) => void;
     onSetMemberRole: (member: Member) => void;
@@ -76,6 +77,14 @@ interface OrganizationTabsProps {
 }
 
 const PAGE_SIZE = 15;
+const TASKS_PAGE_SIZE = 15; // 任务列表每页显示的条数
+
+const statusClassMap = {
+    "draft": styles.statusDraft,
+    "active": styles.statusActive,
+    "closed": styles.statusClosed,
+  // 其它状态...
+};
 
 const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
     userRole,
@@ -104,6 +113,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
     onRefreshPending,
     onPageChange,
     onPendingPageChange,
+    onTasksPageChange,
     onActionPendingRequest,
     onKickMember,
     onSetMemberRole,
@@ -635,18 +645,18 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                     {tasksTotal > 0 && (
                         <div className={styles.pagination}>
                             <div className={styles.paginationInfo}>
-                                显示 {(tasksPage - 1) * 10 + 1} - {Math.min(tasksPage * 10, tasksTotal)} 条， 共{" "}
+                                显示 {(tasksPage - 1) * TASKS_PAGE_SIZE + 1} - {Math.min(tasksPage * TASKS_PAGE_SIZE, tasksTotal)} 条， 共{" "}
                                 {tasksTotal} 条记录
                             </div>
                             <div className={styles.paginationControls}>
                                 <button
                                     className={styles.paginationButton}
                                     disabled={tasksPage === 1}
-                                    onClick={() => onPageChange(tasksPage - 1)}
+                                    onClick={() => onTasksPageChange(tasksPage - 1)}
                                 >
                                     上一页
                                 </button>
-                                {Array.from({ length: Math.ceil(tasksTotal / 10) }, (_, i) => (
+                                {Array.from({ length: Math.ceil(tasksTotal / TASKS_PAGE_SIZE) }, (_, i) => (
                                     <button
                                         key={i + 1}
                                         className={`${styles.paginationButton} ${tasksPage === i + 1 ? styles.active : ""}`}
@@ -657,8 +667,8 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                                 ))}
                                 <button
                                     className={styles.paginationButton}
-                                    disabled={tasksPage === Math.ceil(tasksTotal / 10)}
-                                    onClick={() => onPageChange(tasksPage + 1)}
+                                    disabled={tasksPage === Math.ceil(tasksTotal / TASKS_PAGE_SIZE)}
+                                    onClick={() => onTasksPageChange(tasksPage + 1)}
                                 >
                                     下一页
                                 </button>
@@ -754,7 +764,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                             <div className={styles.detailGroup}>
                                 <div className={styles.detailLabel}>当前状态</div>
                                 <div className={styles.detailValue}>
-                                    <span className={`${styles.statusBadge} ${styles[selectedTask.status]}`}>
+                                    <span className={`${styles.statusBadge} ${statusClassMap[selectedTask.status] || ""}`}>
                                         {selectedTask.status === "draft" && <FaHourglassHalf />}
                                         {selectedTask.status === "draft" && "草稿"}
                                         {selectedTask.status === "active" && <FaPlayCircle />}
@@ -776,8 +786,22 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                                 <div className={styles.detailLabel}>截止时间</div>
                                 <div className={styles.detailValue}>
                                     {selectedTask.due_date
-                                        ? new Date(selectedTask.due_date).toLocaleDateString()
+                                        ? new Date(selectedTask.due_date).toLocaleString()
                                         : "无截止日期"}
+                                </div>
+                            </div>
+                        </div>
+                        <div className={styles.detailRow}>
+                            <div className={styles.detailGroup}>
+                                <div className={styles.detailLabel}>文件大小限制</div>
+                                <div className={styles.detailValue}>
+                                    {selectedTask.maxFileSize ? `${selectedTask.maxFileSize} MB` : "未设置"}
+                                </div>
+                            </div>
+                            <div className={styles.detailGroup}>
+                                <div className={styles.detailLabel}>允许文件格式</div>
+                                <div className={styles.detailValue}>
+                                    {selectedTask.allowedTypes?.join(", ") || "不限"}
                                 </div>
                             </div>
                         </div>

@@ -23,6 +23,7 @@ import Input from "../../components/input/Input";
 import DatePicker from "../../components/input/DatePicker";
 import CustomSelect from "../../components/customSelect/CustomSelect";
 import Modal from "../../components/modal/Modal";
+import AssignmentService from "../../services/assignmentService";
 // import type { Assignment } from '../../types';
 
 const MAP_STATUS_TO_TEXT: Record<number, string> = {
@@ -38,7 +39,36 @@ const MAP_ROLE_TO_TEXT: Record<number, string> = {
     3: "会长",
 };
 
+// 状态映射
+const STATE_STR_MAP_NUMBER: Record<string, number> = {
+    draft: 0,
+    active: 1,
+    closed: 2,
+};
+
+const STATE_NUMBER_MAP_STR: Record<number, string> = {
+    0: "draft",
+    1: "active",
+    2: "closed",
+};
+
+// 优先级映射
+const PRIORITY_STR_MAP_NUMBER: Record<string, number> = {
+    low: 1,
+    medium: 2,
+    high: 3,
+    urgent: 4,
+};
+
+const PRIORITY_NUMBER_MAP_STR: Record<number, string> = {
+    1: "low",
+    2: "medium",
+    3: "high",
+    4: "urgent",
+};
+
 const PAGE_SIZE = 15;
+const TASKS_PAGE_SIZE = 15; // 任务列表每页显示的条数
 
 const OrganizationDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -78,8 +108,8 @@ const OrganizationDetail: React.FC = () => {
         due_date: "",
         maxFileSize: 0,
         status: "draft" as "draft" | "active" | "closed",
-        deadline: "",
         assignee: "",
+        allowedTypes: [] as string[],
     });
     // 文件格式输入框和允许类型
     const [allowedTypesInput, setAllowedTypesInput] = useState("");
@@ -210,10 +240,11 @@ const OrganizationDetail: React.FC = () => {
     // 成员列表
     useEffect(() => {
         if (!id || !currentUser) return;
-        if (!showPendingRequests) {
+        // 只有在成员列表标签页（非待处理请求）才加载成员
+        if (!showPendingRequests && !showTasks) {
             fetchMembersList(page);
         }
-    }, [id, currentUser, org?.id, page, refreshTrigger, showPendingRequests, fetchMembersList]);
+    }, [id, currentUser, org?.id, page, refreshTrigger, showPendingRequests, showTasks, fetchMembersList]);
 
     // 待处理请求
     useEffect(() => {
@@ -525,62 +556,43 @@ const OrganizationDetail: React.FC = () => {
 
             setTasksLoading(true);
             try {
-                // 使用mock数据
-                await new Promise((resolve) => setTimeout(resolve, 500)); // 模拟网络延迟
+                // 使用真实的组织任务列表接口
+                const status = -1; // -1表示获取所有状态的任务
+                const response = await AssignmentService.getOrganizationAssignments({
+                    org_id: id,
+                    page_num: pageNum,
+                    page_size: TASKS_PAGE_SIZE,
+                    status: status,
+                });
+                console.log("任务列表响应:", response);
+                const list = response.list || [];
+                // 转换接口数据为Task类型
+                const taskList: Task[] = list.map((item) => {
+                    return {
+                        id: String(item.id),
+                        title: item.name,
+                        description: item.description,
+                        priority: PRIORITY_NUMBER_MAP_STR[item.priority] as "low" | "medium" | "high" | "urgent",
+                        assignee: "", // 接口中没有assignee信息，暂时留空
+                        assignee_name: item.assigned_by || undefined,
+                        status: STATE_NUMBER_MAP_STR[item.status] as "draft" | "active" | "closed",
+                        creator: "", // 接口中没有creator信息，暂时留空
+                        creator_name: item.assigned_by || "未知",
+                        created_at: new Date(item.end_time * 1000).toISOString(),
+                        updated_at: new Date(item.end_time * 1000).toISOString(),
+                        due_date: new Date(item.end_time * 1000).toISOString(),
+                        allowedTypes: item.file_type ? item.file_type.split(",") : [],
+                        org_id: parseInt(id),
+                        assign_id: item.assign_id || "",
+                        courseName: item.subject_name,
+                        maxFileSize: item.max_size,
+                        deadline: new Date(item.end_time * 1000).toLocaleString("zh-CN"),
+                    };
+                });
 
-                const mockTasks: Task[] = [
-                    {
-                        id: "1",
-                        title: "完成前端页面重构",
-                        description: "使用React重构组织管理页面，提升用户体验",
-                        priority: "high",
-                        assignee: "user1",
-                        status: "active",
-                        assignee_name: "张三",
-                        creator: "admin",
-                        creator_name: "管理员",
-                        created_at: "2025-12-01T10:00:00Z",
-                        updated_at: "2025-12-10T15:30:00Z",
-                        due_date: "2025-12-15",
-                        org_id: 1,
-                        courseName: "前端开发课程",
-                        maxFileSize: 10485760,
-                        deadline: "2025-12-14T23:59:59Z",
-                    },
-                    {
-                        id: "2",
-                        title: "完成前端页面重构",
-                        description: "使用React重构组织管理页面，提升用户体验",
-                        priority: "high",
-                        status: "active",
-                        assignee: "user1",
-                        assignee_name: "李四",
-                        creator: "admin",
-                        creator_name: "管理员",
-                        created_at: "2025-12-01T10:00:00Z",
-                        updated_at: "2025-12-10T15:30:00Z",
-                        due_date: "2025-12-16",
-                        courseName: "前端开发课程",
-                        deadline: "2025-12-15T23:59:59Z",
-                        maxFileSize: 10485760,
-                        org_id: 1,
-                    },
-                ];
-
-                // 模拟分页
-                const pageSize = 10;
-                const startIndex = (pageNum - 1) * pageSize;
-                const endIndex = startIndex + pageSize;
-                const paginatedTasks = mockTasks.slice(startIndex, endIndex);
-
-                if (pageNum === 1) {
-                    setTasks(paginatedTasks);
-                } else {
-                    setTasks((prev) => [...prev, ...paginatedTasks]);
-                }
-
-                setTasks(mockTasks);
-                setTasksTotal(mockTasks.length);
+                // 分页时总是替换任务列表
+                setTasks(taskList);
+                setTasksTotal(response.total);
                 setTasksPage(pageNum);
             } catch (error) {
                 console.error("获取任务列表失败:", error);
@@ -592,6 +604,14 @@ const OrganizationDetail: React.FC = () => {
         [currentUser, id],
     );
 
+    // 监听showTasks变化，当切换到任务标签页时自动加载任务列表
+    useEffect(() => {
+        if (showTasks && id && currentUser) {
+            // 每次切换到任务标签页都重新加载，确保数据最新
+            fetchTasksList(1);
+        }
+    }, [showTasks, id, currentUser]);
+
     // 创建任务
     const handleCreateTask = () => {
         setSelectedTask(null);
@@ -601,11 +621,14 @@ const OrganizationDetail: React.FC = () => {
             priority: "medium",
             due_date: "",
             assignee: "",
-            deadline: "",
             maxFileSize: 0,
             courseName: "",
             status: "draft",
+            allowedTypes: [] as string[],
         });
+        // 同时清空文件格式相关的状态
+        setAllowedTypesInput("");
+        setAllowedTypes([]);
         setTaskCreateModalVisible(true);
     };
 
@@ -618,17 +641,21 @@ const OrganizationDetail: React.FC = () => {
     // 编辑任务
     const handleEditTask = (_task: Task) => {
         setSelectedTask(_task);
+        const allowedTypes = _task.allowedTypes || [];
         setTaskFormData({
             title: _task.title,
             description: _task.description,
             priority: _task.priority,
             due_date: _task.due_date || "",
             assignee: _task.assignee || "",
-            deadline: _task.deadline || "",
             maxFileSize: _task.maxFileSize || 0,
             courseName: _task.courseName || "",
             status: _task.status || "draft",
+            allowedTypes: allowedTypes,
         });
+        // 同时设置allowedTypesInput和allowedTypes状态
+        setAllowedTypesInput(allowedTypes.join(", "));
+        setAllowedTypes(allowedTypes);
         setTaskCreateModalVisible(true);
     };
 
@@ -643,54 +670,85 @@ const OrganizationDetail: React.FC = () => {
             message.error("请输入任务描述");
             return;
         }
+        if (!taskFormData.courseName.trim()) {
+            message.error("请输入所属类型");
+            return;
+        }
+        if (!taskFormData.due_date) {
+            message.error("请选择截止时间");
+            return;
+        }
 
         try {
             if (selectedTask) {
-                // 编辑模式
-                setTasks((prev) =>
-                    prev.map((task) =>
-                        task.id === selectedTask.id
-                            ? {
-                                ...task,
-                                title: taskFormData.title,
-                                description: taskFormData.description,
-                                priority: taskFormData.priority,
-                                due_date: taskFormData.due_date,
-                                assignee: taskFormData.assignee,
-                                updated_at: new Date().toISOString(),
-                            }
-                            : task
-                    )
-                );
+                // 编辑模式 - 使用创建接口带上assign_id来更新任务
+                const endTime = Math.floor(new Date(taskFormData.due_date).getTime() / 1000);
+                const status = STATE_STR_MAP_NUMBER[taskFormData.status || "draft"];
+                const priority = PRIORITY_STR_MAP_NUMBER[taskFormData.priority || "medium"];
+
+                await AssignmentService.createOrganizationAssignment({
+                    assign_id: selectedTask.assign_id, // 使用任务ID作为assign_id来更新
+                    org_id: id || "",
+                    name: taskFormData.title,
+                    subject_name: taskFormData.courseName,
+                    end_time: endTime,
+                    max_size: taskFormData.maxFileSize || 50,
+                    status: status,
+                    priority: priority,
+                    file_type: allowedTypes.join(","),
+                    description: taskFormData.description,
+                });   
+
+                // 更新成功后，重新获取任务列表以确保数据同步
+                await fetchTasksList(1);
                 message.success("任务更新成功");
             } else {
-                // 创建模式
-                const newTask: Task = {
-                    courseName: taskFormData.courseName,
-                    maxFileSize: taskFormData.maxFileSize,
-                    deadline: taskFormData.deadline,
-                    id: String(Date.now()),
-                    title: taskFormData.title,
+                // 创建模式 - 调用真实的创建接口
+                const endTime = Math.floor(new Date(taskFormData.due_date).getTime() / 1000);
+                const status = STATE_STR_MAP_NUMBER[taskFormData.status || "draft"];
+                const priority = PRIORITY_STR_MAP_NUMBER[taskFormData.priority || "medium"];
+
+                const response = await AssignmentService.createOrganizationAssignment({
+                    org_id: id || "",
+                    name: taskFormData.title,
+                    subject_name: taskFormData.courseName,
+                    end_time: endTime,
+                    max_size: taskFormData.maxFileSize || 50,
+                    status: status,
+                    priority: priority,
+                    file_type: allowedTypes.join(",") || "",
                     description: taskFormData.description,
+                });
+
+                // 创建成功后，添加新任务到列表
+                const newTask: Task = {
+                    id: response.id,
+                    title: response.name,
+                    description: response.description,
                     priority: taskFormData.priority,
                     due_date: taskFormData.due_date,
                     assignee: taskFormData.assignee,
-                    assignee_name: taskFormData.assignee ? "待分配" : undefined,
-                    status: "draft",
+                    assignee_name: !response.assigned_by ? "待分配" : undefined,
+                    status: taskFormData.status || "draft",
                     creator: currentUser?.id || "unknown",
                     creator_name: currentUser?.name || "未知用户",
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
+                    assign_id: response.assign_id || "",
                     org_id: parseInt(id || "0"),
+                    allowedTypes: taskFormData.allowedTypes || [],
+                    courseName: taskFormData.courseName,
+                    maxFileSize: taskFormData.maxFileSize || 50,
+                    deadline: taskFormData.due_date,
                 };
                 setTasks((prev) => [newTask, ...prev]);
                 setTasksTotal((prev) => prev + 1);
                 message.success("任务创建成功");
             }
             setTaskCreateModalVisible(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error("操作失败:", error);
-            message.error("操作失败");
+            message.error(error.message || "操作失败");
         }
     };
 
@@ -705,18 +763,24 @@ const OrganizationDetail: React.FC = () => {
         if (!ok) return;
 
         try {
-            // Mock删除操作
-            await new Promise((resolve) => setTimeout(resolve, 300));
+            // 使用真实的删除接口
+            await AssignmentService.deleteAssignments({
+                ids: String(task.assign_id)
+            });
 
-            // 从本地状态中移除任务
-            setTasks((prev) => prev.filter((t) => t.id !== task.id));
-            setTasksTotal((prev) => Math.max(0, prev - 1));
-
+            // 删除成功后，重新获取任务列表以确保数据同步
+            await fetchTasksList(tasksPage);
             message.success("任务删除成功");
         } catch (error) {
             console.error("删除任务失败:", error);
             message.error("删除任务失败");
         }
+    };
+
+    // 任务列表分页处理
+    const handleTasksPageChange = (newPage: number) => {
+        setTasksPage(newPage);
+        fetchTasksList(newPage);
     };
 
     // 检查是否可以管理任务
@@ -832,6 +896,7 @@ const OrganizationDetail: React.FC = () => {
                                         onRefreshPending={() => setPendingRequestsRefreshTrigger((prev) => prev + 1)}
                                         onPageChange={setPage}
                                         onPendingPageChange={setPendingRequestsPage}
+                                        onTasksPageChange={handleTasksPageChange}
                                         onActionPendingRequest={handleActionPendingRequest}
                                         onKickMember={handleKickMember}
                                         onSetMemberRole={handleSetMemberRole}
@@ -904,11 +969,11 @@ const OrganizationDetail: React.FC = () => {
                         <label className={styles.formLabel}>截止时间 *</label>
                         <DatePicker
                             showTime
-                            value={taskFormData.deadline ? new Date(taskFormData.deadline) : undefined}
+                            value={taskFormData.due_date ? new Date(taskFormData.due_date) : undefined}
                             onChange={(date) =>
                                 setTaskFormData({
                                     ...taskFormData,
-                                    deadline: date ? date.toISOString() : "",
+                                    due_date: date ? date.toISOString() : "",
                                 })
                             }
                             size="large"
@@ -989,12 +1054,12 @@ const OrganizationDetail: React.FC = () => {
                         value={allowedTypesInput}
                         onChange={(value) => {
                             setAllowedTypesInput(value);
-                            setAllowedTypes(
-                                value
-                                    .split(/[,，]/)
-                                    .map((t) => t.trim())
-                                    .filter((t) => t)
-                            );
+                            const types = value
+                                .split(/[,，]/)
+                                .map((t) => t.trim())
+                                .filter((t) => t);
+                            setAllowedTypes(types);
+                            setTaskFormData({ ...taskFormData, allowedTypes: types });
                         }}
                         className={styles.formInput}
                     />

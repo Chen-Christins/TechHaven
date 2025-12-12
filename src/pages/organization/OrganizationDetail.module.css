@@ -1188,6 +1188,22 @@
     color: var(--warning);
 }
 
+/* 任务状态样式 - 匹配实际状态值 */
+.statusBadge.active {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.statusBadge.closed {
+    background-color: var(--error-light);
+    color: var(--error);
+}
+
+.statusBadge.draft {
+    background-color: var(--warn-light);
+    color: var(--warning);
+}
+
 /* 表单样式 - 复用AssignmentManagement的样式 */
 .formGroup {
     margin-bottom: 16px;

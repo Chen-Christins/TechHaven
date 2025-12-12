@@ -30,6 +30,45 @@ export interface CreateAssignmentResponse {
     create_time: number;
 }
 
+export interface CreateOrganizationAssignmentParams {
+    org_id: string | number;
+    name: string;
+    subject_name: string;
+    end_time: number;
+    max_size: number;
+    status: number;
+    priority: number;
+    file_type: string;
+    description: string;
+    assign_id?: number | string;
+}
+
+export interface CreateOrganizationAssignmentResponse {
+    id: number | string; // 作业ID
+    assign_id?: number | string; // 分配ID
+    assigned_by?: string; // 分配者name
+    name: string;
+    subject_name: string;
+    end_time: number;
+    max_size: number;
+    status: number;
+    priority: number;
+    file_type: string;
+    description: string;
+}
+
+export interface OrganizationAssignmentListItem {
+    org_id: string | number;
+    page_num: number;
+    page_size: number;
+    status: number;
+}
+
+export interface OrganizationAssignmentListResponse {
+    total: number;
+    list: Array<CreateOrganizationAssignmentResponse>;
+}
+
 export interface GetAdminAssignmentsParams {
     page_num: number;
     page_size: number;
@@ -120,6 +159,42 @@ export class AssignmentService {
                 "Content-Type": "application/x-www-form-urlencoded",
             },
         });
+        return response.data;
+    }
+
+    /**
+     * 创建组织作业 (Organization Admin)
+     */
+    static async createOrganizationAssignment(params: CreateOrganizationAssignmentParams): Promise<CreateOrganizationAssignmentResponse> {
+        const formData = new URLSearchParams();
+        if (params.assign_id !== undefined && params.assign_id !== null && params.assign_id !== "") {
+            formData.append("assign_id", String(params.assign_id));
+        }
+        formData.append("org_id", String(params.org_id));
+        formData.append("name", params.name);
+        formData.append("subject_name", params.subject_name);
+        formData.append("end_time", String(params.end_time));
+        formData.append("max_size", String(params.max_size));
+        formData.append("status", String(params.status));
+        formData.append("priority", String(params.priority));
+        formData.append("file_type", params.file_type);
+        formData.append("description", params.description);
+
+        const response = await http.post<CreateOrganizationAssignmentResponse>("/organization/assignment_create", formData.toString(), {
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+        });
+        return response.data;
+    }
+
+    static async getOrganizationAssignments(params: OrganizationAssignmentListItem): Promise<OrganizationAssignmentListResponse> {
+        let url = `/organization/assignment_list?org_id=${params.org_id}&page_num=${params.page_num}&page_size=${params.page_size}`;
+        if (params.status != -1) {
+            url += `&status=${params.status}`;
+        }
+
+        const response = await http.get<OrganizationAssignmentListResponse>(url);
         return response.data;
     }
 }

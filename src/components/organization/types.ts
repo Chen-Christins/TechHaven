@@ -39,10 +39,12 @@ export interface Task {
     description: string;
     priority: "low" | "medium" | "high" | "urgent";
     assignee: string;
+    assign_id: string | number;
     assignee_name?: string;
     creator: string | number;
     creator_name: string;
     created_at: string;
+    allowedTypes: string[];
     updated_at?: string;
     due_date: string;
     org_id: number | string;
