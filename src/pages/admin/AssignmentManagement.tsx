@@ -16,10 +16,7 @@ import {
     FaAngleDoubleRight,
     FaFlag,
 } from "react-icons/fa";
-import { DatePicker } from "antd";
-import dayjs from "dayjs";
-import "dayjs/locale/zh-cn";
-import locale from "antd/es/date-picker/locale/zh_CN";
+import DatePicker from "../../components/input/DatePicker";
 import CustomSelect from "../../components/customSelect/CustomSelect";
 import Input from "../../components/input/Input";
 import Loading from "../../components/loading/Loading";
@@ -114,11 +111,23 @@ const AssignmentManagement: React.FC = () => {
                 id: String(item.id),
                 title: item.name,
                 courseName: item.subject_name,
-                deadline: dayjs.unix(item.end_time).format("YYYY-MM-DD HH:mm:ss"),
+                deadline: new Date(item.end_time * 1000).toLocaleString("zh-CN", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false
+                }).replace(/\//g, "-"),
                 status: STATE_NUMBER_MAP_STR[Number(item.status)] as "active" | "draft" | "closed",
                 submissionCount: 0, // 暂无数据
                 totalStudents: 0, // 暂无数据
-                createdAt: dayjs.unix(item.create_time).format("YYYY-MM-DD"),
+                createdAt: new Date(item.create_time * 1000).toLocaleDateString("zh-CN", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit"
+                }).replace(/\//g, "-"),
                 description: item.description,
                 priority: PRIORITY_NUMBER_MAP_STR[item.priority] as "low" | "medium" | "high" | "urgent",
                 maxFileSize: item.file_size,
@@ -162,6 +171,23 @@ const AssignmentManagement: React.FC = () => {
         setIsPreviewVisible(true);
     };
 
+    // 打开创建模态框
+    const openCreateModal = () => {
+        setCurrentAssignment(null);
+        setFormData({
+            title: "",
+            courseName: "",
+            deadline: "",
+            status: "draft",
+            description: "",
+            priority: "medium",
+            maxFileSize: 50,
+            allowedTypes: [],
+        });
+        setAllowedTypesInput("");
+        setIsModalVisible(true);
+    };
+
     // 处理表单提交
     const handleSubmit = async () => {
         if (
@@ -186,7 +212,7 @@ const AssignmentManagement: React.FC = () => {
                     id: currentAssignment.id,
                     name: formData.title!,
                     subject_name: formData.courseName!,
-                    end_time: String(dayjs(formData.deadline).unix()),
+                    end_time: String(Math.floor(new Date(formData.deadline!).getTime() / 1000)),
                     file_size: formData.maxFileSize || 50,
                     status: String(STATE_STR_MAP_NUMBER[formData.status || "draft"]),
                     file_type: formData.allowedTypes?.join(",") || "",
@@ -200,7 +226,7 @@ const AssignmentManagement: React.FC = () => {
                 await AssignmentService.createAssignment({
                     name: formData.title!,
                     subject_name: formData.courseName!,
-                    end_time: String(dayjs(formData.deadline).unix()),
+                    end_time: String(Math.floor(new Date(formData.deadline!).getTime() / 1000)),
                     file_size: formData.maxFileSize || 50,
                     status: String(STATE_STR_MAP_NUMBER[formData.status || "draft"]),
                     priority: PRIORITY_STR_MAP_NUMBER[formData.priority || "medium"],
@@ -329,7 +355,7 @@ const AssignmentManagement: React.FC = () => {
                     <p className={styles.pageDescription}>管理系统中的所有任务，包括发布、筛选和状态管理</p>
                 </div>
                 <div className={styles.headerActions}>
-                    <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setIsModalVisible(true)}>
+                    <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={openCreateModal}>
                         <FaPlus /> 发布任务
                     </button>
                 </div>
@@ -667,16 +693,16 @@ const AssignmentManagement: React.FC = () => {
                         <label className={styles.formLabel}>截止时间 *</label>
                         <DatePicker
                             showTime
-                            locale={locale}
-                            value={formData.deadline ? dayjs(formData.deadline) : null}
-                            onChange={(_, dateString) =>
+                            value={formData.deadline ? new Date(formData.deadline) : undefined}
+                            onChange={(date) =>
                                 setFormData({
                                     ...formData,
-                                    deadline: Array.isArray(dateString) ? dateString[0] : dateString,
+                                    deadline: date ? date.toISOString() : "",
                                 })
                             }
+                            size="large"
                             className={styles.formInput}
-                            style={{ width: "100%" }}
+                            style={{ width: "100%"}}
                             placeholder="请选择截止时间"
                             format="YYYY-MM-DD HH:mm:ss"
                         />
