@@ -1187,3 +1187,85 @@
     background-color: var(--warn-light);
     color: var(--warning);
 }
+
+/* 表单样式 - 复用AssignmentManagement的样式 */
+.formGroup {
+    margin-bottom: 16px;
+}
+
+.formRow {
+    display: flex;
+    gap: 16px;
+}
+
+.formRow .formGroup {
+    flex: 1;
+    min-width: 0;
+}
+
+.formInput {
+    height: 46px !important;
+    background-color: var(--input-bg);
+    border-radius: 8px !important;
+}
+
+.formLabel {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.formTextarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+.formTextarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* Ant Design DatePicker 样式覆盖 */
+.formInput:global(.ant-picker) {
+    border-color: var(--border-primary);
+    background-color: var(--input-bg);
+}
+
+.formInput:global(.ant-picker):hover {
+    border-color: var(--primary);
+}
+
+.formInput:global(.ant-picker-focused) {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.formInput :global(.ant-picker-input > input) {
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.formInput :global(.ant-picker-input > input::placeholder) {
+    color: var(--text-tertiary);
+    opacity: 1;
+}
+
+.formInput :global(.ant-picker-suffix) {
+    color: var(--text-secondary);
+}
+
+.formInput :global(.ant-picker-clear) {
+    background-color: var(--input-bg);
+    color: var(--text-secondary);
+}

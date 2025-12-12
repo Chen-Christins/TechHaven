@@ -18,7 +18,6 @@ import {
     FaCheck,
     FaTimes,
     FaPlus,
-    FaCheckCircle,
 } from "react-icons/fa";
 import type { Member, Task, OrganizationDetail } from "./types";
 import styles from "../../pages/organization/OrganizationDetail.module.css";
@@ -573,14 +572,12 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                                             </td>
                                             <td style={{ textAlign: "center" }}>
                                                 <span className={`${styles.statusBadge} ${styles[task.status]}`}>
-                                                    {task.status === "pending" && <FaHourglassHalf />}
-                                                    {task.status === "in_progress" && <FaPlayCircle />}
-                                                    {task.status === "completed" && <FaCheckCircle />}
-                                                    {task.status === "cancelled" && <FaStopCircle />}
-                                                    {task.status === "pending" && "待处理"}
-                                                    {task.status === "in_progress" && "进行中"}
-                                                    {task.status === "completed" && "已完成"}
-                                                    {task.status === "cancelled" && "已取消"}
+                                                    {task.status === "draft" && <FaHourglassHalf />}
+                                                    {task.status === "draft" && "草稿"}
+                                                    {task.status === "active" && <FaPlayCircle />}
+                                                    {task.status === "active" && "进行中"}
+                                                    {task.status === "closed" && <FaStopCircle />}
+                                                    {task.status === "closed" && "已关闭"}
                                                 </span>
                                             </td>
                                             <td style={{ textAlign: "center" }}>
@@ -758,14 +755,12 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                                 <div className={styles.detailLabel}>当前状态</div>
                                 <div className={styles.detailValue}>
                                     <span className={`${styles.statusBadge} ${styles[selectedTask.status]}`}>
-                                        {selectedTask.status === "pending" && <FaHourglassHalf />}
-                                        {selectedTask.status === "in_progress" && <FaPlayCircle />}
-                                        {selectedTask.status === "completed" && <FaCheckCircle />}
-                                        {selectedTask.status === "cancelled" && <FaStopCircle />}
-                                        {selectedTask.status === "pending" && "待处理"}
-                                        {selectedTask.status === "in_progress" && "进行中"}
-                                        {selectedTask.status === "completed" && "已完成"}
-                                        {selectedTask.status === "cancelled" && "已取消"}
+                                        {selectedTask.status === "draft" && <FaHourglassHalf />}
+                                        {selectedTask.status === "draft" && "草稿"}
+                                        {selectedTask.status === "active" && <FaPlayCircle />}
+                                        {selectedTask.status === "active" && "进行中"}
+                                        {selectedTask.status === "closed" && <FaStopCircle />}
+                                        {selectedTask.status === "closed" && "已关闭"}
                                     </span>
                                 </div>
                             </div>
@@ -813,138 +808,6 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                     </div>
                 )}
             </Modal>
-
-            {/* 创建/编辑模态框 */}
-            {/* <Modal
-        visible={true}
-        title={selectedTask ? '编辑任务' : '发布新任务'}
-        onClose={() => {}}
-        width={600}
-        footer={
-          <>
-            <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => {}}>
-              取消
-            </button>
-            <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => {}}>
-              {selectedTask ? '保存修改' : '立即发布'}
-            </button>
-          </>
-        }
-      >
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>任务标题 *</label>
-          <Input
-            placeholder="请输入任务标题"
-            value={formData.title || ''}
-            onChange={(value) => setFormData({ ...formData, title: value })}
-            className={styles.formInput}
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>所属类型 *</label>
-          <Input
-            placeholder="请输入类型名称"
-            value={formData.courseName || ''}
-            onChange={(value) => setFormData({ ...formData, courseName: value })}
-            className={styles.formInput}
-          />
-        </div>
-        <div className={styles.formRow}>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>截止时间 *</label>
-            <DatePicker
-              showTime
-              locale={locale}
-              value={formData.deadline ? dayjs(formData.deadline) : null}
-              onChange={(_, dateString) => setFormData({
-                ...formData, deadline: Array.isArray(dateString) ? dateString[0] : dateString
-              })}
-              className={styles.formInput}
-              style={{ width: '100%' }}
-              placeholder="请选择截止时间"
-              format="YYYY-MM-DD HH:mm:ss"
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>文件大小限制 (MB) *</label>
-            <Input
-              type="number"
-              placeholder="请输入最大文件大小"
-              value={String(formData.maxFileSize || '')}
-              onChange={(value) => setFormData({ ...formData, maxFileSize: Number(value) })}
-              className={styles.formInput}
-            />
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: '20px' }}>
-          <div className={styles.formGroup} style={{ flex: 1 }}>
-            <label className={styles.formLabel}>任务状态 *</label>
-            <CustomSelect
-              name="状态选择"
-              options={[
-                { id: 'active', name: '进行中', color: 'var(--success)' },
-                { id: 'closed', name: '已结束', color: 'var(--error)' },
-                { id: 'draft', name: '草稿', color: 'var(--warning)' }
-              ]}
-              value={{
-                id: formData.status || 'draft',
-                name: formData.status === 'active' ? '进行中' :
-                  formData.status === 'closed' ? '已结束' : '草稿',
-                color: ''
-              }}
-              onChange={(option) => setFormData({ ...formData, status: option?.id as any })}
-              placeholder="请选择状态"
-              hideBadge={true}
-            />
-          </div>
-          <div className={styles.formGroup} style={{ flex: 1 }}>
-            <label className={styles.formLabel}>优先级 *</label>
-            <CustomSelect
-              name="优先级选择"
-              options={[
-                { id: 'low', name: '低', color: '#6c757d' },
-                { id: 'medium', name: '中', color: '#ffc107' },
-                { id: 'high', name: '高', color: '#ff9800' },
-                { id: 'urgent', name: '紧急', color: '#dc3545' }
-              ]}
-              value={{
-                id: formData.priority || 'medium',
-                name: formData.priority === 'low' ? '低' :
-                  formData.priority === 'medium' ? '中' :
-                    formData.priority === 'high' ? '高' : '紧急',
-                color: ''
-              }}
-              onChange={(option) => setFormData({ ...formData, priority: option?.id as any })}
-              placeholder="请选择优先级"
-              hideBadge={true}
-            />
-          </div>
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>允许文件格式 (用逗号分隔) *</label>
-          <Input
-            placeholder="例如: .pdf, .doc, .zip"
-            value={allowedTypesInput}
-            onChange={(value) => {
-              setAllowedTypesInput(value);
-              setFormData(prev => ({
-                ...prev,
-                allowedTypes: value.split(/[,，]/).map(t => t.trim()).filter(t => t)
-              }));
-            }}
-            className={styles.formInput}
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>任务描述 *</label>
-          <textarea
-            className={styles.formTextarea}
-            placeholder="请输入任务详细描述..."
-            value={formData.description || ''}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          />
-        </div>
-      </Modal> */}
         </div>
     );
 };

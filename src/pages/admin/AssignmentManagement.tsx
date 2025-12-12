@@ -151,10 +151,12 @@ const AssignmentManagement: React.FC = () => {
     // 打开编辑模态框
     const openEditModal = (assignment: Assignment) => {
         setCurrentAssignment(assignment);
+        // 将格式化的时间字符串转换为ISO格式供DatePicker使用
+        const deadlineDate = assignment.deadline ? new Date(assignment.deadline.replace(/\//g, '-')) : null;
         setFormData({
             title: assignment.title,
             courseName: assignment.courseName,
-            deadline: assignment.deadline,
+            deadline: deadlineDate ? deadlineDate.toISOString() : "",
             status: assignment.status,
             priority: assignment.priority,
             description: assignment.description || "",

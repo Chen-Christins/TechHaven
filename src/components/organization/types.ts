@@ -30,10 +30,13 @@ export interface MemberStats {
 }
 
 export interface Task {
+    deadline: string;
+    maxFileSize: number;
+    courseName: string;
+    status: "draft" | "active" | "closed";
     id: number | string;
     title: string;
     description: string;
-    status: "pending" | "in_progress" | "completed" | "cancelled";
     priority: "low" | "medium" | "high" | "urgent";
     assignee: string;
     assignee_name?: string;

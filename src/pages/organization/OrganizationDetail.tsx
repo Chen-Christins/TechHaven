@@ -19,6 +19,10 @@ import type {
     Task,
 } from "../../components/organization/types";
 import { FaUser, FaUserShield, FaCrown } from "react-icons/fa";
+import Input from "../../components/input/Input";
+import DatePicker from "../../components/input/DatePicker";
+import CustomSelect from "../../components/customSelect/CustomSelect";
+import Modal from "../../components/modal/Modal";
 // import type { Assignment } from '../../types';
 
 const MAP_STATUS_TO_TEXT: Record<number, string> = {
@@ -61,9 +65,25 @@ const OrganizationDetail: React.FC = () => {
     const [pendingRequestsRefreshTrigger, setPendingRequestsRefreshTrigger] = useState(0); // 用于强制刷新待处理请求的触发器
     const [roleModalVisible, setRoleModalVisible] = useState(false);
     const [taskPreviewModalVisible, setTaskPreviewModalVisible] = useState(false);
+    const [taskCreateModalVisible, setTaskCreateModalVisible] = useState(false);
     const [selectedMember, setSelectedMember] = useState<Member | null>(null);
     const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
     const [selectedRole, setSelectedRole] = useState(1);
+    // 任务表单数据
+    const [taskFormData, setTaskFormData] = useState({
+        title: "",
+        description: "",
+        courseName: "",
+        priority: "medium" as "low" | "medium" | "high" | "urgent",
+        due_date: "",
+        maxFileSize: 0,
+        status: "draft" as "draft" | "active" | "closed",
+        deadline: "",
+        assignee: "",
+    });
+    // 文件格式输入框和允许类型
+    const [allowedTypesInput, setAllowedTypesInput] = useState("");
+    const [allowedTypes, setAllowedTypes] = useState<string[]>([]);
     // 任务相关状态
     const [showTasks, setShowTasks] = useState(false);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -272,16 +292,16 @@ const OrganizationDetail: React.FC = () => {
                 setOrg((prevOrg) =>
                     prevOrg
                         ? {
-                              ...prevOrg,
-                              user_in_org:
-                                  typeof res.user_in_org !== "undefined" && res.user_in_org >= 0
-                                      ? MAP_STATUS_TO_TEXT[res.user_in_org]
-                                      : undefined,
-                              user_role:
-                                  typeof res.user_role !== "undefined" && res.user_role > 0
-                                      ? MAP_ROLE_TO_TEXT[res.user_role]
-                                      : undefined,
-                          }
+                            ...prevOrg,
+                            user_in_org:
+                                typeof res.user_in_org !== "undefined" && res.user_in_org >= 0
+                                    ? MAP_STATUS_TO_TEXT[res.user_in_org]
+                                    : undefined,
+                            user_role:
+                                typeof res.user_role !== "undefined" && res.user_role > 0
+                                    ? MAP_ROLE_TO_TEXT[res.user_role]
+                                    : undefined,
+                        }
                         : prevOrg,
                 );
             }
@@ -312,10 +332,10 @@ const OrganizationDetail: React.FC = () => {
             setOrg((prevOrg: OrganizationDetailType | null) =>
                 prevOrg
                     ? {
-                          ...prevOrg,
-                          members: prevOrg.members.filter((m: Member) => m.id !== member.id),
-                          memberCount: Math.max(0, prevOrg.memberCount - 1),
-                      }
+                        ...prevOrg,
+                        members: prevOrg.members.filter((m: Member) => m.id !== member.id),
+                        memberCount: Math.max(0, prevOrg.memberCount - 1),
+                    }
                     : prevOrg,
             );
 
@@ -383,11 +403,11 @@ const OrganizationDetail: React.FC = () => {
             setOrg((prevOrg: OrganizationDetailType | null) =>
                 prevOrg
                     ? {
-                          ...prevOrg,
-                          members: prevOrg.members.map((m: Member) =>
-                              m.id === selectedMember.id ? { ...m, role: MAP_ROLE_TO_TEXT[selectedRole] } : m,
-                          ),
-                      }
+                        ...prevOrg,
+                        members: prevOrg.members.map((m: Member) =>
+                            m.id === selectedMember.id ? { ...m, role: MAP_ROLE_TO_TEXT[selectedRole] } : m,
+                        ),
+                    }
                     : prevOrg,
             );
 
@@ -454,6 +474,7 @@ const OrganizationDetail: React.FC = () => {
         return false;
     };
 
+
     // Function to get available role options based on current user's role
     const getAvailableRoleOptions = () => {
         if (userRole === "admin") {
@@ -512,9 +533,9 @@ const OrganizationDetail: React.FC = () => {
                         id: "1",
                         title: "完成前端页面重构",
                         description: "使用React重构组织管理页面，提升用户体验",
-                        status: "in_progress",
                         priority: "high",
                         assignee: "user1",
+                        status: "active",
                         assignee_name: "张三",
                         creator: "admin",
                         creator_name: "管理员",
@@ -522,13 +543,16 @@ const OrganizationDetail: React.FC = () => {
                         updated_at: "2025-12-10T15:30:00Z",
                         due_date: "2025-12-15",
                         org_id: 1,
+                        courseName: "前端开发课程",
+                        maxFileSize: 10485760,
+                        deadline: "2025-12-14T23:59:59Z",
                     },
                     {
                         id: "2",
                         title: "完成前端页面重构",
                         description: "使用React重构组织管理页面，提升用户体验",
-                        status: "in_progress",
                         priority: "high",
+                        status: "active",
                         assignee: "user1",
                         assignee_name: "李四",
                         creator: "admin",
@@ -536,6 +560,9 @@ const OrganizationDetail: React.FC = () => {
                         created_at: "2025-12-01T10:00:00Z",
                         updated_at: "2025-12-10T15:30:00Z",
                         due_date: "2025-12-16",
+                        courseName: "前端开发课程",
+                        deadline: "2025-12-15T23:59:59Z",
+                        maxFileSize: 10485760,
                         org_id: 1,
                     },
                 ];
@@ -567,8 +594,19 @@ const OrganizationDetail: React.FC = () => {
 
     // 创建任务
     const handleCreateTask = () => {
-        // 暂时禁用任务创建功能
-        message.info("任务创建功能暂时不可用");
+        setSelectedTask(null);
+        setTaskFormData({
+            title: "",
+            description: "",
+            priority: "medium",
+            due_date: "",
+            assignee: "",
+            deadline: "",
+            maxFileSize: 0,
+            courseName: "",
+            status: "draft",
+        });
+        setTaskCreateModalVisible(true);
     };
 
     // 预览任务
@@ -579,8 +617,81 @@ const OrganizationDetail: React.FC = () => {
 
     // 编辑任务
     const handleEditTask = (_task: Task) => {
-        // 暂时禁用任务编辑功能
-        message.info("任务编辑功能暂时不可用");
+        setSelectedTask(_task);
+        setTaskFormData({
+            title: _task.title,
+            description: _task.description,
+            priority: _task.priority,
+            due_date: _task.due_date || "",
+            assignee: _task.assignee || "",
+            deadline: _task.deadline || "",
+            maxFileSize: _task.maxFileSize || 0,
+            courseName: _task.courseName || "",
+            status: _task.status || "draft",
+        });
+        setTaskCreateModalVisible(true);
+    };
+
+    // 提交任务表单
+    const handleTaskSubmit = async () => {
+        // 验证表单
+        if (!taskFormData.title.trim()) {
+            message.error("请输入任务标题");
+            return;
+        }
+        if (!taskFormData.description.trim()) {
+            message.error("请输入任务描述");
+            return;
+        }
+
+        try {
+            if (selectedTask) {
+                // 编辑模式
+                setTasks((prev) =>
+                    prev.map((task) =>
+                        task.id === selectedTask.id
+                            ? {
+                                ...task,
+                                title: taskFormData.title,
+                                description: taskFormData.description,
+                                priority: taskFormData.priority,
+                                due_date: taskFormData.due_date,
+                                assignee: taskFormData.assignee,
+                                updated_at: new Date().toISOString(),
+                            }
+                            : task
+                    )
+                );
+                message.success("任务更新成功");
+            } else {
+                // 创建模式
+                const newTask: Task = {
+                    courseName: taskFormData.courseName,
+                    maxFileSize: taskFormData.maxFileSize,
+                    deadline: taskFormData.deadline,
+                    id: String(Date.now()),
+                    title: taskFormData.title,
+                    description: taskFormData.description,
+                    priority: taskFormData.priority,
+                    due_date: taskFormData.due_date,
+                    assignee: taskFormData.assignee,
+                    assignee_name: taskFormData.assignee ? "待分配" : undefined,
+                    status: "draft",
+                    creator: currentUser?.id || "unknown",
+                    creator_name: currentUser?.name || "未知用户",
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    org_id: parseInt(id || "0"),
+                };
+                setTasks((prev) => [newTask, ...prev]);
+                setTasksTotal((prev) => prev + 1);
+                message.success("任务创建成功");
+            }
+            setTaskCreateModalVisible(false);
+        } catch (error) {
+            console.error("操作失败:", error);
+            message.error("操作失败");
+        }
     };
 
     // 删除任务
@@ -745,6 +856,160 @@ const OrganizationDetail: React.FC = () => {
                     )}
                 </AuthRequired>
             </div>
+            {/* 创建/编辑任务模态框 */}
+            <Modal
+                visible={taskCreateModalVisible}
+                title={selectedTask ? "编辑任务" : "创建任务"}
+                onClose={() => setTaskCreateModalVisible(false)}
+                width={600}
+                footer={
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                        <button
+                            className={styles.cancelButton}
+                            onClick={() => setTaskCreateModalVisible(false)}
+                        >
+                            取消
+                        </button>
+                        <button
+                            className={styles.confirmButton}
+                            onClick={handleTaskSubmit}
+                        >
+                            {selectedTask ? "保存修改" : "创建任务"}
+                        </button>
+                    </div>
+                }
+            >
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>任务标题 *</label>
+                    <Input
+                        placeholder="请输入任务标题"
+                        value={taskFormData.title}
+                        onChange={(value) => setTaskFormData({ ...taskFormData, title: value })}
+                        className={styles.formInput}
+                    />
+                </div>
+
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>所属类型 *</label>
+                    <Input
+                        placeholder="请输入类型名称"
+                        value={taskFormData.courseName || ""}
+                        onChange={(value) => setTaskFormData({ ...taskFormData, courseName: value })}
+                        className={styles.formInput}
+                    />
+                </div>
+
+                <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>截止时间 *</label>
+                        <DatePicker
+                            showTime
+                            value={taskFormData.deadline ? new Date(taskFormData.deadline) : undefined}
+                            onChange={(date) =>
+                                setTaskFormData({
+                                    ...taskFormData,
+                                    deadline: date ? date.toISOString() : "",
+                                })
+                            }
+                            size="large"
+                            style={{ width: "100%" }}
+                            placeholder="请选择截止时间"
+                            format="YYYY-MM-DD HH:mm:ss"
+                        />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>文件大小限制 (MB) *</label>
+                        <Input
+                            type="number"
+                            placeholder="请输入最大文件大小"
+                            value={String(taskFormData.maxFileSize || "")}
+                            onChange={(value) => setTaskFormData({ ...taskFormData, maxFileSize: Number(value) })}
+                            className={styles.formInput}
+                        />
+                    </div>
+                </div>
+
+                <div style={{ display: "flex", gap: "20px" }}>
+                    <div className={styles.formGroup} style={{ flex: 1 }}>
+                        <label className={styles.formLabel}>任务状态 *</label>
+                        <CustomSelect
+                            name="状态选择"
+                            options={[
+                                { id: "active", name: "进行中", color: "var(--success)" },
+                                { id: "closed", name: "已结束", color: "var(--error)" },
+                                { id: "draft", name: "草稿", color: "var(--warning)" },
+                            ]}
+                            value={{
+                                id: taskFormData.status || "draft",
+                                name:
+                                    taskFormData.status === "active"
+                                        ? "进行中"
+                                        : taskFormData.status === "closed"
+                                            ? "已结束"
+                                            : "草稿",
+                                color: "",
+                            }}
+                            onChange={(option) => setTaskFormData({ ...taskFormData, status: option?.id as any })}
+                            placeholder="请选择状态"
+                            hideBadge={true}
+                        />
+                    </div>
+                    <div className={styles.formGroup} style={{ flex: 1 }}>
+                        <label className={styles.formLabel}>优先级 *</label>
+                        <CustomSelect
+                            name="优先级选择"
+                            options={[
+                                { id: "low", name: "低", color: "#6c757d" },
+                                { id: "medium", name: "中", color: "#ffc107" },
+                                { id: "high", name: "高", color: "#ff9800" },
+                                { id: "urgent", name: "紧急", color: "#dc3545" },
+                            ]}
+                            value={{
+                                id: taskFormData.priority || "medium",
+                                name:
+                                    taskFormData.priority === "low"
+                                        ? "低"
+                                        : taskFormData.priority === "medium"
+                                            ? "中"
+                                            : taskFormData.priority === "high"
+                                                ? "高"
+                                                : "紧急",
+                                color: "",
+                            }}
+                            onChange={(option) => setTaskFormData({ ...taskFormData, priority: option?.id as any })}
+                            placeholder="请选择优先级"
+                            hideBadge={true}
+                        />
+                    </div>
+                </div>
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>允许文件格式 (用逗号分隔) *</label>
+                    <Input
+                        placeholder="例如: .pdf, .doc, .zip"
+                        value={allowedTypesInput}
+                        onChange={(value) => {
+                            setAllowedTypesInput(value);
+                            setAllowedTypes(
+                                value
+                                    .split(/[,，]/)
+                                    .map((t) => t.trim())
+                                    .filter((t) => t)
+                            );
+                        }}
+                        className={styles.formInput}
+                    />
+                </div>
+                <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>任务描述 *</label>
+                    <textarea
+                        className={styles.formTextarea}
+                        placeholder="请输入任务详细描述..."
+                        value={taskFormData.description}
+                        onChange={(e) => setTaskFormData({ ...taskFormData, description: e.target.value })}
+                    />
+                </div>
+            </Modal>
+
             <Footer companyName="TechBlog" startYear={2025} />
         </div>
     );
