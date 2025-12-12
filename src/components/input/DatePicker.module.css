@@ -1,0 +1,722 @@
+/* 现代时间选择器样式 */
+
+.datePicker {
+    position: relative;
+    display: inline-block;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+.calendarIcon {
+    cursor: pointer;
+    user-select: none;
+    color: var(--color-text-quaternary, #bfbfbf);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.calendarIcon:hover {
+    color: var(--primary-color, #165dff);
+    transform: scale(1.05);
+    background: var(--primary-color-hover-bg, #e6f4ff);
+}
+
+.datePickerDropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 1050;
+    background: var(--color-bg-container, #ffffff);
+    border: 1px solid var(--color-border, #e5e5e5);
+    border-radius: 8px;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.06),
+        0 2px 4px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.02);
+    min-width: 272px;
+    overflow: hidden;
+    animation: dropdownSlideIn 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-origin: top center;
+    backdrop-filter: blur(8px);
+}
+
+@keyframes dropdownSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.99);
+        filter: blur(1px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+.datePickerHeader {
+    padding: 12px 16px 8px;
+    border-bottom: 1px solid var(--color-border-secondary, #f0f0f0);
+    background: linear-gradient(to bottom, #ffffff, #fafafa);
+}
+
+.headerNavigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.yearMonthNavigation {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.navButton {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid var(--color-border, #e5e5e5);
+    cursor: pointer;
+    padding: 0;
+    border-radius: 6px;
+    color: var(--color-text-secondary, #666);
+    font-size: 13px;
+    font-weight: 400;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.navButton:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary-color, #165dff) 0%, #4096ff 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(22, 93, 255, 0.15), 0 2px 4px rgba(0, 0, 0, 0.08);
+    border-color: transparent;
+}
+
+.navButton:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(22, 93, 255, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.navButton:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    color: var(--color-text-disabled, #d9d9d9);
+    background: var(--color-bg-container-disabled, #f5f5f5);
+    box-shadow: none;
+}
+
+.headerText {
+    font-weight: 600;
+    color: var(--color-text, #333);
+    font-size: 14px;
+    letter-spacing: -0.05px;
+    min-width: 120px;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.datePickerBody {
+    padding: 6px 12px 12px;
+}
+
+.weekHeader {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    margin-bottom: 6px;
+}
+
+.weekDay {
+    text-align: center;
+    font-weight: 600;
+    color: var(--color-text-tertiary, #999);
+    font-size: 11px;
+    padding: 6px 0;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.daysGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+}
+
+.dayCell {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 450;
+    color: var(--color-text, #333);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 28px;
+    height: 28px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.05px;
+}
+
+.dayCell:hover:not(:disabled) {
+    background: var(--primary-color-hover-bg, #e6f4ff);
+    color: var(--primary-color, #165dff);
+    transform: scale(1.05);
+}
+
+.dayCell.otherMonth {
+    color: var(--color-text-quaternary, #bfbfbf);
+    opacity: 0.3;
+    font-weight: 400;
+}
+
+.dayCell.today {
+    color: var(--primary-color, #165dff);
+    font-weight: 600;
+    position: relative;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+    border: 1px solid var(--primary-color-alpha, rgba(22, 93, 255, 0.2));
+}
+
+.dayCell.today::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 3px;
+    background: var(--primary-color, #165dff);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(22, 93, 255, 0.3);
+}
+
+.dayCell.selected {
+    background: linear-gradient(135deg, var(--primary-color, #165dff) 0%, #4096ff 100%);
+    color: white;
+    font-weight: 600;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(22, 93, 255, 0.2), 0 0 0 1px rgba(22, 93, 255, 0.1);
+}
+
+.dayCell.selected:hover {
+    background: linear-gradient(135deg, #4096ff 0%, #69b1ff 100%);
+    transform: scale(1.05);
+}
+
+.dayCell.disabled {
+    color: var(--color-text-disabled, #d9d9d9);
+    cursor: not-allowed;
+    opacity: 0.3;
+}
+
+.datePickerFooter {
+    border-top: 1px solid var(--color-border-secondary, #f0f0f0);
+    padding: 12px 16px;
+    display: flex;
+    justify-content: center;
+}
+
+.todayButton {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid var(--color-border, #e5e5e5);
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 5px;
+    color: var(--primary-color, #165dff);
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    letter-spacing: 0.2px;
+}
+
+.todayButton:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary-color, #165dff) 0%, #4096ff 100%);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(22, 93, 255, 0.15);
+}
+
+.todayButton:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(22, 93, 255, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.todayButton:disabled {
+    color: var(--color-text-disabled, #d9d9d9);
+    cursor: not-allowed;
+    opacity: 0.35;
+    background: var(--color-bg-container-disabled, #f5f5f5);
+    box-shadow: none;
+}
+
+/* 时间选择器样式 */
+.timePicker {
+    display: flex;
+    gap: 6px;
+    background: var(--color-bg-container, #ffffff);
+    padding: 12px;
+}
+
+.timeColumn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.timeLabel {
+    font-size: 11px;
+    color: var(--color-text-secondary, #666);
+    margin-bottom: 6px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    padding: 3px 6px;
+    background: var(--primary-color-hover-bg, #e6f4ff);
+    border-radius: 3px;
+    color: var(--primary-color, #165dff);
+    text-transform: uppercase;
+}
+
+.timeList {
+    height: 160px;
+    overflow-y: auto;
+    width: 100%;
+    border-radius: 5px;
+    background: var(--color-bg-elevated, #ffffff);
+    border: 1px solid var(--color-border, #e5e5e5);
+    padding: 3px;
+}
+
+.timeOption {
+    width: 100%;
+    padding: 5px 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 450;
+    color: var(--color-text, #333);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 3px;
+    margin: 0.5px 0;
+    position: relative;
+}
+
+.timeOption:hover {
+    background: var(--primary-color-hover-bg, #e6f4ff);
+    color: var(--primary-color, #165dff);
+    transform: scale(1.05);
+}
+
+.timeOption.selected {
+    background: linear-gradient(135deg, var(--primary-color, #165dff) 0%, #4096ff 100%);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(22, 93, 255, 0.15);
+}
+
+.timeOption.selected:hover {
+    background: linear-gradient(135deg, #4096ff 0%, #69b1ff 100%);
+    transform: scale(1.05);
+}
+
+/* 月份选择器样式 */
+.monthsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 12px;
+}
+
+.monthCell {
+    padding: 12px 6px;
+    background: var(--color-bg-container, #ffffff);
+    border: 1px solid var(--color-border, #e5e5e5);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 450;
+    color: var(--color-text, #333);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 6px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.monthCell:hover:not(:disabled) {
+    background: var(--primary-color-hover-bg, #e6f4ff);
+    color: var(--primary-color, #165dff);
+    border-color: var(--primary-color-hover-bg, #e6f4ff);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(22, 93, 255, 0.1);
+}
+
+.monthCell.selected {
+    background: linear-gradient(135deg, var(--primary-color, #165dff) 0%, #4096ff 100%);
+    color: white;
+    font-weight: 600;
+    border-color: transparent;
+    box-shadow: 0 3px 8px rgba(22, 93, 255, 0.2);
+}
+
+.monthCell.selected:hover {
+    background: linear-gradient(135deg, #4096ff 0%, #69b1ff 100%);
+    transform: translateY(-1px);
+}
+
+.monthCell.disabled {
+    color: var(--color-text-disabled, #d9d9d9);
+    cursor: not-allowed;
+    opacity: 0.25;
+}
+
+.monthCell.disabled:hover {
+    background: var(--color-bg-container, #ffffff);
+    border-color: var(--color-border, #e5e5e5);
+    transform: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+/* 年份选择器样式 */
+.yearsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding: 12px;
+}
+
+.yearCell {
+    padding: 10px 6px;
+    background: var(--color-bg-container, #ffffff);
+    border: 1px solid var(--color-border, #e5e5e5);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 450;
+    color: var(--color-text, #333);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 6px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.yearCell:hover:not(:disabled) {
+    background: var(--primary-color-hover-bg, #e6f4ff);
+    color: var(--primary-color, #165dff);
+    border-color: var(--primary-color-hover-bg, #e6f4ff);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(22, 93, 255, 0.1);
+}
+
+.yearCell.selected {
+    background: linear-gradient(135deg, var(--primary-color, #165dff) 0%, #4096ff 100%);
+    color: white;
+    font-weight: 600;
+    border-color: transparent;
+    box-shadow: 0 3px 8px rgba(22, 93, 255, 0.2);
+}
+
+.yearCell.selected:hover {
+    background: linear-gradient(135deg, #4096ff 0%, #69b1ff 100%);
+    transform: translateY(-1px);
+}
+
+.yearCell.disabled {
+    color: var(--color-text-disabled, #d9d9d9);
+    cursor: not-allowed;
+    opacity: 0.25;
+}
+
+.yearCell.disabled:hover {
+    background: var(--color-bg-container, #ffffff);
+    border-color: var(--color-border, #e5e5e5);
+    transform: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+/* 布局容器 */
+.datePickerContent {
+    padding: 0;
+}
+
+.datePickerFooter {
+    border-top: 1px solid var(--color-border-secondary, #f0f0f0);
+    padding: 12px 16px;
+    display: flex;
+    justify-content: center;
+}
+
+/* 带时间选择器的下拉框样式 */
+.datePickerDropdown.withTime {
+    min-width: 420px;
+    max-width: 480px;
+    display: flex;
+    flex-direction: row;
+}
+
+.datePickerDropdown.withTime .datePickerContent {
+    flex: 1;
+    padding: 0;
+    border-right: 1px solid var(--color-border-secondary, #f0f0f0);
+    min-width: 240px;
+}
+
+.datePickerDropdown.withTime .datePickerFooter {
+    border-right: 1px solid var(--color-border-secondary, #f0f0f0);
+    border-top: none;
+    padding: 12px 16px;
+}
+
+.datePickerDropdown.withTime .timePicker {
+    flex: 0 0 160px;
+    padding: 16px;
+    border: none;
+    background: transparent;
+}
+
+/* 仅时间选择器的样式 */
+.datePickerDropdown.timeOnly {
+    min-width: 280px;
+    max-width: 320px;
+}
+
+.datePickerDropdown.timeOnly .timePicker {
+    padding: 16px;
+    border: none;
+    background: transparent;
+}
+
+/* 时间选择器滚动条样式 */
+.timeList::-webkit-scrollbar {
+    width: 4px;
+}
+
+.timeList::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 2px;
+}
+
+.timeList::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+.timeList::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color, #165dff);
+}
+
+/* 深色主题支持 */
+@media (prefers-color-scheme: dark) {
+    .datePickerDropdown {
+        background: var(--card-background-dark, #1f1f1f);
+        border-color: var(--border-color-dark, #434343);
+        box-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.06),
+            0 4px 16px rgba(0, 0, 0, 0.4),
+            0 8px 32px rgba(0, 0, 0, 0.5),
+            0 32px 64px rgba(0, 0, 0, 0.3);
+    }
+
+    .datePickerHeader {
+        border-color: var(--border-color-dark, #434343);
+    }
+
+    .navButton {
+        background: var(--background-color-light-dark, #262626);
+        border-color: var(--border-color-dark, #434343);
+        color: var(--text-color-dark, #fff);
+    }
+
+    .navButton:hover:not(:disabled) {
+        background: var(--primary-color, #1890ff);
+        border-color: var(--primary-color, #1890ff);
+        color: white;
+    }
+
+    .headerText {
+        color: var(--heading-color-dark, #fff);
+    }
+
+    .weekDay {
+        color: var(--text-color-secondary-dark, #a6a6a6);
+    }
+
+    .dayCell {
+        color: var(--text-color-dark, #fff);
+    }
+
+    .dayCell:hover:not(:disabled) {
+        background: var(--primary-color-bg-dark, #111b26);
+        color: var(--primary-color, #1890ff);
+    }
+
+    .dayCell.otherMonth {
+        color: var(--text-color-disabled-dark, #595959);
+    }
+
+    .dayCell.today {
+        color: var(--primary-color, #1890ff);
+    }
+
+    .dayCell.today::after {
+        background: var(--primary-color, #1890ff);
+    }
+
+    .dayCell.disabled {
+        color: var(--text-color-disabled-dark, #595959);
+    }
+
+    .datePickerFooter {
+        border-color: var(--border-color-dark, #434343);
+    }
+
+    .todayButton {
+        background: var(--background-color-light-dark, #262626);
+        border-color: var(--border-color-dark, #434343);
+        color: var(--primary-color, #1890ff);
+    }
+
+    .todayButton:hover:not(:disabled) {
+        background: var(--primary-color, #1890ff);
+        border-color: var(--primary-color, #1890ff);
+        color: white;
+    }
+
+    .timePicker {
+        background: var(--background-color-light-dark, #262626);
+        border-color: var(--border-color-dark, #434343);
+    }
+
+    .timeLabel {
+        background: var(--primary-color-bg-dark, #111b26);
+        color: var(--primary-color, #1890ff);
+    }
+
+    .timeList {
+        background: var(--card-background-dark, #1f1f1f);
+        border-color: var(--border-color-dark, #434343);
+    }
+
+    .timeOption {
+        color: var(--text-color-dark, #fff);
+    }
+
+    .timeOption:hover {
+        background: var(--primary-color-bg-dark, #111b26);
+        color: var(--primary-color, #1890ff);
+    }
+
+    .monthCell {
+        background: var(--background-color-light-dark, #262626);
+        border-color: var(--border-color-dark, #434343);
+        color: var(--text-color-dark, #fff);
+    }
+
+    .monthCell:hover:not(:disabled) {
+        background: var(--primary-color-bg-dark, #111b26);
+        border-color: var(--primary-color-light-dark, #0050b3);
+        color: var(--primary-color, #1890ff);
+    }
+
+    .monthCell.selected {
+        background: var(--primary-color, #1890ff);
+        color: white;
+    }
+
+    .yearCell {
+        background: var(--background-color-light-dark, #262626);
+        border-color: var(--border-color-dark, #434343);
+        color: var(--text-color-dark, #fff);
+    }
+
+    .yearCell:hover:not(:disabled) {
+        background: var(--primary-color-bg-dark, #111b26);
+        border-color: var(--primary-color-light-dark, #0050b3);
+        color: var(--primary-color, #1890ff);
+    }
+
+    .yearCell.selected {
+        background: var(--primary-color, #1890ff);
+        color: white;
+    }
+
+    .timeList::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .timeList::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .timeList::-webkit-scrollbar-thumb:hover {
+        background: rgba(24, 144, 255, 0.6);
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .datePickerDropdown {
+        min-width: 280px;
+        max-width: 90vw;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .datePickerDropdown.withTime {
+        flex-direction: column;
+        min-width: 320px;
+        max-width: 90vw;
+    }
+
+    .datePickerDropdown.withTime .datePickerContent {
+        border-right: none;
+        border-bottom: 1px solid var(--color-border-secondary, #f0f0f0);
+    }
+
+    .datePickerDropdown.withTime .datePickerFooter {
+        border-right: none;
+    }
+
+    .monthsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+        padding: 12px;
+    }
+
+    .monthCell {
+        padding: 12px 6px;
+    }
+
+    .yearsGrid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        padding: 12px;
+    }
+
+    .yearCell {
+        padding: 10px 6px;
+    }
+}
