@@ -17,6 +17,7 @@ import message from "../../components/message/Message";
 import AuthRequired from "../../components/auth/AuthRequired";
 import AssignmentSubmitSkeleton from "../../components/assignment/AssignmentSubmitSkeleton";
 import AssignmentService from "../../services/assignmentService";
+import FileService from "../../services/fileService";
 import styles from "./AssignmentSubmit.module.css";
 
 interface Assignment {
@@ -113,12 +114,12 @@ const AssignmentSubmit: React.FC = () => {
         if (!assignment) return;
 
         const validFiles: File[] = [];
-        const maxFileSize = assignment.file_size; // API返回的文件大小（字节）
+        const maxFileSize = assignment.file_size; // API返回的文件大小（MB）
 
         newFiles.forEach((file) => {
-            if (file.size > maxFileSize) {
-                const maxSizeMB = Math.round(maxFileSize / (1024 * 1024));
-                message.error(`文件 ${file.name} 超过大小限制 (${maxSizeMB}MB)`);
+            const fileSizeMB = file.size / (1024 * 1024);
+            if (fileSizeMB > maxFileSize) {
+                message.error(`文件 ${file.name} 超过大小限制 (${maxFileSize}MB)`);
                 return;
             }
 
@@ -147,15 +148,26 @@ const AssignmentSubmit: React.FC = () => {
             return;
         }
 
+        if (!assignment) {
+            message.error("作业信息获取失败，请刷新页面重试");
+            return;
+        }
+
         setSubmitting(true);
         try {
-            // TODO: 这里需要实现真实的文件提交逻辑
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            // 使用 FileService 上传文件
+            const uploadResult = await FileService.uploadFile({
+                dir_name: `${assignment.name}`, // 使用作业ID作为目录名
+                files: files
+            });
+
+            console.log("文件上传成功:", uploadResult);
             message.success("作业提交成功！");
             navigate("/assignments");
-        } catch (error) {
+        } catch (error: any) {
             console.error("提交失败:", error);
-            message.error("提交失败，请重试");
+            const errorMessage = error.response?.data?.message || error.message || "提交失败，请重试";
+            message.error(errorMessage);
         } finally {
             setSubmitting(false);
         }

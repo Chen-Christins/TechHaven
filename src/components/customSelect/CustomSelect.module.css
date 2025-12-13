@@ -107,6 +107,31 @@
     overflow-y: auto;
 }
 
+/* 滚动条样式 - 适配暗色主题 */
+.options::-webkit-scrollbar {
+    width: 6px;
+}
+
+.options::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 3px;
+}
+
+.options::-webkit-scrollbar-thumb {
+    background: var(--border-secondary);
+    border-radius: 3px;
+}
+
+.options::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+}
+
+/* Firefox 滚动条样式 */
+.options {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-secondary) var(--bg-secondary);
+}
+
 .option {
     padding: 0.75rem 1rem;
     cursor: pointer;
