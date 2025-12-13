@@ -118,6 +118,50 @@
     color: var(--error);
 }
 
+/* 优先级标签样式 */
+.priorityBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.priorityUrgent {
+    background: rgba(127, 29, 29, 0.1);
+    color: #991b1b;
+    border: 1px solid rgba(127, 29, 29, 0.2);
+}
+
+.priorityHigh {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.priorityMedium {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.priorityLow {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
 /* 内容卡片优化 */
 .contentGrid {
     display: grid;
@@ -233,6 +277,24 @@
     border-color: var(--primary);
     background: var(--primary-bg);
     transform: translateY(-2px);
+}
+
+.uploadArea.disabled {
+    border-color: var(--border-disabled);
+    background: var(--bg-disabled);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.uploadArea.disabled:hover {
+    border-color: var(--border-disabled);
+    background: var(--bg-disabled);
+    transform: none;
+}
+
+.uploadArea.disabled .uploadIconWrapper {
+    color: var(--text-disabled);
+    background: var(--card-bg);
 }
 
 .uploadContent {

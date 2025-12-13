@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    FaClock,
     FaCheckCircle,
     FaExclamationCircle,
     FaArrowRight,
@@ -13,92 +12,87 @@ import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import Skeleton from "../../components/skeleton/Skeleton";
 import AuthRequired from "../../components/auth/AuthRequired";
+import AssignmentService from "../../services/assignmentService";
 import styles from "./AssignmentList.module.css";
 
 interface Assignment {
-    id: string;
-    title: string;
+    id: string | number;
+    name: string;
     description: string;
-    courseName: string;
-    deadline: string;
-    status: "pending" | "submitted" | "late";
+    subject_name: string;
+    end_time: number;
+    status: number;
+    priority: number;
+    create_time: number;
+    file_size: number;
+    file_type: string;
 }
 
-const MOCK_ASSIGNMENTS: Assignment[] = [
-    {
-        id: "1",
-        title: "Web前端开发期末大作业",
-        description:
-            "请设计并实现一个响应式的个人博客系统。要求包含首页、文章列表、文章详情、个人中心等页面。技术栈要求使用 React + TypeScript。",
-        courseName: "Web前端开发技术",
-        deadline: "2025-12-31 23:59:59",
-        status: "pending",
-    },
-    {
-        id: "2",
-        title: "计算机网络实验报告",
-        description: "完成Wireshark抓包实验，分析TCP三次握手过程，并撰写实验报告。",
-        courseName: "计算机网络",
-        deadline: "2025-11-15 12:00:00",
-        status: "submitted",
-    },
-    {
-        id: "3",
-        title: "数据库课程设计",
-        description: "设计一个图书管理系统的数据库模型，包括E-R图、关系模式设计以及SQL建表语句。",
-        courseName: "数据库系统原理",
-        deadline: "2025-10-01 00:00:00",
-        status: "late",
-    },
-    {
-        id: "4",
-        title: "算法分析与设计作业",
-        description: "实现快速排序算法，并分析其时间复杂度和空间复杂度。",
-        courseName: "算法分析与设计",
-        deadline: "2026-01-10 23:59:59",
-        status: "pending",
-    },
-];
+const STATUS_MAP: { [key: number]: string } = {
+    1: "open",      // 开启中
+    2: "closed",    // 已关闭
+};
 
 const AssignmentList: React.FC = () => {
     const navigate = useNavigate();
-    const [filter, setFilter] = useState<"all" | "pending" | "submitted" | "late">("all");
+    const [filter, setFilter] = useState<"all" | "open" | "closed">("all");
     const [dataLoading, setDataLoading] = useState(true);
+    const [assignments, setAssignments] = useState<Assignment[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // 模拟数据加载延迟
-        const timer = setTimeout(() => {
-            setDataLoading(false);
-        }, 800);
-        return () => clearTimeout(timer);
+        const fetchAssignments = async () => {
+            try {
+                setDataLoading(true);
+                setError(null);
+                const response = await AssignmentService.getUserAssignments();
+                setAssignments(response.list);
+            } catch (err: any) {
+                setError(err.message || "获取作业列表失败");
+            } finally {
+                setDataLoading(false);
+            }
+        };
+
+        fetchAssignments();
     }, []);
 
-    const filteredAssignments = MOCK_ASSIGNMENTS.filter((item) => {
+    const filteredAssignments = assignments.filter((item) => {
         if (filter === "all") return true;
-        return item.status === filter;
+        const statusString = STATUS_MAP[item.status] || "pending";
+        return statusString === filter;
     });
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case "submitted":
+    const getStatusBadge = (status: number) => {
+        const statusString = STATUS_MAP[status] || "open";
+        switch (statusString) {
+            case "open":
                 return (
                     <span className={`${styles.statusBadge} ${styles.statusSubmitted}`}>
-                        <FaCheckCircle /> 已提交
+                        <FaCheckCircle /> 开启中
                     </span>
                 );
-            case "late":
+            case "closed":
                 return (
                     <span className={`${styles.statusBadge} ${styles.statusLate}`}>
-                        <FaExclamationCircle /> 已逾期
+                        <FaExclamationCircle /> 已关闭
                     </span>
                 );
             default:
                 return (
-                    <span className={`${styles.statusBadge} ${styles.statusPending}`}>
-                        <FaClock /> 进行中
+                    <span className={`${styles.statusBadge} ${styles.statusSubmitted}`}>
+                        <FaCheckCircle /> 开启中
                     </span>
                 );
         }
+    };
+
+    const formatDate = (timestamp: number) => {
+        const date = new Date(timestamp * 1000);
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
     };
 
     return (
@@ -118,28 +112,28 @@ const AssignmentList: React.FC = () => {
                                 >
                                     全部
                                 </button>
-                                <button
-                                    className={`${styles.filterBtn} ${filter === "pending" ? styles.active : ""}`}
-                                    onClick={() => setFilter("pending")}
+                                                                <button
+                                    className={`${styles.filterBtn} ${filter === "open" ? styles.active : ""}`}
+                                    onClick={() => setFilter("open")}
                                 >
-                                    进行中
+                                    开启中
                                 </button>
                                 <button
-                                    className={`${styles.filterBtn} ${filter === "submitted" ? styles.active : ""}`}
-                                    onClick={() => setFilter("submitted")}
+                                    className={`${styles.filterBtn} ${filter === "closed" ? styles.active : ""}`}
+                                    onClick={() => setFilter("closed")}
                                 >
-                                    已提交
-                                </button>
-                                <button
-                                    className={`${styles.filterBtn} ${filter === "late" ? styles.active : ""}`}
-                                    onClick={() => setFilter("late")}
-                                >
-                                    已逾期
+                                    已关闭
                                 </button>
                             </div>
                         </div>
 
-                        {dataLoading ? (
+                        {error ? (
+                            <div className={styles.errorState}>
+                                <FaExclamationCircle className={styles.errorIcon} />
+                                <h3 className={styles.errorText}>加载失败</h3>
+                                <p className={styles.errorSubtext}>{error}</p>
+                            </div>
+                        ) : dataLoading ? (
                             <div className={styles.grid}>
                                 {/* 骨架屏加载状态 */}
                                 {Array.from({ length: 6 }).map((_, index) => (
@@ -188,23 +182,23 @@ const AssignmentList: React.FC = () => {
                                 {filteredAssignments.map((item) => (
                                     <div key={item.id} className={styles.card}>
                                         <div className={styles.cardHeader}>
-                                            <span className={styles.courseBadge}>{item.courseName}</span>
+                                            <span className={styles.courseBadge}>{item.subject_name}</span>
                                             {getStatusBadge(item.status)}
                                         </div>
 
-                                        <h3 className={styles.cardTitle}>{item.title}</h3>
+                                        <h3 className={styles.cardTitle}>{item.name}</h3>
                                         <p className={styles.cardDesc}>{item.description}</p>
 
                                         <div className={styles.cardFooter}>
                                             <div className={styles.deadline}>
                                                 <FaCalendarAlt />
-                                                {item.deadline.split(" ")[0]} 截止
+                                                {formatDate(item.end_time)} 截止
                                             </div>
                                             <button
-                                                className={`${styles.actionBtn} ${item.status === "submitted" ? styles.btnSecondary : styles.btnPrimary}`}
+                                                className={`${styles.actionBtn} ${STATUS_MAP[item.status] === "closed" ? styles.btnSecondary : styles.btnPrimary}`}
                                                 onClick={() => navigate(`/assignment/submit/${item.id}`)}
                                             >
-                                                {item.status === "submitted" ? "查看详情" : "去提交"} <FaArrowRight />
+                                                {STATUS_MAP[item.status] === "closed" ? "查看详情" : "去提交"} <FaArrowRight />
                                             </button>
                                         </div>
                                     </div>

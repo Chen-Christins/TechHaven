@@ -91,6 +91,25 @@ export interface GetAdminAssignmentsResponse {
     }>;
 }
 
+export interface GetUserAssignmentsParams {
+}
+
+export interface GetUserAssignmentsResponse {
+    total: number;
+    list: Array<{
+        id: string | number;
+        name: string;
+        subject_name: string;
+        end_time: number;
+        status: number;
+        priority: number;
+        create_time: number;
+        file_size: number;
+        file_type: string;
+        description: string;
+    }>;
+}
+
 /**
  * 删除作业参数
  */
@@ -103,6 +122,22 @@ export interface DeleteAssignmentParams {
  */
 export interface DeleteAssignmentResponse {
     ids: Array<number | string>;
+}
+
+export interface GetAssignmentDetailParams {
+    id: number | string;
+}
+
+export interface GetAssignmentDetailResponse {
+    id: number | string;
+    name: string;
+    status: string;
+    priority: number;
+    subject_name: string;
+    description: string;
+    end_time: number;
+    file_size: number;
+    file_type: string;
 }
 
 /**
@@ -195,6 +230,20 @@ export class AssignmentService {
         }
 
         const response = await http.get<OrganizationAssignmentListResponse>(url);
+        return response.data;
+    }
+
+    static async getUserAssignments(): Promise<GetUserAssignmentsResponse> {
+        let url = `/user/assignment/list`;
+
+        const response = await http.get<GetUserAssignmentsResponse>(url);
+        return response.data;
+    }
+
+    static async getAssignmentDetail(params: GetAssignmentDetailParams): Promise<GetAssignmentDetailResponse> {
+        let url = `/assignment/detail?id=${params.id}`;
+
+        const response = await http.get<GetAssignmentDetailResponse>(url);
         return response.data;
     }
 }

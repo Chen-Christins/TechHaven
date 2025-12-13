@@ -16,64 +16,26 @@ import Footer from "../../components/footer/Footer";
 import message from "../../components/message/Message";
 import AuthRequired from "../../components/auth/AuthRequired";
 import AssignmentSubmitSkeleton from "../../components/assignment/AssignmentSubmitSkeleton";
+import AssignmentService from "../../services/assignmentService";
 import styles from "./AssignmentSubmit.module.css";
 
-// 模拟作业数据类型
 interface Assignment {
-    id: string;
-    title: string;
+    id: string | number;
+    name: string;
     description: string;
-    courseName: string;
-    deadline: string;
-    status: "pending" | "submitted" | "late";
-    maxFileSize: number; // MB
-    allowedTypes: string[];
+    subject_name: string;
+    end_time: number;
+    status: string;
+    priority: number;
+    file_size: number;
+    file_type: string;
 }
 
-// 模拟作业数据列表
-const MOCK_ASSIGNMENTS: Assignment[] = [
-    {
-        id: "1",
-        title: "Web前端开发期末大作业",
-        description:
-            "请设计并实现一个响应式的个人博客系统。要求包含首页、文章列表、文章详情、个人中心等页面。技术栈要求使用 React + TypeScript。请提交源代码压缩包以及项目说明文档。",
-        courseName: "Web前端开发技术",
-        deadline: "2025-12-31 23:59:59",
-        status: "pending",
-        maxFileSize: 50,
-        allowedTypes: [".zip", ".rar", ".7z", ".pdf", ".doc", ".docx"],
-    },
-    {
-        id: "2",
-        title: "计算机网络实验报告",
-        description: "完成Wireshark抓包实验，分析TCP三次握手过程，并撰写实验报告。",
-        courseName: "计算机网络",
-        deadline: "2025-11-15 12:00:00",
-        status: "submitted",
-        maxFileSize: 20,
-        allowedTypes: [".pdf", ".doc", ".docx"],
-    },
-    {
-        id: "3",
-        title: "数据库课程设计",
-        description: "设计一个图书管理系统的数据库模型，包括E-R图、关系模式设计以及SQL建表语句。",
-        courseName: "数据库系统原理",
-        deadline: "2025-10-01 00:00:00",
-        status: "late",
-        maxFileSize: 30,
-        allowedTypes: [".zip", ".pdf"],
-    },
-    {
-        id: "4",
-        title: "算法分析与设计作业",
-        description: "实现快速排序算法，并分析其时间复杂度和空间复杂度。",
-        courseName: "算法分析与设计",
-        deadline: "2026-01-10 23:59:59",
-        status: "pending",
-        maxFileSize: 10,
-        allowedTypes: [".cpp", ".java", ".py", ".txt"],
-    },
-];
+const STATUS_MAP: { [key: string]: string } = {
+    "0": "pending",   // 进行中
+    "1": "open", // 已提交
+    "2": "closed",      // 已逾期
+};
 
 const AssignmentSubmit: React.FC = () => {
     const { id } = useParams();
@@ -82,19 +44,36 @@ const AssignmentSubmit: React.FC = () => {
     const [files, setFiles] = useState<File[]>([]);
     const [isDragging, setIsDragging] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        // 模拟获取作业详情
-        const foundAssignment = MOCK_ASSIGNMENTS.find((a) => a.id === id);
-        if (foundAssignment) {
-            setTimeout(() => {
-                setAssignment(foundAssignment);
-            }, 500);
-        } else {
-            message.error("未找到该作业");
-            navigate("/assignments");
-        }
+        const fetchAssignmentDetail = async () => {
+            if (!id) {
+                message.error("作业ID不能为空");
+                navigate("/assignments");
+                return;
+            }
+
+            try {
+                setLoading(true);
+                setError(null);
+                const response = await AssignmentService.getAssignmentDetail({ id });
+                setAssignment(response);
+            } catch (err: any) {
+                setError(err.message || "获取作业详情失败");
+                message.error(err.message || "获取作业详情失败");
+                // 延迟跳转，让用户看到错误信息
+                setTimeout(() => {
+                    navigate("/assignments");
+                }, 2000);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAssignmentDetail();
     }, [id, navigate]);
 
     const handleDragEnter = (e: React.DragEvent) => {
@@ -134,12 +113,24 @@ const AssignmentSubmit: React.FC = () => {
         if (!assignment) return;
 
         const validFiles: File[] = [];
+        const maxFileSize = assignment.file_size; // API返回的文件大小（字节）
 
         newFiles.forEach((file) => {
-            if (file.size > assignment.maxFileSize * 1024 * 1024) {
-                message.error(`文件 ${file.name} 超过大小限制 (${assignment.maxFileSize}MB)`);
+            if (file.size > maxFileSize) {
+                const maxSizeMB = Math.round(maxFileSize / (1024 * 1024));
+                message.error(`文件 ${file.name} 超过大小限制 (${maxSizeMB}MB)`);
                 return;
             }
+
+            // 检查文件类型（根据API返回的file_type字段进行验证）
+            const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+            const allowedTypes = assignment.file_type.split(',').map(type => type.trim());
+
+            if (!allowedTypes.includes(fileExtension)) {
+                message.error(`文件 ${file.name} 格式不支持，仅支持 ${assignment.file_type}`);
+                return;
+            }
+
             validFiles.push(file);
         });
 
@@ -158,6 +149,7 @@ const AssignmentSubmit: React.FC = () => {
 
         setSubmitting(true);
         try {
+            // TODO: 这里需要实现真实的文件提交逻辑
             await new Promise((resolve) => setTimeout(resolve, 1500));
             message.success("作业提交成功！");
             navigate("/assignments");
@@ -177,18 +169,72 @@ const AssignmentSubmit: React.FC = () => {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
     };
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case "submitted":
+    const formatDate = (timestamp: number) => {
+        const date = new Date(timestamp * 1000);
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        const h = String(date.getHours()).padStart(2, '0');
+        const min = String(date.getMinutes()).padStart(2, '0');
+        return `${y}-${m}-${d} ${h}:${min}`;
+    };
+
+    const PRIORITY_NUMBER_MAP_STR: Record<number, string> = {
+        1: "low",
+        2: "medium",
+        3: "high",
+        4: "urgent",
+    };
+
+    const getPriorityBadge = (priority: number) => {
+        const priorityStr = PRIORITY_NUMBER_MAP_STR[priority] || "medium";
+        switch (priorityStr) {
+            case "urgent":
                 return (
-                    <span className={`${styles.statusBadge} ${styles.statusSubmitted}`}>
-                        <FaCheckCircle /> 已提交
+                    <span className={`${styles.priorityBadge} ${styles.priorityUrgent}`}>
+                        紧急
                     </span>
                 );
-            case "late":
+            case "high":
+                return (
+                    <span className={`${styles.priorityBadge} ${styles.priorityHigh}`}>
+                        高优先级
+                    </span>
+                );
+            case "medium":
+                return (
+                    <span className={`${styles.priorityBadge} ${styles.priorityMedium}`}>
+                        中优先级
+                    </span>
+                );
+            case "low":
+                return (
+                    <span className={`${styles.priorityBadge} ${styles.priorityLow}`}>
+                        低优先级
+                    </span>
+                );
+            default:
+                return (
+                    <span className={`${styles.priorityBadge} ${styles.priorityMedium}`}>
+                        中优先级
+                    </span>
+                );
+        }
+    };
+
+    const getStatusBadge = (status: string) => {
+        const statusString = STATUS_MAP[status] || "pending";
+        switch (statusString) {
+            case "open":
+                return (
+                    <span className={`${styles.statusBadge} ${styles.statusSubmitted}`}>
+                        <FaCheckCircle /> 开启中
+                    </span>
+                );
+            case "closed":
                 return (
                     <span className={`${styles.statusBadge} ${styles.statusLate}`}>
-                        <FaExclamationCircle /> 已逾期
+                        <FaExclamationCircle /> 已关闭
                     </span>
                 );
             default:
@@ -200,150 +246,197 @@ const AssignmentSubmit: React.FC = () => {
         }
     };
 
+    const isAssignmentOpen = () => {
+        const statusString = STATUS_MAP[assignment?.status || "0"] || "pending";
+        return statusString !== "closed";
+    };
+
+    if (loading) {
+        return (
+            <div className={styles.container}>
+                <Navbar />
+                <div className={styles.mainContent}>
+                    <AuthRequired message="您需要登录后才能查看作业详情和提交作业。">
+                        <AssignmentSubmitSkeleton />
+                    </AuthRequired>
+                </div>
+                <Footer companyName="TechBlog" startYear={2025} />
+            </div>
+        );
+    }
+
+    if (error || !assignment) {
+        return (
+            <div className={styles.container}>
+                <Navbar />
+                <div className={styles.mainContent}>
+                    <AuthRequired message="您需要登录后才能查看作业详情和提交作业。">
+                        <div className={styles.errorContainer}>
+                            <FaExclamationCircle className={styles.errorIcon} />
+                            <h2 className={styles.errorTitle}>加载失败</h2>
+                            <p className={styles.errorMessage}>{error || "未找到该作业"}</p>
+                            <button className={styles.btn} onClick={() => navigate("/assignments")}>
+                                返回作业列表
+                            </button>
+                        </div>
+                    </AuthRequired>
+                </div>
+                <Footer companyName="TechBlog" startYear={2025} />
+            </div>
+        );
+    }
+
     return (
         <div className={styles.container}>
             <Navbar />
 
             <div className={styles.mainContent}>
                 <AuthRequired message="您需要登录后才能查看作业详情和提交作业。">
-                    {!assignment ? (
-                        <AssignmentSubmitSkeleton />
-                    ) : (
-                        <div className={styles.card}>
-                            <div
-                                style={{
-                                    marginBottom: "2rem",
-                                    paddingBottom: "0.6rem",
-                                    borderBottom: "1px solid var(--border-secondary)",
-                                }}
-                            >
-                                <button className={styles.backButton} onClick={() => navigate(-1)}>
-                                    <FaArrowLeft /> 返回上一页
-                                </button>
-                                <div className={styles.headerContent}>
-                                    <div className={styles.titleGroup}>
-                                        <h1 className={styles.pageTitle}>{assignment.title}</h1>
-                                        <div className={styles.courseName}>
-                                            <FaBookOpen /> {assignment.courseName}
-                                        </div>
-                                    </div>
-                                    {getStatusBadge(assignment.status)}
-                                </div>
-                            </div>
-
-                            <div style={{ marginBottom: "2rem" }}>
-                                <div className={styles.sectionHeader}>
-                                    <div className={styles.sectionIcon}>
-                                        <FaInfoCircle />
-                                    </div>
-                                    <h2 className={styles.sectionTitle}>作业详情</h2>
-                                </div>
-
-                                <div className={styles.infoGrid}>
-                                    <div className={styles.infoCard}>
-                                        <span className={styles.infoLabel}>截止时间</span>
-                                        <span className={`${styles.infoValue} ${styles.deadlineValue}`}>
-                                            {assignment.deadline}
-                                        </span>
-                                    </div>
-                                    <div className={styles.infoCard}>
-                                        <span className={styles.infoLabel}>文件大小限制</span>
-                                        <span className={styles.infoValue}>{assignment.maxFileSize} MB</span>
-                                    </div>
-                                    <div className={styles.infoCard}>
-                                        <span className={styles.infoLabel}>允许文件格式</span>
-                                        <span className={styles.infoValue}>{assignment.allowedTypes.join(", ")}</span>
+                    <div className={styles.card}>
+                        <div
+                            style={{
+                                marginBottom: "2rem",
+                                paddingBottom: "0.6rem",
+                                borderBottom: "1px solid var(--border-secondary)",
+                            }}
+                        >
+                            <button className={styles.backButton} onClick={() => navigate(-1)}>
+                                <FaArrowLeft /> 返回上一页
+                            </button>
+                            <div className={styles.headerContent}>
+                                <div className={styles.titleGroup}>
+                                    <h1 className={styles.pageTitle}>{assignment.name}</h1>
+                                    <div className={styles.courseName}>
+                                        <FaBookOpen /> {assignment.subject_name}
                                     </div>
                                 </div>
-
-                                <div className={styles.description}>{assignment.description}</div>
-                            </div>
-
-                            <div>
-                                <div className={styles.sectionHeader}>
-                                    <div className={styles.sectionIcon}>
-                                        <FaCloudUploadAlt />
-                                    </div>
-                                    <h2 className={styles.sectionTitle}>作业提交</h2>
-                                </div>
-
-                                <div className={styles.uploadContainer}>
-                                    <div
-                                        className={`${styles.uploadArea} ${isDragging ? styles.active : ""}`}
-                                        onDragEnter={handleDragEnter}
-                                        onDragLeave={handleDragLeave}
-                                        onDragOver={handleDragOver}
-                                        onDrop={handleDrop}
-                                        onClick={() => fileInputRef.current?.click()}
-                                    >
-                                        <input
-                                            type="file"
-                                            ref={fileInputRef}
-                                            style={{ display: "none" }}
-                                            multiple
-                                            onChange={handleFileSelect}
-                                        />
-                                        <div className={styles.uploadContent}>
-                                            <div className={styles.uploadIconWrapper}>
-                                                <FaCloudUploadAlt />
-                                            </div>
-                                            <div className={styles.uploadTitle}>点击或拖拽文件到此处上传</div>
-                                            <div className={styles.uploadDesc}>
-                                                支持 {assignment.allowedTypes.join(", ")} 格式文件
-                                            </div>
-                                            <div className={styles.uploadLimit}>
-                                                单个文件不超过 {assignment.maxFileSize}MB
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {files.length > 0 && (
-                                        <div className={styles.fileList}>
-                                            {files.map((file, index) => (
-                                                <div key={index} className={styles.fileItem}>
-                                                    <div className={styles.fileLeft}>
-                                                        <div className={styles.fileTypeIcon}>
-                                                            <FaFileAlt />
-                                                        </div>
-                                                        <div className={styles.fileDetails}>
-                                                            <div className={styles.fileName}>{file.name}</div>
-                                                            <div className={styles.fileSize}>
-                                                                {formatFileSize(file.size)}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <button
-                                                        className={styles.deleteBtn}
-                                                        onClick={() => removeFile(index)}
-                                                        title="移除文件"
-                                                    >
-                                                        <FaTrash />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className={styles.actionBar}>
-                                    <button
-                                        className={`${styles.btn} ${styles.btnSecondary}`}
-                                        onClick={() => navigate(-1)}
-                                        disabled={submitting}
-                                    >
-                                        取消
-                                    </button>
-                                    <button
-                                        className={`${styles.btn} ${styles.btnPrimary}`}
-                                        onClick={handleSubmit}
-                                        disabled={submitting || files.length === 0}
-                                    >
-                                        {submitting ? "提交中..." : "确认提交"}
-                                    </button>
-                                </div>
+                                {getStatusBadge(assignment.status)}
                             </div>
                         </div>
-                    )}
+
+                        <div style={{ marginBottom: "2rem" }}>
+                            <div className={styles.sectionHeader}>
+                                <div className={styles.sectionIcon}>
+                                    <FaInfoCircle />
+                                </div>
+                                <h2 className={styles.sectionTitle}>任务详情</h2>
+                            </div>
+
+                            <div className={styles.infoGrid}>
+                                <div className={styles.infoCard}>
+                                    <span className={styles.infoLabel}>截止时间</span>
+                                    <span className={`${styles.infoValue} ${styles.deadlineValue}`}>
+                                        {formatDate(assignment.end_time)}
+                                    </span>
+                                </div>
+                                <div className={styles.infoCard}>
+                                    <span className={styles.infoLabel}>优先级</span>
+                                    <span className={styles.infoValue}>
+                                        {getPriorityBadge(assignment.priority)}
+                                    </span>
+                                </div>
+                                <div className={styles.infoCard}>
+                                    <span className={styles.infoLabel}>文件大小限制</span>
+                                    <span className={styles.infoValue}>
+                                        {Math.round(assignment.file_size)} MB
+                                    </span>
+                                </div>
+                                <div className={styles.infoCard}>
+                                    <span className={styles.infoLabel}>允许文件格式</span>
+                                    <span className={styles.infoValue}>{assignment.file_type}</span>
+                                </div>
+                            </div>
+
+                            <div className={styles.description}>{assignment.description}</div>
+                        </div>
+
+                        <div>
+                            <div className={styles.sectionHeader}>
+                                <div className={styles.sectionIcon}>
+                                    <FaCloudUploadAlt />
+                                </div>
+                                <h2 className={styles.sectionTitle}>任务提交</h2>
+                            </div>
+
+                            <div className={styles.uploadContainer}>
+                                <div
+                                    className={`${styles.uploadArea} ${isDragging ? styles.active : ""} ${!isAssignmentOpen() ? styles.disabled : ""}`}
+                                    onDragEnter={isAssignmentOpen() ? handleDragEnter : undefined}
+                                    onDragLeave={isAssignmentOpen() ? handleDragLeave : undefined}
+                                    onDragOver={isAssignmentOpen() ? handleDragOver : undefined}
+                                    onDrop={isAssignmentOpen() ? handleDrop : undefined}
+                                    onClick={isAssignmentOpen() ? () => fileInputRef.current?.click() : undefined}
+                                >
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        style={{ display: "none" }}
+                                        multiple
+                                        onChange={handleFileSelect}
+                                        disabled={!isAssignmentOpen()}
+                                    />
+                                    <div className={styles.uploadContent}>
+                                        <div className={styles.uploadIconWrapper}>
+                                            <FaCloudUploadAlt />
+                                        </div>
+                                        <div className={styles.uploadTitle}>
+                                            {isAssignmentOpen() ? "点击或拖拽文件到此处上传" : "任务已关闭，无法上传文件"}
+                                        </div>
+                                        <div className={styles.uploadDesc}>
+                                            {isAssignmentOpen() ? `支持 ${assignment.file_type} 格式文件` : "请联系管理员重新开启作业提交"}
+                                        </div>
+                                        <div className={styles.uploadLimit}>
+                                            单个文件不超过 {Math.round(assignment.file_size)}MB
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {files.length > 0 && (
+                                    <div className={styles.fileList}>
+                                        {files.map((file, index) => (
+                                            <div key={index} className={styles.fileItem}>
+                                                <div className={styles.fileLeft}>
+                                                    <div className={styles.fileTypeIcon}>
+                                                        <FaFileAlt />
+                                                    </div>
+                                                    <div className={styles.fileDetails}>
+                                                        <div className={styles.fileName}>{file.name}</div>
+                                                        <div className={styles.fileSize}>
+                                                            {formatFileSize(file.size)}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    className={styles.deleteBtn}
+                                                    onClick={() => removeFile(index)}
+                                                    title="移除文件"
+                                                >
+                                                    <FaTrash />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className={styles.actionBar}>
+                                <button
+                                    className={`${styles.btn} ${styles.btnSecondary}`}
+                                    onClick={() => navigate(-1)}
+                                    disabled={submitting}
+                                >
+                                    取消
+                                </button>
+                                <button
+                                    className={`${styles.btn} ${styles.btnPrimary}`}
+                                    onClick={handleSubmit}
+                                    disabled={submitting || files.length === 0 || !isAssignmentOpen()}
+                                >
+                                    {submitting ? "提交中..." : !isAssignmentOpen() ? "作业已关闭" : "确认提交"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </AuthRequired>
             </div>
 
