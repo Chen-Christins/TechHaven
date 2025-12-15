@@ -323,16 +323,16 @@ const OrganizationDetail: React.FC = () => {
                 setOrg((prevOrg) =>
                     prevOrg
                         ? {
-                            ...prevOrg,
-                            user_in_org:
-                                typeof res.user_in_org !== "undefined" && res.user_in_org >= 0
-                                    ? MAP_STATUS_TO_TEXT[res.user_in_org]
-                                    : undefined,
-                            user_role:
-                                typeof res.user_role !== "undefined" && res.user_role > 0
-                                    ? MAP_ROLE_TO_TEXT[res.user_role]
-                                    : undefined,
-                        }
+                              ...prevOrg,
+                              user_in_org:
+                                  typeof res.user_in_org !== "undefined" && res.user_in_org >= 0
+                                      ? MAP_STATUS_TO_TEXT[res.user_in_org]
+                                      : undefined,
+                              user_role:
+                                  typeof res.user_role !== "undefined" && res.user_role > 0
+                                      ? MAP_ROLE_TO_TEXT[res.user_role]
+                                      : undefined,
+                          }
                         : prevOrg,
                 );
             }
@@ -363,10 +363,10 @@ const OrganizationDetail: React.FC = () => {
             setOrg((prevOrg: OrganizationDetailType | null) =>
                 prevOrg
                     ? {
-                        ...prevOrg,
-                        members: prevOrg.members.filter((m: Member) => m.id !== member.id),
-                        memberCount: Math.max(0, prevOrg.memberCount - 1),
-                    }
+                          ...prevOrg,
+                          members: prevOrg.members.filter((m: Member) => m.id !== member.id),
+                          memberCount: Math.max(0, prevOrg.memberCount - 1),
+                      }
                     : prevOrg,
             );
 
@@ -434,11 +434,11 @@ const OrganizationDetail: React.FC = () => {
             setOrg((prevOrg: OrganizationDetailType | null) =>
                 prevOrg
                     ? {
-                        ...prevOrg,
-                        members: prevOrg.members.map((m: Member) =>
-                            m.id === selectedMember.id ? { ...m, role: MAP_ROLE_TO_TEXT[selectedRole] } : m,
-                        ),
-                    }
+                          ...prevOrg,
+                          members: prevOrg.members.map((m: Member) =>
+                              m.id === selectedMember.id ? { ...m, role: MAP_ROLE_TO_TEXT[selectedRole] } : m,
+                          ),
+                      }
                     : prevOrg,
             );
 
@@ -504,7 +504,6 @@ const OrganizationDetail: React.FC = () => {
 
         return false;
     };
-
 
     // Function to get available role options based on current user's role
     const getAvailableRoleOptions = () => {
@@ -697,7 +696,7 @@ const OrganizationDetail: React.FC = () => {
                     priority: priority,
                     file_type: allowedTypes.join(","),
                     description: taskFormData.description,
-                });   
+                });
 
                 // 更新成功后，重新获取任务列表以确保数据同步
                 await fetchTasksList(1);
@@ -765,7 +764,7 @@ const OrganizationDetail: React.FC = () => {
         try {
             // 使用真实的删除接口
             await AssignmentService.deleteAssignments({
-                ids: String(task.assign_id)
+                ids: String(task.assign_id),
             });
 
             // 删除成功后，重新获取任务列表以确保数据同步
@@ -929,16 +928,10 @@ const OrganizationDetail: React.FC = () => {
                 width={600}
                 footer={
                     <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-                        <button
-                            className={styles.cancelButton}
-                            onClick={() => setTaskCreateModalVisible(false)}
-                        >
+                        <button className={styles.cancelButton} onClick={() => setTaskCreateModalVisible(false)}>
                             取消
                         </button>
-                        <button
-                            className={styles.confirmButton}
-                            onClick={handleTaskSubmit}
-                        >
+                        <button className={styles.confirmButton} onClick={handleTaskSubmit}>
                             {selectedTask ? "保存修改" : "创建任务"}
                         </button>
                     </div>
@@ -1010,8 +1003,8 @@ const OrganizationDetail: React.FC = () => {
                                     taskFormData.status === "active"
                                         ? "进行中"
                                         : taskFormData.status === "closed"
-                                            ? "已结束"
-                                            : "草稿",
+                                          ? "已结束"
+                                          : "草稿",
                                 color: "",
                             }}
                             onChange={(option) => setTaskFormData({ ...taskFormData, status: option?.id as any })}
@@ -1035,10 +1028,10 @@ const OrganizationDetail: React.FC = () => {
                                     taskFormData.priority === "low"
                                         ? "低"
                                         : taskFormData.priority === "medium"
-                                            ? "中"
-                                            : taskFormData.priority === "high"
-                                                ? "高"
-                                                : "紧急",
+                                          ? "中"
+                                          : taskFormData.priority === "high"
+                                            ? "高"
+                                            : "紧急",
                                 color: "",
                             }}
                             onChange={(option) => setTaskFormData({ ...taskFormData, priority: option?.id as any })}

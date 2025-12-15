@@ -24,6 +24,7 @@ import OrganizationDetail from "../pages/organization/OrganizationDetail";
 import ArticleViewPage from "../pages/articleView/ArticleViewPage";
 import AssignmentSubmit from "../pages/assignment/AssignmentSubmit";
 import AssignmentList from "../pages/assignment/AssignmentList";
+import AssignmentSubmissions from "../pages/assignment/AssignmentSubmissions";
 
 const RouterConfig: React.FC = () => {
     return (
@@ -48,6 +49,8 @@ const RouterConfig: React.FC = () => {
             <Route path="/assignments" element={<AssignmentList />} />
             {/* 作业提交页 */}
             <Route path="/assignment/submit/:id" element={<AssignmentSubmit />} />
+            {/* 作业提交详情页 */}
+            <Route path="/assignment/submissions/:id" element={<AssignmentSubmissions />} />
 
             {/* 用户组织列表页 */}
             <Route path="/organizations/list" element={<OrganizationList />} />

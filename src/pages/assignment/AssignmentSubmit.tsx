@@ -33,9 +33,9 @@ interface Assignment {
 }
 
 const STATUS_MAP: { [key: string]: string } = {
-    "0": "pending",   // 进行中
+    "0": "pending", // 进行中
     "1": "open", // 已提交
-    "2": "closed",      // 已逾期
+    "2": "closed", // 已逾期
 };
 
 const AssignmentSubmit: React.FC = () => {
@@ -124,8 +124,8 @@ const AssignmentSubmit: React.FC = () => {
             }
 
             // 检查文件类型（根据API返回的file_type字段进行验证）
-            const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-            const allowedTypes = assignment.file_type.split(',').map(type => type.trim());
+            const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
+            const allowedTypes = assignment.file_type.split(",").map((type) => type.trim());
 
             if (!allowedTypes.includes(fileExtension)) {
                 message.error(`文件 ${file.name} 格式不支持，仅支持 ${assignment.file_type}`);
@@ -158,7 +158,7 @@ const AssignmentSubmit: React.FC = () => {
             // 使用 FileService 上传文件
             const uploadResult = await FileService.uploadFile({
                 dir_name: `${assignment.name}`, // 使用作业ID作为目录名
-                files: files
+                files: files,
             });
 
             console.log("文件上传成功:", uploadResult);
@@ -184,10 +184,10 @@ const AssignmentSubmit: React.FC = () => {
     const formatDate = (timestamp: number) => {
         const date = new Date(timestamp * 1000);
         const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        const h = String(date.getHours()).padStart(2, '0');
-        const min = String(date.getMinutes()).padStart(2, '0');
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        const h = String(date.getHours()).padStart(2, "0");
+        const min = String(date.getMinutes()).padStart(2, "0");
         return `${y}-${m}-${d} ${h}:${min}`;
     };
 
@@ -202,35 +202,15 @@ const AssignmentSubmit: React.FC = () => {
         const priorityStr = PRIORITY_NUMBER_MAP_STR[priority] || "medium";
         switch (priorityStr) {
             case "urgent":
-                return (
-                    <span className={`${styles.priorityBadge} ${styles.priorityUrgent}`}>
-                        紧急
-                    </span>
-                );
+                return <span className={`${styles.priorityBadge} ${styles.priorityUrgent}`}>紧急</span>;
             case "high":
-                return (
-                    <span className={`${styles.priorityBadge} ${styles.priorityHigh}`}>
-                        高优先级
-                    </span>
-                );
+                return <span className={`${styles.priorityBadge} ${styles.priorityHigh}`}>高优先级</span>;
             case "medium":
-                return (
-                    <span className={`${styles.priorityBadge} ${styles.priorityMedium}`}>
-                        中优先级
-                    </span>
-                );
+                return <span className={`${styles.priorityBadge} ${styles.priorityMedium}`}>中优先级</span>;
             case "low":
-                return (
-                    <span className={`${styles.priorityBadge} ${styles.priorityLow}`}>
-                        低优先级
-                    </span>
-                );
+                return <span className={`${styles.priorityBadge} ${styles.priorityLow}`}>低优先级</span>;
             default:
-                return (
-                    <span className={`${styles.priorityBadge} ${styles.priorityMedium}`}>
-                        中优先级
-                    </span>
-                );
+                return <span className={`${styles.priorityBadge} ${styles.priorityMedium}`}>中优先级</span>;
         }
     };
 
@@ -343,15 +323,11 @@ const AssignmentSubmit: React.FC = () => {
                                 </div>
                                 <div className={styles.infoCard}>
                                     <span className={styles.infoLabel}>优先级</span>
-                                    <span className={styles.infoValue}>
-                                        {getPriorityBadge(assignment.priority)}
-                                    </span>
+                                    <span className={styles.infoValue}>{getPriorityBadge(assignment.priority)}</span>
                                 </div>
                                 <div className={styles.infoCard}>
                                     <span className={styles.infoLabel}>文件大小限制</span>
-                                    <span className={styles.infoValue}>
-                                        {Math.round(assignment.file_size)} MB
-                                    </span>
+                                    <span className={styles.infoValue}>{Math.round(assignment.file_size)} MB</span>
                                 </div>
                                 <div className={styles.infoCard}>
                                     <span className={styles.infoLabel}>允许文件格式</span>
@@ -392,10 +368,14 @@ const AssignmentSubmit: React.FC = () => {
                                             <FaCloudUploadAlt />
                                         </div>
                                         <div className={styles.uploadTitle}>
-                                            {isAssignmentOpen() ? "点击或拖拽文件到此处上传" : "任务已关闭，无法上传文件"}
+                                            {isAssignmentOpen()
+                                                ? "点击或拖拽文件到此处上传"
+                                                : "任务已关闭，无法上传文件"}
                                         </div>
                                         <div className={styles.uploadDesc}>
-                                            {isAssignmentOpen() ? `支持 ${assignment.file_type} 格式文件` : "请联系管理员重新开启作业提交"}
+                                            {isAssignmentOpen()
+                                                ? `支持 ${assignment.file_type} 格式文件`
+                                                : "请联系管理员重新开启作业提交"}
                                         </div>
                                         <div className={styles.uploadLimit}>
                                             单个文件不超过 {Math.round(assignment.file_size)}MB

@@ -138,6 +138,12 @@
     margin-top: auto;
 }
 
+.buttonGroup {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
 .deadline {
     display: flex;
     align-items: center;
@@ -171,6 +177,19 @@
     background: var(--button-secondary);
     color: var(--text-primary);
     border: 1px solid var(--border-primary);
+}
+
+.viewBtn {
+    padding: 0.5rem;
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+    min-width: 36px;
+    justify-content: center;
+}
+
+.viewBtn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 .btnSecondary:hover {

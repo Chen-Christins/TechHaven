@@ -80,10 +80,10 @@ const PAGE_SIZE = 15;
 const TASKS_PAGE_SIZE = 15; // 任务列表每页显示的条数
 
 const statusClassMap = {
-    "draft": styles.statusDraft,
-    "active": styles.statusActive,
-    "closed": styles.statusClosed,
-  // 其它状态...
+    draft: styles.statusDraft,
+    active: styles.statusActive,
+    closed: styles.statusClosed,
+    // 其它状态...
 };
 
 const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
@@ -645,8 +645,8 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                     {tasksTotal > 0 && (
                         <div className={styles.pagination}>
                             <div className={styles.paginationInfo}>
-                                显示 {(tasksPage - 1) * TASKS_PAGE_SIZE + 1} - {Math.min(tasksPage * TASKS_PAGE_SIZE, tasksTotal)} 条， 共{" "}
-                                {tasksTotal} 条记录
+                                显示 {(tasksPage - 1) * TASKS_PAGE_SIZE + 1} -{" "}
+                                {Math.min(tasksPage * TASKS_PAGE_SIZE, tasksTotal)} 条， 共 {tasksTotal} 条记录
                             </div>
                             <div className={styles.paginationControls}>
                                 <button
@@ -764,7 +764,9 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                             <div className={styles.detailGroup}>
                                 <div className={styles.detailLabel}>当前状态</div>
                                 <div className={styles.detailValue}>
-                                    <span className={`${styles.statusBadge} ${statusClassMap[selectedTask.status] || ""}`}>
+                                    <span
+                                        className={`${styles.statusBadge} ${statusClassMap[selectedTask.status] || ""}`}
+                                    >
                                         {selectedTask.status === "draft" && <FaHourglassHalf />}
                                         {selectedTask.status === "draft" && "草稿"}
                                         {selectedTask.status === "active" && <FaPlayCircle />}

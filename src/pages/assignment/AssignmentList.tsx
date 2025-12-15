@@ -7,6 +7,7 @@ import {
     FaCalendarAlt,
     FaClipboardList,
     FaTasks,
+    FaEye,
 } from "react-icons/fa";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
@@ -29,8 +30,8 @@ interface Assignment {
 }
 
 const STATUS_MAP: { [key: number]: string } = {
-    1: "open",      // 开启中
-    2: "closed",    // 已关闭
+    1: "open", // 开启中
+    2: "closed", // 已关闭
 };
 
 const AssignmentList: React.FC = () => {
@@ -46,7 +47,7 @@ const AssignmentList: React.FC = () => {
                 setDataLoading(true);
                 setError(null);
                 const response = await AssignmentService.getUserAssignments();
-                setAssignments(response.list);
+                setAssignments(response.list || []);
             } catch (err: any) {
                 setError(err.message || "获取作业列表失败");
             } finally {
@@ -90,8 +91,8 @@ const AssignmentList: React.FC = () => {
     const formatDate = (timestamp: number) => {
         const date = new Date(timestamp * 1000);
         const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
         return `${y}-${m}-${d}`;
     };
 
@@ -112,7 +113,7 @@ const AssignmentList: React.FC = () => {
                                 >
                                     全部
                                 </button>
-                                                                <button
+                                <button
                                     className={`${styles.filterBtn} ${filter === "open" ? styles.active : ""}`}
                                     onClick={() => setFilter("open")}
                                 >
@@ -194,12 +195,22 @@ const AssignmentList: React.FC = () => {
                                                 <FaCalendarAlt />
                                                 {formatDate(item.end_time)} 截止
                                             </div>
-                                            <button
-                                                className={`${styles.actionBtn} ${STATUS_MAP[item.status] === "closed" ? styles.btnSecondary : styles.btnPrimary}`}
-                                                onClick={() => navigate(`/assignment/submit/${item.id}`)}
-                                            >
-                                                {STATUS_MAP[item.status] === "closed" ? "查看详情" : "去提交"} <FaArrowRight />
-                                            </button>
+                                            <div className={styles.buttonGroup}>
+                                                <button
+                                                    className={`${styles.actionBtn} ${styles.viewBtn}`}
+                                                    onClick={() => navigate(`/assignment/submissions/${item.id}`)}
+                                                    title="查看提交详情"
+                                                >
+                                                    <FaEye />
+                                                </button>
+                                                <button
+                                                    className={`${styles.actionBtn} ${STATUS_MAP[item.status] === "closed" ? styles.btnSecondary : styles.btnPrimary}`}
+                                                    onClick={() => navigate(`/assignment/submit/${item.id}`)}
+                                                >
+                                                    {STATUS_MAP[item.status] === "closed" ? "查看详情" : "去提交"}{" "}
+                                                    <FaArrowRight />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

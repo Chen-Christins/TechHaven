@@ -91,8 +91,7 @@ export interface GetAdminAssignmentsResponse {
     }>;
 }
 
-export interface GetUserAssignmentsParams {
-}
+export interface GetUserAssignmentsParams {}
 
 export interface GetUserAssignmentsResponse {
     total: number;
@@ -138,6 +137,25 @@ export interface GetAssignmentDetailResponse {
     end_time: number;
     file_size: number;
     file_type: string;
+}
+
+export interface AssignmentSubmissionItem {
+    id: string | number;
+    user_id: string | number;
+    username: string;
+    user_avatar?: string;
+    file_name: string;
+    file_size: number;
+    file_url: string;
+    submit_time: number;
+    status: "submitted" | "late" | "pending";
+    score?: number;
+    feedback?: string;
+}
+
+export interface GetAssignmentSubmissionsResponse {
+    total: number;
+    list: Array<AssignmentSubmissionItem>;
 }
 
 /**
@@ -200,7 +218,9 @@ export class AssignmentService {
     /**
      * 创建组织作业 (Organization Admin)
      */
-    static async createOrganizationAssignment(params: CreateOrganizationAssignmentParams): Promise<CreateOrganizationAssignmentResponse> {
+    static async createOrganizationAssignment(
+        params: CreateOrganizationAssignmentParams,
+    ): Promise<CreateOrganizationAssignmentResponse> {
         const formData = new URLSearchParams();
         if (params.assign_id !== undefined && params.assign_id !== null && params.assign_id !== "") {
             formData.append("assign_id", String(params.assign_id));
@@ -215,15 +235,21 @@ export class AssignmentService {
         formData.append("file_type", params.file_type);
         formData.append("description", params.description);
 
-        const response = await http.post<CreateOrganizationAssignmentResponse>("/organization/assignment_create", formData.toString(), {
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
+        const response = await http.post<CreateOrganizationAssignmentResponse>(
+            "/organization/assignment_create",
+            formData.toString(),
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
             },
-        });
+        );
         return response.data;
     }
 
-    static async getOrganizationAssignments(params: OrganizationAssignmentListItem): Promise<OrganizationAssignmentListResponse> {
+    static async getOrganizationAssignments(
+        params: OrganizationAssignmentListItem,
+    ): Promise<OrganizationAssignmentListResponse> {
         let url = `/organization/assignment_list?org_id=${params.org_id}&page_num=${params.page_num}&page_size=${params.page_size}`;
         if (params.status != -1) {
             url += `&status=${params.status}`;
@@ -244,6 +270,15 @@ export class AssignmentService {
         let url = `/assignment/detail?id=${params.id}`;
 
         const response = await http.get<GetAssignmentDetailResponse>(url);
+        return response.data;
+    }
+
+    static async getAssignmentSubmissions(
+        params: GetAssignmentDetailParams,
+    ): Promise<GetAssignmentSubmissionsResponse> {
+        let url = `/assignment/submissions?assignment_id=${params.id}`;
+
+        const response = await http.get<GetAssignmentSubmissionsResponse>(url);
         return response.data;
     }
 }

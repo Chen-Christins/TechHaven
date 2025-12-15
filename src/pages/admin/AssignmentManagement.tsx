@@ -111,23 +111,27 @@ const AssignmentManagement: React.FC = () => {
                 id: String(item.id),
                 title: item.name,
                 courseName: item.subject_name,
-                deadline: new Date(item.end_time * 1000).toLocaleString("zh-CN", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                    hour12: false
-                }).replace(/\//g, "-"),
+                deadline: new Date(item.end_time * 1000)
+                    .toLocaleString("zh-CN", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                        hour12: false,
+                    })
+                    .replace(/\//g, "-"),
                 status: STATE_NUMBER_MAP_STR[Number(item.status)] as "active" | "draft" | "closed",
                 submissionCount: 0, // 暂无数据
                 totalStudents: 0, // 暂无数据
-                createdAt: new Date(item.create_time * 1000).toLocaleDateString("zh-CN", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit"
-                }).replace(/\//g, "-"),
+                createdAt: new Date(item.create_time * 1000)
+                    .toLocaleDateString("zh-CN", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                    })
+                    .replace(/\//g, "-"),
                 description: item.description,
                 priority: PRIORITY_NUMBER_MAP_STR[item.priority] as "low" | "medium" | "high" | "urgent",
                 maxFileSize: item.file_size,
@@ -152,7 +156,7 @@ const AssignmentManagement: React.FC = () => {
     const openEditModal = (assignment: Assignment) => {
         setCurrentAssignment(assignment);
         // 将格式化的时间字符串转换为ISO格式供DatePicker使用
-        const deadlineDate = assignment.deadline ? new Date(assignment.deadline.replace(/\//g, '-')) : null;
+        const deadlineDate = assignment.deadline ? new Date(assignment.deadline.replace(/\//g, "-")) : null;
         setFormData({
             title: assignment.title,
             courseName: assignment.courseName,
@@ -704,7 +708,7 @@ const AssignmentManagement: React.FC = () => {
                             }
                             size="large"
                             className={styles.formInput}
-                            style={{ width: "100%"}}
+                            style={{ width: "100%" }}
                             placeholder="请选择截止时间"
                             format="YYYY-MM-DD HH:mm:ss"
                         />

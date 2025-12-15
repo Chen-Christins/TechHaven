@@ -66,26 +66,26 @@ const DatePicker: React.FC<DatePickerProps> = ({
     const displayedDate = isControlled ? value : selectedDate;
 
     // 获取 showTime 配置
-    const showTimeConfig = typeof showTime === 'object' ? showTime : {};
+    const showTimeConfig = typeof showTime === "object" ? showTime : {};
     const isShowTime = Boolean(showTime);
 
     // 根据 picker 和 showTime 确定默认格式
     const getDefaultFormat = () => {
         if (format) return format;
 
-        if (picker === 'year') return 'YYYY';
-        if (picker === 'month') return 'YYYY-MM';
-        if (picker === 'time') {
-            const timeFormat = showTimeConfig.format || 'HH:mm:ss';
+        if (picker === "year") return "YYYY";
+        if (picker === "month") return "YYYY-MM";
+        if (picker === "time") {
+            const timeFormat = showTimeConfig.format || "HH:mm:ss";
             return timeFormat;
         }
 
         if (isShowTime) {
-            const timeFormat = showTimeConfig.format || 'HH:mm:ss';
+            const timeFormat = showTimeConfig.format || "HH:mm:ss";
             return `YYYY-MM-DD ${timeFormat}`;
         }
 
-        return 'YYYY-MM-DD';
+        return "YYYY-MM-DD";
     };
 
     const actualFormat = getDefaultFormat();
@@ -93,8 +93,18 @@ const DatePicker: React.FC<DatePickerProps> = ({
     // 星期和月份的中文显示
     const weekDays = ["日", "一", "二", "三", "四", "五", "六"];
     const monthNames = [
-        "一月", "二月", "三月", "四月", "五月", "六月",
-        "七月", "八月", "九月", "十月", "十一月", "十二月"
+        "一月",
+        "二月",
+        "三月",
+        "四月",
+        "五月",
+        "六月",
+        "七月",
+        "八月",
+        "九月",
+        "十月",
+        "十一月",
+        "十二月",
     ];
 
     // 格式化日期
@@ -182,12 +192,16 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
     // 切换月份
     const changeMonth = (direction: "prev" | "next") => {
-        setCurrentViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() + (direction === "prev" ? -1 : 1), 1));
+        setCurrentViewDate(
+            (prev) => new Date(prev.getFullYear(), prev.getMonth() + (direction === "prev" ? -1 : 1), 1),
+        );
     };
 
     // 切换年份
     const changeYear = (direction: "prev" | "next") => {
-        setCurrentViewDate(prev => new Date(prev.getFullYear() + (direction === "prev" ? -1 : 1), prev.getMonth(), 1));
+        setCurrentViewDate(
+            (prev) => new Date(prev.getFullYear() + (direction === "prev" ? -1 : 1), prev.getMonth(), 1),
+        );
     };
 
     // 选择日期
@@ -211,15 +225,15 @@ const DatePicker: React.FC<DatePickerProps> = ({
     };
 
     // 时间选择处理
-    const handleTimeChange = (type: 'hour' | 'minute' | 'second', value: number) => {
+    const handleTimeChange = (type: "hour" | "minute" | "second", value: number) => {
         switch (type) {
-            case 'hour':
+            case "hour":
                 setCurrentHour(value);
                 break;
-            case 'minute':
+            case "minute":
                 setCurrentMinute(value);
                 break;
-            case 'second':
+            case "second":
                 setCurrentSecond(value);
                 break;
         }
@@ -227,9 +241,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
         // 如果有选中的日期，实时更新
         if (displayedDate) {
             const updatedDate = new Date(displayedDate);
-            if (type === 'hour') updatedDate.setHours(value);
-            if (type === 'minute') updatedDate.setMinutes(value);
-            if (type === 'second') updatedDate.setSeconds(value);
+            if (type === "hour") updatedDate.setHours(value);
+            if (type === "minute") updatedDate.setMinutes(value);
+            if (type === "second") updatedDate.setSeconds(value);
 
             if (!isControlled) {
                 setSelectedDate(updatedDate);
@@ -342,7 +356,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
     // 渲染时间选择器
     const renderTimePicker = () => {
-        if (!isShowTime && picker !== 'time') return null;
+        if (!isShowTime && picker !== "time") return null;
 
         const hours = generateHours();
         const minutes = generateMinutes(currentHour);
@@ -357,14 +371,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
                     <div className={styles.timeColumn}>
                         <div className={styles.timeLabel}>时</div>
                         <div className={styles.timeList}>
-                            {hours.map(hour => (
+                            {hours.map((hour) => (
                                 <button
                                     key={hour}
                                     type="button"
                                     className={`${styles.timeOption} ${currentHour === hour ? styles.selected : ""}`}
-                                    onClick={() => handleTimeChange('hour', hour)}
+                                    onClick={() => handleTimeChange("hour", hour)}
                                 >
-                                    {String(hour).padStart(2, '0')}
+                                    {String(hour).padStart(2, "0")}
                                 </button>
                             ))}
                         </div>
@@ -374,14 +388,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
                     <div className={styles.timeColumn}>
                         <div className={styles.timeLabel}>分</div>
                         <div className={styles.timeList}>
-                            {minutes.map(minute => (
+                            {minutes.map((minute) => (
                                 <button
                                     key={minute}
                                     type="button"
                                     className={`${styles.timeOption} ${currentMinute === minute ? styles.selected : ""}`}
-                                    onClick={() => handleTimeChange('minute', minute)}
+                                    onClick={() => handleTimeChange("minute", minute)}
                                 >
-                                    {String(minute).padStart(2, '0')}
+                                    {String(minute).padStart(2, "0")}
                                 </button>
                             ))}
                         </div>
@@ -391,14 +405,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
                     <div className={styles.timeColumn}>
                         <div className={styles.timeLabel}>秒</div>
                         <div className={styles.timeList}>
-                            {seconds.map(second => (
+                            {seconds.map((second) => (
                                 <button
                                     key={second}
                                     type="button"
                                     className={`${styles.timeOption} ${currentSecond === second ? styles.selected : ""}`}
-                                    onClick={() => handleTimeChange('second', second)}
+                                    onClick={() => handleTimeChange("second", second)}
                                 >
-                                    {String(second).padStart(2, '0')}
+                                    {String(second).padStart(2, "0")}
                                 </button>
                             ))}
                         </div>
@@ -410,14 +424,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
     // 渲染日期选择器
     const renderDatePicker = () => {
-        if (picker === 'time') return null;
+        if (picker === "time") return null;
 
         return (
             <>
                 <div className={styles.datePickerHeader}>
                     <div className={styles.headerNavigation}>
                         <div className={styles.yearMonthNavigation}>
-                            {picker !== 'year' && (
+                            {picker !== "year" && (
                                 <>
                                     <button
                                         type="button"
@@ -426,7 +440,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
                                     >
                                         «
                                     </button>
-                                    {picker !== 'month' && (
+                                    {picker !== "month" && (
                                         <button
                                             type="button"
                                             className={styles.navButton}
@@ -438,14 +452,13 @@ const DatePicker: React.FC<DatePickerProps> = ({
                                 </>
                             )}
                             <span className={styles.headerText}>
-                                {picker === 'year'
+                                {picker === "year"
                                     ? `${Math.floor(year / 10) * 10 - 1} - ${Math.floor(year / 10) * 10 + 10} 年代`
-                                    : `${year}年 ${picker === 'month' ? '' : monthNames[month]}`
-                                }
+                                    : `${year}年 ${picker === "month" ? "" : monthNames[month]}`}
                             </span>
-                            {picker !== 'year' && (
+                            {picker !== "year" && (
                                 <>
-                                    {picker !== 'month' && (
+                                    {picker !== "month" && (
                                         <button
                                             type="button"
                                             className={styles.navButton}
@@ -467,10 +480,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
                     </div>
                 </div>
 
-                {picker !== 'year' && picker !== 'month' && (
+                {picker !== "year" && picker !== "month" && (
                     <div className={styles.datePickerBody}>
                         <div className={styles.weekHeader}>
-                            {weekDays.map(day => (
+                            {weekDays.map((day) => (
                                 <div key={day} className={styles.weekDay}>
                                     {day}
                                 </div>
@@ -506,12 +519,13 @@ const DatePicker: React.FC<DatePickerProps> = ({
                     </div>
                 )}
 
-                {picker === 'month' && (
+                {picker === "month" && (
                     <div className={styles.monthsGrid}>
                         {monthNames.map((monthName, index) => {
                             const monthDate = new Date(year, index, 1);
                             const selectable = isDateSelectable(monthDate);
-                            const selected = displayedDate?.getMonth() === index && displayedDate?.getFullYear() === year;
+                            const selected =
+                                displayedDate?.getMonth() === index && displayedDate?.getFullYear() === year;
 
                             return (
                                 <button
@@ -532,7 +546,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
                     </div>
                 )}
 
-                {picker === 'year' && (
+                {picker === "year" && (
                     <div className={styles.yearsGrid}>
                         {Array.from({ length: 12 }, (_, i) => {
                             const startYear = Math.floor(year / 10) * 10 - 1;
@@ -564,11 +578,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
     };
 
     return (
-        <div
-            className={`${styles.datePicker} ${className}`}
-            style={style}
-            ref={dropdownRef}
-        >
+        <div className={`${styles.datePicker} ${className}`} style={style} ref={dropdownRef}>
             <Input
                 value={inputValue}
                 onChange={handleInputChange}
@@ -579,11 +589,17 @@ const DatePicker: React.FC<DatePickerProps> = ({
                 size={size}
                 readOnly
                 suffix={
-                    <span
-                        className={styles.calendarIcon}
-                        onClick={() => !disabled && setIsOpen(!isOpen)}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <span className={styles.calendarIcon} onClick={() => !disabled && setIsOpen(!isOpen)}>
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                             <line x1="16" y1="2" x2="16" y2="6"></line>
                             <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -595,11 +611,12 @@ const DatePicker: React.FC<DatePickerProps> = ({
             />
 
             {isOpen && !disabled && (
-                <div className={`${styles.datePickerDropdown} ${
-                    picker === 'time' ? styles.timeOnly :
-                    (isShowTime ? styles.withTime : "")
-                }`}>
-                    {picker !== 'time' && (
+                <div
+                    className={`${styles.datePickerDropdown} ${
+                        picker === "time" ? styles.timeOnly : isShowTime ? styles.withTime : ""
+                    }`}
+                >
+                    {picker !== "time" && (
                         <div className={styles.datePickerContent}>
                             {renderDatePicker()}
                             {!isShowTime && (

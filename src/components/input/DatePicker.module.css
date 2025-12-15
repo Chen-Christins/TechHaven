@@ -3,8 +3,16 @@
 .datePicker {
     position: relative;
     display: inline-block;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    font-family:
+        "Inter",
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        "PingFang SC",
+        "Microsoft YaHei",
+        sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 .calendarIcon {
@@ -91,20 +99,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .navButton:hover:not(:disabled) {
     background: linear-gradient(135deg, var(--primary, #3b82f6) 0%, var(--primary-hover, #60a5fa) 100%);
     color: white;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15), 0 2px 4px rgba(0, 0, 0, 0.08);
+    box-shadow:
+        0 4px 12px rgba(59, 130, 246, 0.15),
+        0 2px 4px rgba(0, 0, 0, 0.08);
     border-color: transparent;
 }
 
 .navButton:active:not(:disabled) {
     transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow:
+        0 2px 6px rgba(59, 130, 246, 0.2),
+        inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .navButton:disabled {
@@ -191,7 +205,7 @@
 }
 
 .dayCell.today::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 3px;
     left: 50%;
@@ -208,7 +222,9 @@
     color: white;
     font-weight: 600;
     border-radius: 6px;
-    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2), 0 0 0 1px rgba(59, 130, 246, 0.1);
+    box-shadow:
+        0 2px 6px rgba(59, 130, 246, 0.2),
+        0 0 0 1px rgba(59, 130, 246, 0.1);
 }
 
 .dayCell.selected:hover {
@@ -256,7 +272,9 @@
 
 .todayButton:active:not(:disabled) {
     transform: translateY(0);
-    box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow:
+        0 1px 3px rgba(59, 130, 246, 0.2),
+        inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .todayButton:disabled {
