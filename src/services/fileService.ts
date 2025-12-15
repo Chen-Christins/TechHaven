@@ -5,6 +5,8 @@ import http from "../utils/http";
  */
 export interface UploadFileParams {
     dir_name: string;
+    biz_type: string;
+    biz_id: string;
     files: File[];
 }
 
@@ -20,6 +22,7 @@ export class FileService {
     static async uploadFile(params: UploadFileParams) {
         const formData = new FormData();
         formData.append("dir_name", params.dir_name);
+        formData.append("biz_info", params.biz_type + "|" + params.biz_id);
         params.files.forEach((file) => {
             formData.append("file", file);
         });

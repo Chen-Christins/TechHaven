@@ -332,6 +332,87 @@
     background-color: var(--primary-dark);
 }
 
+.fileActions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.downloadAllBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.downloadAllBtn:hover {
+    background-color: var(--primary-dark);
+}
+
+.toggleBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.toggleBtn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-primary);
+}
+
+/* 多文件列表样式 */
+.filesList {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-secondary);
+}
+
+.filesListHeader {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.fileItem {
+    margin-bottom: 0.75rem;
+}
+
+.fileItem:last-child {
+    margin-bottom: 0;
+}
+
+.fileTypeIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background-color: var(--bg-tertiary);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    margin-right: 0.75rem;
+}
+
 /* 反馈区域 */
 .feedback {
     padding: 1rem;
@@ -514,6 +595,16 @@
     }
 
     .downloadBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .downloadAllBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .toggleBtn {
         width: 100%;
         justify-content: center;
     }

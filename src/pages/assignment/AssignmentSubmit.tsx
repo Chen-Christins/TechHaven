@@ -64,7 +64,10 @@ const AssignmentSubmit: React.FC = () => {
                 setAssignment(response);
             } catch (err: any) {
                 setError(err.message || "获取作业详情失败");
-                message.error(err.message || "获取作业详情失败");
+                // 如果不是资源不存在才弹窗提示
+                if (!err.message || !/不存在|not found|404/i.test(err.message)) {
+                    message.error(err.message || "获取作业详情失败");
+                }
                 // 延迟跳转，让用户看到错误信息
                 setTimeout(() => {
                     navigate("/assignments");
@@ -158,6 +161,8 @@ const AssignmentSubmit: React.FC = () => {
             // 使用 FileService 上传文件
             const uploadResult = await FileService.uploadFile({
                 dir_name: `${assignment.name}`, // 使用作业ID作为目录名
+                biz_type: "assignment_submission",
+                biz_id: String(assignment.id),
                 files: files,
             });
 

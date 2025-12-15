@@ -13,6 +13,8 @@ import {
     FaHourglassHalf,
     FaChevronLeft,
     FaChevronRight,
+    FaChevronDown,
+    FaChevronUp,
 } from "react-icons/fa";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
@@ -33,14 +35,19 @@ interface Assignment {
     file_type: string;
 }
 
+interface SubmissionFile {
+    id: string | number;
+    file_name: string;
+    file_size: number;
+    file_url: string;
+}
+
 interface AssignmentSubmissionItem {
     id: string | number;
     user_id: string | number;
     username: string;
     user_avatar?: string;
-    file_name: string;
-    file_size: number;
-    file_url: string;
+    files: SubmissionFile[]; // 改为文件数组
     submit_time: number;
     status: "submitted" | "late" | "pending";
     score?: number;
@@ -56,6 +63,7 @@ const AssignmentSubmissions: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize] = useState(3); // 设置为3条每页以便测试分页
+    const [expandedSubmissions, setExpandedSubmissions] = useState<Set<string | number>>(new Set());
 
     useEffect(() => {
         const fetchData = async () => {
@@ -79,45 +87,96 @@ const AssignmentSubmissions: React.FC = () => {
 
                 // Mock数据
                 const mockSubmissions: AssignmentSubmissionItem[] = [
-                    // {
-                    //     id: 1,
-                    //     user_id: 101,
-                    //     username: "张三",
-                    //     user_avatar: "",
-                    //     file_name: "数据结构作业.pdf",
-                    //     file_size: 2048576,
-                    //     file_url: "/files/mock/数据结构作业.pdf",
-                    //     submit_time: Math.floor(Date.now() / 1000) - 86400,
-                    //     status: "submitted",
-                    //     score: 95,
-                    //     feedback: "完成得很好！代码逻辑清晰，注释完整。",
-                    // },
-                    // {
-                    //     id: 2,
-                    //     user_id: 102,
-                    //     username: "李四",
-                    //     user_avatar: "",
-                    //     file_name: "homework2.docx",
-                    //     file_size: 1536000,
-                    //     file_url: "/files/mock/homework2.docx",
-                    //     submit_time: Math.floor(Date.now() / 1000) - 172800,
-                    //     status: "late",
-                    //     score: 88,
-                    //     feedback: "内容不错，但提交晚了两天。算法实现正确，建议优化时间复杂度。",
-                    // },
-                    // {
-                    //     id: 3,
-                    //     user_id: 103,
-                    //     username: "王五",
-                    //     user_avatar: "",
-                    //     file_name: "assignment.zip",
-                    //     file_size: 5120000,
-                    //     file_url: "/files/mock/assignment.zip",
-                    //     submit_time: Math.floor(Date.now() / 1000) - 3600,
-                    //     status: "submitted",
-                    //     score: 92,
-                    //     feedback: "优秀！代码结构良好，测试用例覆盖全面。"
-                    // },
+                    {
+                        id: 1,
+                        user_id: 101,
+                        username: "张三",
+                        user_avatar: "",
+                        files: [
+                            {
+                                id: 1011,
+                                file_name: "数据结构作业.pdf",
+                                file_size: 2048576,
+                                file_url: "/files/mock/数据结构作业.pdf",
+                            },
+                            {
+                                id: 1012,
+                                file_name: "源代码.zip",
+                                file_size: 1536000,
+                                file_url: "/files/mock/源代码.zip",
+                            },
+                            {
+                                id: 1013,
+                                file_name: "测试报告.docx",
+                                file_size: 512000,
+                                file_url: "/files/mock/测试报告.docx",
+                            },
+                            {
+                                id: 1014,
+                                file_name: "实验数据.xlsx",
+                                file_size: 256000,
+                                file_url: "/files/mock/实验数据.xlsx",
+                            },
+                            {
+                                id: 1015,
+                                file_name: "演示文稿.pptx",
+                                file_size: 3072000,
+                                file_url: "/files/mock/演示文稿.pptx",
+                            },
+                            {
+                                id: 1016,
+                                file_name: "参考文献.pdf",
+                                file_size: 1280000,
+                                file_url: "/files/mock/参考文献.pdf",
+                            }
+                        ],
+                        submit_time: Math.floor(Date.now() / 1000) - 86400,
+                        status: "submitted",
+                        score: 95,
+                        feedback: "完成得很好！代码逻辑清晰，注释完整。",
+                    },
+                    {
+                        id: 2,
+                        user_id: 102,
+                        username: "李四",
+                        user_avatar: "",
+                        files: [
+                            {
+                                id: 1021,
+                                file_name: "算法实现.pdf",
+                                file_size: 1536000,
+                                file_url: "/files/mock/算法实现.pdf",
+                            },
+                            {
+                                id: 1022,
+                                file_name: "演示视频.mp4",
+                                file_size: 8192000,
+                                file_url: "/files/mock/演示视频.mp4",
+                            }
+                        ],
+                        submit_time: Math.floor(Date.now() / 1000) - 172800,
+                        status: "late",
+                        score: 88,
+                        feedback: "内容不错，但提交晚了两天。算法实现正确，建议优化时间复杂度。",
+                    },
+                    {
+                        id: 3,
+                        user_id: 103,
+                        username: "王五",
+                        user_avatar: "",
+                        files: [
+                            {
+                                id: 1031,
+                                file_name: "项目报告.pdf",
+                                file_size: 5120000,
+                                file_url: "/files/mock/项目报告.pdf",
+                            }
+                        ],
+                        submit_time: Math.floor(Date.now() / 1000) - 3600,
+                        status: "submitted",
+                        score: 92,
+                        feedback: "优秀！代码结构良好，测试用例覆盖全面。"
+                    },
                     // {
                     //     id: 4,
                     //     user_id: 104,
@@ -274,14 +333,30 @@ const AssignmentSubmissions: React.FC = () => {
         return <span className={className}>{score} 分</span>;
     };
 
-    const handleDownload = (submission: AssignmentSubmissionItem) => {
+    const handleDownload = (file: SubmissionFile) => {
         // 创建一个临时链接来下载文件
         const link = document.createElement("a");
-        link.href = submission.file_url;
-        link.download = submission.file_name;
+        link.href = file.file_url;
+        link.download = file.file_name;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    };
+
+    const getTotalFileSize = (files: SubmissionFile[]) => {
+        return files.reduce((total, file) => total + file.file_size, 0);
+    };
+
+    const toggleSubmissionExpansion = (submissionId: string | number) => {
+        setExpandedSubmissions(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(submissionId)) {
+                newSet.delete(submissionId);
+            } else {
+                newSet.add(submissionId);
+            }
+            return newSet;
+        });
     };
 
     if (loading) {
@@ -415,19 +490,79 @@ const AssignmentSubmissions: React.FC = () => {
                                                     <div className={styles.fileDetails}>
                                                         <FaFileAlt className={styles.fileIcon} />
                                                         <div>
-                                                            <p className={styles.fileName}>{submission.file_name}</p>
+                                                            <p className={styles.fileName}>
+                                                                {submission.files.length === 1
+                                                                    ? submission.files[0].file_name
+                                                                    : `${submission.files.length} 个文件`}
+                                                            </p>
                                                             <p className={styles.fileSize}>
-                                                                {formatFileSize(submission.file_size)}
+                                                                总大小: {formatFileSize(getTotalFileSize(submission.files))}
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <button
-                                                        className={styles.downloadBtn}
-                                                        onClick={() => handleDownload(submission)}
-                                                    >
-                                                        <FaDownload /> 下载
-                                                    </button>
+                                                    <div className={styles.fileActions}>
+                                                        {submission.files.length === 1 ? (
+                                                            <button
+                                                                className={styles.downloadBtn}
+                                                                onClick={() => handleDownload(submission.files[0])}
+                                                            >
+                                                                <FaDownload /> 下载
+                                                            </button>
+                                                        ) : (
+                                                            <>
+                                                                <button className={styles.downloadAllBtn}>
+                                                                    <FaDownload /> 打包下载
+                                                                </button>
+                                                                <button
+                                                                    className={styles.toggleBtn}
+                                                                    onClick={() => toggleSubmissionExpansion(submission.id)}
+                                                                >
+                                                                    {expandedSubmissions.has(submission.id) ? (
+                                                                        <>
+                                                                            <FaChevronUp /> 收起
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <FaChevronDown /> 展开
+                                                                        </>
+                                                                    )}
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
+
+                                                {/* 可折叠的多文件列表 */}
+                                                {submission.files.length > 1 && expandedSubmissions.has(submission.id) && (
+                                                    <div className={styles.filesList}>
+                                                        <div className={styles.filesListHeader}>
+                                                            <span>文件列表 ({submission.files.length})</span>
+                                                        </div>
+                                                        {submission.files.map((file) => (
+                                                            <div key={file.id} className={styles.fileItem}>
+                                                                <div className={styles.fileInfo}>
+                                                                    <div className={styles.fileDetails}>
+                                                                        <div className={styles.fileTypeIcon}>
+                                                                            <FaFileAlt />
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className={styles.fileName}>{file.file_name}</p>
+                                                                            <p className={styles.fileSize}>
+                                                                                {formatFileSize(file.file_size)}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <button
+                                                                        className={styles.downloadBtn}
+                                                                        onClick={() => handleDownload(file)}
+                                                                    >
+                                                                        <FaDownload />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
 
                                                 {submission.feedback && (
                                                     <div className={styles.feedback}>
