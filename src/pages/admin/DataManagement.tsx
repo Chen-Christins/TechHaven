@@ -113,7 +113,8 @@ const DataManagement: React.FC = () => {
     const itemsPerPage = 15; // 每页显示15条数据
 
     // 模拟备份记录数据
-    const mockBackups: BackupRecord[] = [
+    const mockBackups = useMemo<BackupRecord[]>(
+        () => [
         {
             id: "backup_1",
             name: "系统完整备份",
@@ -175,10 +176,13 @@ const DataManagement: React.FC = () => {
             createdBy: "管理员B",
             description: "数据迁移前的备份，执行失败",
         },
-    ];
+        ],
+        [],
+    );
 
     // 模拟导出记录数据
-    const mockExports: ExportRecord[] = [
+    const mockExports = useMemo<ExportRecord[]>(
+        () => [
         {
             id: "export_1",
             name: "文章数据导出",
@@ -238,7 +242,9 @@ const DataManagement: React.FC = () => {
             createdBy: "管理员A",
             downloadUrl: "/api/exports/download/export_5",
         },
-    ];
+        ],
+        [],
+    );
 
     // 加载数据
     useEffect(() => {
@@ -268,7 +274,7 @@ const DataManagement: React.FC = () => {
 
             setLoading(false);
         }, 1000);
-    }, []);
+    }, [mockBackups, mockExports]);
 
     // 筛选数据
     const filteredBackups = useMemo(() => {

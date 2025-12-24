@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import * as echarts from "echarts";
 import {
@@ -23,28 +23,31 @@ const Dashboard: React.FC = () => {
     const chartRef = useRef<HTMLDivElement>(null);
     const chartInstance = useRef<echarts.ECharts | null>(null);
 
-    const visitTrendData = {
-        "7天": [
-            { day: "周一", visits: 820, date: "11-15" },
-            { day: "周二", visits: 932, date: "11-16" },
-            { day: "周三", visits: 901, date: "11-17" },
-            { day: "周四", visits: 934, date: "11-18" },
-            { day: "周五", visits: 1290, date: "11-19" },
-            { day: "周六", visits: 1330, date: "11-20" },
-            { day: "周日", visits: 892, date: "11-21" },
-        ],
-        "30天": [
-            { day: "第1周", visits: 5800, date: "10-22~10-28" },
-            { day: "第2周", visits: 6200, date: "10-29~11-04" },
-            { day: "第3周", visits: 7100, date: "11-05~11-11" },
-            { day: "第4周", visits: 6892, date: "11-12~11-21" },
-        ],
-        "90天": [
-            { day: "9月", visits: 19800, date: "2024-09" },
-            { day: "10月", visits: 25900, date: "2024-10" },
-            { day: "11月", visits: 19892, date: "2024-11" },
-        ],
-    };
+    const visitTrendData = useMemo(
+        () => ({
+            "7天": [
+                { day: "周一", visits: 820, date: "11-15" },
+                { day: "周二", visits: 932, date: "11-16" },
+                { day: "周三", visits: 901, date: "11-17" },
+                { day: "周四", visits: 934, date: "11-18" },
+                { day: "周五", visits: 1290, date: "11-19" },
+                { day: "周六", visits: 1330, date: "11-20" },
+                { day: "周日", visits: 892, date: "11-21" },
+            ],
+            "30天": [
+                { day: "第1周", visits: 5800, date: "10-22~10-28" },
+                { day: "第2周", visits: 6200, date: "10-29~11-04" },
+                { day: "第3周", visits: 7100, date: "11-05~11-11" },
+                { day: "第4周", visits: 6892, date: "11-12~11-21" },
+            ],
+            "90天": [
+                { day: "9月", visits: 19800, date: "2024-09" },
+                { day: "10月", visits: 25900, date: "2024-10" },
+                { day: "11月", visits: 19892, date: "2024-11" },
+            ],
+        }),
+        [],
+    );
 
     // 模拟统计数据
     const stats = [

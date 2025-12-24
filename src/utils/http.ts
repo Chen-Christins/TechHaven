@@ -5,7 +5,8 @@ import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse,
  */
 export interface HttpResponse<T = any> {
     code: number | string;
-    message: string;
+    message?: string;
+    msg?: string;
     data: T;
     success: boolean;
 }
@@ -94,9 +95,8 @@ export interface LoginParams {
  * 登录响应数据
  */
 export interface LoginResponse {
-    data: LoginResponse;
-    token: string;
-    user: {
+    token?: string;
+    user?: {
         id: number;
         name: string;
         username: string;
@@ -298,7 +298,7 @@ class HttpClient {
                         } else {
                             // 业务错误，需要根据业务状态码进行错误映射
                             const businessCode = Number(data.code);
-                            const errorMsg = (data as any)?.msg || "请求失败";
+                            const errorMsg = (data as any)?.msg || (data as any)?.message || "请求失败";
                             let mappedMessage = errorMsg;
                             // // console.log('⚠️ 业务错误响应:', {
                             //     businessCode,
@@ -436,7 +436,7 @@ class HttpClient {
                     switch (status) {
                         case 400:
                             // 根据上下文判断具体错误类型
-                            const errorMsg = (data as any)?.msg || "请求参数错误";
+                            const errorMsg = (data as any)?.msg || (data as any)?.message || "请求参数错误";
                             if (errorMsg.includes("param account passwd empty")) {
                                 message = "账号和密码不能为空";
                             } else if (errorMsg.includes("no param")) {
@@ -449,7 +449,7 @@ class HttpClient {
                             break;
                         case 401:
                             // 根据上下文判断具体错误类型
-                            const authErrorMsg = (data as any)?.msg || "认证失败";
+                            const authErrorMsg = (data as any)?.msg || (data as any)?.message || "认证失败";
                             if (authErrorMsg.includes("email exists")) {
                                 message = "邮箱已被注册";
                             } else if (authErrorMsg.includes("account exists")) {
@@ -461,7 +461,7 @@ class HttpClient {
                             break;
                         case 402:
                             // 根据上下文判断具体错误类型
-                            const formatErrorMsg = (data as any)?.msg || "格式错误";
+                            const formatErrorMsg = (data as any)?.msg || (data as any)?.message || "格式错误";
                             if (formatErrorMsg.includes("invalid account")) {
                                 message = "账号格式不正确";
                             } else if (formatErrorMsg.includes("invalid email format")) {
@@ -474,7 +474,7 @@ class HttpClient {
                             break;
                         case 403:
                             // 根据上下文判断具体错误类型
-                            const invalidMsg = (data as any)?.msg || "账号状态异常";
+                            const invalidMsg = (data as any)?.msg || (data as any)?.message || "账号状态异常";
                             if (invalidMsg.includes("invalid auth_code")) {
                                 message = "验证码无效或已过期";
                             } else if (invalidMsg.includes("invalid auth_id")) {
@@ -488,7 +488,7 @@ class HttpClient {
                             break;
                         case 410:
                             // 根据后端返回的具体错误信息判断
-                            const statusErrorMsg = (data as any)?.msg || "账号状态异常";
+                            const statusErrorMsg = (data as any)?.msg || (data as any)?.message || "账号状态异常";
                             if (statusErrorMsg.includes("account invalid state")) {
                                 message = "账号状态异常，请联系管理员";
                             } else if (statusErrorMsg.includes("already login")) {
@@ -517,7 +517,7 @@ class HttpClient {
                             message = "网关超时";
                             break;
                         default:
-                            message = (data as any)?.msg || `请求失败 (${status})`;
+                            message = (data as any)?.msg || (data as any)?.message || `请求失败 (${status})`;
                     }
                 } else if (error.request) {
                     // 请求已发出，但没有收到响应

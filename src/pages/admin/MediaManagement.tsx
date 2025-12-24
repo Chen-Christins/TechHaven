@@ -150,7 +150,8 @@ const MediaManagement: React.FC = () => {
     ];
 
     // 模拟媒体文件数据
-    const mockMediaFiles: MediaFile[] = [
+    const mockMediaFiles = useMemo<MediaFile[]>(
+        () => [
         {
             id: "media_1",
             name: "react-logo.png",
@@ -459,7 +460,9 @@ const MediaManagement: React.FC = () => {
             downloads: 89,
             isPublic: true,
         },
-    ];
+        ],
+        [],
+    );
 
     // 加载数据
     useEffect(() => {
@@ -468,7 +471,7 @@ const MediaManagement: React.FC = () => {
             setMediaFiles(mockMediaFiles);
             setLoading(false);
         }, 800);
-    }, []);
+    }, [mockMediaFiles]);
 
     // 筛选数据
     const filteredFiles = useMemo(() => {

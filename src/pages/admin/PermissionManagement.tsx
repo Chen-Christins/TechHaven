@@ -100,7 +100,8 @@ const PermissionManagement: React.FC = () => {
     const itemsPerPage = 15; // 每页显示15条数据
 
     // 模拟权限数据
-    const mockPermissions: Permission[] = [
+    const mockPermissions = useMemo<Permission[]>(
+        () => [
         // 系统权限
         {
             id: "perm_1",
@@ -236,10 +237,13 @@ const PermissionManagement: React.FC = () => {
             module: "管理",
             category: "admin",
         },
-    ];
+        ],
+        [],
+    );
 
     // 模拟角色数据
-    const mockRoles: Role[] = [
+    const mockRoles = useMemo<Role[]>(
+        () => [
         {
             id: "role_1",
             name: "超级管理员",
@@ -323,37 +327,43 @@ const PermissionManagement: React.FC = () => {
             isSystem: false,
             color: "#8b5cf6",
         },
-    ];
+        ],
+        [mockPermissions],
+    );
 
     // 模拟用户权限数据
-    const mockUserPermissions: UserPermission[] = Array.from({ length: 100 }, (_, index) => {
-        const userRoles = [
-            { roles: ["role_1"], name: "超级管理员" },
-            { roles: ["role_2"], name: "管理员" },
-            { roles: ["role_3"], name: "编辑" },
-            { roles: ["role_4"], name: "作者" },
-            { roles: ["role_5"], name: "普通用户" },
-            { roles: ["role_6"], name: "审核员" },
-            { roles: ["role_3", "role_6"], name: "编辑+审核员" },
-            { roles: ["role_2", "role_3"], name: "管理员+编辑" },
-        ];
-        const roleAssignment = userRoles[Math.floor(Math.random() * userRoles.length)];
-        const isActive = Math.random() > 0.1;
+    const mockUserPermissions = useMemo<UserPermission[]>(
+        () =>
+            Array.from({ length: 100 }, (_, index) => {
+                const userRoles = [
+                    { roles: ["role_1"], name: "超级管理员" },
+                    { roles: ["role_2"], name: "管理员" },
+                    { roles: ["role_3"], name: "编辑" },
+                    { roles: ["role_4"], name: "作者" },
+                    { roles: ["role_5"], name: "普通用户" },
+                    { roles: ["role_6"], name: "审核员" },
+                    { roles: ["role_3", "role_6"], name: "编辑+审核员" },
+                    { roles: ["role_2", "role_3"], name: "管理员+编辑" },
+                ];
+                const roleAssignment = userRoles[Math.floor(Math.random() * userRoles.length)];
+                const isActive = Math.random() > 0.1;
 
-        return {
-            id: `user_perm_${index + 1}`,
-            userId: `user_${index + 1}`,
-            username: `用户${index + 1}`,
-            email: `user${index + 1}@example.com`,
-            avatar: `https://picsum.photos/id/${index + 10}/100`,
-            roles: roleAssignment.roles,
-            permissions: roleAssignment.roles.flatMap(
-                (roleId) => mockRoles.find((r) => r.id === roleId)?.permissions || [],
-            ),
-            status: isActive ? "active" : "inactive",
-            lastLogin: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-        };
-    });
+                return {
+                    id: `user_perm_${index + 1}`,
+                    userId: `user_${index + 1}`,
+                    username: `用户${index + 1}`,
+                    email: `user${index + 1}@example.com`,
+                    avatar: `https://picsum.photos/id/${index + 10}/100`,
+                    roles: roleAssignment.roles,
+                    permissions: roleAssignment.roles.flatMap(
+                        (roleId) => mockRoles.find((r) => r.id === roleId)?.permissions || [],
+                    ),
+                    status: isActive ? "active" : "inactive",
+                    lastLogin: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+                };
+            }),
+        [mockRoles],
+    );
 
     // 加载数据
     useEffect(() => {
@@ -378,7 +388,7 @@ const PermissionManagement: React.FC = () => {
 
             setLoading(false);
         }, 1000);
-    }, []);
+    }, [mockPermissions, mockRoles, mockUserPermissions]);
 
     // 筛选数据
     const filteredRoles = useMemo(() => {

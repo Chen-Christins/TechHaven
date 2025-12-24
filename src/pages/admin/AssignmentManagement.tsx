@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
     FaPlus,
     FaSearch,
@@ -94,7 +94,7 @@ const AssignmentManagement: React.FC = () => {
 
     const pageSize = 10;
 
-    const fetchAssignments = async () => {
+    const fetchAssignments = useCallback(async () => {
         setLoading(true);
         try {
             const params: any = {
@@ -146,11 +146,11 @@ const AssignmentManagement: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentPage, pageSize, statusFilter]);
 
     useEffect(() => {
         fetchAssignments();
-    }, [currentPage, statusFilter]);
+    }, [fetchAssignments]);
 
     // 打开编辑模态框
     const openEditModal = (assignment: Assignment) => {

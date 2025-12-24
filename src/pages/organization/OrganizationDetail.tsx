@@ -609,7 +609,7 @@ const OrganizationDetail: React.FC = () => {
             // 每次切换到任务标签页都重新加载，确保数据最新
             fetchTasksList(1);
         }
-    }, [showTasks, id, currentUser]);
+    }, [showTasks, id, currentUser, fetchTasksList]);
 
     // 创建任务
     const handleCreateTask = () => {

@@ -78,7 +78,8 @@ const CommentManagement: React.FC = () => {
     const itemsPerPage = 10;
 
     // 模拟评论数据
-    const mockComments: Comment[] = [
+    const mockComments = useMemo<Comment[]>(
+        () => [
         {
             id: "comment_1",
             content: "这篇文章写得非常好，对我帮助很大！作者辛苦了，期待看到更多优质内容。",
@@ -651,7 +652,9 @@ const CommentManagement: React.FC = () => {
             isReported: false,
             reportCount: 0,
         },
-    ];
+        ],
+        []
+    );
 
     // 加载数据
     useEffect(() => {
@@ -660,7 +663,7 @@ const CommentManagement: React.FC = () => {
             setComments(mockComments);
             setLoading(false);
         }, 800);
-    }, []);
+    }, [mockComments]);
 
     // 筛选数据
     const filteredComments = useMemo(() => {

@@ -65,7 +65,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                             setToken(null);
                             tokenManager.clearToken();
                         }
-                    } catch (userError) {
+                    } catch (_userError) {
                         setToken(null);
                         tokenManager.clearToken();
                     }
@@ -118,7 +118,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     } else {
                         console.warn("⚠️ 用户信息接口返回异常:", userResponse);
                     }
-                } catch (userError) {
+                } catch (_userError) {
                     // console.warn('⚠️ 获取最新用户信息失败，使用登录返回的用户信息:', userError);
                     // 如果获取用户信息失败，使用登录响应中的用户信息
                     if ((response.data as any)?.user) {

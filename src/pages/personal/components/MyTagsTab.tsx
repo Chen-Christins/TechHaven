@@ -20,6 +20,7 @@ interface PersonalTag {
 
 const MyTagsTab: React.FC = () => {
     const { user } = useAuth();
+    const userId = user?.id;
     const [tags, setTags] = useState<PersonalTag[]>([]);
     const [tagsLoading, setTagsLoading] = useState(false);
     const [showTagModal, setShowTagModal] = useState(false);
@@ -34,14 +35,14 @@ const MyTagsTab: React.FC = () => {
     useEffect(() => {
         const fetchPersonalTags = async () => {
             setTagsLoading(true);
-            if (!user || !user.id) {
+            if (!userId) {
                 setTags([]);
                 setTagsLoading(false);
                 return;
             }
 
             try {
-                const res = await LabelService.queryLabel({ user_id: user.id });
+                const res = await LabelService.queryLabel({ user_id: userId });
                 const mapped = (res || []).map((t: any) => ({
                     id: t.id,
                     name: t.name,
@@ -60,7 +61,7 @@ const MyTagsTab: React.FC = () => {
         };
 
         fetchPersonalTags();
-    }, [user?.id]);
+    }, [userId]);
 
     // 添加/编辑标签
     const handleSaveTag = async () => {

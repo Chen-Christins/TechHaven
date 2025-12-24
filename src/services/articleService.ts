@@ -226,7 +226,7 @@ export class ArticleService {
         });
         return {
             code: response.code,
-            msg: response.message,
+            msg: response.message ?? response.msg ?? "",
         };
     }
 

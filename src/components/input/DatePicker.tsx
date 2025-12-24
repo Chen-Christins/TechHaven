@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import styles from "./DatePicker.module.css";
 import Input from "../input/Input";
 
@@ -108,7 +108,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
     ];
 
     // 格式化日期
-    const formatDate = (date: Date): string => {
+    const formatDate = useCallback((date: Date): string => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, "0");
         const day = String(date.getDate()).padStart(2, "0");
@@ -125,7 +125,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         result = result.replace("ss", second);
 
         return result;
-    };
+    }, [actualFormat]);
 
     // 解析日期字符串
     const parseDate = (dateStr: string): Date | null => {
@@ -348,7 +348,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
             setCurrentMinute(now.getMinutes());
             setCurrentSecond(now.getSeconds());
         }
-    }, [displayedDate, actualFormat]);
+    }, [displayedDate, formatDate]);
 
     const year = currentViewDate.getFullYear();
     const month = currentViewDate.getMonth();
