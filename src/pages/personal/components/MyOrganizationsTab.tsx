@@ -11,13 +11,14 @@ import styles from "../PersonalCenter.module.css";
 const MyOrganizationsTab: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const userId = user?.id;
     const [organizations, setOrganizations] = useState<PersonalOrganization[]>([]);
     const [organizationsLoading, setOrganizationsLoading] = useState(false);
 
     useEffect(() => {
         const fetchPersonalOrganizations = async () => {
             setOrganizationsLoading(true);
-            if (!user || !user.id) {
+            if (!userId) {
                 setOrganizations([]);
                 setOrganizationsLoading(false);
                 return;
@@ -47,7 +48,7 @@ const MyOrganizationsTab: React.FC = () => {
         };
 
         fetchPersonalOrganizations();
-    }, [user?.id]);
+    }, [userId]);
 
     return (
         <div className={styles.contentSection}>

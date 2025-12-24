@@ -23,14 +23,13 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+    const [hasManualTheme, setHasManualTheme] = useState(() => localStorage.getItem("theme") !== null);
     const [theme, setThemeState] = useState<Theme>(() => {
-        // 从 localStorage 读取保存的主题设置
-        const savedTheme = localStorage.getItem("theme") as Theme;
-        if (savedTheme) {
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "light" || savedTheme === "dark") {
             return savedTheme;
         }
 
-        // 检查系统是否偏好暗色主题
         if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
             return "dark";
         }
@@ -48,9 +47,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
             document.documentElement.classList.remove("dark");
         }
 
-        // 保存到 localStorage
-        localStorage.setItem("theme", theme);
-    }, [theme]);
+        if (hasManualTheme) {
+            localStorage.setItem("theme", theme);
+        } else {
+            localStorage.removeItem("theme");
+        }
+    }, [theme, hasManualTheme]);
 
     // 监听系统主题变化
     useEffect(() => {
@@ -58,20 +60,22 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
         const handleChange = (e: MediaQueryListEvent) => {
             // 只有在用户没有手动设置主题时才跟随系统主题
-            if (!localStorage.getItem("theme")) {
+            if (!hasManualTheme) {
                 setThemeState(e.matches ? "dark" : "light");
             }
         };
 
         mediaQuery.addEventListener("change", handleChange);
         return () => mediaQuery.removeEventListener("change", handleChange);
-    }, []);
+    }, [hasManualTheme]);
 
     const toggleTheme = () => {
+        setHasManualTheme(true);
         setThemeState((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
     };
 
     const setTheme = (newTheme: Theme) => {
+        setHasManualTheme(true);
         setThemeState(newTheme);
     };
 

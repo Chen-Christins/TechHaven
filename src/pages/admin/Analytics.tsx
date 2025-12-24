@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useMemo } from "react";
 import * as echarts from "echarts";
 import {
     FaUsers,
@@ -83,7 +83,8 @@ const Analytics: React.FC = () => {
     const barChartInstance = useRef<echarts.ECharts | null>(null);
 
     // 模拟分析数据
-    const analyticsData: AnalyticsData = {
+    const analyticsData = useMemo<AnalyticsData>(
+        () => ({
         overview: {
             totalUsers: 12847,
             totalArticles: 1456,
@@ -189,7 +190,9 @@ const Analytics: React.FC = () => {
                 { country: "其他", users: 369, percentage: 2.9 },
             ],
         },
-    };
+        }),
+        []
+    );
 
     // 概览统计卡片
     const overviewStats = [
@@ -249,197 +252,198 @@ const Analytics: React.FC = () => {
         },
     ];
 
-    // 初始化趋势图表
-    const initTrendChart = () => {
-        if (!trendChartRef.current) return;
+    useEffect(() => {
+        const initTrendChart = () => {
+            if (!trendChartRef.current) return;
 
-        const chart = echarts.init(trendChartRef.current);
-        trendChartInstance.current = chart;
+            const chart = echarts.init(trendChartRef.current);
+            trendChartInstance.current = chart;
 
-        const data = analyticsData.trends[selectedMetric as keyof typeof analyticsData.trends];
+            const data = analyticsData.trends[selectedMetric as keyof typeof analyticsData.trends];
 
-        const option = {
-            tooltip: {
-                trigger: "axis",
-                axisPointer: {
-                    type: "cross",
-                },
-            },
-            legend: {
-                data: [selectedMetric === "visits" ? "访问量" : selectedMetric === "users" ? "用户数" : "页面浏览量"],
-                bottom: 0,
-            },
-            grid: {
-                top: 20,
-                bottom: 60,
-                left: 60,
-                right: 40,
-            },
-            xAxis: {
-                type: "category",
-                data: data.map((item) => item.label),
-                axisLine: {
-                    lineStyle: {
-                        color: "#e0e0e0",
+            const option = {
+                tooltip: {
+                    trigger: "axis",
+                    axisPointer: {
+                        type: "cross",
                     },
                 },
-            },
-            yAxis: {
-                type: "value",
-                axisLine: {
-                    lineStyle: {
-                        color: "#e0e0e0",
-                    },
+                legend: {
+                    data: [selectedMetric === "visits" ? "访问量" : selectedMetric === "users" ? "用户数" : "页面浏览量"],
+                    bottom: 0,
                 },
-                splitLine: {
-                    lineStyle: {
-                        color: "#f0f0f0",
-                    },
+                grid: {
+                    top: 20,
+                    bottom: 60,
+                    left: 60,
+                    right: 40,
                 },
-            },
-            series: [
-                {
-                    name: selectedMetric === "visits" ? "访问量" : selectedMetric === "users" ? "用户数" : "页面浏览量",
-                    type: "line",
-                    data: data.map((item) => item.value),
-                    smooth: true,
-                    lineStyle: {
-                        width: 3,
-                        color: "#4f46e5",
-                    },
-                    areaStyle: {
-                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                            { offset: 0, color: "rgba(79, 70, 229, 0.3)" },
-                            { offset: 1, color: "rgba(79, 70, 229, 0.05)" },
-                        ]),
-                    },
-                    itemStyle: {
-                        color: "#4f46e5",
-                    },
-                },
-            ],
-        };
-
-        chart.setOption(option);
-    };
-
-    // 初始化饼图
-    const initPieChart = () => {
-        if (!pieChartRef.current) return;
-
-        const chart = echarts.init(pieChartRef.current);
-        pieChartInstance.current = chart;
-
-        const option = {
-            tooltip: {
-                trigger: "item",
-                formatter: "{a} <br/>{b}: {c}% ({d}%)",
-            },
-            legend: {
-                orient: "vertical",
-                left: "left",
-                data: analyticsData.traffic.sources.map((item) => item.name),
-            },
-            series: [
-                {
-                    name: "流量来源",
-                    type: "pie",
-                    radius: ["40%", "70%"],
-                    center: ["60%", "50%"],
-                    data: analyticsData.traffic.sources.map((item) => ({
-                        value: item.value,
-                        name: item.name,
-                    })),
-                    emphasis: {
-                        itemStyle: {
-                            shadowBlur: 10,
-                            shadowOffsetX: 0,
-                            shadowColor: "rgba(0, 0, 0, 0.5)",
+                xAxis: {
+                    type: "category",
+                    data: data.map((item) => item.label),
+                    axisLine: {
+                        lineStyle: {
+                            color: "#e0e0e0",
                         },
                     },
                 },
-            ],
-        };
-
-        chart.setOption(option);
-    };
-
-    // 初始化柱状图
-    const initBarChart = () => {
-        if (!barChartRef.current) return;
-
-        const chart = echarts.init(barChartRef.current);
-        barChartInstance.current = chart;
-
-        const option = {
-            tooltip: {
-                trigger: "axis",
-                axisPointer: {
-                    type: "shadow",
-                },
-            },
-            grid: {
-                top: 20,
-                bottom: 40,
-                left: 60,
-                right: 40,
-            },
-            xAxis: {
-                type: "category",
-                data: analyticsData.traffic.devices.map((item) => item.name),
-                axisLine: {
-                    lineStyle: {
-                        color: "#e0e0e0",
+                yAxis: {
+                    type: "value",
+                    axisLine: {
+                        lineStyle: {
+                            color: "#e0e0e0",
+                        },
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: "#f0f0f0",
+                        },
                     },
                 },
-            },
-            yAxis: {
-                type: "value",
-                axisLine: {
-                    lineStyle: {
-                        color: "#e0e0e0",
-                    },
-                },
-                splitLine: {
-                    lineStyle: {
-                        color: "#f0f0f0",
-                    },
-                },
-            },
-            series: [
-                {
-                    name: "用户数",
-                    type: "bar",
-                    data: analyticsData.traffic.devices.map((item) => item.value),
-                    itemStyle: {
-                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                            { offset: 0, color: "#667eea" },
-                            { offset: 1, color: "#764ba2" },
-                        ]),
-                    },
-                    emphasis: {
-                        itemStyle: {
+                series: [
+                    {
+                        name:
+                            selectedMetric === "visits"
+                                ? "访问量"
+                                : selectedMetric === "users"
+                                  ? "用户数"
+                                  : "页面浏览量",
+                        type: "line",
+                        data: data.map((item) => item.value),
+                        smooth: true,
+                        lineStyle: {
+                            width: 3,
+                            color: "#4f46e5",
+                        },
+                        areaStyle: {
                             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                                { offset: 0, color: "#5a67d8" },
-                                { offset: 1, color: "#667eea" },
+                                { offset: 0, color: "rgba(79, 70, 229, 0.3)" },
+                                { offset: 1, color: "rgba(79, 70, 229, 0.05)" },
                             ]),
                         },
+                        itemStyle: {
+                            color: "#4f46e5",
+                        },
                     },
-                },
-            ],
+                ],
+            };
+
+            chart.setOption(option);
         };
 
-        chart.setOption(option);
-    };
+        const initPieChart = () => {
+            if (!pieChartRef.current) return;
 
-    // 响应式处理
-    const handleResize = () => {
-        trendChartInstance.current?.resize();
-        pieChartInstance.current?.resize();
-        barChartInstance.current?.resize();
-    };
+            const chart = echarts.init(pieChartRef.current);
+            pieChartInstance.current = chart;
 
-    useEffect(() => {
+            const option = {
+                tooltip: {
+                    trigger: "item",
+                    formatter: "{a} <br/>{b}: {c}% ({d}%)",
+                },
+                legend: {
+                    orient: "vertical",
+                    left: "left",
+                    data: analyticsData.traffic.sources.map((item) => item.name),
+                },
+                series: [
+                    {
+                        name: "流量来源",
+                        type: "pie",
+                        radius: ["40%", "70%"],
+                        center: ["60%", "50%"],
+                        data: analyticsData.traffic.sources.map((item) => ({
+                            value: item.value,
+                            name: item.name,
+                        })),
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: "rgba(0, 0, 0, 0.5)",
+                            },
+                        },
+                    },
+                ],
+            };
+
+            chart.setOption(option);
+        };
+
+        const initBarChart = () => {
+            if (!barChartRef.current) return;
+
+            const chart = echarts.init(barChartRef.current);
+            barChartInstance.current = chart;
+
+            const option = {
+                tooltip: {
+                    trigger: "axis",
+                    axisPointer: {
+                        type: "shadow",
+                    },
+                },
+                grid: {
+                    top: 20,
+                    bottom: 40,
+                    left: 60,
+                    right: 40,
+                },
+                xAxis: {
+                    type: "category",
+                    data: analyticsData.traffic.devices.map((item) => item.name),
+                    axisLine: {
+                        lineStyle: {
+                            color: "#e0e0e0",
+                        },
+                    },
+                },
+                yAxis: {
+                    type: "value",
+                    axisLine: {
+                        lineStyle: {
+                            color: "#e0e0e0",
+                        },
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: "#f0f0f0",
+                        },
+                    },
+                },
+                series: [
+                    {
+                        name: "用户数",
+                        type: "bar",
+                        data: analyticsData.traffic.devices.map((item) => item.value),
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: "#667eea" },
+                                { offset: 1, color: "#764ba2" },
+                            ]),
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: "#5a67d8" },
+                                    { offset: 1, color: "#667eea" },
+                                ]),
+                            },
+                        },
+                    },
+                ],
+            };
+
+            chart.setOption(option);
+        };
+
+        const handleResize = () => {
+            trendChartInstance.current?.resize();
+            pieChartInstance.current?.resize();
+            barChartInstance.current?.resize();
+        };
+
         initTrendChart();
         initPieChart();
         initBarChart();
@@ -451,7 +455,7 @@ const Analytics: React.FC = () => {
             pieChartInstance.current?.dispose();
             barChartInstance.current?.dispose();
         };
-    }, [selectedMetric]);
+    }, [analyticsData, selectedMetric]);
 
     // 导出数据
     const exportData = () => {

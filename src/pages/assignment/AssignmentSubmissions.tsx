@@ -21,7 +21,6 @@ import Footer from "../../components/footer/Footer";
 import AuthRequired from "../../components/auth/AuthRequired";
 import Skeleton from "../../components/skeleton/Skeleton";
 import AssignmentService from "../../services/assignmentService";
-import http from "../../utils/http";
 import styles from "./AssignmentSubmissions.module.css";
 import message from "../../components/message/Message";
 import FileService from "../../services/fileService";

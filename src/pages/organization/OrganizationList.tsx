@@ -62,7 +62,7 @@ const OrganizationList: React.FC = () => {
             }
         };
         fetchOrgs();
-    }, [filter]);
+    }, [filter, currentUser]);
 
     const filteredOrganizations = organizations.filter((org) => {
         if (filter === "all") return true;

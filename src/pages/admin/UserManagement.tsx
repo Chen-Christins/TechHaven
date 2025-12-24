@@ -50,6 +50,13 @@ interface FilterOptions {
     dateRange: string;
 }
 
+const MAP_STR_ROLE_NUM: Record<string, number> = {
+    admin: 2,
+    editor: 3,
+    checker: 4,
+    user: 1,
+};
+
 const UserManagement: React.FC = () => {
     // 状态管理
     const [users, setUsers] = useState<UserListItem[]>([]);
@@ -70,13 +77,6 @@ const UserManagement: React.FC = () => {
     const [totalUsers, setTotalUsers] = useState(0);
 
     const usersPerPage = 15; // 每页显示15条数据
-
-    const MAP_STR_ROLE_NUM: Record<string, number> = {
-        admin: 2,
-        editor: 3,
-        checker: 4,
-        user: 1,
-    };
 
     // 加载用户数据
     useEffect(() => {

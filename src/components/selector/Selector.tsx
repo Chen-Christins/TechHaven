@@ -267,6 +267,7 @@ const Selector = React.forwardRef<HTMLDivElement, SelectorProps>((props, ref: Fo
                                 ×
                             </span>
                         )}
+                    {suffix}
                     {loading ? (
                         <span className={styles.loadingIcon}>⏳</span>
                     ) : (

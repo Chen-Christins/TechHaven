@@ -43,30 +43,6 @@ let messageApi: {
 export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [messages, setMessages] = useState<MessageConfig[]>([]);
 
-    // 添加消息
-    const addMessage = useCallback((config: Omit<MessageConfig, "id" | "isClosing">): string => {
-        const id = generateId();
-        const newMessage: MessageConfig = {
-            id,
-            type: "info",
-            duration: 3000,
-            position: "top-right",
-            ...config,
-        };
-
-        setMessages((prev) => [...prev, newMessage]);
-
-        // 自动关闭 - 修正返回值类型问题
-        if (newMessage.duration && newMessage.duration > 0) {
-            setTimeout(() => {
-                removeMessage(id);
-                newMessage.onClose?.();
-            }, newMessage.duration);
-        }
-
-        return id; // 始终返回id
-    }, []);
-
     // 移除消息
     const removeMessage = useCallback((id: string) => {
         // 先添加淡出动画，再移除元素
@@ -77,6 +53,32 @@ export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children })
             setMessages((prev) => prev.filter((msg) => msg.id !== id));
         }, 300);
     }, []);
+
+    // 添加消息
+    const addMessage = useCallback(
+        (config: Omit<MessageConfig, "id" | "isClosing">): string => {
+            const id = generateId();
+            const newMessage: MessageConfig = {
+                id,
+                type: "info",
+                duration: 3000,
+                position: "top-right",
+                ...config,
+            };
+
+            setMessages((prev) => [...prev, newMessage]);
+
+            if (newMessage.duration && newMessage.duration > 0) {
+                setTimeout(() => {
+                    removeMessage(id);
+                    newMessage.onClose?.();
+                }, newMessage.duration);
+            }
+
+            return id;
+        },
+        [removeMessage],
+    );
 
     // 初始化消息API
     useEffect(() => {
