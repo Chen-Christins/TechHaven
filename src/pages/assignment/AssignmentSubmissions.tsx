@@ -21,7 +21,10 @@ import Footer from "../../components/footer/Footer";
 import AuthRequired from "../../components/auth/AuthRequired";
 import Skeleton from "../../components/skeleton/Skeleton";
 import AssignmentService from "../../services/assignmentService";
+import http from "../../utils/http";
 import styles from "./AssignmentSubmissions.module.css";
+import message from "../../components/message/Message";
+import FileService from "../../services/fileService";
 
 interface Assignment {
     id: string | number;
@@ -35,23 +38,25 @@ interface Assignment {
     file_type: string;
 }
 
+// 文件级别的接口（对应API的AssignmentSubmissionItem）
 interface SubmissionFile {
     id: string | number;
     file_name: string;
+    file_path: string;
     file_size: number;
-    file_url: string;
-}
-
-interface AssignmentSubmissionItem {
-    id: string | number;
-    user_id: string | number;
-    username: string;
-    user_avatar?: string;
-    files: SubmissionFile[]; // 改为文件数组
-    submit_time: number;
-    status: "submitted" | "late" | "pending";
     score?: number;
     feedback?: string;
+}
+
+// 用户提交级别的接口（对应API的GetAssignmentSubmissionsResponse）
+interface AssignmentSubmissionItem {
+    user_id: string | number;
+    user_name: string;
+    user_avatar?: string;
+    submit_time: number;
+    status: number;
+    total?: number;
+    list?: Array<SubmissionFile>;
 }
 
 const AssignmentSubmissions: React.FC = () => {
@@ -62,7 +67,7 @@ const AssignmentSubmissions: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize] = useState(3); // 设置为3条每页以便测试分页
+    const [pageSize] = useState(10); // 每页显示10条记录
     const [expandedSubmissions, setExpandedSubmissions] = useState<Set<string | number>>(new Set());
 
     useEffect(() => {
@@ -81,183 +86,23 @@ const AssignmentSubmissions: React.FC = () => {
                 const assignmentResponse = await AssignmentService.getAssignmentDetail({ id });
                 setAssignment(assignmentResponse);
 
-                // 获取提交列表 - 暂时使用mock数据
-                // const submissionsResponse = await AssignmentService.getAssignmentSubmissions({ id });
-                // setSubmissions(submissionsResponse.list || []);
+                // 获取提交列表
+                const submissionsResponse = await AssignmentService.getAssignmentSubmissions({ id });
 
-                // Mock数据
-                const mockSubmissions: AssignmentSubmissionItem[] = [
-                    {
-                        id: 1,
-                        user_id: 101,
-                        username: "张三",
-                        user_avatar: "",
-                        files: [
-                            {
-                                id: 1011,
-                                file_name: "数据结构作业.pdf",
-                                file_size: 2048576,
-                                file_url: "/files/mock/数据结构作业.pdf",
-                            },
-                            {
-                                id: 1012,
-                                file_name: "源代码.zip",
-                                file_size: 1536000,
-                                file_url: "/files/mock/源代码.zip",
-                            },
-                            {
-                                id: 1013,
-                                file_name: "测试报告.docx",
-                                file_size: 512000,
-                                file_url: "/files/mock/测试报告.docx",
-                            },
-                            {
-                                id: 1014,
-                                file_name: "实验数据.xlsx",
-                                file_size: 256000,
-                                file_url: "/files/mock/实验数据.xlsx",
-                            },
-                            {
-                                id: 1015,
-                                file_name: "演示文稿.pptx",
-                                file_size: 3072000,
-                                file_url: "/files/mock/演示文稿.pptx",
-                            },
-                            {
-                                id: 1016,
-                                file_name: "参考文献.pdf",
-                                file_size: 1280000,
-                                file_url: "/files/mock/参考文献.pdf",
-                            }
-                        ],
-                        submit_time: Math.floor(Date.now() / 1000) - 86400,
-                        status: "submitted",
-                        score: 95,
-                        feedback: "完成得很好！代码逻辑清晰，注释完整。",
-                    },
-                    {
-                        id: 2,
-                        user_id: 102,
-                        username: "李四",
-                        user_avatar: "",
-                        files: [
-                            {
-                                id: 1021,
-                                file_name: "算法实现.pdf",
-                                file_size: 1536000,
-                                file_url: "/files/mock/算法实现.pdf",
-                            },
-                            {
-                                id: 1022,
-                                file_name: "演示视频.mp4",
-                                file_size: 8192000,
-                                file_url: "/files/mock/演示视频.mp4",
-                            }
-                        ],
-                        submit_time: Math.floor(Date.now() / 1000) - 172800,
-                        status: "late",
-                        score: 88,
-                        feedback: "内容不错，但提交晚了两天。算法实现正确，建议优化时间复杂度。",
-                    },
-                    {
-                        id: 3,
-                        user_id: 103,
-                        username: "王五",
-                        user_avatar: "",
-                        files: [
-                            {
-                                id: 1031,
-                                file_name: "项目报告.pdf",
-                                file_size: 5120000,
-                                file_url: "/files/mock/项目报告.pdf",
-                            }
-                        ],
-                        submit_time: Math.floor(Date.now() / 1000) - 3600,
-                        status: "submitted",
-                        score: 92,
-                        feedback: "优秀！代码结构良好，测试用例覆盖全面。"
-                    },
-                    // {
-                    //     id: 4,
-                    //     user_id: 104,
-                    //     username: "赵六",
-                    //     user_avatar: "",
-                    //     file_name: "算法实现.cpp",
-                    //     file_size: 896000,
-                    //     file_url: "/files/mock/算法实现.cpp",
-                    //     submit_time: Math.floor(Date.now() / 1000) - 43200,
-                    //     status: "submitted",
-                    //     score: 85,
-                    //     feedback: "基本功能实现正确，但缺少边界条件处理。"
-                    // },
-                    // {
-                    //     id: 5,
-                    //     user_id: 105,
-                    //     username: "钱七",
-                    //     user_avatar: "",
-                    //     file_name: "实验报告.pdf",
-                    //     file_size: 3072000,
-                    //     file_url: "/files/mock/实验报告.pdf",
-                    //     submit_time: Math.floor(Date.now() / 1000) - 259200,
-                    //     status: "late",
-                    //     score: 78,
-                    //     feedback: "报告内容详细，但部分实验结果分析不够深入。"
-                    // },
-                    // {
-                    //     id: 6,
-                    //     user_id: 106,
-                    //     username: "孙八",
-                    //     user_avatar: "",
-                    //     file_name: "项目代码.tar.gz",
-                    //     file_size: 10240000,
-                    //     file_url: "/files/mock/项目代码.tar.gz",
-                    //     submit_time: Math.floor(Date.now() / 1000) - 7200,
-                    //     status: "submitted",
-                    //     score: 96,
-                    //     feedback: "非常出色的项目！代码规范，功能完善，性能优秀。"
-                    // },
-                    // {
-                    //     id: 7,
-                    //     user_id: 107,
-                    //     username: "周九",
-                    //     user_avatar: "",
-                    //     file_name: "数据分析.xlsx",
-                    //     file_size: 2560000,
-                    //     file_url: "/files/mock/数据分析.xlsx",
-                    //     submit_time: Math.floor(Date.now() / 1000) - 10800,
-                    //     status: "submitted",
-                    //     score: 90,
-                    //     feedback: "数据分析准确，图表清晰，结论合理。"
-                    // },
-                    // {
-                    //     id: 8,
-                    //     user_id: 108,
-                    //     username: "吴十",
-                    //     user_avatar: "",
-                    //     file_name: "设计稿.psd",
-                    //     file_size: 8192000,
-                    //     file_url: "/files/mock/设计稿.psd",
-                    //     submit_time: Math.floor(Date.now() / 1000) - 14400,
-                    //     status: "late",
-                    //     score: 82,
-                    //     feedback: "设计创意不错，但需要改进配色方案。"
-                    // },
-                    // {
-                    //     id: 9,
-                    //     user_id: 109,
-                    //     username: "郑十一",
-                    //     user_avatar: "",
-                    //     file_name: "论文.doc",
-                    //     file_size: 128000,
-                    //     file_url: "/files/mock/论文.doc",
-                    //     submit_time: Math.floor(Date.now() / 1000) - 21600,
-                    //     status: "submitted",
-                    //     score: 87,
-                    //     feedback: "论文结构完整，论据充分，参考文献格式正确。"
-                    // }
-                ];
+                // 新API可能返回的数据结构：
+                // 1. 单个用户提交对象（当前用户查看自己的提交）
+                // 2. 用户提交数组（教师查看所有用户的提交）
+                let submissionsData: AssignmentSubmissionItem[] = [];
 
-                setSubmissions(mockSubmissions);
+                if (Array.isArray(submissionsResponse)) {
+                    // 返回的是用户提交数组
+                    submissionsData = submissionsResponse;
+                } else if (submissionsResponse && typeof submissionsResponse === "object") {
+                    // 单个用户提交对象，包装成数组
+                    submissionsData = [submissionsResponse];
+                }
+
+                setSubmissions(submissionsData);
             } catch (err: any) {
                 setError(err.message || "获取数据失败");
             } finally {
@@ -292,8 +137,10 @@ const AssignmentSubmissions: React.FC = () => {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
     };
 
-    const getStatusBadge = (status: string, submitTime: number, endTime: number) => {
-        if (status === "submitted") {
+    const getStatusBadge = (status: number, submitTime: number, endTime: number) => {
+        // 根据API文档：0-未提交，1-已提交，2-迟交
+        if (status === 1) {
+            // 已提交，检查是否迟交
             if (submitTime > endTime) {
                 return (
                     <span className={`${styles.statusBadge} ${styles.statusLate}`}>
@@ -306,7 +153,7 @@ const AssignmentSubmissions: React.FC = () => {
                     <FaCheckCircle /> 已提交
                 </span>
             );
-        } else if (status === "late") {
+        } else if (status === 2) {
             return (
                 <span className={`${styles.statusBadge} ${styles.statusLate}`}>
                     <FaExclamationCircle /> 迟交
@@ -333,14 +180,13 @@ const AssignmentSubmissions: React.FC = () => {
         return <span className={className}>{score} 分</span>;
     };
 
-    const handleDownload = (file: SubmissionFile) => {
-        // 创建一个临时链接来下载文件
-        const link = document.createElement("a");
-        link.href = file.file_url;
-        link.download = file.file_name;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleDownload = async (file: SubmissionFile) => {
+        try {
+            await FileService.downloadFile(file.file_path, file.file_name);
+
+        } catch (err: any) {
+            message.error(err.message || "下载失败");
+        }
     };
 
     const getTotalFileSize = (files: SubmissionFile[]) => {
@@ -348,7 +194,7 @@ const AssignmentSubmissions: React.FC = () => {
     };
 
     const toggleSubmissionExpansion = (submissionId: string | number) => {
-        setExpandedSubmissions(prev => {
+        setExpandedSubmissions((prev) => {
             const newSet = new Set(prev);
             if (newSet.has(submissionId)) {
                 newSet.delete(submissionId);
@@ -366,18 +212,113 @@ const AssignmentSubmissions: React.FC = () => {
                 <div className={styles.mainContent}>
                     <AuthRequired message="您需要登录后才能查看作业提交详情。">
                         <div className={styles.loadingContainer}>
-                            <Skeleton
-                                variant="rectangular"
-                                width="100%"
-                                height={200}
-                                style={{ marginBottom: "2rem" }}
-                            />
-                            <Skeleton variant="text" width="60%" height={32} style={{ marginBottom: "1rem" }} />
-                            {Array.from({ length: 3 }).map((_, index) => (
-                                <div key={index} className={styles.submissionCard}>
-                                    <Skeleton variant="rectangular" width="100%" height={120} />
+                            {/* 头部骨架 */}
+                            <div className={styles.loadingHeader}>
+                                <Skeleton
+                                    variant="rectangular"
+                                    width={80}
+                                    height={20}
+                                    style={{ marginBottom: "1rem" }}
+                                />
+                                <div className={styles.loadingHeaderContent}>
+                                    <div className={styles.loadingTitleGroup}>
+                                        <Skeleton
+                                            variant="rectangular"
+                                            width={200}
+                                            height={32}
+                                            style={{ marginBottom: "0.5rem" }}
+                                        />
+                                        <Skeleton variant="rectangular" width={120} height={24} />
+                                    </div>
+                                    <div className={styles.loadingStats}>
+                                        <Skeleton
+                                            variant="rectangular"
+                                            width={100}
+                                            height={20}
+                                            style={{ marginRight: "1.5rem" }}
+                                        />
+                                        <Skeleton variant="rectangular" width={120} height={20} />
+                                    </div>
                                 </div>
-                            ))}
+                            </div>
+
+                            {/* 作业描述骨架 */}
+                            <div className={styles.loadingDescription}>
+                                <Skeleton
+                                    variant="rectangular"
+                                    width={120}
+                                    height={24}
+                                    style={{ marginBottom: "0.75rem" }}
+                                />
+                                <Skeleton variant="text" lines={2} style={{ marginBottom: "2rem" }} />
+                            </div>
+
+                            {/* 提交列表骨架 */}
+                            <div className={styles.loadingSubmissions}>
+                                <Skeleton
+                                    variant="rectangular"
+                                    width={100}
+                                    height={24}
+                                    style={{ marginBottom: "1rem" }}
+                                />
+                                {Array.from({ length: 3 }).map((_, index) => (
+                                    <div key={index} className={styles.loadingSubmissionCard}>
+                                        <div className={styles.loadingSubmissionHeader}>
+                                            <div className={styles.loadingUserInfo}>
+                                                <Skeleton
+                                                    variant="circular"
+                                                    width={48}
+                                                    height={48}
+                                                    style={{ marginRight: "1rem" }}
+                                                />
+                                                <div>
+                                                    <Skeleton
+                                                        variant="rectangular"
+                                                        width={120}
+                                                        height={20}
+                                                        style={{ marginBottom: "0.5rem" }}
+                                                    />
+                                                    <Skeleton variant="rectangular" width={100} height={16} />
+                                                </div>
+                                            </div>
+                                            <div className={styles.loadingStatus}>
+                                                <Skeleton
+                                                    variant="rectangular"
+                                                    width={80}
+                                                    height={24}
+                                                    style={{ marginRight: "0.5rem" }}
+                                                />
+                                                <Skeleton variant="rectangular" width={50} height={24} />
+                                            </div>
+                                        </div>
+                                        <div className={styles.loadingFileInfo}>
+                                            <div className={styles.loadingFileDetails}>
+                                                <Skeleton
+                                                    variant="circular"
+                                                    width={32}
+                                                    height={32}
+                                                    style={{ marginRight: "0.75rem" }}
+                                                />
+                                                <div>
+                                                    <Skeleton
+                                                        variant="rectangular"
+                                                        width={150}
+                                                        height={18}
+                                                        style={{ marginBottom: "0.25rem" }}
+                                                    />
+                                                    <Skeleton variant="rectangular" width={80} height={14} />
+                                                </div>
+                                            </div>
+                                            <Skeleton
+                                                variant="rectangular"
+                                                width={80}
+                                                height={36}
+                                                style={{ borderRadius: "6px" }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </AuthRequired>
                 </div>
@@ -456,21 +397,21 @@ const AssignmentSubmissions: React.FC = () => {
                                 <>
                                     <div className={styles.submissionsList}>
                                         {currentSubmissions.map((submission) => (
-                                            <div key={submission.id} className={styles.submissionCard}>
+                                            <div key={submission.user_id} className={styles.submissionCard}>
                                                 <div className={styles.submissionHeader}>
                                                     <div className={styles.userInfo}>
                                                         <div className={styles.avatar}>
                                                             {submission.user_avatar ? (
                                                                 <img
                                                                     src={submission.user_avatar}
-                                                                    alt={submission.username}
+                                                                    alt={submission.user_name}
                                                                 />
                                                             ) : (
                                                                 <FaUser />
                                                             )}
                                                         </div>
                                                         <div className={styles.userDetails}>
-                                                            <h4 className={styles.username}>{submission.username}</h4>
+                                                            <h4 className={styles.username}>{submission.user_name}</h4>
                                                             <p className={styles.submitTime}>
                                                                 <FaClock /> {formatDate(submission.submit_time)}
                                                             </p>
@@ -482,94 +423,149 @@ const AssignmentSubmissions: React.FC = () => {
                                                             submission.submit_time,
                                                             assignment.end_time,
                                                         )}
-                                                        {getScoreBadge(submission.score)}
-                                                    </div>
-                                                </div>
-
-                                                <div className={styles.fileInfo}>
-                                                    <div className={styles.fileDetails}>
-                                                        <FaFileAlt className={styles.fileIcon} />
-                                                        <div>
-                                                            <p className={styles.fileName}>
-                                                                {submission.files.length === 1
-                                                                    ? submission.files[0].file_name
-                                                                    : `${submission.files.length} 个文件`}
-                                                            </p>
-                                                            <p className={styles.fileSize}>
-                                                                总大小: {formatFileSize(getTotalFileSize(submission.files))}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div className={styles.fileActions}>
-                                                        {submission.files.length === 1 ? (
-                                                            <button
-                                                                className={styles.downloadBtn}
-                                                                onClick={() => handleDownload(submission.files[0])}
-                                                            >
-                                                                <FaDownload /> 下载
-                                                            </button>
-                                                        ) : (
-                                                            <>
-                                                                <button className={styles.downloadAllBtn}>
-                                                                    <FaDownload /> 打包下载
-                                                                </button>
-                                                                <button
-                                                                    className={styles.toggleBtn}
-                                                                    onClick={() => toggleSubmissionExpansion(submission.id)}
-                                                                >
-                                                                    {expandedSubmissions.has(submission.id) ? (
-                                                                        <>
-                                                                            <FaChevronUp /> 收起
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            <FaChevronDown /> 展开
-                                                                        </>
-                                                                    )}
-                                                                </button>
-                                                            </>
+                                                        {getScoreBadge(
+                                                            submission.list && submission.list.length > 0
+                                                                ? submission.list[0].score
+                                                                : undefined,
                                                         )}
                                                     </div>
                                                 </div>
 
-                                                {/* 可折叠的多文件列表 */}
-                                                {submission.files.length > 1 && expandedSubmissions.has(submission.id) && (
-                                                    <div className={styles.filesList}>
-                                                        <div className={styles.filesListHeader}>
-                                                            <span>文件列表 ({submission.files.length})</span>
-                                                        </div>
-                                                        {submission.files.map((file) => (
-                                                            <div key={file.id} className={styles.fileItem}>
-                                                                <div className={styles.fileInfo}>
-                                                                    <div className={styles.fileDetails}>
-                                                                        <div className={styles.fileTypeIcon}>
-                                                                            <FaFileAlt />
-                                                                        </div>
-                                                                        <div>
-                                                                            <p className={styles.fileName}>{file.file_name}</p>
-                                                                            <p className={styles.fileSize}>
-                                                                                {formatFileSize(file.file_size)}
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                    <button
-                                                                        className={styles.downloadBtn}
-                                                                        onClick={() => handleDownload(file)}
-                                                                    >
-                                                                        <FaDownload />
-                                                                    </button>
+                                                {/* 文件信息显示 */}
+                                                {submission.list && submission.list.length > 0 && (
+                                                    <>
+                                                        <div className={styles.fileInfo}>
+                                                            <div className={styles.fileDetails}>
+                                                                <FaFileAlt className={styles.fileIcon} />
+                                                                <div>
+                                                                    <p className={styles.fileName}>
+                                                                        {submission.list && submission.list.length === 1
+                                                                            ? submission.list[0]!.file_name
+                                                                            : submission.list
+                                                                              ? `${submission.list.length} 个文件`
+                                                                              : "0 个文件"}
+                                                                    </p>
+                                                                    <p className={styles.fileSize}>
+                                                                        总大小:{" "}
+                                                                        {formatFileSize(
+                                                                            getTotalFileSize(submission.list || []),
+                                                                        )}
+                                                                    </p>
                                                                 </div>
                                                             </div>
-                                                        ))}
-                                                    </div>
+                                                            <div className={styles.fileActions}>
+                                                                {submission.list && submission.list.length === 1 ? (
+                                                                    <button
+                                                                        className={styles.downloadBtn}
+                                                                        onClick={() =>
+                                                                            handleDownload(submission.list![0])
+                                                                        }
+                                                                    >
+                                                                        <FaDownload /> 下载
+                                                                    </button>
+                                                                ) : (
+                                                                    <>
+                                                                        <button className={styles.downloadAllBtn}>
+                                                                            <FaDownload /> 打包下载
+                                                                        </button>
+                                                                        <button
+                                                                            className={styles.toggleBtn}
+                                                                            onClick={() =>
+                                                                                toggleSubmissionExpansion(
+                                                                                    submission.user_id,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {expandedSubmissions.has(
+                                                                                submission.user_id,
+                                                                            ) ? (
+                                                                                <>
+                                                                                    <FaChevronUp /> 收起
+                                                                                </>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <FaChevronDown /> 展开
+                                                                                </>
+                                                                            )}
+                                                                        </button>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* 可折叠的多文件列表 */}
+                                                        {submission.list &&
+                                                            submission.list.length > 1 &&
+                                                            expandedSubmissions.has(submission.user_id) && (
+                                                                <div className={styles.filesList}>
+                                                                    <div className={styles.filesListHeader}>
+                                                                        <span>
+                                                                            文件列表 ({submission.list?.length || 0})
+                                                                        </span>
+                                                                    </div>
+                                                                    {submission.list.map((file) => (
+                                                                        <div key={file.id} className={styles.fileItem}>
+                                                                            <div className={styles.fileInfo}>
+                                                                                <div className={styles.fileDetails}>
+                                                                                    <div
+                                                                                        className={styles.fileTypeIcon}
+                                                                                    >
+                                                                                        <FaFileAlt />
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <p className={styles.fileName}>
+                                                                                            {file.file_name}
+                                                                                        </p>
+                                                                                        <p className={styles.fileSize}>
+                                                                                            {formatFileSize(
+                                                                                                file.file_size,
+                                                                                            )}
+                                                                                        </p>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <button
+                                                                                    className={styles.downloadBtn}
+                                                                                    onClick={() => handleDownload(file)}
+                                                                                >
+                                                                                    <FaDownload />
+                                                                                </button>
+                                                                            </div>
+
+                                                                            {/* 单个文件的反馈 */}
+                                                                            {file.feedback && (
+                                                                                <div className={styles.feedback}>
+                                                                                    <h5
+                                                                                        className={styles.feedbackTitle}
+                                                                                    >
+                                                                                        文件评语
+                                                                                    </h5>
+                                                                                    <p
+                                                                                        className={
+                                                                                            styles.feedbackContent
+                                                                                        }
+                                                                                    >
+                                                                                        {file.feedback}
+                                                                                    </p>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                    </>
                                                 )}
 
-                                                {submission.feedback && (
-                                                    <div className={styles.feedback}>
-                                                        <h5 className={styles.feedbackTitle}>教师评语</h5>
-                                                        <p className={styles.feedbackContent}>{submission.feedback}</p>
-                                                    </div>
-                                                )}
+                                                {/* 整体反馈 */}
+                                                {submission.list &&
+                                                    submission.list.length === 1 &&
+                                                    submission.list[0].feedback && (
+                                                        <div className={styles.feedback}>
+                                                            <h5 className={styles.feedbackTitle}>教师评语</h5>
+                                                            <p className={styles.feedbackContent}>
+                                                                {submission.list[0]!.feedback}
+                                                            </p>
+                                                        </div>
+                                                    )}
                                             </div>
                                         ))}
                                     </div>

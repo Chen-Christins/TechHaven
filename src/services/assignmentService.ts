@@ -141,21 +141,21 @@ export interface GetAssignmentDetailResponse {
 
 export interface AssignmentSubmissionItem {
     id: string | number;
-    user_id: string | number;
-    username: string;
-    user_avatar?: string;
     file_name: string;
+    file_path: string;
     file_size: number;
-    file_url: string;
-    submit_time: number;
-    status: "submitted" | "late" | "pending";
     score?: number;
     feedback?: string;
 }
 
 export interface GetAssignmentSubmissionsResponse {
-    total: number;
-    list: Array<AssignmentSubmissionItem>;
+    user_id: string | number;
+    user_name: string;
+    user_avatar?: string;
+    submit_time: number;
+    status: number;
+    total?: number;
+    list?: Array<AssignmentSubmissionItem>;
 }
 
 /**
@@ -276,7 +276,7 @@ export class AssignmentService {
     static async getAssignmentSubmissions(
         params: GetAssignmentDetailParams,
     ): Promise<GetAssignmentSubmissionsResponse> {
-        let url = `/assignment/submissions?assignment_id=${params.id}`;
+        let url = `/assignment/submission/list?assign_id=${params.id}`;
 
         const response = await http.get<GetAssignmentSubmissionsResponse>(url);
         return response.data;

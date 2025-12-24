@@ -25,6 +25,87 @@
     box-shadow: var(--shadow-md);
 }
 
+/* 加载骨架样式 */
+.loadingContainer {
+    padding: 2rem 1rem;
+}
+
+.loadingHeader {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-secondary);
+}
+
+.loadingHeaderContent {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.loadingTitleGroup {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.loadingStats {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.loadingDescription {
+    margin-bottom: 2rem;
+}
+
+.loadingSubmissions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.loadingSubmissionCard {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.loadingSubmissionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.loadingUserInfo {
+    display: flex;
+    align-items: center;
+}
+
+.loadingStatus {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.loadingFileInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--bg-primary);
+    border-radius: 6px;
+}
+
+.loadingFileDetails {
+    display: flex;
+    align-items: center;
+}
+
 /* 头部样式 */
 .header {
     margin-bottom: 2rem;
@@ -121,7 +202,7 @@
 
 /* 提交列表区域 */
 .submissionsSection {
-    margin-bottom: 2rem;
+    margin-bottom: 0;
 }
 
 /* 空状态 */
@@ -289,7 +370,7 @@
     padding: 1rem;
     background-color: var(--bg-primary);
     border-radius: 6px;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .fileDetails {
@@ -349,7 +430,6 @@
     border-radius: 6px;
     cursor: pointer;
     font-size: 0.9rem;
-    transition: all 0.2s ease;
 }
 
 .downloadAllBtn:hover {
@@ -367,7 +447,6 @@
     border-radius: 6px;
     cursor: pointer;
     font-size: 0.9rem;
-    transition: all 0.2s ease;
 }
 
 .toggleBtn:hover {
@@ -568,6 +647,31 @@
 
     .card {
         padding: 1.5rem;
+    }
+
+    .loadingContainer {
+        padding: 1rem 0.5rem;
+    }
+
+    .loadingHeaderContent {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .loadingStats {
+        gap: 1rem;
+    }
+
+    .loadingSubmissionHeader {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .loadingFileInfo {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
     }
 
     .headerContent {
