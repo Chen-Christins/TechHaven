@@ -44,6 +44,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [loading, setLoading] = useState(true);
     const [loginError, setLoginError] = useState<string | null>(null);
 
+    const extractToken = (response: any): string | null => {
+        const candidates = [
+            response?.token,
+            response?.access_token,
+            response?.data?.token,
+            response?.data?.access_token,
+            response?.data?.data?.token,
+            response?.data?.data?.access_token,
+            response?.data?.data?.data?.token,
+            response?.data?.data?.data?.access_token,
+        ];
+
+        for (const t of candidates) {
+            if (typeof t === "string" && t.trim()) return t;
+        }
+        return null;
+    };
+
     // 初始化认证状态
     useEffect(() => {
         const initAuth = async () => {
@@ -53,24 +71,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 if (cookieToken) {
                     setToken(cookieToken);
                     tokenManager.setToken(cookieToken);
+                }
 
-                    try {
-                        const userResponse = await AuthService.getUserInfo();
+                try {
+                    const userResponse = await AuthService.getUserInfo();
 
-                        if (userResponse.data && userResponse.code === "200") {
-                            const userData = userResponse.data;
-                            userData.role = ROLE_MAP[userData.role] || "用户";
-                            setUser(userData);
-                        } else {
-                            setToken(null);
-                            tokenManager.clearToken();
-                        }
-                    } catch (_userError) {
+                    if (userResponse.data && userResponse.code === "200") {
+                        const userData = userResponse.data;
+                        userData.role = ROLE_MAP[userData.role] || "用户";
+                        setUser(userData);
+                    } else {
+                        setUser(null);
                         setToken(null);
                         tokenManager.clearToken();
                     }
-                } else {
-                    // // console.log('📋 认证上下文已初始化，未发现有效token');
+                } catch (_userError) {
+                    setUser(null);
+                    setToken(null);
+                    tokenManager.clearToken();
                 }
             } finally {
                 setLoading(false);
@@ -89,14 +107,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const response = await AuthService.login(authId, password);
 
             if (response.code === "200") {
-                let userToken = (response as any)?.token || (response.data as any)?.token;
+                let userToken = extractToken(response);
 
-                if (!userToken) {
-                    userToken = getTokenFromCookie();
-                    if (userToken) {
-                        // console.log('🍪 从Cookie中获取到token:', userToken);
-                    }
-                }
+                if (!userToken) userToken = getTokenFromCookie();
 
                 if (userToken) {
                     setToken(userToken);
@@ -174,7 +187,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     // 计算是否已认证
-    const isAuthenticated = !!token && !!user;
+    const isAuthenticated = !!user;
 
     const value: AuthContextType = {
         user,

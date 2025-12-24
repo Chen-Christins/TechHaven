@@ -8,6 +8,8 @@ import http, {
     CodeType,
 } from "../utils/http";
 
+const REQUIRE_CREDENTIALS = import.meta.env.VITE_REQUIRE_CREDENTIALS === "true";
+
 /**
  * 用户信息接口
  */
@@ -74,6 +76,7 @@ export class AuthService {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
+                withCredentials: REQUIRE_CREDENTIALS,
             });
 
             return response;
@@ -191,7 +194,7 @@ export class AuthService {
      */
     static async getUserInfo(userId?: number | string): Promise<HttpResponse<UserInfo>> {
         const url = userId ? `/user/info?user_id=${userId}` : "/user/info";
-        return http.get<UserInfo>(url);
+        return http.get<UserInfo>(url, { withCredentials: REQUIRE_CREDENTIALS });
     }
 
     /**
