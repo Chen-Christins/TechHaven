@@ -85,113 +85,113 @@ const Analytics: React.FC = () => {
     // 模拟分析数据
     const analyticsData = useMemo<AnalyticsData>(
         () => ({
-        overview: {
-            totalUsers: 12847,
-            totalArticles: 1456,
-            totalComments: 3892,
-            totalViews: 256789,
-            totalLikes: 12456,
-            avgSessionDuration: "4:32",
-            bounceRate: "32.5%",
-            newUsers: 847,
-        },
-        trends: {
-            visits: [
-                { date: "11-15", value: 2820, label: "周一" },
-                { date: "11-16", value: 2932, label: "周二" },
-                { date: "11-17", value: 2901, label: "周三" },
-                { date: "11-18", value: 3134, label: "周四" },
-                { date: "11-19", value: 3290, label: "周五" },
-                { date: "11-20", value: 3330, label: "周六" },
-                { date: "11-21", value: 2892, label: "周日" },
-            ],
-            users: [
-                { date: "11-15", value: 1820, label: "周一" },
-                { date: "11-16", value: 1932, label: "周二" },
-                { date: "11-17", value: 1901, label: "周三" },
-                { date: "11-18", value: 2134, label: "周四" },
-                { date: "11-19", value: 2290, label: "周五" },
-                { date: "11-20", value: 2330, label: "周六" },
-                { date: "11-21", value: 1892, label: "周日" },
-            ],
-            pageViews: [
-                { date: "11-15", value: 5820, label: "周一" },
-                { date: "11-16", value: 5932, label: "周二" },
-                { date: "11-17", value: 5901, label: "周三" },
-                { date: "11-18", value: 6134, label: "周四" },
-                { date: "11-19", value: 6290, label: "周五" },
-                { date: "11-20", value: 6330, label: "周六" },
-                { date: "11-21", value: 5892, label: "周日" },
-            ],
-        },
-        content: {
-            popularArticles: [
-                {
-                    id: 1,
-                    title: "React 18 新特性详解",
-                    views: 5432,
-                    likes: 234,
-                    comments: 45,
-                },
-                {
-                    id: 2,
-                    title: "TypeScript 最佳实践指南",
-                    views: 4211,
-                    likes: 189,
-                    comments: 32,
-                },
-                {
-                    id: 3,
-                    title: "前端性能优化技巧",
-                    views: 3897,
-                    likes: 167,
-                    comments: 28,
-                },
-                {
-                    id: 4,
-                    title: "Vite 构建工具使用教程",
-                    views: 3456,
-                    likes: 145,
-                    comments: 23,
-                },
-                {
-                    id: 5,
-                    title: "CSS Grid 布局完全指南",
-                    views: 2987,
-                    likes: 123,
-                    comments: 19,
-                },
-            ],
-            categories: [
-                { name: "前端开发", count: 456, percentage: 31.3 },
-                { name: "后端技术", count: 342, percentage: 23.5 },
-                { name: "开发工具", count: 289, percentage: 19.8 },
-                { name: "设计相关", count: 234, percentage: 16.1 },
-                { name: "其他", count: 135, percentage: 9.3 },
-            ],
-        },
-        traffic: {
-            sources: [
-                { name: "直接访问", value: 45, percentage: 35.2 },
-                { name: "搜索引擎", value: 38, percentage: 29.7 },
-                { name: "社交媒体", value: 25, percentage: 19.5 },
-                { name: "外链引用", value: 20, percentage: 15.6 },
-            ],
-            devices: [
-                { name: "桌面端", value: 65, percentage: 50.8 },
-                { name: "移动端", value: 48, percentage: 37.5 },
-                { name: "平板端", value: 15, percentage: 11.7 },
-            ],
-            locations: [
-                { country: "中国", users: 8234, percentage: 64.1 },
-                { country: "美国", users: 2134, percentage: 16.6 },
-                { country: "日本", users: 1234, percentage: 9.6 },
-                { country: "英国", users: 876, percentage: 6.8 },
-                { country: "其他", users: 369, percentage: 2.9 },
-            ],
-        },
+            overview: {
+                totalUsers: 12847,
+                totalArticles: 1456,
+                totalComments: 3892,
+                totalViews: 256789,
+                totalLikes: 12456,
+                avgSessionDuration: "4:32",
+                bounceRate: "32.5%",
+                newUsers: 847,
+            },
+            trends: {
+                visits: [
+                    { date: "11-15", value: 2820, label: "周一" },
+                    { date: "11-16", value: 2932, label: "周二" },
+                    { date: "11-17", value: 2901, label: "周三" },
+                    { date: "11-18", value: 3134, label: "周四" },
+                    { date: "11-19", value: 3290, label: "周五" },
+                    { date: "11-20", value: 3330, label: "周六" },
+                    { date: "11-21", value: 2892, label: "周日" },
+                ],
+                users: [
+                    { date: "11-15", value: 1820, label: "周一" },
+                    { date: "11-16", value: 1932, label: "周二" },
+                    { date: "11-17", value: 1901, label: "周三" },
+                    { date: "11-18", value: 2134, label: "周四" },
+                    { date: "11-19", value: 2290, label: "周五" },
+                    { date: "11-20", value: 2330, label: "周六" },
+                    { date: "11-21", value: 1892, label: "周日" },
+                ],
+                pageViews: [
+                    { date: "11-15", value: 5820, label: "周一" },
+                    { date: "11-16", value: 5932, label: "周二" },
+                    { date: "11-17", value: 5901, label: "周三" },
+                    { date: "11-18", value: 6134, label: "周四" },
+                    { date: "11-19", value: 6290, label: "周五" },
+                    { date: "11-20", value: 6330, label: "周六" },
+                    { date: "11-21", value: 5892, label: "周日" },
+                ],
+            },
+            content: {
+                popularArticles: [
+                    {
+                        id: 1,
+                        title: "React 18 新特性详解",
+                        views: 5432,
+                        likes: 234,
+                        comments: 45,
+                    },
+                    {
+                        id: 2,
+                        title: "TypeScript 最佳实践指南",
+                        views: 4211,
+                        likes: 189,
+                        comments: 32,
+                    },
+                    {
+                        id: 3,
+                        title: "前端性能优化技巧",
+                        views: 3897,
+                        likes: 167,
+                        comments: 28,
+                    },
+                    {
+                        id: 4,
+                        title: "Vite 构建工具使用教程",
+                        views: 3456,
+                        likes: 145,
+                        comments: 23,
+                    },
+                    {
+                        id: 5,
+                        title: "CSS Grid 布局完全指南",
+                        views: 2987,
+                        likes: 123,
+                        comments: 19,
+                    },
+                ],
+                categories: [
+                    { name: "前端开发", count: 456, percentage: 31.3 },
+                    { name: "后端技术", count: 342, percentage: 23.5 },
+                    { name: "开发工具", count: 289, percentage: 19.8 },
+                    { name: "设计相关", count: 234, percentage: 16.1 },
+                    { name: "其他", count: 135, percentage: 9.3 },
+                ],
+            },
+            traffic: {
+                sources: [
+                    { name: "直接访问", value: 45, percentage: 35.2 },
+                    { name: "搜索引擎", value: 38, percentage: 29.7 },
+                    { name: "社交媒体", value: 25, percentage: 19.5 },
+                    { name: "外链引用", value: 20, percentage: 15.6 },
+                ],
+                devices: [
+                    { name: "桌面端", value: 65, percentage: 50.8 },
+                    { name: "移动端", value: 48, percentage: 37.5 },
+                    { name: "平板端", value: 15, percentage: 11.7 },
+                ],
+                locations: [
+                    { country: "中国", users: 8234, percentage: 64.1 },
+                    { country: "美国", users: 2134, percentage: 16.6 },
+                    { country: "日本", users: 1234, percentage: 9.6 },
+                    { country: "英国", users: 876, percentage: 6.8 },
+                    { country: "其他", users: 369, percentage: 2.9 },
+                ],
+            },
         }),
-        []
+        [],
     );
 
     // 概览统计卡片
@@ -269,7 +269,9 @@ const Analytics: React.FC = () => {
                     },
                 },
                 legend: {
-                    data: [selectedMetric === "visits" ? "访问量" : selectedMetric === "users" ? "用户数" : "页面浏览量"],
+                    data: [
+                        selectedMetric === "visits" ? "访问量" : selectedMetric === "users" ? "用户数" : "页面浏览量",
+                    ],
                     bottom: 0,
                 },
                 grid: {

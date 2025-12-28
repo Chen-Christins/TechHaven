@@ -52,7 +52,7 @@ export class FileService {
         const params = new URLSearchParams();
         params.append("url", url);
         params.append("fileName", fileName);
-        const res = await fetch('/file/download', {
+        const res = await fetch("/file/download", {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",

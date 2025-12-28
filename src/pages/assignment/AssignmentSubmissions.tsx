@@ -182,7 +182,6 @@ const AssignmentSubmissions: React.FC = () => {
     const handleDownload = async (file: SubmissionFile) => {
         try {
             await FileService.downloadFile(file.file_path, file.file_name);
-
         } catch (err: any) {
             message.error(err.message || "下载失败");
         }

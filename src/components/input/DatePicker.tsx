@@ -108,24 +108,27 @@ const DatePicker: React.FC<DatePickerProps> = ({
     ];
 
     // 格式化日期
-    const formatDate = useCallback((date: Date): string => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        const hour = String(date.getHours()).padStart(2, "0");
-        const minute = String(date.getMinutes()).padStart(2, "0");
-        const second = String(date.getSeconds()).padStart(2, "0");
+    const formatDate = useCallback(
+        (date: Date): string => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            const hour = String(date.getHours()).padStart(2, "0");
+            const minute = String(date.getMinutes()).padStart(2, "0");
+            const second = String(date.getSeconds()).padStart(2, "0");
 
-        let result = actualFormat;
-        result = result.replace("YYYY", String(year));
-        result = result.replace("MM", month);
-        result = result.replace("DD", day);
-        result = result.replace("HH", hour);
-        result = result.replace("mm", minute);
-        result = result.replace("ss", second);
+            let result = actualFormat;
+            result = result.replace("YYYY", String(year));
+            result = result.replace("MM", month);
+            result = result.replace("DD", day);
+            result = result.replace("HH", hour);
+            result = result.replace("mm", minute);
+            result = result.replace("ss", second);
 
-        return result;
-    }, [actualFormat]);
+            return result;
+        },
+        [actualFormat],
+    );
 
     // 解析日期字符串
     const parseDate = (dateStr: string): Date | null => {
