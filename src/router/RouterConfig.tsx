@@ -25,6 +25,7 @@ import ArticleViewPage from "../pages/articleView/ArticleViewPage";
 import AssignmentSubmit from "../pages/assignment/AssignmentSubmit";
 import AssignmentList from "../pages/assignment/AssignmentList";
 import AssignmentSubmissions from "../pages/assignment/AssignmentSubmissions";
+import ChunkUploadTest from "../pages/test/ChunkUploadTest";
 
 const RouterConfig: React.FC = () => {
     return (
@@ -51,6 +52,9 @@ const RouterConfig: React.FC = () => {
             <Route path="/assignment/submit/:id" element={<AssignmentSubmit />} />
             {/* 作业提交详情页 */}
             <Route path="/assignment/submissions/:id" element={<AssignmentSubmissions />} />
+
+            {/* 测试页面 */}
+            <Route path="/test/chunk-upload" element={<ChunkUploadTest />} />
 
             {/* 用户组织列表页 */}
             <Route path="/organizations/list" element={<OrganizationList />} />

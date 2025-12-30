@@ -45,6 +45,7 @@ const AssignmentSubmit: React.FC = () => {
     const [files, setFiles] = useState<File[]>([]);
     const [isDragging, setIsDragging] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState<number>(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -157,24 +158,33 @@ const AssignmentSubmit: React.FC = () => {
         }
 
         setSubmitting(true);
+        setUploadProgress(0);
         try {
-            // 使用 FileService 上传文件
-            const uploadResult = await FileService.uploadFile({
-                dir_name: `${assignment.name}`, // 使用作业ID作为目录名
+            // 只支持单文件分块上传（如需多文件可循环）
+            const file = files[0];
+            const result = await FileService.uploadFileByChunks({
+                dir_name: `${assignment.name}`,
                 biz_type: "assignment_submission",
                 biz_id: String(assignment.id),
-                files: files,
+                file,
+                onProgress: (progress) => {
+                    setUploadProgress(progress);
+                },
             });
 
-            console.log("文件上传成功:", uploadResult);
-            message.success("作业提交成功！");
-            navigate("/assignments");
+            if (result.success) {
+                message.success("作业提交成功！");
+                navigate("/assignments");
+            } else {
+                message.error(result.error || "提交失败，请重试");
+            }
         } catch (error: any) {
             console.error("提交失败:", error);
             const errorMessage = error.response?.data?.message || error.message || "提交失败，请重试";
             message.error(errorMessage);
         } finally {
             setSubmitting(false);
+            setUploadProgress(0);
         }
     };
 
@@ -429,8 +439,21 @@ const AssignmentSubmit: React.FC = () => {
                                     onClick={handleSubmit}
                                     disabled={submitting || files.length === 0 || !isAssignmentOpen()}
                                 >
-                                    {submitting ? "提交中..." : !isAssignmentOpen() ? "作业已关闭" : "确认提交"}
+                                    {submitting
+                                        ? uploadProgress > 0 && uploadProgress < 100
+                                            ? `上传中...${uploadProgress}%`
+                                            : "提交中..."
+                                        : !isAssignmentOpen()
+                                          ? "作业已关闭"
+                                          : "确认提交"}
                                 </button>
+                                {/* 上传进度条 */}
+                                {submitting && uploadProgress > 0 && uploadProgress < 100 && (
+                                    <div className={styles.progressBarWrapper}>
+                                        <div className={styles.progressBar} style={{ width: `${uploadProgress}%` }} />
+                                        <span className={styles.progressText}>{uploadProgress}%</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

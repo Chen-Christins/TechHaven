@@ -76,6 +76,31 @@
     flex: 1;
 }
 
+/* 滚动条样式 - 适配暗色主题 */
+.content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+/* Firefox 滚动条样式 */
+.content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-primary) var(--bg-secondary);
+}
+
 .footer {
     padding: 16px 24px;
     border-top: 1px solid var(--border-primary);

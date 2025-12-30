@@ -979,9 +979,16 @@ const OrganizationDetail: React.FC = () => {
                         <label className={styles.formLabel}>文件大小限制 (MB) *</label>
                         <Input
                             type="number"
-                            placeholder="请输入最大文件大小"
+                            placeholder="请输入最大文件大小 (不超过96MB)"
                             value={String(taskFormData.maxFileSize || "")}
-                            onChange={(value) => setTaskFormData({ ...taskFormData, maxFileSize: Number(value) })}
+                            onChange={(value) => {
+                                const num = Number(value);
+                                if (num > 96) {
+                                    message.error("文件大小不能超过96MB");
+                                    return;
+                                }
+                                setTaskFormData({ ...taskFormData, maxFileSize: num });
+                            }}
                             className={styles.formInput}
                         />
                     </div>

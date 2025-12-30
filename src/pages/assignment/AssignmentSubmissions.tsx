@@ -68,6 +68,8 @@ const AssignmentSubmissions: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize] = useState(10); // 每页显示10条记录
     const [expandedSubmissions, setExpandedSubmissions] = useState<Set<string | number>>(new Set());
+    const [downloadingFiles, setDownloadingFiles] = useState<Set<string | number>>(new Set());
+    const [downloadingAll, setDownloadingAll] = useState<Set<string | number>>(new Set());
 
     useEffect(() => {
         const fetchData = async () => {
@@ -180,10 +182,54 @@ const AssignmentSubmissions: React.FC = () => {
     };
 
     const handleDownload = async (file: SubmissionFile) => {
+        // 防止重复点击
+        if (downloadingFiles.has(file.id)) {
+            return;
+        }
+
         try {
+            // 添加到下载中状态
+            setDownloadingFiles((prev) => new Set(prev).add(file.id));
+
             await FileService.downloadFile(file.file_path, file.file_name);
         } catch (err: any) {
             message.error(err.message || "下载失败");
+        } finally {
+            // 从下载中状态移除
+            setDownloadingFiles((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(file.id);
+                return newSet;
+            });
+        }
+    };
+
+    const handleDownloadAll = async (submission: AssignmentSubmissionItem) => {
+        // 防止重复点击
+        if (downloadingAll.has(submission.user_id)) {
+            return;
+        }
+
+        try {
+            // 添加到下载中状态
+            setDownloadingAll((prev) => new Set(prev).add(submission.user_id));
+
+            // 这里应该调用打包下载的API
+            // 暂时使用循环下载单个文件作为替代方案
+            if (submission.list && submission.list.length > 0) {
+                for (const file of submission.list) {
+                    await FileService.downloadFile(file.file_path, file.file_name);
+                }
+            }
+        } catch (err: any) {
+            message.error(err.message || "打包下载失败");
+        } finally {
+            // 从下载中状态移除
+            setDownloadingAll((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(submission.user_id);
+                return newSet;
+            });
         }
     };
 
@@ -454,17 +500,52 @@ const AssignmentSubmissions: React.FC = () => {
                                                             <div className={styles.fileActions}>
                                                                 {submission.list && submission.list.length === 1 ? (
                                                                     <button
-                                                                        className={styles.downloadBtn}
+                                                                        className={`${styles.downloadBtn} ${downloadingFiles.has(submission.list![0].id) ? styles.downloading : ""}`}
                                                                         onClick={() =>
                                                                             handleDownload(submission.list![0])
                                                                         }
+                                                                        disabled={downloadingFiles.has(
+                                                                            submission.list![0].id,
+                                                                        )}
                                                                     >
-                                                                        <FaDownload /> 下载
+                                                                        {downloadingFiles.has(
+                                                                            submission.list![0].id,
+                                                                        ) ? (
+                                                                            <>
+                                                                                <FaDownload
+                                                                                    className={styles.spinning}
+                                                                                />{" "}
+                                                                                下载中...
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <FaDownload /> 下载
+                                                                            </>
+                                                                        )}
                                                                     </button>
                                                                 ) : (
                                                                     <>
-                                                                        <button className={styles.downloadAllBtn}>
-                                                                            <FaDownload /> 打包下载
+                                                                        <button
+                                                                            className={`${styles.downloadAllBtn} ${downloadingAll.has(submission.user_id) ? styles.downloading : ""}`}
+                                                                            onClick={() =>
+                                                                                handleDownloadAll(submission)
+                                                                            }
+                                                                            disabled={downloadingAll.has(
+                                                                                submission.user_id,
+                                                                            )}
+                                                                        >
+                                                                            {downloadingAll.has(submission.user_id) ? (
+                                                                                <>
+                                                                                    <FaDownload
+                                                                                        className={styles.spinning}
+                                                                                    />{" "}
+                                                                                    打包中...
+                                                                                </>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <FaDownload /> 打包下载
+                                                                                </>
+                                                                            )}
                                                                         </button>
                                                                         <button
                                                                             className={styles.toggleBtn}
@@ -522,10 +603,19 @@ const AssignmentSubmissions: React.FC = () => {
                                                                                     </div>
                                                                                 </div>
                                                                                 <button
-                                                                                    className={styles.downloadBtn}
+                                                                                    className={`${styles.downloadBtn} ${downloadingFiles.has(file.id) ? styles.downloading : ""}`}
                                                                                     onClick={() => handleDownload(file)}
+                                                                                    disabled={downloadingFiles.has(
+                                                                                        file.id,
+                                                                                    )}
                                                                                 >
-                                                                                    <FaDownload />
+                                                                                    {downloadingFiles.has(file.id) ? (
+                                                                                        <FaDownload
+                                                                                            className={styles.spinning}
+                                                                                        />
+                                                                                    ) : (
+                                                                                        <FaDownload />
+                                                                                    )}
                                                                                 </button>
                                                                             </div>
 

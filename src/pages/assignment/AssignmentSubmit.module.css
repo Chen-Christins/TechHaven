@@ -1,3 +1,32 @@
+/* 分块上传进度条样式 */
+.progressBarWrapper {
+    width: 100%;
+    margin: 1.5rem 0 0.5rem 0;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    position: relative;
+    height: 18px;
+    box-shadow: var(--shadow-xs);
+    border: 1px solid var(--border-secondary);
+}
+
+.progressBar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+    border-radius: 8px;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progressText {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    pointer-events: none;
+}
 .container {
     min-height: 100vh;
     background-color: var(--bg-primary);

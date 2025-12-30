@@ -34,12 +34,16 @@ export default defineConfig(({ mode }) => {
                     target: apiTarget,
                     changeOrigin: true,
                     secure: false,
+                    timeout: 100000,
+                    agent: false,
                     configure: (proxy, _options) => {
                         proxy.on("error", (err, _req, _res) => {
                             console.log("文件代理错误:", err);
                         });
                         proxy.on("proxyReq", (proxyReq, req, _res) => {
                             console.log("文件代理请求:", req.method, req.url, "→ 转发到:", proxyReq.path);
+                            // 设置连接保持活跃
+                            proxyReq.setHeader("Connection", "keep-alive");
                         });
                         proxy.on("proxyRes", (proxyRes, req, _res) => {
                             console.log("文件代理响应:", proxyRes.statusCode, req.url);
