@@ -1,6 +1,6 @@
 // ExampleUsage.tsx
 import React from "react";
-import ArticleView from "../pages/articleView/ArticleView";
+import ArticleView from "../pages/article/ArticleView";
 import Footer from "../components/footer/Footer";
 import Navbar from "../components/navbar/Navbar";
 import BackToTop from "../components/backToTop/BackToTop";

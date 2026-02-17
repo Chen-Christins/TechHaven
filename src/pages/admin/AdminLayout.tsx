@@ -434,7 +434,7 @@ const AdminLayout: React.FC = () => {
           </div>
 
           {/* Footer */}
-          <Footer companyName="TechBlog" />
+          <Footer companyName="TechBlog" startYear={2025} />
         </main>
       </div>
     </div>
