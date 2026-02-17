@@ -72,7 +72,7 @@ const GMLayout: React.FC<GMLayoutProps> = ({ navItems, navSections, activeSectio
           <div className={styles.main}>{children}</div>
         </div>
       </div>
-      <Footer companyName="TechBlog" />
+      <Footer companyName="TechBlog" startYear={2025} />
     </div>
   );
 };
