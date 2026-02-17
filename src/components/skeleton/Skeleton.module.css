@@ -1,167 +1,162 @@
 /* 骨架屏基础样式 */
 .skeleton {
-    background: linear-gradient(
-        90deg,
-        var(--skeleton-bg1, rgba(156, 163, 175, 0.1)) 0%,
-        var(--skeleton-bg2, rgba(156, 163, 175, 0.2)) 25%,
-        var(--skeleton-bg3, rgba(156, 163, 175, 0.3)) 50%,
-        var(--skeleton-bg2, rgba(156, 163, 175, 0.2)) 75%,
-        var(--skeleton-bg1, rgba(156, 163, 175, 0.1)) 100%
-    );
-    background-size: 200% 100%;
-    border-radius: 6px;
-    display: inline-block;
-    position: relative;
-    overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-bg1, rgba(156, 163, 175, 0.1)) 0%,
+    var(--skeleton-bg2, rgba(156, 163, 175, 0.2)) 25%,
+    var(--skeleton-bg3, rgba(156, 163, 175, 0.3)) 50%,
+    var(--skeleton-bg2, rgba(156, 163, 175, 0.2)) 75%,
+    var(--skeleton-bg1, rgba(156, 163, 175, 0.1)) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px;
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
 }
 
 /* 添加微光效果 */
 .skeleton::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        var(--skeleton-shimmer, rgba(255, 255, 255, 0.4)) 50%,
-        transparent 100%
-    );
-    transform: translateX(-100%);
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, var(--skeleton-shimmer, rgba(255, 255, 255, 0.4)) 50%, transparent 100%);
+  transform: translateX(-100%);
 }
 
 /* 动画效果 */
 .skeleton.pulse {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .skeleton.pulse::before {
-    animation: shimmer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: shimmer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .skeleton.wave {
-    animation: wave 1.8s ease-in-out infinite;
+  animation: wave 1.8s ease-in-out infinite;
 }
 
 .skeleton.wave::before {
-    animation: shimmer 1.8s ease-in-out infinite;
+  animation: shimmer 1.8s ease-in-out infinite;
 }
 
 .skeleton.none {
-    animation: none;
+  animation: none;
 }
 
 .skeleton.none::before {
-    animation: none;
+  animation: none;
 }
 
 /* 脉冲动画 */
 @keyframes pulse {
-    0%,
-    100% {
-        opacity: 0.8;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.01);
-    }
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.01);
+  }
 }
 
 /* 波浪动画 */
 @keyframes wave {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 /* 微光动画 */
 @keyframes shimmer {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(100%);
-    }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* 文本骨架屏 */
 .skeleton.text {
-    height: 1em;
-    margin: 4px 0;
-    border-radius: 4px;
+  height: 1em;
+  margin: 4px 0;
+  border-radius: 4px;
 }
 
 .textLines {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .textLine {
-    height: 1em;
-    background: linear-gradient(
-        90deg,
-        var(--skeleton-text1, #f0f0f0) 25%,
-        var(--skeleton-text2, #e0e0e0) 50%,
-        var(--skeleton-text1, #f0f0f0) 75%
-    );
-    background-size: 200% 100%;
-    border-radius: 4px;
+  height: 1em;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-text1, #f0f0f0) 25%,
+    var(--skeleton-text2, #e0e0e0) 50%,
+    var(--skeleton-text1, #f0f0f0) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: 4px;
 }
 
 .skeleton.text.wave .textLine {
-    animation: wave 1.6s linear infinite;
+  animation: wave 1.6s linear infinite;
 }
 
 .skeleton.text.pulse .textLine {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* 圆形骨架屏 */
 .skeleton.circular {
-    border-radius: 50%;
+  border-radius: 50%;
 }
 
 /* 矩形骨架屏 */
 .skeleton.rectangular {
-    border-radius: 0;
+  border-radius: 0;
 }
 
 /* 圆角矩形骨架屏 */
 .skeleton.rounded {
-    border-radius: 8px;
+  border-radius: 8px;
 }
 
 /* 暗色主题适配 */
 @media (prefers-color-scheme: dark) {
-    :root[data-theme="dark"] {
-        --skeleton-bg1: rgba(75, 85, 99, 0.2);
-        --skeleton-bg2: rgba(75, 85, 99, 0.3);
-        --skeleton-bg3: rgba(75, 85, 99, 0.4);
-        --skeleton-shimmer: rgba(255, 255, 255, 0.1);
-        --skeleton-text1: #444a57;
-        --skeleton-text2: #2a2e36;
-    }
-    :root[data-theme="light"],
-    :root:not([data-theme]) {
-        --skeleton-bg1: rgba(156, 163, 175, 0.1);
-        --skeleton-bg2: rgba(156, 163, 175, 0.2);
-        --skeleton-bg3: rgba(156, 163, 175, 0.3);
-        --skeleton-shimmer: rgba(255, 255, 255, 0.4);
-        --skeleton-text1: #f0f0f0;
-        --skeleton-text2: #e0e0e0;
-    }
+  :root[data-theme="dark"] {
+    --skeleton-bg1: rgba(75, 85, 99, 0.2);
+    --skeleton-bg2: rgba(75, 85, 99, 0.3);
+    --skeleton-bg3: rgba(75, 85, 99, 0.4);
+    --skeleton-shimmer: rgba(255, 255, 255, 0.1);
+    --skeleton-text1: #444a57;
+    --skeleton-text2: #2a2e36;
+  }
+  :root[data-theme="light"],
+  :root:not([data-theme]) {
+    --skeleton-bg1: rgba(156, 163, 175, 0.1);
+    --skeleton-bg2: rgba(156, 163, 175, 0.2);
+    --skeleton-bg3: rgba(156, 163, 175, 0.3);
+    --skeleton-shimmer: rgba(255, 255, 255, 0.4);
+    --skeleton-text1: #f0f0f0;
+    --skeleton-text2: #e0e0e0;
+  }
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-    .skeleton.text {
-        font-size: 14px;
-    }
+  .skeleton.text {
+    font-size: 14px;
+  }
 }

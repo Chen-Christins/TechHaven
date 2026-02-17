@@ -6,8 +6,8 @@ import Navbar from "../components/navbar/Navbar";
 import BackToTop from "../components/backToTop/BackToTop";
 
 const ExampleUsage: React.FC = () => {
-    // 示例Markdown内容，包含代码和公式
-    const markdownContent = `
+  // 示例Markdown内容，包含代码和公式
+  const markdownContent = `
 这是一篇包含代码和数学公式的示例文章。
 
 ## 行内代码示例
@@ -86,22 +86,22 @@ graph TD;
 这是一张示例图片的说明文字。
   `;
 
-    return (
-        <div>
-            <Navbar />
-            <ArticleView
-                title="标题"
-                pushlish_time="2025-10-26 19:19:19"
-                author="Christins"
-                views={0}
-                praises={0}
-                update_time="2025-10-26 19:19:19"
-                content={markdownContent}
-            />
-            <Footer companyName="TechBlog" startYear={2025} />
-            <BackToTop />
-        </div>
-    );
+  return (
+    <div>
+      <Navbar />
+      <ArticleView
+        title="标题"
+        pushlish_time="2025-10-26 19:19:19"
+        author="Christins"
+        views={0}
+        praises={0}
+        update_time="2025-10-26 19:19:19"
+        content={markdownContent}
+      />
+      <Footer companyName="TechBlog" startYear={2025} />
+      <BackToTop />
+    </div>
+  );
 };
 
 export default ExampleUsage;

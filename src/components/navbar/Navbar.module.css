@@ -1,674 +1,688 @@
 /* 基础导航栏样式 */
 .navbar {
-    position: sticky;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 56px;
-    background-color: var(--navbar-bg);
-    color: var(--text-primary);
-    z-index: 1000;
-    box-shadow: var(--shadow-md);
-    border-bottom: 1px solid var(--navbar-border);
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background-color: var(--navbar-bg);
+  color: var(--text-primary);
+  z-index: 1000;
+  box-shadow: var(--shadow-md);
+  border-bottom: 1px solid var(--navbar-border);
 }
 
 /* 滚动时导航栏样式变化 */
 .navbarScrolled {
-    background-color: var(--navbar-bg);
-    /* 半透明效果 */
-    backdrop-filter: blur(8px);
-    height: 60px;
-    box-shadow: var(--shadow-lg);
+  background-color: var(--navbar-bg);
+  /* 半透明效果 */
+  backdrop-filter: blur(8px);
+  height: 60px;
+  box-shadow: var(--shadow-lg);
 }
 
 .container {
-    max-width: 1560px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-    height: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 /* 左侧区域（Logo + 导航） */
 .leftSection {
-    display: flex;
-    align-items: center;
-    gap: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
 }
 
 /* Logo样式 */
 .logo {
-    text-decoration: none;
-    display: flex;
-    align-items: center;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
 }
 
 .logoText {
-    font-size: 1.4rem;
-    font-weight: 700;
-    background: linear-gradient(90deg, #3b82f6, #60a5fa);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    letter-spacing: 0.02em;
+  font-size: 1.4rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 0.02em;
 }
 
 .logo:hover .logoText {
-    transform: scale(1.05);
-    cursor: pointer;
+  transform: scale(1.05);
+  cursor: pointer;
 }
 
 /* 桌面端导航链接 */
 .desktopNav {
-    display: block;
+  display: block;
 }
 
 .navLinks {
-    display: flex;
-    list-style: none;
-    /* gap: 0.2rem; */
-    margin: 0;
-    padding: 0;
+  display: flex;
+  list-style: none;
+  /* gap: 0.2rem; */
+  margin: 0;
+  padding: 0;
 }
 
 .navItem {
-    position: relative;
+  position: relative;
 }
 
 .navLink {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1rem;
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-weight: 500;
-    border-radius: 5px;
-    height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 5px;
+  height: 56px;
 }
 
 .navLink:hover {
-    background-color: var(--bg-hover);
-    color: var(--text-primary);
-    cursor: pointer;
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  cursor: pointer;
 }
 
 /* 活跃状态链接 */
 .navLink[data-active="true"] {
-    color: var(--primary);
-    background-color: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+  background-color: rgba(59, 130, 246, 0.1);
 }
 
 .navLink[data-active="true"]::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: var(--primary);
-    border-radius: 2px;
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--primary);
+  border-radius: 2px;
 }
 
 .linkIcon {
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 右侧用户区域 */
 .rightSection {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.testButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-right: 0.5rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.testButton:hover {
+  background-color: var(--bg-hover);
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.testButton:active {
+  transform: translateY(0);
+}
+
+.testButtonIcon {
+  font-size: 1rem;
 }
 
 .userArea {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    cursor: pointer;
-    padding: 0.3rem 0.5rem;
-    border-radius: 5px;
-    height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  border-radius: 5px;
+  height: 56px;
 }
 
 /* 认证状态加载中的占位符 */
 .userAreaPlaceholder {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.3rem 0.5rem;
-    border-radius: 5px;
-    height: 56px;
-    opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 5px;
+  height: 56px;
+  opacity: 0.7;
 }
 
 .userArea:hover {
-    background-color: var(--bg-hover);
+  background-color: var(--bg-hover);
 }
 
 /* 用户头像 */
 .avatarContainer {
-    position: relative;
-    width: 38px;
-    height: 38px;
+  position: relative;
+  width: 38px;
+  height: 38px;
 }
 
 .avatar {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-    background-image: linear-gradient(to right, #3b82f6, #818cf8);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  background-image: linear-gradient(to right, #3b82f6, #818cf8);
 }
 
 .avatarPlaceholder {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background-color: var(--bg-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-tertiary);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
 }
 
 .userArea:hover .avatar {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 /* 在线状态指示器 */
 .statusIndicator {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 12px;
-    height: 12px;
-    background-color: var(--success);
-    border: 2px solid var(--navbar-bg);
-    border-radius: 50%;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background-color: var(--success);
+  border: 2px solid var(--navbar-bg);
+  border-radius: 50%;
 }
 
 /* 用户信息 */
 .userInfo {
-    display: none;
+  display: none;
 }
 
 @media (min-width: 768px) {
-    .userInfo {
-        display: block;
-    }
+  .userInfo {
+    display: block;
+  }
 }
 
 .userName {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
 }
 
 .userRole {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    text-transform: lowercase;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: lowercase;
 }
 
 /* 用户下拉菜单 */
 .userDropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-primary);
-    border-radius: 12px;
-    box-shadow: var(--shadow-lg);
-    min-width: 220px;
-    z-index: 1000;
-    overflow: hidden;
-    animation: dropdownSlide 0.2s ease-out;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  min-width: 220px;
+  z-index: 1000;
+  overflow: hidden;
+  animation: dropdownSlide 0.2s ease-out;
 }
 
 @keyframes dropdownSlide {
-    from {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdownHeader {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
 }
 
 .dropdownAvatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--border-primary);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-primary);
 }
 
 .dropdownUserInfo {
-    flex: 1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .dropdownUserName {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
 }
 
 .dropdownUserRole {
-    font-size: 14px;
-    color: var(--text-secondary);
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 
 .dropdownDivider {
-    height: 1px;
-    background-color: var(--border-primary);
+  height: 1px;
+  background-color: var(--border-primary);
 }
 
 .dropdownMenu {
-    padding: 0px;
+  padding: 0px;
 }
 
 .dropdownItem {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    background: none;
-    border: none;
-    width: 100%;
-    text-align: left;
-    color: var(--text-primary);
-    font-size: 14px;
-    cursor: pointer;
-    text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .dropdownItem:hover {
-    background-color: var(--bg-hover);
+  background-color: var(--bg-hover);
 }
 
 .dropdownItem svg {
-    color: var(--text-secondary);
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
+  color: var(--text-secondary);
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 /* 移动端菜单按钮 */
 .mobileMenuBtn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
 }
 
 .mobileMenuBtn:hover {
-    background-color: var(--bg-hover);
+  background-color: var(--bg-hover);
 }
 
 .menuIcon {
-    font-size: 1.5rem;
+  font-size: 1.5rem;
 }
 
 /* 移动端导航菜单 */
 .mobileMenu {
-    position: fixed;
-    top: 56px;
-    left: 0;
-    right: 0;
-    background-color: var(--card-bg);
-    box-shadow: var(--shadow-lg);
-    border-top: 1px solid var(--border-primary);
-    transform: translateY(-100%);
-    opacity: 0;
-    visibility: hidden;
-    z-index: 999;
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-lg);
+  border-top: 1px solid var(--border-primary);
+  transform: translateY(-100%);
+  opacity: 0;
+  visibility: hidden;
+  z-index: 999;
 }
 
 .mobileMenuOpen {
-    transform: translateY(0);
-    opacity: 1;
-    visibility: visible;
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
 }
 
 .mobileNavLinks {
-    list-style: none;
-    margin: 0;
-    padding: 1rem 0;
+  list-style: none;
+  margin: 0;
+  padding: 1rem 0;
 }
 
 .mobileNavItem {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .mobileNavLink {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
-    color: var(--text-primary);
-    text-decoration: none;
-    font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 1rem;
 }
 
 .mobileNavLink:hover {
-    background-color: var(--bg-hover);
-    color: var(--primary);
+  background-color: var(--bg-hover);
+  color: var(--primary);
 }
 
 .mobileLinkIcon {
-    font-size: 1.2rem;
-    width: 24px;
-    text-align: center;
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
 }
 
 /* 移动端推荐功能 */
 .mobileRecommendSection {
-    width: 100%;
+  width: 100%;
 }
 
 .mobileRecommendButton {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    width: 100%;
-    padding: 1rem 1.5rem;
-    color: var(--text-primary);
-    background: none;
-    border: none;
-    text-align: left;
-    font-size: 1rem;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
 .mobileRecommendButton:hover {
-    background-color: var(--bg-hover);
-    color: var(--primary);
+  background-color: var(--bg-hover);
+  color: var(--primary);
 }
 
 .mobileRecommendDropdown {
-    background-color: var(--bg-secondary);
-    border-top: 1px solid var(--border-secondary);
-    animation: slideDown 0.2s ease;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-secondary);
+  animation: slideDown 0.2s ease;
 }
 
 @keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mobileDropdownHeader {
-    padding: 0.75rem 1.5rem;
-    border-bottom: 1px solid var(--border-secondary);
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--border-secondary);
 }
 
 .mobileDropdownTitle {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.85rem;
 }
 
 .mobileRecommendItem {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1.5rem;
-    color: var(--text-primary);
-    text-decoration: none;
-    border-bottom: 1px solid var(--border-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-secondary);
 }
 
 .mobileRecommendItem:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .mobileRecommendItem:hover {
-    background-color: var(--bg-hover);
+  background-color: var(--bg-hover);
 }
 
 .mobileItemTitle {
-    font-weight: 500;
-    color: var(--text-primary);
-    font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.85rem;
 }
 
 .mobileExternalIcon {
-    color: var(--text-tertiary);
-    opacity: 0.7;
+  color: var(--text-tertiary);
+  opacity: 0.7;
 }
 
 /* 响应式调整 */
 @media (max-width: 1164px) {
-    .desktopNav {
-        display: none;
-    }
+  .desktopNav {
+    display: none;
+  }
 
-    .leftSection {
-        gap: 1rem;
-    }
+  .leftSection {
+    gap: 1rem;
+  }
 
-    .logoText {
-        font-size: 1.25rem;
-    }
+  .logoText {
+    font-size: 1.25rem;
+  }
 
-    .mobileNavLinks {
-        list-style: none;
-        margin: 0;
-        padding: 0.2rem 0;
-    }
+  .mobileNavLinks {
+    list-style: none;
+    margin: 0;
+    padding: 0.2rem 0;
+  }
 }
 
 @media (min-width: 1165px) {
-    .mobileMenuBtn {
-        display: none;
-    }
+  .mobileMenuBtn {
+    display: none;
+  }
 
-    .mobileMenu {
-        display: none;
-    }
+  .mobileMenu {
+    display: none;
+  }
 }
 
 /* 推荐下拉菜单样式 */
 .recommendButton {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1rem;
-    color: var(--text-secondary);
-    background: none;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 1rem;
-    text-decoration: none;
-    height: 56px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  text-decoration: none;
+  height: 56px;
 }
 
 .recommendButton:hover {
-    background-color: var(--bg-hover);
-    color: var(--text-primary);
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 /* 推荐按钮活跃状态（当下拉菜单打开时） */
-.recommendButton[data-active="true"] {
-    color: var(--primary);
-    background-color: rgba(59, 130, 246, 0.1);
-}
-
-.recommendButton[data-active="true"]::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: var(--primary);
-    border-radius: 2px;
-}
 
 .recommendDropdown {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-primary);
-    border-radius: 12px;
-    box-shadow: var(--shadow-lg);
-    min-width: 200px;
-    max-width: 240px;
-    z-index: 1000;
-    overflow: hidden;
-    animation: dropdownIn 0.2s ease;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  min-width: 200px;
+  max-width: 240px;
+  z-index: 1000;
+  overflow: hidden;
+  animation: dropdownIn 0.2s ease;
 }
 
 @keyframes dropdownIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdownTitle {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
 }
 
 .dropdownContent {
-    padding: 0.5rem;
+  padding: 0.5rem;
 }
 
 .recommendItem {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.8rem 1rem;
-    color: var(--text-primary);
-    text-decoration: none;
-    border-radius: 8px;
-    border: 1px solid transparent;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  border-radius: 8px;
+  border: 1px solid transparent;
 }
 
 .recommendItem:hover {
-    background-color: var(--bg-hover);
-    border-color: var(--border-secondary);
+  background-color: var(--bg-hover);
+  border-color: var(--border-secondary);
 }
 
 .itemTitle {
-    font-weight: 500;
-    color: var(--text-primary);
-    font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.9rem;
 }
 
 .externalIcon {
-    color: var(--text-tertiary);
-    opacity: 0.7;
+  color: var(--text-tertiary);
+  opacity: 0.7;
 }
 
 /* 移动端认证区域 */
 .mobileAuthSection {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 8px;
-    padding-left: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  padding-left: 32px;
 }
 
 .mobileAuthButton {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    border-radius: 12px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-    border: 2px solid rgba(59, 130, 246, 0.3);
-    color: var(--text-primary);
-    backdrop-filter: blur(10px);
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
-    position: relative;
-    overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  color: var(--text-primary);
+  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+  position: relative;
+  overflow: hidden;
 }
 
 .mobileAuthButton::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
 }
 
 .mobileAuthButton:hover::before {
-    left: 100%;
+  left: 100%;
 }
 
 .mobileAuthButton:hover {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
-    border-color: rgba(59, 130, 246, 0.6);
-    color: var(--accent-color);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
+  border-color: rgba(59, 130, 246, 0.6);
+  color: var(--accent-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
 }
 
 .mobileAuthButton:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
 }
 
 .mobileAuthButtonPlaceholder {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    border: 2px solid transparent;
-    color: var(--text-tertiary);
-    background: var(--bg-secondary);
-    position: relative;
-    opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 2px solid transparent;
+  color: var(--text-tertiary);
+  background: var(--bg-secondary);
+  position: relative;
+  opacity: 0.7;
 }

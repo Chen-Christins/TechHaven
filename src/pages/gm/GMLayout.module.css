@@ -1,0 +1,128 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+}
+
+.page {
+  padding: 24px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  max-width: 1540px;
+  margin: 0 auto;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 16px;
+  flex: 1;
+}
+
+.sidebar {
+  position: sticky;
+  top: 80px;
+  align-self: start;
+  background: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow-md);
+}
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sidebarTitle {
+  font-weight: 700;
+}
+
+.sidebarEnv {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+}
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.navBtn {
+  width: 100%;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.navBtn:hover {
+  transform: translateY(-1px);
+  border-color: var(--primary);
+}
+
+.navBtnActive {
+  background: linear-gradient(120deg, rgba(59, 130, 246, 0.12), rgba(147, 51, 234, 0.12));
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.navIcon {
+  display: inline-flex;
+  width: 18px;
+  justify-content: center;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: relative;
+    top: auto;
+  }
+
+  .sidebarNav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .navBtn {
+    flex: 1 1 calc(50% - 8px);
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 16px;
+  }
+
+  .navBtn {
+    flex: 1 1 100%;
+  }
+}

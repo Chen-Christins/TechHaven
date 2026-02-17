@@ -1,16 +1,16 @@
 .SearchArticlePanel {
-    background-color: var(--card-bg);
-    border-radius: 8px;
-    padding: 1.2rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-primary);
-    margin-bottom: 0.5rem;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.2rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-primary);
+  margin-bottom: 0.5rem;
 }
 
 .panelTitle {
-    font-size: 1.2rem;
-    color: var(--text-primary);
-    margin-bottom: 0.8rem;
-    border-bottom: 1px solid var(--border-primary);
-    padding-bottom: 0.5rem;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 0.5rem;
 }

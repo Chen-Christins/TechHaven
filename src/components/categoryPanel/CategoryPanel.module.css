@@ -1,181 +1,181 @@
 /* 面板容器 */
 .categoryPanel {
-    background-color: var(--card-bg);
-    border-radius: 8px;
-    padding: 1.2rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-primary);
-    margin-bottom: 0.5rem;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.2rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-primary);
+  margin-bottom: 0.5rem;
 }
 
 /* 面板标题 */
 .panelTitle {
-    font-size: 1.2rem;
-    color: var(--text-primary);
-    margin-bottom: 0.8rem;
-    border-bottom: 1px solid var(--border-primary);
-    padding-bottom: 0.5rem;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 0.5rem;
 }
 
 /* 分类列表容器 */
 .categoryList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 /* 父分类项 */
 .parentItem {
-    margin-bottom: 0.1rem;
-    position: relative;
+  margin-bottom: 0.1rem;
+  position: relative;
 }
 
 /* 父分类容器 */
 .parentCategory {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    border-radius: 8px;
-    padding: 0.2rem 0;
-    height: 38px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 0.2rem 0;
+  height: 38px;
 }
 
 .parentCategory:hover {
-    background-color: var(--bg-hover);
+  background-color: var(--bg-hover);
 }
 
 /* 展开/折叠按钮 */
 .toggleBtn {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-tertiary);
-    flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
 }
 
 .chevron {
-    font-size: 1rem;
+  font-size: 1rem;
 }
 
 /* 父分类链接 */
 .parentLink {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex: 1;
-    text-decoration: none;
-    padding: 0.8rem 0.2rem;
-    color: var(--text-primary);
-    font-weight: 500;
-    font-size: 1rem;
-    height: 38px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  text-decoration: none;
+  padding: 0.8rem 0.2rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 1rem;
+  height: 38px;
 }
 
 .parentName {
-    flex: 1;
+  flex: 1;
 }
 
 .parentCategory:hover .parentName {
-    color: var(--primary);
+  color: var(--primary);
 }
 
 /* 父分类计数 */
 .parentCount {
-    background-color: rgba(59, 130, 246, 0.1);
-    color: var(--primary);
-    font-size: 0.85rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 12px;
-    font-weight: 500;
-    margin-left: 0.5rem;
-    min-width: 24px;
-    text-align: center;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+  font-size: 0.85rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-weight: 500;
+  margin-left: 0.5rem;
+  min-width: 24px;
+  text-align: center;
 }
 
 /* 子分类容器（带动画） */
 .childrenContainer {
-    overflow: hidden;
+  overflow: hidden;
 }
 
 .collapsed {
-    max-height: 0;
-    opacity: 0;
-    padding: 0;
+  max-height: 0;
+  opacity: 0;
+  padding: 0;
 }
 
 .expanded {
-    max-height: 500px;
-    /* 足够容纳子分类的高度 */
-    opacity: 1;
-    padding: 0.3rem 0 0.3rem 1.8rem;
-    /* 左侧缩进形成层级 */
+  max-height: 500px;
+  /* 足够容纳子分类的高度 */
+  opacity: 1;
+  padding: 0.3rem 0 0.3rem 1.8rem;
+  /* 左侧缩进形成层级 */
 }
 
 /* 子分类列表 */
 .childrenList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    border-left: 1px dashed var(--border-primary);
-    /* 虚线分隔层级 */
-    padding-left: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-left: 1px dashed var(--border-primary);
+  /* 虚线分隔层级 */
+  padding-left: 0.5rem;
 }
 
 /* 子分类项 */
 .childItem {
-    margin-bottom: 0.1rem;
+  margin-bottom: 0.1rem;
 }
 
 /* 子分类链接 */
 .childLink {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    text-decoration: none;
-    padding: 0rem 0.4rem;
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    border-radius: 6px;
-    height: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-decoration: none;
+  padding: 0rem 0.4rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  border-radius: 6px;
+  height: 32px;
 }
 
 .childLink:hover {
-    background-color: var(--bg-hover);
-    color: var(--primary);
+  background-color: var(--bg-hover);
+  color: var(--primary);
 }
 
 .childName {
-    flex: 1;
+  flex: 1;
 }
 
 /* 子分类计数 */
 .childCount {
-    background-color: var(--bg-secondary);
-    color: var(--text-secondary);
-    font-size: 0.75rem;
-    padding: 0.15rem 0.5rem;
-    border-radius: 10px;
-    margin-left: 0.5rem;
-    min-width: 20px;
-    text-align: center;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  margin-left: 0.5rem;
+  min-width: 20px;
+  text-align: center;
 }
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-    .categoryPanel {
-        padding: 1.2rem;
-    }
+  .categoryPanel {
+    padding: 1.2rem;
+  }
 
-    .panelTitle {
-        font-size: 1.2rem;
-    }
+  .panelTitle {
+    font-size: 1.2rem;
+  }
 }
 .emptyPlaceholder {
-    width: 100%;
-    text-align: center;
-    font-weight: 700;
-    padding: 8px 0;
-    color: var(--text-secondary);
+  width: 100%;
+  text-align: center;
+  font-weight: 700;
+  padding: 8px 0;
+  color: var(--text-secondary);
 }

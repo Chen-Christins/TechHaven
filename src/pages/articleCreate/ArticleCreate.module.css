@@ -1,424 +1,424 @@
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css");
 
 :root {
-    --border-radius: 8px;
+  --border-radius: 8px;
 }
 
 .container {
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 0;
-    background-color: var(--bg-primary);
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 0;
+  background-color: var(--bg-primary);
 }
 
 .editorContainer {
-    background-color: var(--card-bg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border-primary);
-    padding: 30px;
-    margin: 30px auto 20px auto;
-    width: calc(100% - 60px);
-    max-width: 1460px;
-    min-width: 640px;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-primary);
+  padding: 30px;
+  margin: 30px auto 20px auto;
+  width: calc(100% - 60px);
+  max-width: 1460px;
+  min-width: 640px;
 }
 
 .editorHeader {
-    margin-bottom: 25px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-secondary);
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-secondary);
 }
 
 .editorHeader h2 {
-    color: var(--primary);
-    font-weight: 700;
-    font-size: 28px;
-    margin: 0;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 28px;
+  margin: 0;
 }
 
 .editorHeader a {
-    text-decoration: none;
-    color: inherit;
+  text-decoration: none;
+  color: inherit;
 }
 
 .editorHeader a:hover {
-    color: var(--primary-hover);
+  color: var(--primary-hover);
 }
 
 .formSection {
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 .formSectionTitle {
-    font-weight: 600;
-    margin-bottom: 12px;
-    color: var(--text-primary);
-    font-size: 16px;
-    display: flex;
-    align-items: center;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
 }
 
 .formSectionTitle i {
-    margin-right: 8px;
-    color: var(--primary);
+  margin-right: 8px;
+  color: var(--primary);
 }
 
 .formControl {
-    padding: 12px 15px;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-primary);
-    width: 100%;
-    font-size: 16px;
-    min-height: 46px;
-    color: var(--text-primary);
-    font-weight: 500;
-    background-color: var(--input-bg);
+  padding: 12px 15px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-primary);
+  width: 100%;
+  font-size: 16px;
+  min-height: 46px;
+  color: var(--text-primary);
+  font-weight: 500;
+  background-color: var(--input-bg);
 }
 
 .formControl:focus {
-    border-color: var(--primary);
-    box-shadow: var(--focus-ring);
-    outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 .radioGroup {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .radioItem {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
 }
 
 .radioInput {
-    margin: 0;
+  margin: 0;
 }
 
 .radioLabel {
-    margin: 0;
-    cursor: pointer;
+  margin: 0;
+  cursor: pointer;
 }
 
 .editorTabs {
-    margin-bottom: 20px;
-    display: flex;
-    gap: 5px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 5px;
 }
 
 .editorTab {
-    padding: 8px 20px;
-    cursor: pointer;
-    background: var(--primary-light);
-    color: var(--primary);
-    border-radius: var(--border-radius);
-    font-size: 14px;
-    font-weight: 500;
-    border: none;
+  padding: 8px 20px;
+  cursor: pointer;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
 }
 
 .editorTab:hover {
-    background: var(--primary-hover-light);
+  background: var(--primary-hover-light);
 }
 
 .editorTab.active {
-    background: var(--primary);
-    color: white;
+  background: var(--primary);
+  color: white;
 }
 
 .editorRow {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .editorContent {
-    display: none;
-    height: 600px;
-    overflow-y: auto;
+  display: none;
+  height: 600px;
+  overflow-y: auto;
 }
 
 .editorContent.active {
-    display: block;
+  display: block;
 }
 
 .editorColumn {
-    flex: 1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .markdownEditor,
 .markdownPreview {
-    min-height: 100%;
-    padding: 20px;
-    border: 1px solid var(--border-primary);
-    border-radius: var(--border-radius);
-    font-size: 15px;
-    line-height: 1.8;
-    background-color: var(--card-bg);
+  min-height: 100%;
+  padding: 20px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  font-size: 15px;
+  line-height: 1.8;
+  background-color: var(--card-bg);
 }
 
 .markdownEditor {
-    width: 100%;
-    resize: none;
-    color: var(--text-primary);
-    border: 1px solid var(--border-primary);
-    font-family: "Fira Code", "Courier New", monospace;
+  width: 100%;
+  resize: none;
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  font-family: "Fira Code", "Courier New", monospace;
 }
 
 .markdownEditor:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: var(--focus-ring);
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--focus-ring);
 }
 
 .markdownPreview {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: var(--card-bg);
-    color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
 }
 
 .toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    gap: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .toolbarLeft {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .toolbarRight {
-    display: flex;
-    gap: 8px;
+  display: flex;
+  gap: 8px;
 }
 
 .btn {
-    padding: 10px 20px;
-    border-radius: var(--border-radius);
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .btnPrimary {
-    background-color: var(--primary);
-    border-color: var(--primary);
-    color: white;
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
 }
 
 .btnPrimary:hover {
-    background-color: var(--primary-hover);
-    border-color: var(--primary-hover);
-    transform: translateY(-2px);
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(-2px);
 }
 
 .btnOutline {
-    background-color: transparent;
-    border: 1px solid var(--border-primary);
-    color: var(--text-primary);
+  background-color: transparent;
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
 }
 
 .btnOutline:hover {
-    background-color: var(--bg-secondary);
-    border-color: var(--border-secondary);
-    color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  border-color: var(--border-secondary);
+  color: var(--text-primary);
 }
 
 .btnOutlinePrimary {
-    background-color: transparent;
-    border: 1px solid var(--primary);
-    color: var(--primary);
+  background-color: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
 }
 
 .btnOutlinePrimary:hover {
-    background-color: var(--primary);
-    color: white;
+  background-color: var(--primary);
+  color: white;
 }
 
 .fileInput {
-    display: none;
+  display: none;
 }
 
 .tagsContainer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .tagItem {
-    display: inline-flex;
-    align-items: center;
-    background-color: var(--primary-light);
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--primary-light);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: var(--primary);
 }
 
 .tagItem:hover {
-    background-color: var(--primary-hover-light);
+  background-color: var(--primary-hover-light);
 }
 
 .removeTag {
-    cursor: pointer;
-    margin-left: 6px;
-    color: var(--primary);
-    opacity: 0.7;
-    font-size: 12px;
-    background: none;
-    border: none;
+  cursor: pointer;
+  margin-left: 6px;
+  color: var(--primary);
+  opacity: 0.7;
+  font-size: 12px;
+  background: none;
+  border: none;
 }
 
 .removeTag:hover {
-    opacity: 1;
-    color: var(--warning);
+  opacity: 1;
+  color: var(--warning);
 }
 
 .actionButtons {
-    margin-top: 30px;
-    text-align: right;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
+  margin-top: 30px;
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-    .editorContainer {
-        padding: 20px;
-    }
+  .editorContainer {
+    padding: 20px;
+  }
 
-    .editorContent {
-        height: 400px;
-    }
+  .editorContent {
+    height: 400px;
+  }
 
-    .actionButtons {
-        text-align: center;
-        flex-direction: column;
-    }
+  .actionButtons {
+    text-align: center;
+    flex-direction: column;
+  }
 
-    .actionButtons .btn {
-        width: 100%;
-        margin-bottom: 10px;
-    }
+  .actionButtons .btn {
+    width: 100%;
+    margin-bottom: 10px;
+  }
 
-    .editorRow {
-        flex-direction: column;
-    }
+  .editorRow {
+    flex-direction: column;
+  }
 
-    .toolbarLeft,
-    .toolbarRight {
-        justify-content: center;
-    }
+  .toolbarLeft,
+  .toolbarRight {
+    justify-content: center;
+  }
 }
 
 /* 模态框样式 */
 .modalOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--modal-overlay);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--modal-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
 
 .modalContent {
-    background: var(--card-bg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-lg);
-    max-width: 800px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  max-width: 800px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .modalHeader {
-    padding: 20px;
-    border-bottom: 1px solid var(--border-primary);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .modalTitle {
-    margin: 0;
-    color: var(--primary);
+  margin: 0;
+  color: var(--primary);
 }
 
 .modalClose {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: var(--text-tertiary);
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-tertiary);
 }
 
 .modalClose:hover {
-    color: var(--text-primary);
+  color: var(--text-primary);
 }
 
 .modalBody {
-    padding: 20px;
+  padding: 20px;
 }
 
 .modalFooter {
-    padding: 20px;
-    border-top: 1px solid var(--border-primary);
-    text-align: right;
+  padding: 20px;
+  border-top: 1px solid var(--border-primary);
+  text-align: right;
 }
 
 .table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .table th,
 .table td {
-    padding: 12px;
-    border: 1px solid var(--border-primary);
-    text-align: left;
+  padding: 12px;
+  border: 1px solid var(--border-primary);
+  text-align: left;
 }
 
 .table th {
-    background-color: var(--bg-secondary);
-    font-weight: 600;
+  background-color: var(--bg-secondary);
+  font-weight: 600;
 }
 
 .table tbody tr:hover {
-    background-color: var(--bg-hover);
+  background-color: var(--bg-hover);
 }
 
 /* 语法帮助模态框中的 Markdown 示例样式 */
 .exampleCell {
-    padding: 8px !important;
-    vertical-align: top;
-    min-width: 200px;
+  padding: 8px !important;
+  vertical-align: top;
+  min-width: 200px;
 }
 
 .markdownExample {
-    font-size: 13px;
-    line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .markdownExample h1,
@@ -427,187 +427,187 @@
 .markdownExample h4,
 .markdownExample h5,
 .markdownExample h6 {
-    margin: 4px 0;
-    font-size: 14px;
+  margin: 4px 0;
+  font-size: 14px;
 }
 
 .markdownExample h1 {
-    font-size: 16px;
-    border-bottom: 1px solid var(--border-primary);
-    padding-bottom: 2px;
+  font-size: 16px;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 2px;
 }
 
 .markdownExample h2 {
-    font-size: 15px;
-    border-bottom: 1px solid var(--border-primary);
-    padding-bottom: 2px;
+  font-size: 15px;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 2px;
 }
 
 .markdownExample h3 {
-    font-size: 14px;
+  font-size: 14px;
 }
 
 .markdownExample p {
-    margin: 4px 0;
+  margin: 4px 0;
 }
 
 .markdownExample strong {
-    font-weight: 600;
-    color: var(--primary);
+  font-weight: 600;
+  color: var(--primary);
 }
 
 .markdownExample em {
-    font-style: italic;
-    color: var(--text-secondary);
+  font-style: italic;
+  color: var(--text-secondary);
 }
 
 .markdownExample code {
-    background: var(--code-bg);
-    color: var(--primary);
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-family: monospace;
-    font-size: 12px;
+  background: var(--code-bg);
+  color: var(--primary);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 12px;
 }
 
 .markdownExample pre {
-    background: var(--code-bg);
-    padding: 6px;
-    border-radius: 4px;
-    overflow-x: auto;
-    margin: 4px 0;
+  background: var(--code-bg);
+  padding: 6px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 4px 0;
 }
 
 .markdownExample pre code {
-    background: none;
-    padding: 0;
+  background: none;
+  padding: 0;
 }
 
 .markdownExample blockquote {
-    border-left: 3px solid var(--primary);
-    padding-left: 8px;
-    margin: 4px 0;
-    color: var(--text-secondary);
-    font-style: italic;
+  border-left: 3px solid var(--primary);
+  padding-left: 8px;
+  margin: 4px 0;
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
 .markdownExample ul,
 .markdownExample ol {
-    margin: 4px 0;
-    padding-left: 16px;
+  margin: 4px 0;
+  padding-left: 16px;
 }
 
 .markdownExample li {
-    margin: 2px 0;
+  margin: 2px 0;
 }
 
 .markdownExample a {
-    color: var(--link-primary);
-    text-decoration: none;
+  color: var(--link-primary);
+  text-decoration: none;
 }
 
 .markdownExample a:hover {
-    color: var(--link-hover);
-    text-decoration: underline;
+  color: var(--link-hover);
+  text-decoration: underline;
 }
 
 /* 数学公式样式 */
 .markdownExample .katex {
-    font-size: 13px;
+  font-size: 13px;
 }
 
 .markdownExample .katex-display {
-    margin: 8px 0;
+  margin: 8px 0;
 }
 
 /* 语法帮助中的 Mermaid 样式 */
 .markdownExample .mermaidWrapper {
-    position: relative;
-    margin: 8px 0;
-    border-radius: 6px;
-    overflow: hidden;
-    border: 1px solid var(--border-primary);
-    background-color: var(--card-bg);
+  position: relative;
+  margin: 8px 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
+  background-color: var(--card-bg);
 }
 
 .markdownExample .mermaidDiagram {
-    padding: 12px;
-    overflow-x: auto;
-    background-color: var(--card-bg);
-    text-align: center;
+  padding: 12px;
+  overflow-x: auto;
+  background-color: var(--card-bg);
+  text-align: center;
 }
 
 .markdownExample .mermaidDiagram svg {
-    max-width: 100%;
-    height: auto;
+  max-width: 100%;
+  height: auto;
 }
 
 /* 语法帮助中的 Mermaid 错误样式 */
 .markdownExample .mermaidError {
-    padding: 12px;
-    background-color: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 4px;
-    margin: 8px 0;
+  padding: 12px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 4px;
+  margin: 8px 0;
 }
 
 .markdownExample .errorMessage {
-    color: #dc2626;
-    font-weight: 500;
-    margin-bottom: 6px;
-    font-size: 12px;
+  color: #dc2626;
+  font-weight: 500;
+  margin-bottom: 6px;
+  font-size: 12px;
 }
 
 .markdownExample .errorCode {
-    background: rgba(239, 68, 68, 0.05);
-    padding: 6px;
-    border-radius: 3px;
-    font-size: 11px;
-    color: #991b1b;
-    overflow-x: auto;
-    margin: 0;
-    white-space: pre-wrap;
-    word-break: break-all;
+  background: rgba(239, 68, 68, 0.05);
+  padding: 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  color: #991b1b;
+  overflow-x: auto;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 /* 语法帮助中的代码块样式适配 */
 .markdownExample .codeBlockWrapper {
-    position: relative;
-    margin: 8px 0;
-    border-radius: 6px;
-    overflow: hidden;
-    border: 1px solid var(--border-primary);
+  position: relative;
+  margin: 8px 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
 }
 
 .markdownExample .codeHeader {
-    background: var(--code-header-bg);
-    color: var(--code-header-text);
-    padding: 6px 12px;
-    font-size: 11px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border-primary);
+  background: var(--code-header-bg);
+  color: var(--code-header-text);
+  padding: 6px 12px;
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .markdownExample .codeBlock {
-    background: var(--code-block-bg);
-    padding: 12px;
-    overflow-x: auto;
-    margin: 0;
-    font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace;
-    font-size: 12px;
-    line-height: 1.4;
-    color: var(--text-primary);
+  background: var(--code-block-bg);
+  padding: 12px;
+  overflow-x: auto;
+  margin: 0;
+  font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-primary);
 }
 
 /* 实时预览区域样式 */
 .markdownPreview {
-    padding: 16px;
-    overflow-y: auto;
-    height: 100%;
-    background-color: var(--card-bg);
-    border-radius: 4px;
+  padding: 16px;
+  overflow-y: auto;
+  height: 100%;
+  background-color: var(--card-bg);
+  border-radius: 4px;
 }
 
 .markdownPreview h1,
@@ -616,267 +616,267 @@
 .markdownPreview h4,
 .markdownPreview h5,
 .markdownPreview h6 {
-    margin-top: 24px;
-    margin-bottom: 16px;
-    font-weight: 600;
-    line-height: 1.25;
-    color: var(--text-primary);
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text-primary);
 }
 
 .markdownPreview h1 {
-    font-size: 2em;
-    border-bottom: 1px solid var(--border-primary);
-    padding-bottom: 0.3em;
+  font-size: 2em;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 0.3em;
 }
 
 .markdownPreview h2 {
-    font-size: 1.5em;
-    border-bottom: 1px solid var(--border-primary);
-    padding-bottom: 0.3em;
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 0.3em;
 }
 
 .markdownPreview h3 {
-    font-size: 1.25em;
+  font-size: 1.25em;
 }
 
 .markdownPreview p {
-    margin-bottom: 16px;
-    color: var(--text-primary);
-    line-height: 1.7;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+  line-height: 1.7;
 }
 
 .markdownPreview img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 16px auto;
-    border-radius: 6px;
-    box-shadow: var(--shadow-md);
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px auto;
+  border-radius: 6px;
+  box-shadow: var(--shadow-md);
 }
 
 .markdownPreview blockquote {
-    border-left: 4px solid var(--border-primary);
-    color: var(--text-secondary);
-    margin: 8px 0;
-    padding: 8px 0 8px 12px;
-    font-style: italic;
-    line-height: 1.4;
+  border-left: 4px solid var(--border-primary);
+  color: var(--text-secondary);
+  margin: 8px 0;
+  padding: 8px 0 8px 12px;
+  font-style: italic;
+  line-height: 1.4;
 }
 
 .markdownPreview ul,
 .markdownPreview ol {
-    padding-left: 2em;
-    margin-bottom: 16px;
+  padding-left: 2em;
+  margin-bottom: 16px;
 }
 
 .markdownPreview li {
-    margin-bottom: 4px;
-    color: var(--text-primary);
+  margin-bottom: 4px;
+  color: var(--text-primary);
 }
 
 .markdownPreview table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 16px 0;
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0;
 }
 
 .markdownPreview table th,
 .markdownPreview table td {
-    border: 1px solid var(--border-primary);
-    padding: 6px 13px;
+  border: 1px solid var(--border-primary);
+  padding: 6px 13px;
 }
 
 .markdownPreview table th {
-    background-color: var(--table-header-bg);
-    font-weight: 600;
+  background-color: var(--table-header-bg);
+  font-weight: 600;
 }
 
 /* 行内代码样式 */
 .markdownPreview .inlineCode {
-    background: linear-gradient(135deg, var(--code-bg), rgba(59, 130, 246, 0.1)) !important;
-    color: var(--primary) !important;
-    border-radius: 6px !important;
-    padding: 0.2em 0.4em !important;
-    font-size: 0.85em !important;
-    font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace !important;
-    border: 1px solid rgba(59, 130, 246, 0.3) !important;
-    display: inline !important;
-    white-space: nowrap !important;
-    line-height: 1.5 !important;
-    margin: 0 2px !important;
-    box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2) !important;
-    text-decoration: none !important;
-    font-weight: 500 !important;
+  background: linear-gradient(135deg, var(--code-bg), rgba(59, 130, 246, 0.1)) !important;
+  color: var(--primary) !important;
+  border-radius: 6px !important;
+  padding: 0.2em 0.4em !important;
+  font-size: 0.85em !important;
+  font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  display: inline !important;
+  white-space: nowrap !important;
+  line-height: 1.5 !important;
+  margin: 0 2px !important;
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2) !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
 }
 
 .markdownPreview .inlineCode:hover {
-    background: linear-gradient(135deg, var(--code-bg), rgba(59, 130, 246, 0.15)) !important;
-    border-color: rgba(59, 130, 246, 0.5) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3) !important;
+  background: linear-gradient(135deg, var(--code-bg), rgba(59, 130, 246, 0.15)) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3) !important;
 }
 
 /* 代码块样式 */
 .markdownPreview .codeBlockWrapper {
-    position: relative;
-    margin: 16px 0;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--border-primary);
+  position: relative;
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
 }
 
 .markdownPreview .codeHeader {
-    background: var(--code-header-bg);
-    color: var(--code-header-text);
-    padding: 8px 16px;
-    font-size: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border-primary);
+  background: var(--code-header-bg);
+  color: var(--code-header-text);
+  padding: 8px 16px;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .markdownPreview .languageTag {
-    font-weight: 500;
-    text-transform: uppercase;
-    font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 11px;
 }
 
 .markdownPreview .copyButton {
-    background: var(--code-button-bg);
-    border: none;
-    color: var(--code-header-text);
-    padding: 4px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 11px;
+  background: var(--code-button-bg);
+  border: none;
+  color: var(--code-header-text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
 }
 
 .markdownPreview .copyButton:hover {
-    background: var(--code-button-hover-bg);
+  background: var(--code-button-hover-bg);
 }
 
 .markdownPreview .codeBlock {
-    background: var(--code-block-bg);
-    padding: 16px;
-    overflow-x: auto;
-    margin: 0;
-    font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace;
-    font-size: 14px;
-    line-height: 1.5;
-    color: var(--text-primary);
+  background: var(--code-block-bg);
+  padding: 16px;
+  overflow-x: auto;
+  margin: 0;
+  font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
 }
 
 .markdownPreview .codeBlock code {
-    background: none;
-    padding: 0;
-    color: inherit;
+  background: none;
+  padding: 0;
+  color: inherit;
 }
 
 /* 数学公式样式 */
 .markdownPreview .katex {
-    font-size: 1.1em;
+  font-size: 1.1em;
 }
 
 .markdownPreview .katex-display {
-    margin: 16px 0;
+  margin: 16px 0;
 }
 
 /* 链接样式 */
 .markdownPreview a {
-    color: var(--link-primary);
-    text-decoration: none;
+  color: var(--link-primary);
+  text-decoration: none;
 }
 
 .markdownPreview a:hover {
-    color: var(--link-hover);
-    text-decoration: underline;
+  color: var(--link-hover);
+  text-decoration: underline;
 }
 
 /* 暗色主题适配 */
 [data-theme="dark"] .markdownPreview .inlineCode {
-    background: linear-gradient(135deg, var(--code-bg), rgba(96, 165, 250, 0.15)) !important;
-    border-color: rgba(96, 165, 250, 0.4) !important;
-    box-shadow: 0 1px 3px rgba(96, 165, 250, 0.3) !important;
+  background: linear-gradient(135deg, var(--code-bg), rgba(96, 165, 250, 0.15)) !important;
+  border-color: rgba(96, 165, 250, 0.4) !important;
+  box-shadow: 0 1px 3px rgba(96, 165, 250, 0.3) !important;
 }
 
 [data-theme="dark"] .markdownPreview .inlineCode:hover {
-    background: linear-gradient(135deg, var(--code-bg), rgba(96, 165, 250, 0.2)) !important;
-    border-color: rgba(96, 165, 250, 0.6) !important;
-    box-shadow: 0 2px 6px rgba(96, 165, 250, 0.4) !important;
+  background: linear-gradient(135deg, var(--code-bg), rgba(96, 165, 250, 0.2)) !important;
+  border-color: rgba(96, 165, 250, 0.6) !important;
+  box-shadow: 0 2px 6px rgba(96, 165, 250, 0.4) !important;
 }
 
 /* Mermaid 图表样式 */
 .mermaidWrapper {
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--border-primary);
-    background-color: var(--card-bg);
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
+  background-color: var(--card-bg);
 }
 
 .mermaidDiagram {
-    padding: 16px;
-    overflow-x: auto;
-    background-color: var(--card-bg);
-    text-align: center;
+  padding: 16px;
+  overflow-x: auto;
+  background-color: var(--card-bg);
+  text-align: center;
 }
 
 .mermaidDiagram svg {
-    max-width: 100%;
-    height: auto;
+  max-width: 100%;
+  height: auto;
 }
 
 /* Mermaid 错误样式 */
 .mermaidError {
-    padding: 16px;
-    background-color: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 6px;
-    margin: 16px 0;
+  padding: 16px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  margin: 16px 0;
 }
 
 .errorMessage {
-    color: #dc2626;
-    font-weight: 500;
-    margin-bottom: 8px;
-    font-size: 14px;
+  color: #dc2626;
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 14px;
 }
 
 .errorCode {
-    background: rgba(239, 68, 68, 0.05);
-    padding: 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    color: #991b1b;
-    overflow-x: auto;
-    margin: 0;
-    white-space: pre-wrap;
-    word-break: break-all;
+  background: rgba(239, 68, 68, 0.05);
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #991b1b;
+  overflow-x: auto;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 /* Mermaid 图表内部元素样式优化 */
 .mermaidDiagram .node rect,
 .mermaidDiagram .node circle,
 .mermaidDiagram .node ellipse {
-    fill: var(--card-bg);
-    stroke: var(--border-primary);
-    stroke-width: 2px;
+  fill: var(--card-bg);
+  stroke: var(--border-primary);
+  stroke-width: 2px;
 }
 
 .mermaidDiagram .node text {
-    fill: var(--text-primary);
-    font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+  fill: var(--text-primary);
+  font-family: var(--font-family, system-ui, -apple-system, sans-serif);
 }
 
 .mermaidDiagram .edgePath .path {
-    stroke: var(--primary);
-    stroke-width: 2px;
+  stroke: var(--primary);
+  stroke-width: 2px;
 }
 
 .mermaidDiagram .edgeLabel {
-    background-color: var(--card-bg);
-    color: var(--text-secondary);
+  background-color: var(--card-bg);
+  color: var(--text-secondary);
 }
 
 /* 暗色主题下的 Mermaid 样式 */
@@ -884,111 +884,111 @@
 [data-theme="dark"] .mermaidDiagram .node circle,
 [data-theme="dark"] .mermaidDiagram .node ellipse,
 [data-theme="dark"] .mermaidDiagram .node polygon {
-    fill: #374151;
-    stroke: #6b7280;
-    stroke-width: 2px;
+  fill: #374151;
+  stroke: #6b7280;
+  stroke-width: 2px;
 }
 
 [data-theme="dark"] .mermaidDiagram .node text {
-    fill: #1f2937;
-    font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+  fill: #1f2937;
+  font-family: var(--font-family, system-ui, -apple-system, sans-serif);
 }
 
 [data-theme="dark"] .mermaidDiagram .edgePath .path {
-    stroke: #60a5fa;
-    stroke-width: 2px;
+  stroke: #60a5fa;
+  stroke-width: 2px;
 }
 
 [data-theme="dark"] .mermaidDiagram .edgeLabel {
-    background-color: #6b7280;
-    color: #1f2937;
-    border: 1px solid #9ca3af;
-    border-radius: 4px;
-    padding: 4px 8px;
-    opacity: 0.9;
+  background-color: #6b7280;
+  color: #1f2937;
+  border: 1px solid #9ca3af;
+  border-radius: 4px;
+  padding: 4px 8px;
+  opacity: 0.9;
 }
 
 [data-theme="dark"] .mermaidDiagram .cluster rect {
-    fill: #1f2937;
-    stroke: #4b5563;
-    stroke-width: 1px;
+  fill: #1f2937;
+  stroke: #4b5563;
+  stroke-width: 1px;
 }
 
 [data-theme="dark"] .mermaidDiagram .cluster text {
-    fill: #1f2937;
+  fill: #1f2937;
 }
 
 [data-theme="dark"] .mermaidDiagram .titleText {
-    fill: #1f2937;
+  fill: #1f2937;
 }
 
 [data-theme="dark"] .mermaidDiagram .section rect {
-    fill: #374151;
-    stroke: #6b7280;
+  fill: #374151;
+  stroke: #6b7280;
 }
 
 [data-theme="dark"] .mermaidDiagram .section text {
-    fill: #1f2937;
+  fill: #1f2937;
 }
 
 /* 暗色主题下的箭头样式 */
 [data-theme="dark"] .mermaidDiagram .marker {
-    fill: #60a5fa;
-    stroke: #60a5fa;
+  fill: #60a5fa;
+  stroke: #60a5fa;
 }
 
 /* 暗色主题下的决策菱形 */
 [data-theme="dark"] .mermaidDiagram .diamond rect {
-    fill: #7c3aed;
-    stroke: #8b5cf6;
+  fill: #7c3aed;
+  stroke: #8b5cf6;
 }
 
 [data-theme="dark"] .mermaidDiagram .diamond text {
-    fill: #1f2937;
+  fill: #1f2937;
 }
 
 /* 暗色主题下的圆形节点 */
 [data-theme="dark"] .mermaidDiagram .start circle,
 [data-theme="dark"] .mermaidDiagram .end circle {
-    fill: #059669;
-    stroke: #10b981;
+  fill: #059669;
+  stroke: #10b981;
 }
 
 [data-theme="dark"] .mermaidDiagram .start text,
 [data-theme="dark"] .mermaidDiagram .end text {
-    fill: #1f2937;
-    font-weight: 600;
+  fill: #1f2937;
+  font-weight: 600;
 }
 
 /* 复制成功提示动画 */
 @keyframes fadeInOut {
-    0% {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    20% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    80% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 }
 
 .copySuccessMessage {
-    color: var(--success-color, #10b981);
-    font-size: 0.9rem;
-    font-weight: 500;
-    animation: fadeInOut 3s ease-in-out;
-    text-align: center;
-    padding: 8px 16px;
-    background-color: var(--success-bg, rgba(16, 185, 129, 0.1));
-    border-radius: 6px;
-    border: 1px solid var(--success-border, rgba(16, 185, 129, 0.2));
-    margin-top: 12px;
+  color: var(--success-color, #10b981);
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: fadeInOut 3s ease-in-out;
+  text-align: center;
+  padding: 8px 16px;
+  background-color: var(--success-bg, rgba(16, 185, 129, 0.1));
+  border-radius: 6px;
+  border: 1px solid var(--success-border, rgba(16, 185, 129, 0.2));
+  margin-top: 12px;
 }

@@ -1,108 +1,108 @@
 .mask {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--mask-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    animation: fadeIn 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--mask-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
 }
 
 .confirmBox {
-    width: 90%;
-    max-width: 500px;
-    background-color: var(--card-bg);
-    border-radius: 8px;
-    box-shadow:
-        0 20px 25px -5px rgba(0, 0, 0, 0.1),
-        0 10px 10px -5px rgba(0, 0, 0, 0.04),
-        0 0 0 1px rgba(0, 0, 0, 0.1);
-    animation: scaleIn 0.3s ease;
+  width: 90%;
+  max-width: 500px;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 0, 0, 0.1);
+  animation: scaleIn 0.3s ease;
 }
 
 .content {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .title {
-    padding: 16px 20px;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-primary);
-    border-bottom: 1px solid var(--border-primary);
+  padding: 16px 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .message {
-    padding: 24px 20px;
-    font-size: 16px;
-    color: var(--text-secondary);
-    line-height: 1.5;
+  padding: 24px 20px;
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 .footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    padding: 12px 20px;
-    border-top: 1px solid var(--border-primary);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-primary);
 }
 
 .cancelBtn,
 .confirmBtn {
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    border: 1px solid var(--border-primary);
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid var(--border-primary);
 }
 
 .cancelBtn {
-    background-color: var(--button-secondary-bg);
-    color: var(--text-secondary);
+  background-color: var(--button-secondary-bg);
+  color: var(--text-secondary);
 }
 
 .cancelBtn:hover {
-    background-color: var(--hover-bg);
+  background-color: var(--hover-bg);
 }
 
 .confirmBtn {
-    background-color: var(--primary);
-    color: var(--text-inverse);
-    border-color: var(--primary);
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  border-color: var(--primary);
 }
 
 .confirmBtn:hover {
-    background-color: var(--primary-hover);
+  background-color: var(--primary-hover);
 }
 
 .confirmBtn:disabled,
 .cancelBtn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 /* 动画效果 */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-    from {
-        transform: scale(0.9);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }

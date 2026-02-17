@@ -1,136 +1,136 @@
 /* 输入框外层容器 */
 .inputWrapper {
-    display: inline-flex;
-    align-items: center;
-    box-sizing: border-box;
-    border: 1px solid var(--border-primary);
-    border-radius: 6px;
-    background-color: var(--input-bg);
-    width: 100%;
-    /* 默认宽度100%，可由外部容器控制 */
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  background-color: var(--input-bg);
+  width: 100%;
+  /* 默认宽度100%，可由外部容器控制 */
 }
 
 /* 悬浮状态 */
 .inputWrapper:not(.disabled):not(.loading):hover {
-    border-color: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
 /* 聚焦状态 */
 .inputWrapper:focus-within {
-    border-color: var(--primary-hover);
-    box-shadow: var(--focus-ring);
-    outline: 0;
+  border-color: var(--primary-hover);
+  box-shadow: var(--focus-ring);
+  outline: 0;
 }
 
 /* 禁用状态 */
 .disabled {
-    background-color: var(--input-disabled-bg);
-    cursor: not-allowed;
-    opacity: 0.6;
+  background-color: var(--input-disabled-bg);
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* 加载状态 */
 .loading {
-    cursor: wait;
+  cursor: wait;
 }
 
 /* 尺寸 */
 .size-small {
-    height: 24px;
-    padding: 2px 8px;
-    font-size: 12px;
+  height: 24px;
+  padding: 2px 8px;
+  font-size: 12px;
 }
 
 .size-default {
-    height: 32px;
-    padding: 4px 12px;
-    font-size: 14px;
+  height: 32px;
+  padding: 4px 12px;
+  font-size: 14px;
 }
 
 .size-large {
-    height: 46px;
-    padding: 6px 16px;
-    font-size: 16px;
+  height: 50px;
+  padding: 6px 16px;
+  font-size: 16px;
 }
 
 /* 输入框本身 */
 .input {
-    flex: 1;
-    border: none;
-    outline: none;
-    background: transparent;
-    color: var(--text-primary);
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    /* 确保宽度填充 */
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  /* 确保宽度填充 */
 }
 
 /* 禁用状态下的输入框 */
 .input:disabled {
-    color: var(--text-disabled);
-    cursor: not-allowed;
+  color: var(--text-disabled);
+  cursor: not-allowed;
 }
 
 /* 占位符文字颜色 */
 .input::placeholder {
-    color: var(--text-placeholder);
+  color: var(--text-placeholder);
 }
 
 /* 前缀样式 */
 .prefix {
-    display: flex;
-    align-items: center;
-    margin-right: 4px;
-    color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  margin-right: 4px;
+  color: var(--text-tertiary);
 }
 
 .withPrefix .input {
-    padding-left: 0;
+  padding-left: 0;
 }
 
 /* 后缀容器 */
 .suffix {
-    display: flex;
-    align-items: center;
-    margin-left: 4px;
-    color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+  color: var(--text-tertiary);
 }
 
 .withSuffix .input {
-    padding-right: 0;
+  padding-right: 0;
 }
 
 /* 清除按钮 */
 .clearIcon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--text-disabled);
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
-    line-height: 1;
-    border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-disabled);
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  line-height: 1;
+  border-radius: 50%;
 }
 
 .clearIcon:hover {
-    color: var(--text-tertiary);
-    background-color: var(--hover-bg);
+  color: var(--text-tertiary);
+  background-color: var(--hover-bg);
 }
 
 /* 加载图标 */
 .loadingIcon {
-    animation: spin 1s infinite linear;
+  animation: spin 1s infinite linear;
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
+  from {
+    transform: rotate(0deg);
+  }
 
-    to {
-        transform: rotate(360deg);
-    }
+  to {
+    transform: rotate(360deg);
+  }
 }

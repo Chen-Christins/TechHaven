@@ -1,178 +1,178 @@
 .container {
-    display: flex;
-    max-width: 1560px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 20px;
-    gap: 20px;
-    min-width: 640px;
+  display: flex;
+  max-width: 1560px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  gap: 20px;
+  min-width: 640px;
 }
 
 /* 加载状态样式 */
 .loading {
-    opacity: 0.3;
+  opacity: 0.3;
 }
 
 .ready {
-    opacity: 1;
+  opacity: 1;
 }
 
 /* 内容加载状态 */
 .contentLoading {
-    opacity: 0;
-    transform: translateY(10px);
+  opacity: 0;
+  transform: translateY(10px);
 }
 
 .contentReady {
-    opacity: 1;
-    transform: translateY(0);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* 加载指示器 */
 .loadingIndicator {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-    color: var(--text-secondary);
-    font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 .spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid var(--border-primary);
-    border-top: 3px solid var(--primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 12px;
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-primary);
+  border-top: 3px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .content {
-    flex: 1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .sidebar {
-    width: 280px;
-    flex-shrink: 0;
+  width: 280px;
+  flex-shrink: 0;
 }
 
 .toc {
-    position: sticky;
-    top: 80px;
-    /* background: var(--bg-secondary); */
-    background: var(--card-bg);
-    border-radius: 8px;
-    padding: 16px;
-    border: 1px solid var(--border-primary);
+  position: sticky;
+  top: 80px;
+  /* background: var(--bg-secondary); */
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid var(--border-primary);
 }
 
 .title {
-    /* font-size: 16px; */
-    font-weight: 600;
-    color: var(--text-primary);
-    padding-bottom: 6px;
+  /* font-size: 16px; */
+  font-weight: 600;
+  color: var(--text-primary);
+  padding-bottom: 6px;
 }
 
 .articleMeta {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    padding-bottom: 0.6rem;
-    margin-bottom: 1.4rem;
-    border-bottom: 1px solid var(--border-secondary);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding-bottom: 0.6rem;
+  margin-bottom: 1.4rem;
+  border-bottom: 1px solid var(--border-secondary);
 }
 
 .articleMeta span {
-    margin-right: 1.4rem;
-    color: var(--text-tertiary);
+  margin-right: 1.4rem;
+  color: var(--text-tertiary);
 }
 
 .tocTitle {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    color: var(--text-primary);
-    border-bottom: 1px solid var(--border-primary);
-    padding-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 8px;
 }
 
 .tocList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .tocItem {
-    display: block;
-    padding: 6px 0;
-    text-decoration: none;
-    color: var(--text-primary);
-    font-size: 14px;
-    line-height: 1.4;
-    border-left: 2px solid transparent;
-    padding-left: 12px;
-    margin-left: 0;
-    cursor: pointer;
+  display: block;
+  padding: 6px 0;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.4;
+  border-left: 2px solid transparent;
+  padding-left: 12px;
+  margin-left: 0;
+  cursor: pointer;
 }
 
 .tocItem:hover {
-    color: var(--primary);
+  color: var(--primary);
 }
 
 .tocItem.active {
-    color: var(--primary);
-    border-left-color: var(--primary);
-    background-color: var(--primary-bg);
+  color: var(--primary);
+  border-left-color: var(--primary);
+  background-color: var(--primary-bg);
 }
 
 .tocItemH1 {
-    font-weight: 600;
-    margin-left: 0;
+  font-weight: 600;
+  margin-left: 0;
 }
 
 .tocItemH2 {
-    font-weight: 500;
-    margin-left: 12px;
+  font-weight: 500;
+  margin-left: 12px;
 }
 
 .tocItemH3 {
-    font-weight: 400;
-    margin-left: 24px;
-    font-size: 13px;
+  font-weight: 400;
+  margin-left: 24px;
+  font-size: 13px;
 }
 
 .article {
-    background: var(--card-bg);
-    border-radius: 8px;
-    padding: 32px;
-    border: 1px solid var(--border-primary);
-    box-shadow: var(--shadow-sm);
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 32px;
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .article a {
-    color: var(--primary);
-    text-decoration: none;
+  color: var(--primary);
+  text-decoration: none;
 }
 
 .article a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 /* Markdown 内容样式 */
 .markdownBody {
-    line-height: 1.7;
-    color: var(--text-primary);
+  line-height: 1.7;
+  color: var(--text-primary);
 }
 
 .markdownBody h1,
@@ -181,236 +181,236 @@
 .markdownBody h4,
 .markdownBody h5,
 .markdownBody h6 {
-    margin-top: 24px;
-    margin-bottom: 16px;
-    font-weight: 600;
-    line-height: 1.25;
-    scroll-margin-top: 100px;
-    /* 为跳转添加滚动边距 */
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  scroll-margin-top: 100px;
+  /* 为跳转添加滚动边距 */
 }
 
 .markdownBody h1 {
-    font-size: 2em;
-    border-bottom: 1px solid var(--border-primary);
-    padding-bottom: 0.3em;
+  font-size: 2em;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 0.3em;
 }
 
 .markdownBody h2 {
-    font-size: 1.5em;
-    border-bottom: 1px solid var(--border-primary);
-    padding-bottom: 0.3em;
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 0.3em;
 }
 
 .markdownBody h3 {
-    font-size: 1.25em;
+  font-size: 1.25em;
 }
 
 .markdownBody p {
-    margin-bottom: 16px;
+  margin-bottom: 16px;
 }
 
 /* 新增：图片样式控制 */
 .markdownBody img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 16px auto;
-    border-radius: 6px;
-    box-shadow: var(--shadow-md);
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px auto;
+  border-radius: 6px;
+  box-shadow: var(--shadow-md);
 }
 
 /* 对于特别大的图片，添加额外的控制 */
 .markdownBody p > img,
 .markdownBody div > img {
-    max-width: min(100%, 100% - 64px); /* 考虑内边距 */
+  max-width: min(100%, 100% - 64px); /* 考虑内边距 */
 }
 
 /* 只处理块级代码，行内代码由 .inlineCode 类处理 */
 .markdownBody pre code {
-    background: none;
-    padding: 0;
+  background: none;
+  padding: 0;
 }
 
 .markdownBody pre {
-    background-color: var(--code-block-bg);
-    border-radius: 6px;
-    padding: 16px;
-    overflow: auto;
-    margin: 16px 0;
+  background-color: var(--code-block-bg);
+  border-radius: 6px;
+  padding: 16px;
+  overflow: auto;
+  margin: 16px 0;
 }
 
 .markdownBody pre code {
-    background: none;
-    padding: 0;
+  background: none;
+  padding: 0;
 }
 
 .markdownBody blockquote {
-    border-left: 4px solid var(--border-primary);
-    color: var(--text-secondary);
-    margin: 16px 0;
-    padding-left: 16px;
+  border-left: 4px solid var(--border-primary);
+  color: var(--text-secondary);
+  margin: 16px 0;
+  padding-left: 16px;
 }
 
 .markdownBody table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 16px 0;
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0;
 }
 
 .markdownBody table th,
 .markdownBody table td {
-    border: 1px solid var(--border-primary);
-    padding: 6px 13px;
+  border: 1px solid var(--border-primary);
+  padding: 6px 13px;
 }
 
 .markdownBody table th {
-    background-color: var(--table-header-bg);
-    font-weight: 600;
+  background-color: var(--table-header-bg);
+  font-weight: 600;
 }
 
 .markdownBody ul,
 .markdownBody ol {
-    padding-left: 2em;
-    margin-bottom: 16px;
+  padding-left: 2em;
+  margin-bottom: 16px;
 }
 
 .markdownBody li {
-    margin-bottom: 4px;
+  margin-bottom: 4px;
 }
 
 /* 数学公式样式 */
 .katex {
-    font-size: 1.1em;
+  font-size: 1.1em;
 }
 
 .math {
-    margin: 16px 0;
+  margin: 16px 0;
 }
 
 .math-inline {
-    margin: 0 2px;
+  margin: 0 2px;
 }
 
 /* 代码高亮样式 */
 .codeBlock {
-    position: relative;
+  position: relative;
 }
 
 .codeHeader {
-    background: var(--code-header-bg);
-    color: var(--code-header-text);
-    padding: 8px 16px;
-    font-size: 12px;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  background: var(--code-header-bg);
+  color: var(--code-header-text);
+  padding: 8px 16px;
+  font-size: 12px;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .copyButton {
-    background: var(--code-button-bg);
-    border: none;
-    color: var(--code-header-text);
-    padding: 4px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 11px;
+  background: var(--code-button-bg);
+  border: none;
+  color: var(--code-header-text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
 }
 
 .copyButton:hover {
-    background: var(--code-button-hover-bg);
+  background: var(--code-button-hover-bg);
 }
 
 /* 美化行内代码样式 */
 .inlineCode {
-    background: linear-gradient(135deg, var(--code-bg), rgba(59, 130, 246, 0.1)) !important;
-    color: var(--primary) !important;
-    border-radius: 6px !important;
-    padding: 0.2em 0.4em !important;
-    font-size: 0.85em !important;
-    font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace !important;
-    border: 1px solid rgba(59, 130, 246, 0.3) !important;
-    display: inline !important;
-    white-space: nowrap !important;
-    line-height: 1.5 !important;
-    margin: 0 2px !important;
-    box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2) !important;
-    text-decoration: none !important;
-    font-weight: 500 !important;
+  background: linear-gradient(135deg, var(--code-bg), rgba(59, 130, 246, 0.1)) !important;
+  color: var(--primary) !important;
+  border-radius: 6px !important;
+  padding: 0.2em 0.4em !important;
+  font-size: 0.85em !important;
+  font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  display: inline !important;
+  white-space: nowrap !important;
+  line-height: 1.5 !important;
+  margin: 0 2px !important;
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2) !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
 }
 
 /* 行内代码悬停效果 */
 .markdownBody .inlineCode:hover {
-    background: linear-gradient(135deg, var(--code-bg), rgba(59, 130, 246, 0.15)) !important;
-    border-color: rgba(59, 130, 246, 0.5) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3) !important;
+  background: linear-gradient(135deg, var(--code-bg), rgba(59, 130, 246, 0.15)) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3) !important;
 }
 
 /* 暗色主题下的行内代码样式 */
 [data-theme="dark"] .inlineCode {
-    background: linear-gradient(135deg, var(--code-bg), rgba(96, 165, 250, 0.15)) !important;
-    color: var(--primary) !important;
-    border-color: rgba(96, 165, 250, 0.4) !important;
-    box-shadow: 0 1px 3px rgba(96, 165, 250, 0.3) !important;
+  background: linear-gradient(135deg, var(--code-bg), rgba(96, 165, 250, 0.15)) !important;
+  color: var(--primary) !important;
+  border-color: rgba(96, 165, 250, 0.4) !important;
+  box-shadow: 0 1px 3px rgba(96, 165, 250, 0.3) !important;
 }
 
 [data-theme="dark"] .markdownBody .inlineCode:hover {
-    background: linear-gradient(135deg, var(--code-bg), rgba(96, 165, 250, 0.2)) !important;
-    border-color: rgba(96, 165, 250, 0.6) !important;
-    box-shadow: 0 2px 6px rgba(96, 165, 250, 0.4) !important;
+  background: linear-gradient(135deg, var(--code-bg), rgba(96, 165, 250, 0.2)) !important;
+  border-color: rgba(96, 165, 250, 0.6) !important;
+  box-shadow: 0 2px 6px rgba(96, 165, 250, 0.4) !important;
 }
 
 /* 响应式设计 */
 @media (max-width: 1164px) {
-    .container {
-        flex-direction: column;
-        padding: 16px;
-        gap: 20px;
-        padding-top: 80px;
-    }
+  .container {
+    flex-direction: column;
+    padding: 16px;
+    gap: 20px;
+    padding-top: 80px;
+  }
 
-    .sidebar {
-        width: 100%;
-        position: static;
-    }
+  .sidebar {
+    width: 100%;
+    position: static;
+  }
 
-    .article {
-        padding: 20px;
-    }
+  .article {
+    padding: 20px;
+  }
 
-    .markdownBody h1,
-    .markdownBody h2,
-    .markdownBody h3,
-    .markdownBody h4,
-    .markdownBody h5,
-    .markdownBody h6 {
-        scroll-margin-top: 80px;
-    }
+  .markdownBody h1,
+  .markdownBody h2,
+  .markdownBody h3,
+  .markdownBody h4,
+  .markdownBody h5,
+  .markdownBody h6 {
+    scroll-margin-top: 80px;
+  }
 
-    /* 移动端图片调整 */
-    .markdownBody img {
-        margin: 12px auto;
-    }
+  /* 移动端图片调整 */
+  .markdownBody img {
+    margin: 12px auto;
+  }
 }
 
 /* 小屏幕设备进一步优化 */
 @media (max-width: 768px) {
-    .container {
-        padding: 12px;
-        gap: 16px;
-        padding-top: 80px;
-    }
+  .container {
+    padding: 12px;
+    gap: 16px;
+    padding-top: 80px;
+  }
 
-    .article {
-        padding: 16px;
-    }
+  .article {
+    padding: 16px;
+  }
 
-    .markdownBody img {
-        margin: 8px auto;
-        border-radius: 4px;
-    }
+  .markdownBody img {
+    margin: 8px auto;
+    border-radius: 4px;
+  }
 }
 
 /* 额外的图片控制选项 */
@@ -420,100 +420,100 @@
 }
 
 .markdownBody img:hover {
-    transform: scale(1.02);
+  transform: scale(1.02);
 }
 
 /* 为图片添加标题样式 */
 .markdownBody img + em {
-    display: block;
-    text-align: center;
-    font-size: 0.9em;
-    color: var(--text-secondary);
-    margin-top: -8px;
-    margin-bottom: 16px;
-    font-style: normal;
+  display: block;
+  text-align: center;
+  font-size: 0.9em;
+  color: var(--text-secondary);
+  margin-top: -8px;
+  margin-bottom: 16px;
+  font-style: normal;
 }
 
 /* 处理行内图片（如果需要） */
 .markdownBody p img:not(:only-child) {
-    display: inline;
-    margin: 0 4px;
-    vertical-align: middle;
-    max-height: 1.2em;
+  display: inline;
+  margin: 0 4px;
+  vertical-align: middle;
+  max-height: 1.2em;
 }
 
 /* 处理特别宽的图片 */
 .markdownBody .wide-image {
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 /* 处理居中对齐的图片 */
 .markdownBody .center-image {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* 代码块样式调整 */
 .codeBlockWrapper {
-    position: relative;
+  position: relative;
 }
 
 .languageTag {
-    font-weight: 500;
-    text-transform: uppercase;
-    font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 11px;
 }
 
 .codeBlock {
-    margin: 16px 0;
-    overflow: auto;
+  margin: 16px 0;
+  overflow: auto;
 }
 
 /* Mermaid 图表样式 */
 .mermaidWrapper {
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-primary);
 }
 
 .mermaidDiagram {
-    background-color: var(--card-bg);
-    padding: 16px;
-    text-align: center;
-    overflow-x: auto;
+  background-color: var(--card-bg);
+  padding: 16px;
+  text-align: center;
+  overflow-x: auto;
 }
 
 .mermaidDiagram svg {
-    max-width: 100%;
-    height: auto;
+  max-width: 100%;
+  height: auto;
 }
 
 /* Mermaid 错误样式 */
 .mermaidError {
-    background-color: var(--error-bg, rgba(239, 68, 68, 0.1));
-    border: 1px solid var(--error-border, rgba(239, 68, 68, 0.2));
-    border-radius: 6px;
-    padding: 16px;
-    margin: 16px 0;
+  background-color: var(--error-bg, rgba(239, 68, 68, 0.1));
+  border: 1px solid var(--error-border, rgba(239, 68, 68, 0.2));
+  border-radius: 6px;
+  padding: 16px;
+  margin: 16px 0;
 }
 
 .errorMessage {
-    color: var(--error-color, #dc2626);
-    font-weight: 500;
-    margin-bottom: 8px;
+  color: var(--error-color, #dc2626);
+  font-weight: 500;
+  margin-bottom: 8px;
 }
 
 .errorCode {
-    background-color: var(--code-block-bg);
-    padding: 12px;
-    border-radius: 4px;
-    overflow-x: auto;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
+  background-color: var(--code-block-bg);
+  padding: 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
 }
 
 /* 暗色主题下的 Mermaid 样式 */
@@ -521,78 +521,78 @@
 [data-theme="dark"] .mermaidDiagram .node circle,
 [data-theme="dark"] .mermaidDiagram .node ellipse,
 [data-theme="dark"] .mermaidDiagram .node polygon {
-    fill: #374151;
-    stroke: #6b7280;
-    stroke-width: 2px;
+  fill: #374151;
+  stroke: #6b7280;
+  stroke-width: 2px;
 }
 
 [data-theme="dark"] .mermaidDiagram .node text {
-    fill: #1f2937;
-    font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+  fill: #1f2937;
+  font-family: var(--font-family, system-ui, -apple-system, sans-serif);
 }
 
 [data-theme="dark"] .mermaidDiagram .edgePath .path {
-    stroke: #60a5fa;
-    stroke-width: 2px;
+  stroke: #60a5fa;
+  stroke-width: 2px;
 }
 
 [data-theme="dark"] .mermaidDiagram .edgeLabel {
-    background-color: #6b7280;
-    color: #1f2937;
-    border: 1px solid #9ca3af;
-    border-radius: 4px;
-    padding: 4px 8px;
-    opacity: 0.9;
+  background-color: #6b7280;
+  color: #1f2937;
+  border: 1px solid #9ca3af;
+  border-radius: 4px;
+  padding: 4px 8px;
+  opacity: 0.9;
 }
 
 [data-theme="dark"] .mermaidDiagram .cluster rect {
-    fill: #1f2937;
-    stroke: #4b5563;
-    stroke-width: 1px;
+  fill: #1f2937;
+  stroke: #4b5563;
+  stroke-width: 1px;
 }
 
 [data-theme="dark"] .mermaidDiagram .cluster text {
-    fill: #1f2937;
+  fill: #1f2937;
 }
 
 [data-theme="dark"] .mermaidDiagram .titleText {
-    fill: #1f2937;
+  fill: #1f2937;
 }
 
 [data-theme="dark"] .mermaidDiagram .section rect {
-    fill: #374151;
-    stroke: #6b7280;
+  fill: #374151;
+  stroke: #6b7280;
 }
 
 [data-theme="dark"] .mermaidDiagram .section text {
-    fill: #1f2937;
+  fill: #1f2937;
 }
 
 /* 暗色主题下的箭头样式 */
 [data-theme="dark"] .mermaidDiagram .marker {
-    fill: #60a5fa;
-    stroke: #60a5fa;
+  fill: #60a5fa;
+  stroke: #60a5fa;
 }
 
 /* 暗色主题下的决策菱形 */
 [data-theme="dark"] .mermaidDiagram .diamond rect {
-    fill: #7c3aed;
-    stroke: #8b5cf6;
+  fill: #7c3aed;
+  stroke: #8b5cf6;
 }
 
 [data-theme="dark"] .mermaidDiagram .diamond text {
-    fill: #1f2937;
+  fill: #1f2937;
 }
 
 /* 暗色主题下的圆形节点 */
 [data-theme="dark"] .mermaidDiagram .start circle,
 [data-theme="dark"] .mermaidDiagram .end circle {
-    fill: #059669;
-    stroke: #10b981;
+  fill: #059669;
+  stroke: #10b981;
 }
 
 [data-theme="dark"] .mermaidDiagram .start text,
 [data-theme="dark"] .mermaidDiagram .end text {
-    fill: #1f2937;
-    font-weight: 600;
+  fill: #1f2937;
+  font-weight: 600;
 }
