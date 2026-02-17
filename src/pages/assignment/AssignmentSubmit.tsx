@@ -18,6 +18,7 @@ import AuthRequired from "../../components/auth/AuthRequired";
 import AssignmentSubmitSkeleton from "../../components/assignment/AssignmentSubmitSkeleton";
 import AssignmentService from "../../services/assignmentService";
 import FileService from "../../services/fileService";
+import ErrorState from "../../components/errorState/ErrorState";
 import styles from "./AssignmentSubmit.module.css";
 
 interface Assignment {
@@ -278,14 +279,13 @@ const AssignmentSubmit: React.FC = () => {
         <Navbar />
         <div className={styles.mainContent}>
           <AuthRequired message="您需要登录后才能查看作业详情和提交作业。">
-            <div className={styles.errorContainer}>
-              <FaExclamationCircle className={styles.errorIcon} />
-              <h2 className={styles.errorTitle}>加载失败</h2>
-              <p className={styles.errorMessage}>{error || "未找到该作业"}</p>
-              <button className={styles.btn} onClick={() => navigate("/assignments")}>
-                返回作业列表
-              </button>
-            </div>
+            <ErrorState
+              title="加载失败"
+              message={error || "未找到该作业"}
+              icon={<FaExclamationCircle />}
+              actionText="返回作业列表"
+              onAction={() => navigate("/assignments")}
+            />
           </AuthRequired>
         </div>
         <Footer companyName="TechBlog" startYear={2025} />

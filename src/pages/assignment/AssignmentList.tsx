@@ -7,6 +7,7 @@ import Skeleton from "../../components/skeleton/Skeleton";
 import AuthRequired from "../../components/auth/AuthRequired";
 import AssignmentService from "../../services/assignmentService";
 import styles from "./AssignmentList.module.css";
+import ErrorState from "../../components/errorState/ErrorState";
 
 interface Assignment {
   id: string | number;
@@ -116,9 +117,13 @@ const AssignmentList: React.FC = () => {
 
             {error ? (
               <div className={styles.errorState}>
-                <FaExclamationCircle className={styles.errorIcon} />
-                <h3 className={styles.errorText}>加载失败</h3>
-                <p className={styles.errorSubtext}>{error}</p>
+                <ErrorState
+                  title="加载失败"
+                  message={error || "未找到该作业"}
+                  icon={<FaExclamationCircle />}
+                  actionText="返回作业列表"
+                  onAction={() => navigate("/assignments")}
+                />
               </div>
             ) : dataLoading ? (
               <div className={styles.grid}>
