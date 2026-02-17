@@ -628,12 +628,43 @@ class HttpClient {
   isCancel(error: any): boolean {
     return axios.isCancel(error);
   }
+
+  /**
+   * 暴露当前使用的后端 baseURL，用于展示环境标签
+   */
+  getBaseURL(): string {
+    return this.baseURL;
+  }
 }
 
 // 创建默认实例 - 自动使用代理配置
 export const http = new HttpClient({
   timeout: 10000,
 });
+
+/**
+ * 根据正在连接的后端地址推断环境标签（测试/正式）
+ */
+export const resolveBackendEnvLabel = (baseURL?: string): "正式环境" | "测试环境" => {
+  const target = baseURL || http.getBaseURL() || "";
+  let host = "";
+
+  try {
+    const resolvedUrl = target.startsWith("http") ? new URL(target) : new URL(target, window.location.origin);
+    host = resolvedUrl.hostname.toLowerCase();
+  } catch (error) {
+    host = target.toLowerCase();
+  }
+
+  const isTestHost =
+    host.includes("localhost") ||
+    host.includes("127.0.0.1") ||
+    host.includes("dev") ||
+    host.includes("test") ||
+    host.includes("staging");
+
+  return isTestHost ? "测试环境" : "正式环境";
+};
 
 // 导出类型和类
 export { HttpClient };

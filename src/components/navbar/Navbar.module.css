@@ -128,6 +128,35 @@
   justify-content: center;
 }
 
+.testButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-right: 0.5rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.testButton:hover {
+  background-color: var(--bg-hover);
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.testButton:active {
+  transform: translateY(0);
+}
+
+.testButtonIcon {
+  font-size: 1rem;
+}
+
 .userArea {
   display: flex;
   align-items: center;
@@ -525,21 +554,6 @@
 }
 
 /* 推荐按钮活跃状态（当下拉菜单打开时） */
-.recommendButton[data-active="true"] {
-  color: var(--primary);
-  background-color: rgba(59, 130, 246, 0.1);
-}
-
-.recommendButton[data-active="true"]::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: var(--primary);
-  border-radius: 2px;
-}
 
 .recommendDropdown {
   position: absolute;

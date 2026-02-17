@@ -1,0 +1,14 @@
+.page {
+  padding: 24px;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 16px;
+  }
+}

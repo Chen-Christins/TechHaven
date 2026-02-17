@@ -26,6 +26,9 @@ import AssignmentSubmit from "../pages/assignment/AssignmentSubmit";
 import AssignmentList from "../pages/assignment/AssignmentList";
 import AssignmentSubmissions from "../pages/assignment/AssignmentSubmissions";
 import ChunkUploadTest from "../pages/test/ChunkUploadTest";
+import GMShell from "../pages/gm/GMShell";
+import GMDashboard from "../pages/gm/GMDashboard";
+import GMProtocol from "../pages/gm/GMProtocol";
 
 const RouterConfig: React.FC = () => {
   return (
@@ -53,8 +56,8 @@ const RouterConfig: React.FC = () => {
       {/* 作业提交详情页 */}
       <Route path="/assignment/submissions/:id" element={<AssignmentSubmissions />} />
 
-      {/* 测试页面 */}
-      <Route path="/test/chunk-upload" element={<ChunkUploadTest />} />
+      {/* 测试页面（仅开发环境可见） */}
+      {import.meta.env.DEV && <Route path="/test/chunk-upload" element={<ChunkUploadTest />} />}
 
       {/* 用户组织列表页 */}
       <Route path="/organizations/list" element={<OrganizationList />} />
@@ -80,6 +83,13 @@ const RouterConfig: React.FC = () => {
         <Route path="analytics" element={<Analytics />} />
         <Route path="settings" element={<Settings />} />
         <Route path="permissions" element={<PermissionManagement />} />
+      </Route>
+
+      {/* GM 业务控制台（平台入口，支持后续子页） */}
+      <Route path="/gm" element={<GMShell />}>
+        <Route index element={<Navigate to="/gm/dashboard" replace />} />
+        <Route path="dashboard" element={<GMDashboard />} />
+        <Route path="protocol" element={<GMProtocol />} />
       </Route>
 
       {/* 404 页面 */}

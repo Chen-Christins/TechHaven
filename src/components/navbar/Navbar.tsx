@@ -11,6 +11,8 @@ import {
   FaSignInAlt,
   FaBuilding,
   FaTasks,
+  FaFlask,
+  FaGamepad,
 } from "react-icons/fa";
 import styles from "./Navbar.module.css";
 import ThemeToggle from "../themeToggle/ThemeToggle";
@@ -48,8 +50,6 @@ const Navbar: React.FC = () => {
     { label: "首页", icon: <FaHome />, path: "/" },
     { label: "任务", icon: <FaTasks />, path: "/assignments" },
     { label: "组织", icon: <FaBuilding />, path: "/organizations/list" },
-    // { label: "标签", icon: <FaTags />, path: "/tags" },
-    // { label: "关于", icon: <FaUser />, path: "/about" },
   ];
 
   // 推荐网站数据
@@ -116,7 +116,6 @@ const Navbar: React.FC = () => {
             toggleRecommendMenu();
           }}
           title="推荐网站"
-          data-active={recommendMenuOpen}
         >
           <FaStar className={styles.linkIcon} />
           <span className={styles.linkText}>推荐</span>
@@ -159,12 +158,20 @@ const Navbar: React.FC = () => {
       if (path === "/organizations/list") {
         return location.pathname.startsWith("/organizations") || location.pathname.startsWith("/organization");
       }
+      if (path === "/gm") {
+        return location.pathname.startsWith("/gm");
+      }
       return location.pathname === path;
     };
 
+    const links = [...navLinks];
+    if (isAuthenticated && user?.role === "管理员") {
+      links.push({ label: "游戏", icon: <FaGamepad />, path: "/gm" });
+    }
+
     return (
       <ul className={styles.navLinks}>
-        {navLinks.map((link, index) => (
+        {links.map((link, index) => (
           <li key={index} className={styles.navItem}>
             <div
               onClick={() => {
@@ -188,18 +195,20 @@ const Navbar: React.FC = () => {
     return (
       <div className={`${styles.mobileMenu} ${mobileMenuOpen ? styles.mobileMenuOpen : ""}`}>
         <ul className={styles.mobileNavLinks}>
-          {navLinks.map((link, index) => (
-            <li key={index} className={styles.mobileNavItem}>
-              <a
-                href={link.path}
-                className={styles.mobileNavLink}
-                onClick={() => setMobileMenuOpen(false)} // 点击后关闭菜单
-              >
-                <span className={styles.mobileLinkIcon}>{link.icon}</span>
-                <span className={styles.mobileLinkText}>{link.label}</span>
-              </a>
-            </li>
-          ))}
+          {navLinks
+            .concat(isAuthenticated && user?.role === "管理员" ? [{ label: "GM 控制台", icon: <FaGamepad />, path: "/gm" }] : [])
+            .map((link, index) => (
+              <li key={index} className={styles.mobileNavItem}>
+                <a
+                  href={link.path}
+                  className={styles.mobileNavLink}
+                  onClick={() => setMobileMenuOpen(false)} // 点击后关闭菜单
+                >
+                  <span className={styles.mobileLinkIcon}>{link.icon}</span>
+                  <span className={styles.mobileLinkText}>{link.label}</span>
+                </a>
+              </li>
+            ))}
           {/* 移动端推荐选项 */}
           <li className={styles.mobileNavItem}>
             <div className={styles.mobileRecommendSection}>
@@ -286,6 +295,21 @@ const Navbar: React.FC = () => {
 
         {/* 右侧用户区域 */}
         <div className={styles.rightSection} ref={userMenuRef}>
+          {import.meta.env.DEV && (
+            <button
+              className={styles.testButton}
+              onClick={() => {
+                setUserMenuOpen(false);
+                setMobileMenuOpen(false);
+                navigate("/test/chunk-upload");
+              }}
+              type="button"
+              title="进入测试页面"
+              aria-label="进入测试页面"
+            >
+              <FaFlask className={styles.testButtonIcon} />
+            </button>
+          )}
           {/* 主题切换按钮 */}
           <ThemeToggle />
 
