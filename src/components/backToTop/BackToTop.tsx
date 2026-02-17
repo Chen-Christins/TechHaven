@@ -8,18 +8,55 @@ interface BackToTopProps {
 }
 
 const BackToTop: React.FC<BackToTopProps> = ({ className = "", bottom = "30px", right = "30px" }) => {
-  const handleClick = () => {
-    // 使用平滑滚动到顶部
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-    // 备用方案确保兼容性
-    setTimeout(() => {
+    console.log("BackToTop clicked"); // 调试信息
+
+    // 立即尝试多种滚动方式
+    const scrollToTop = () => {
+      // 方法1: window.scrollTo
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "smooth",
+      });
+
+      // 方法2: 设置documentElement和body
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
-    }, 100);
+
+      // 方法3: 查找所有可能有scrollTop的元素
+      const elements = [window, document.documentElement, document.body];
+      elements.forEach((el) => {
+        if (el && "scrollTop" in el) {
+          (el as any).scrollTop = 0;
+        }
+      });
+
+      // 方法4: 强制重置滚动位置
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+
+        // 查找所有可能的滚动容器
+        const scrollableElements = document.querySelectorAll('[style*="overflow"], [style*="scroll"]');
+        scrollableElements.forEach((el: any) => {
+          if (el.scrollTop > 0) el.scrollTop = 0;
+        });
+
+        // 最后尝试使用scrollIntoView
+        if (document.body) {
+          document.body.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 50);
+    };
+
+    scrollToTop();
+    // 再次尝试确保滚动成功
+    setTimeout(scrollToTop, 200);
   };
 
   return (
@@ -33,7 +70,7 @@ const BackToTop: React.FC<BackToTopProps> = ({ className = "", bottom = "30px", 
         position: "fixed",
         bottom: bottom,
         right: right,
-        zIndex: 10000,
+        zIndex: 99999,
         pointerEvents: "auto",
         cursor: "pointer",
       }}

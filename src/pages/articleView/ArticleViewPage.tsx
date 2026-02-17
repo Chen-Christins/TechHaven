@@ -61,9 +61,9 @@ const ArticleViewPage: React.FC = () => {
   }, [id, authLoading, isAuthenticated]);
 
   return (
-    <div>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
-      <div style={{ minHeight: "calc(100vh - 64px)" }}>
+      <div style={{ flex: 1 }}>
         <AuthRequired>
           {authLoading ? (
             <div style={{ padding: "2rem", textAlign: "center" }}>正在加载认证状态...</div>
