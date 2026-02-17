@@ -15,12 +15,12 @@ import MyOrganizationsTab from "./components/MyOrganizationsTab";
 
 // 个人标签类型
 interface PersonalTag {
-    id: number;
-    name: string;
-    description?: string | "暂无";
-    articleCount?: number | 0;
-    color: string;
-    createTime?: string | "未知时间";
+  id: number;
+  name: string;
+  description?: string | "暂无";
+  articleCount?: number | 0;
+  color: string;
+  createTime?: string | "未知时间";
 }
 
 // 个人统计类型
@@ -29,268 +29,268 @@ interface PersonalTag {
 const mockPersonalTags: PersonalTag[] = [];
 
 interface NavItem {
-    id: string;
-    label: string;
-    icon: React.ReactNode;
-    path: string;
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  path: string;
 }
 
 const PersonalCenter: React.FC = () => {
-    const navigate = useNavigate();
-    const { user, isAuthenticated, logout, loading: authLoading } = useAuth();
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<"articles" | "tags" | "stats" | "organizations">("articles");
-    const [loading] = useState(false);
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout, loading: authLoading } = useAuth();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"articles" | "tags" | "stats" | "organizations">("articles");
+  const [loading] = useState(false);
 
-    // 标签管理状态 (needed for stats)
-    const [tags, setTags] = useState<PersonalTag[]>([]);
+  // 标签管理状态 (needed for stats)
+  const [tags, setTags] = useState<PersonalTag[]>([]);
 
-    // 用户数据（从认证上下文获取，与导航栏保持一致）
-    const currentUser = user
-        ? {
-              name: user.name || user.account || "用户",
-              avatar: user.avatar || "https://picsum.photos/id/64/200", // 默认头像
-              role: user.role || "用户",
-              email: user.email,
-          }
-        : null;
+  // 用户数据（从认证上下文获取，与导航栏保持一致）
+  const currentUser = user
+    ? {
+        name: user.name || user.account || "用户",
+        avatar: user.avatar || "https://picsum.photos/id/64/200", // 默认头像
+        role: user.role || "用户",
+        email: user.email,
+      }
+    : null;
 
-    // 处理退出登录
-    const handleLogout = () => {
-        logout();
+  // 处理退出登录
+  const handleLogout = () => {
+    logout();
+  };
+
+  // 处理登录跳转
+  const handleLoginRedirect = () => {
+    navigate("/auth");
+  };
+
+  // 导航菜单配置
+  const navItems: NavItem[] = [
+    {
+      id: "articles",
+      label: "我的文章",
+      icon: <FaFileAlt />,
+      path: "/personal",
+    },
+    { id: "tags", label: "我的标签", icon: <FaTag />, path: "/personal/tags" },
+    {
+      id: "stats",
+      label: "数据统计",
+      icon: <FaChartBar />,
+      path: "/personal/stats",
+    },
+    {
+      id: "organizations",
+      label: "我的组织",
+      icon: <FaUsers />,
+      path: "/personal/organizations",
+    },
+  ];
+
+  // 初始化标签数据
+  useEffect(() => {
+    setTags(mockPersonalTags);
+  }, []);
+
+  // 清理tooltip
+  useEffect(() => {
+    return () => {
+      const tooltip = document.getElementById("sidebar-tooltip");
+      if (tooltip && tooltip.parentNode) {
+        tooltip.parentNode.removeChild(tooltip);
+      }
     };
+  }, []);
 
-    // 处理登录跳转
-    const handleLoginRedirect = () => {
-        navigate("/auth");
-    };
-
-    // 导航菜单配置
-    const navItems: NavItem[] = [
-        {
-            id: "articles",
-            label: "我的文章",
-            icon: <FaFileAlt />,
-            path: "/personal",
-        },
-        { id: "tags", label: "我的标签", icon: <FaTag />, path: "/personal/tags" },
-        {
-            id: "stats",
-            label: "数据统计",
-            icon: <FaChartBar />,
-            path: "/personal/stats",
-        },
-        {
-            id: "organizations",
-            label: "我的组织",
-            icon: <FaUsers />,
-            path: "/personal/organizations",
-        },
-    ];
-
-    // 初始化标签数据
-    useEffect(() => {
-        setTags(mockPersonalTags);
-    }, []);
-
-    // 清理tooltip
-    useEffect(() => {
-        return () => {
-            const tooltip = document.getElementById("sidebar-tooltip");
-            if (tooltip && tooltip.parentNode) {
-                tooltip.parentNode.removeChild(tooltip);
-            }
-        };
-    }, []);
-
-    // 如果正在验证身份，显示骨架屏
-    if (authLoading) {
-        return (
-            <div className={styles.adminLayout}>
-                <div className={styles.adminContainer}>
-                    {/* 侧边栏骨架 */}
-                    <aside className={styles.adminSidebar} style={{ width: "240px" }}>
-                        <div className={styles.adminSidebarHeader} style={{ padding: "20px" }}>
-                            <Skeleton variant="rectangular" width={120} height={32} />
-                        </div>
-                        <div style={{ padding: "20px 12px" }}>
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} style={{ marginBottom: "24px" }}>
-                                    <Skeleton variant="rounded" height={40} />
-                                </div>
-                            ))}
-                        </div>
-                    </aside>
-
-                    {/* 主内容骨架 */}
-                    <main className={styles.adminMainContent} style={{ flex: 1 }}>
-                        {/* 顶部栏骨架 */}
-                        <header
-                            className={styles.adminTopBar}
-                            style={{
-                                padding: "0 24px",
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                height: "64px",
-                            }}
-                        >
-                            <Skeleton variant="text" width={100} height={24} />
-                            <div style={{ display: "flex", gap: "16px" }}>
-                                <Skeleton variant="circular" width={32} height={32} />
-                                <Skeleton variant="circular" width={32} height={32} />
-                            </div>
-                        </header>
-
-                        {/* 页面内容骨架 */}
-                        <div className={styles.adminPageContent} style={{ padding: "24px" }}>
-                            <div
-                                style={{
-                                    marginBottom: "24px",
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                }}
-                            >
-                                <Skeleton variant="text" width={150} height={32} />
-                                <Skeleton variant="rounded" width={100} height={36} />
-                            </div>
-
-                            <div style={{ marginBottom: "24px" }}>
-                                <div style={{ marginBottom: "16px" }}>
-                                    <Skeleton variant="rounded" height={48} />
-                                </div>
-                                {[1, 2, 3, 4, 5].map((i) => (
-                                    <div key={i} style={{ marginBottom: "12px" }}>
-                                        <Skeleton variant="rounded" height={80} />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </main>
-                </div>
+  // 如果正在验证身份，显示骨架屏
+  if (authLoading) {
+    return (
+      <div className={styles.adminLayout}>
+        <div className={styles.adminContainer}>
+          {/* 侧边栏骨架 */}
+          <aside className={styles.adminSidebar} style={{ width: "240px" }}>
+            <div className={styles.adminSidebarHeader} style={{ padding: "20px" }}>
+              <Skeleton variant="rectangular" width={120} height={32} />
             </div>
-        );
-    }
+            <div style={{ padding: "20px 12px" }}>
+              {[1, 2, 3].map((i) => (
+                <div key={i} style={{ marginBottom: "24px" }}>
+                  <Skeleton variant="rounded" height={40} />
+                </div>
+              ))}
+            </div>
+          </aside>
 
-    // 如果用户未登录，显示提示
-    if (!isAuthenticated || !currentUser) {
-        return (
-            <div
-                className={styles.pageContainer}
-                style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    minHeight: "80vh",
-                }}
+          {/* 主内容骨架 */}
+          <main className={styles.adminMainContent} style={{ flex: 1 }}>
+            {/* 顶部栏骨架 */}
+            <header
+              className={styles.adminTopBar}
+              style={{
+                padding: "0 24px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                height: "64px",
+              }}
             >
-                <div
-                    style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: "40px",
-                        backgroundColor: "var(--card-bg)",
-                        borderRadius: "12px",
-                        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.08)",
-                        maxWidth: "400px",
-                        width: "100%",
-                        textAlign: "center",
-                    }}
-                >
-                    <div
-                        style={{
-                            fontSize: "48px",
-                            color: "var(--primary)",
-                            marginBottom: "24px",
-                            opacity: 0.8,
-                        }}
-                    >
-                        <FaUserLock />
-                    </div>
-                    <h2
-                        style={{
-                            marginBottom: "12px",
-                            color: "var(--text-primary)",
-                            fontSize: "24px",
-                            fontWeight: "600",
-                        }}
-                    >
-                        请先登录
-                    </h2>
-                    <p
-                        style={{
-                            marginBottom: "32px",
-                            color: "var(--text-secondary)",
-                            fontSize: "15px",
-                            lineHeight: "1.6",
-                        }}
-                    >
-                        您需要登录后才能访问个人中心，查看和管理您的文章、标签及数据统计。
-                    </p>
-                    <button
-                        onClick={handleLoginRedirect}
-                        style={{
-                            padding: "12px 32px",
-                            backgroundColor: "var(--primary)",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "8px",
-                            fontSize: "16px",
-                            fontWeight: "500",
-                            cursor: "pointer",
-                            boxShadow: "0 4px 12px rgba(var(--primary-rgb), 0.3)",
-                            width: "100%",
-                        }}
-                    >
-                        立即登录
-                    </button>
-                    <button
-                        onClick={() => navigate("/")}
-                        style={{
-                            marginTop: "16px",
-                            padding: "8px 16px",
-                            backgroundColor: "transparent",
-                            color: "var(--text-secondary)",
-                            border: "none",
-                            fontSize: "14px",
-                            cursor: "pointer",
-                            textDecoration: "underline",
-                        }}
-                    >
-                        返回首页
-                    </button>
+              <Skeleton variant="text" width={100} height={24} />
+              <div style={{ display: "flex", gap: "16px" }}>
+                <Skeleton variant="circular" width={32} height={32} />
+                <Skeleton variant="circular" width={32} height={32} />
+              </div>
+            </header>
+
+            {/* 页面内容骨架 */}
+            <div className={styles.adminPageContent} style={{ padding: "24px" }}>
+              <div
+                style={{
+                  marginBottom: "24px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Skeleton variant="text" width={150} height={32} />
+                <Skeleton variant="rounded" width={100} height={36} />
+              </div>
+
+              <div style={{ marginBottom: "24px" }}>
+                <div style={{ marginBottom: "16px" }}>
+                  <Skeleton variant="rounded" height={48} />
                 </div>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} style={{ marginBottom: "12px" }}>
+                    <Skeleton variant="rounded" height={80} />
+                  </div>
+                ))}
+              </div>
             </div>
-        );
-    }
+          </main>
+        </div>
+      </div>
+    );
+  }
 
-    // 切换侧边栏
-    const toggleSidebar = () => {
-        setSidebarCollapsed(!sidebarCollapsed);
-    };
+  // 如果用户未登录，显示提示
+  if (!isAuthenticated || !currentUser) {
+    return (
+      <div
+        className={styles.pageContainer}
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "80vh",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "40px",
+            backgroundColor: "var(--card-bg)",
+            borderRadius: "12px",
+            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.08)",
+            maxWidth: "400px",
+            width: "100%",
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "48px",
+              color: "var(--primary)",
+              marginBottom: "24px",
+              opacity: 0.8,
+            }}
+          >
+            <FaUserLock />
+          </div>
+          <h2
+            style={{
+              marginBottom: "12px",
+              color: "var(--text-primary)",
+              fontSize: "24px",
+              fontWeight: "600",
+            }}
+          >
+            请先登录
+          </h2>
+          <p
+            style={{
+              marginBottom: "32px",
+              color: "var(--text-secondary)",
+              fontSize: "15px",
+              lineHeight: "1.6",
+            }}
+          >
+            您需要登录后才能访问个人中心，查看和管理您的文章、标签及数据统计。
+          </p>
+          <button
+            onClick={handleLoginRedirect}
+            style={{
+              padding: "12px 32px",
+              backgroundColor: "var(--primary)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "16px",
+              fontWeight: "500",
+              cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(var(--primary-rgb), 0.3)",
+              width: "100%",
+            }}
+          >
+            立即登录
+          </button>
+          <button
+            onClick={() => navigate("/")}
+            style={{
+              marginTop: "16px",
+              padding: "8px 16px",
+              backgroundColor: "transparent",
+              color: "var(--text-secondary)",
+              border: "none",
+              fontSize: "14px",
+              cursor: "pointer",
+              textDecoration: "underline",
+            }}
+          >
+            返回首页
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-    // 切换移动端菜单
-    const toggleMobileMenu = () => {
-        setMobileMenuOpen(!mobileMenuOpen);
-    };
+  // 切换侧边栏
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
 
-    // 关闭移动端菜单
-    const closeMobileMenu = () => {
-        setMobileMenuOpen(false);
-    };
+  // 切换移动端菜单
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
 
-    // 显示工具提示
-    const showTooltip = (event: React.MouseEvent, text: string) => {
-        if (sidebarCollapsed) {
-            // 创建或显示tooltip
-            let tooltip = document.getElementById("sidebar-tooltip");
-            if (!tooltip) {
-                tooltip = document.createElement("div");
-                tooltip.id = "sidebar-tooltip";
-                tooltip.style.cssText = `
+  // 关闭移动端菜单
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
+  // 显示工具提示
+  const showTooltip = (event: React.MouseEvent, text: string) => {
+    if (sidebarCollapsed) {
+      // 创建或显示tooltip
+      let tooltip = document.getElementById("sidebar-tooltip");
+      if (!tooltip) {
+        tooltip = document.createElement("div");
+        tooltip.id = "sidebar-tooltip";
+        tooltip.style.cssText = `
                     position: fixed;
                     padding: 6px 12px;
                     background-color: var(--card-bg);
@@ -304,146 +304,133 @@ const PersonalCenter: React.FC = () => {
                     pointer-events: none;
                     opacity: 0;
                 `;
-                document.body.appendChild(tooltip);
-            }
+        document.body.appendChild(tooltip);
+      }
 
-            tooltip.textContent = text;
-            const rect = event.currentTarget.getBoundingClientRect();
-            tooltip.style.left = `${rect.right + 8}px`;
-            tooltip.style.top = `${rect.top + rect.height / 2}px`;
-            tooltip.style.transform = "translateY(-50%)";
+      tooltip.textContent = text;
+      const rect = event.currentTarget.getBoundingClientRect();
+      tooltip.style.left = `${rect.right + 8}px`;
+      tooltip.style.top = `${rect.top + rect.height / 2}px`;
+      tooltip.style.transform = "translateY(-50%)";
 
-            // 显示tooltip
-            setTimeout(() => {
-                if (tooltip) tooltip.style.opacity = "1";
-            }, 10);
-        }
-    };
-
-    // 隐藏工具提示
-    const hideTooltip = () => {
-        const tooltip = document.getElementById("sidebar-tooltip");
-        if (tooltip) {
-            tooltip.style.opacity = "0";
-            setTimeout(() => {
-                if (tooltip.parentNode) {
-                    tooltip.parentNode.removeChild(tooltip);
-                }
-            }, 300);
-        }
-    };
-
-    // 编辑标签
-
-    if (loading) {
-        return (
-            <div className={styles.pageContainer}>
-                <Loading size="large" text="正在加载个人数据..." />
-            </div>
-        );
+      // 显示tooltip
+      setTimeout(() => {
+        if (tooltip) tooltip.style.opacity = "1";
+      }, 10);
     }
+  };
 
+  // 隐藏工具提示
+  const hideTooltip = () => {
+    const tooltip = document.getElementById("sidebar-tooltip");
+    if (tooltip) {
+      tooltip.style.opacity = "0";
+      setTimeout(() => {
+        if (tooltip.parentNode) {
+          tooltip.parentNode.removeChild(tooltip);
+        }
+      }, 300);
+    }
+  };
+
+  // 编辑标签
+
+  if (loading) {
     return (
-        <div className={styles.adminLayout}>
-            {/* 移动端菜单遮罩 */}
-            <div
-                className={`${styles.mobileMenuOverlay} ${mobileMenuOpen ? styles.show : ""}`}
-                onClick={closeMobileMenu}
-            />
-
-            <div className={styles.adminContainer}>
-                {/* 侧边栏 */}
-                <aside
-                    className={`${styles.adminSidebar} ${sidebarCollapsed ? styles.collapsed : ""} ${mobileMenuOpen ? styles.mobileOpen : ""}`}
-                >
-                    {/* Logo区域 */}
-                    <div className={styles.adminSidebarHeader}>
-                        <div onClick={() => navigate("/personal")} className={styles.adminLogo}>
-                            <span className={styles.adminLogoIcon}>👤</span>
-                            <span className={styles.adminLogoText}>个人中心</span>
-                        </div>
-                        <button
-                            className={styles.toggleSidebarBtn}
-                            onClick={toggleSidebar}
-                            title={sidebarCollapsed ? "展开侧边栏" : "收起侧边栏"}
-                        >
-                            {sidebarCollapsed ? <FaBars /> : <FaTimes />}
-                        </button>
-                    </div>
-
-                    {/* 导航菜单 */}
-                    <nav className={styles.adminNavMenu}>
-                        {navItems.map((item) => (
-                            <div key={item.id} className={styles.adminNavItem}>
-                                <button
-                                    className={`${styles.adminNavLink} ${activeTab === item.id ? styles.active : ""}`}
-                                    onClick={() => {
-                                        setActiveTab(item.id as any);
-                                        closeMobileMenu();
-                                    }}
-                                    onMouseEnter={(e) => showTooltip(e, item.label)}
-                                    onMouseLeave={hideTooltip}
-                                >
-                                    <span className={styles.adminNavIcon}>{item.icon}</span>
-                                    <span className={styles.adminNavText}>{item.label}</span>
-                                </button>
-                            </div>
-                        ))}
-                    </nav>
-                </aside>
-
-                {/* 主内容区域 */}
-                <main className={`${styles.adminMainContent} ${sidebarCollapsed ? styles.expanded : ""}`}>
-                    {/* 顶部栏 */}
-                    <header className={styles.adminTopBar}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                            {/* 移动端菜单按钮 */}
-                            <button className={styles.mobileMenuBtn} onClick={toggleMobileMenu} aria-label="打开菜单">
-                                <FaBars />
-                            </button>
-
-                            {/* 面包屑导航 */}
-                            <nav className={styles.adminBreadcrumb}>
-                                <span className={styles.breadcrumbActive}>
-                                    {navItems.find((item) => item.id === activeTab)?.label || "个人中心"}
-                                </span>
-                            </nav>
-                        </div>
-
-                        {/* 顶部操作区域 */}
-                        <div className={styles.adminTopBarActions}>
-                            <ThemeToggle />
-
-                            {/* 用户信息区域 */}
-                            <UserDropdown
-                                user={currentUser}
-                                onLogout={handleLogout}
-                                showAdminLink={currentUser?.role === "管理员"}
-                            />
-                        </div>
-                    </header>
-
-                    {/* 页面内容 */}
-                    <div className={styles.adminPageContent}>
-                        {/* 文章管理 */}
-                        {activeTab === "articles" && <MyArticlesTab />}
-
-                        {/* 标签管理 */}
-                        {activeTab === "tags" && <MyTagsTab />}
-
-                        {/* 数据统计 */}
-                        {activeTab === "stats" && <StatsTab tags={tags} articles={[]} totalArticles={0} />}
-
-                        {/* 我的组织 */}
-                        {activeTab === "organizations" && <MyOrganizationsTab />}
-                    </div>
-
-                    {/* Footer */}
-                    <Footer companyName="TechBlog" />
-                </main>
-            </div>
-        </div>
+      <div className={styles.pageContainer}>
+        <Loading size="large" text="正在加载个人数据..." />
+      </div>
     );
+  }
+
+  return (
+    <div className={styles.adminLayout}>
+      {/* 移动端菜单遮罩 */}
+      <div className={`${styles.mobileMenuOverlay} ${mobileMenuOpen ? styles.show : ""}`} onClick={closeMobileMenu} />
+
+      <div className={styles.adminContainer}>
+        {/* 侧边栏 */}
+        <aside
+          className={`${styles.adminSidebar} ${sidebarCollapsed ? styles.collapsed : ""} ${mobileMenuOpen ? styles.mobileOpen : ""}`}
+        >
+          {/* Logo区域 */}
+          <div className={styles.adminSidebarHeader}>
+            <div onClick={() => navigate("/personal")} className={styles.adminLogo}>
+              <span className={styles.adminLogoIcon}>👤</span>
+              <span className={styles.adminLogoText}>个人中心</span>
+            </div>
+            <button className={styles.toggleSidebarBtn} onClick={toggleSidebar} title={sidebarCollapsed ? "展开侧边栏" : "收起侧边栏"}>
+              {sidebarCollapsed ? <FaBars /> : <FaTimes />}
+            </button>
+          </div>
+
+          {/* 导航菜单 */}
+          <nav className={styles.adminNavMenu}>
+            {navItems.map((item) => (
+              <div key={item.id} className={styles.adminNavItem}>
+                <button
+                  className={`${styles.adminNavLink} ${activeTab === item.id ? styles.active : ""}`}
+                  onClick={() => {
+                    setActiveTab(item.id as any);
+                    closeMobileMenu();
+                  }}
+                  onMouseEnter={(e) => showTooltip(e, item.label)}
+                  onMouseLeave={hideTooltip}
+                >
+                  <span className={styles.adminNavIcon}>{item.icon}</span>
+                  <span className={styles.adminNavText}>{item.label}</span>
+                </button>
+              </div>
+            ))}
+          </nav>
+        </aside>
+
+        {/* 主内容区域 */}
+        <main className={`${styles.adminMainContent} ${sidebarCollapsed ? styles.expanded : ""}`}>
+          {/* 顶部栏 */}
+          <header className={styles.adminTopBar}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              {/* 移动端菜单按钮 */}
+              <button className={styles.mobileMenuBtn} onClick={toggleMobileMenu} aria-label="打开菜单">
+                <FaBars />
+              </button>
+
+              {/* 面包屑导航 */}
+              <nav className={styles.adminBreadcrumb}>
+                <span className={styles.breadcrumbActive}>{navItems.find((item) => item.id === activeTab)?.label || "个人中心"}</span>
+              </nav>
+            </div>
+
+            {/* 顶部操作区域 */}
+            <div className={styles.adminTopBarActions}>
+              <ThemeToggle />
+
+              {/* 用户信息区域 */}
+              <UserDropdown user={currentUser} onLogout={handleLogout} showAdminLink={currentUser?.role === "管理员"} />
+            </div>
+          </header>
+
+          {/* 页面内容 */}
+          <div className={styles.adminPageContent}>
+            {/* 文章管理 */}
+            {activeTab === "articles" && <MyArticlesTab />}
+
+            {/* 标签管理 */}
+            {activeTab === "tags" && <MyTagsTab />}
+
+            {/* 数据统计 */}
+            {activeTab === "stats" && <StatsTab tags={tags} articles={[]} totalArticles={0} />}
+
+            {/* 我的组织 */}
+            {activeTab === "organizations" && <MyOrganizationsTab />}
+          </div>
+
+          {/* Footer */}
+          <Footer companyName="TechBlog" />
+        </main>
+      </div>
+    </div>
+  );
 };
 
 export default PersonalCenter;

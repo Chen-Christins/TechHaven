@@ -4,147 +4,135 @@ import { FaUserCircle, FaCog, FaSignOutAlt, FaHome } from "react-icons/fa";
 import styles from "./UserDropdown.module.css";
 
 interface User {
-    name: string;
-    avatar?: string;
-    role?: string;
-    email: string;
+  name: string;
+  avatar?: string;
+  role?: string;
+  email: string;
 }
 
 interface UserDropdownProps {
-    user: User;
-    onLogout?: () => void;
-    showAdminLink?: boolean;
-    className?: string;
+  user: User;
+  onLogout?: () => void;
+  showAdminLink?: boolean;
+  className?: string;
 }
 
 const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout, showAdminLink = false, className = "" }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    const navigate = useNavigate();
-    // 点击外部关闭下拉菜单
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        };
-
-        if (isOpen) {
-            document.addEventListener("mousedown", handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [isOpen]);
-
-    const toggleDropdown = () => {
-        setIsOpen(!isOpen);
-    };
-
-    const closeDropdown = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  // 点击外部关闭下拉菜单
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+      }
     };
 
-    const handleLogout = () => {
-        closeDropdown();
-        if (onLogout) {
-            onLogout();
-        } else {
-            // console.log('退出登录');
-        }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, [isOpen]);
 
-    return (
-        <div ref={dropdownRef} className={`${styles.userDropdown} ${className}`}>
-            {/* 用户显示区域 */}
-            <div className={styles.userDisplay} onClick={toggleDropdown}>
-                <img
-                    src={
-                        user.avatar ||
-                        `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`
-                    }
-                    alt={user.name}
-                    className={styles.userAvatar}
-                />
-                <div className={styles.userDetails}>
-                    <div className={styles.userName}>{user.name}</div>
-                    {user.role && <div className={styles.userRole}>{user.role}</div>}
-                </div>
-                <div className={`${styles.dropdownArrow} ${isOpen ? styles.open : ""}`}>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path
-                            d="M2 4L6 8L10 4"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                </div>
-            </div>
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
 
-            {/* 下拉菜单 */}
-            {isOpen && (
-                <div className={styles.dropdown}>
-                    <div className={styles.dropdownHeader}>
-                        <img
-                            src={
-                                user.avatar ||
-                                `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`
-                            }
-                            alt={user.name}
-                            className={styles.dropdownAvatar}
-                        />
-                        <div className={styles.dropdownUserInfo}>
-                            <div className={styles.dropdownUserName}>{user.name}</div>
-                            <div className={styles.dropdownUserEmail}>{user.email}</div>
-                        </div>
-                    </div>
-                    <div className={styles.dropdownDivider}></div>
-                    <div className={styles.dropdownMenu}>
-                        <div
-                            className={styles.dropdownItem}
-                            onClick={() => {
-                                closeDropdown();
-                                navigate("/profile/1");
-                            }}
-                        >
-                            <FaUserCircle />
-                            个人资料
-                        </div>
-                        <div
-                            className={styles.dropdownItem}
-                            onClick={() => {
-                                closeDropdown();
-                                navigate("/");
-                            }}
-                        >
-                            <FaHome />
-                            回到首页
-                        </div>
-                        {showAdminLink && (
-                            <div
-                                className={styles.dropdownItem}
-                                onClick={() => {
-                                    closeDropdown();
-                                    navigate("/admin");
-                                }}
-                            >
-                                <FaCog />
-                                管理后台
-                            </div>
-                        )}
-                        <div className={styles.dropdownDivider}></div>
-                        <button className={styles.dropdownItem} onClick={handleLogout}>
-                            <FaSignOutAlt />
-                            退出登录
-                        </button>
-                    </div>
-                </div>
-            )}
+  const closeDropdown = () => {
+    setIsOpen(false);
+  };
+
+  const handleLogout = () => {
+    closeDropdown();
+    if (onLogout) {
+      onLogout();
+    } else {
+      // console.log('退出登录');
+    }
+  };
+
+  return (
+    <div ref={dropdownRef} className={`${styles.userDropdown} ${className}`}>
+      {/* 用户显示区域 */}
+      <div className={styles.userDisplay} onClick={toggleDropdown}>
+        <img
+          src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
+          alt={user.name}
+          className={styles.userAvatar}
+        />
+        <div className={styles.userDetails}>
+          <div className={styles.userName}>{user.name}</div>
+          {user.role && <div className={styles.userRole}>{user.role}</div>}
         </div>
-    );
+        <div className={`${styles.dropdownArrow} ${isOpen ? styles.open : ""}`}>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      </div>
+
+      {/* 下拉菜单 */}
+      {isOpen && (
+        <div className={styles.dropdown}>
+          <div className={styles.dropdownHeader}>
+            <img
+              src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
+              alt={user.name}
+              className={styles.dropdownAvatar}
+            />
+            <div className={styles.dropdownUserInfo}>
+              <div className={styles.dropdownUserName}>{user.name}</div>
+              <div className={styles.dropdownUserEmail}>{user.email}</div>
+            </div>
+          </div>
+          <div className={styles.dropdownDivider}></div>
+          <div className={styles.dropdownMenu}>
+            <div
+              className={styles.dropdownItem}
+              onClick={() => {
+                closeDropdown();
+                navigate("/profile/1");
+              }}
+            >
+              <FaUserCircle />
+              个人资料
+            </div>
+            <div
+              className={styles.dropdownItem}
+              onClick={() => {
+                closeDropdown();
+                navigate("/");
+              }}
+            >
+              <FaHome />
+              回到首页
+            </div>
+            {showAdminLink && (
+              <div
+                className={styles.dropdownItem}
+                onClick={() => {
+                  closeDropdown();
+                  navigate("/admin");
+                }}
+              >
+                <FaCog />
+                管理后台
+              </div>
+            )}
+            <div className={styles.dropdownDivider}></div>
+            <button className={styles.dropdownItem} onClick={handleLogout}>
+              <FaSignOutAlt />
+              退出登录
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default UserDropdown;

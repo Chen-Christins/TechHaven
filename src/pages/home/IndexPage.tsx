@@ -15,90 +15,90 @@ import PageSkeleton from "../../components/pageSkeleton/PageSkeleton";
 import { useAuth } from "../../contexts/AuthContext";
 
 const IndexPage: React.FC = () => {
-    const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
-    const [tags, setTags] = useState<{ id: string | number; color: string; name: string }[]>([]);
-    const [tagsLoading, setTagsLoading] = useState(false);
-    const [isInitialLoad, setIsInitialLoad] = useState(true);
-    const [showContent, setShowContent] = useState(false);
+  const [tags, setTags] = useState<{ id: string | number; color: string; name: string }[]>([]);
+  const [tagsLoading, setTagsLoading] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [showContent, setShowContent] = useState(false);
 
-    // 获取标签（使用 LabelService），仅在已登录时请求
-    useEffect(() => {
-        const fetchTags = async () => {
-            setTagsLoading(true);
-            if (!user || !user.id) {
-                setTags([]);
-                setTagsLoading(false);
-                return;
-            }
+  // 获取标签（使用 LabelService），仅在已登录时请求
+  useEffect(() => {
+    const fetchTags = async () => {
+      setTagsLoading(true);
+      if (!user || !user.id) {
+        setTags([]);
+        setTagsLoading(false);
+        return;
+      }
 
-            try {
-                const res = await LabelService.queryLabel({ user_id: user.id });
-                const mapped = (res || []).map((t: any) => ({
-                    id: t.id,
-                    name: t.name,
-                    color: t.color || "#61dafb",
-                }));
-                setTags(mapped);
-            } catch (err) {
-                console.error("获取标签失败:", err);
-                setTags([]);
-            } finally {
-                setTagsLoading(false);
-            }
-        };
+      try {
+        const res = await LabelService.queryLabel({ user_id: user.id });
+        const mapped = (res || []).map((t: any) => ({
+          id: t.id,
+          name: t.name,
+          color: t.color || "#61dafb",
+        }));
+        setTags(mapped);
+      } catch (err) {
+        console.error("获取标签失败:", err);
+        setTags([]);
+      } finally {
+        setTagsLoading(false);
+      }
+    };
 
-        fetchTags();
-    }, [user]);
+    fetchTags();
+  }, [user]);
 
-    // 控制初始加载和内容显示
-    useEffect(() => {
-        if (!authLoading && !tagsLoading) {
-            // 延迟显示内容以创建平滑过渡
-            const timer = setTimeout(() => {
-                setShowContent(true);
-                // 稍后延迟移除骨架屏，确保过渡动画完成
-                setTimeout(() => {
-                    setIsInitialLoad(false);
-                }, 100);
-            }, 100);
+  // 控制初始加载和内容显示
+  useEffect(() => {
+    if (!authLoading && !tagsLoading) {
+      // 延迟显示内容以创建平滑过渡
+      const timer = setTimeout(() => {
+        setShowContent(true);
+        // 稍后延迟移除骨架屏，确保过渡动画完成
+        setTimeout(() => {
+          setIsInitialLoad(false);
+        }, 100);
+      }, 100);
 
-            return () => clearTimeout(timer);
-        }
-    }, [authLoading, tagsLoading]);
+      return () => clearTimeout(timer);
+    }
+  }, [authLoading, tagsLoading]);
 
-    return (
-        <div className={styles.index}>
-            {/* 导航栏：直接渲染，不参与骨架屏加载 */}
-            <Navbar />
+  return (
+    <div className={styles.index}>
+      {/* 导航栏：直接渲染，不参与骨架屏加载 */}
+      <Navbar />
 
-            {/* 主内容区域 */}
-            {isInitialLoad ? (
-                <PageSkeleton />
-            ) : (
-                <div className={`${styles.mainContent} ${showContent ? styles.contentVisible : styles.contentHidden}`}>
-                    {/* 左侧：文章列表 */}
-                    <div className={styles.leftColumn}>
-                        <ArticleList />
-                    </div>
+      {/* 主内容区域 */}
+      {isInitialLoad ? (
+        <PageSkeleton />
+      ) : (
+        <div className={`${styles.mainContent} ${showContent ? styles.contentVisible : styles.contentHidden}`}>
+          {/* 左侧：文章列表 */}
+          <div className={styles.leftColumn}>
+            <ArticleList />
+          </div>
 
-                    {/* 右侧：侧边栏 */}
-                    <div className={styles.rightColumn}>
-                        {/* 标签面板可能仍在加载，显示局部加载状态 */}
-                        <SearchPanel />
-                        <TagPanel tags={tags} loading={tagsLoading} />
-                        <SubscribeBox />
-                        <CategoryPanel />
-                        <StatsPanel />
-                        <Calendar />
-                    </div>
-                </div>
-            )}
-
-            <Footer companyName="TechBlog" startYear={2025} />
-            <BackToTop />
+          {/* 右侧：侧边栏 */}
+          <div className={styles.rightColumn}>
+            {/* 标签面板可能仍在加载，显示局部加载状态 */}
+            <SearchPanel />
+            <TagPanel tags={tags} loading={tagsLoading} />
+            <SubscribeBox />
+            <CategoryPanel />
+            <StatsPanel />
+            <Calendar />
+          </div>
         </div>
-    );
+      )}
+
+      <Footer companyName="TechBlog" startYear={2025} />
+      <BackToTop />
+    </div>
+  );
 };
 
 export default IndexPage;

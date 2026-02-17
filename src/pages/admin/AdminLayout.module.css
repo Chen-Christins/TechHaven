@@ -1,848 +1,848 @@
 .adminLayout {
-    min-height: 100vh;
-    background-color: var(--bg-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .adminContainer {
-    display: flex;
-    min-height: 100vh;
+  display: flex;
+  min-height: 100vh;
 }
 
 /* 侧边栏样式 */
 .adminSidebar {
-    width: 240px;
-    background-color: var(--card-bg);
-    border-right: 1px solid var(--border-primary);
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100vh;
-    z-index: 1000;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  width: 240px;
+  background-color: var(--card-bg);
+  border-right: 1px solid var(--border-primary);
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  z-index: 1000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
 }
 
 .adminSidebar.collapsed {
-    width: 80px;
-    overflow: visible;
+  width: 80px;
+  overflow: visible;
 }
 
 .adminSidebarHeader {
-    padding: 20px 16px;
-    border-bottom: 1px solid var(--border-primary);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-height: 64px;
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--border-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
 }
 
 .adminSidebar.collapsed .adminSidebarHeader {
-    padding: 16px 8px;
-    justify-content: center;
-    position: relative;
+  padding: 16px 8px;
+  justify-content: center;
+  position: relative;
 }
 
 .adminLogo {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--primary);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .adminLogo:hover {
-    color: var(--primary-hover);
+  color: var(--primary-hover);
 }
 
 .adminSidebar.collapsed .adminLogo {
-    justify-content: center;
+  justify-content: center;
 }
 
 .adminLogoIcon {
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-    color: white;
-    border-radius: 8px;
-    flex-shrink: 0;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: white;
+  border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .adminSidebar.collapsed .adminLogoIcon {
-    width: 40px;
-    height: 40px;
-    font-size: 28px;
+  width: 40px;
+  height: 40px;
+  font-size: 28px;
 }
 
 .adminLogoText {
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    white-space: nowrap;
-    overflow: hidden;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .adminSidebar.collapsed .adminLogoText {
-    opacity: 0;
-    width: 0;
-    margin: 0;
+  opacity: 0;
+  width: 0;
+  margin: 0;
 }
 
 .toggleSidebarBtn {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-size: 14px;
-    padding: 6px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
 }
 
 .toggleSidebarBtn:hover {
-    background-color: var(--bg-hover);
-    color: var(--primary);
-    transform: scale(1.05);
+  background-color: var(--bg-hover);
+  color: var(--primary);
+  transform: scale(1.05);
 }
 
 .adminSidebar.collapsed .toggleSidebarBtn {
-    position: absolute;
-    top: 50%;
-    right: -14px;
-    transform: translateY(-50%);
-    width: 28px;
-    height: 28px;
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-primary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    z-index: 10;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: absolute;
+  top: 50%;
+  right: -14px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .adminSidebar.collapsed .toggleSidebarBtn:hover {
-    transform: translateY(-50%) scale(1.1);
-    background-color: var(--primary);
-    color: white;
-    border-color: var(--primary);
+  transform: translateY(-50%) scale(1.1);
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
 }
 
 /* 导航菜单样式 */
 .adminNavMenu {
-    padding: 16px 0;
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
+  padding: 16px 0;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* 自定义滚动条样式 */
 .adminNavMenu::-webkit-scrollbar {
-    width: 4px;
+  width: 4px;
 }
 
 .adminNavMenu::-webkit-scrollbar-track {
-    background: transparent;
+  background: transparent;
 }
 
 .adminNavMenu::-webkit-scrollbar-thumb {
-    background-color: var(--border-secondary);
-    border-radius: 2px;
+  background-color: var(--border-secondary);
+  border-radius: 2px;
 }
 
 .adminNavMenu::-webkit-scrollbar-thumb:hover {
-    background-color: var(--text-tertiary);
+  background-color: var(--text-tertiary);
 }
 
 /* 收缩状态下隐藏滚动条 */
 .adminSidebar.collapsed .adminNavMenu {
-    overflow-y: hidden;
+  overflow-y: hidden;
 }
 
 .adminNavSection {
-    margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .adminSectionTitle {
-    padding: 0 20px;
-    margin-bottom: 12px;
+  padding: 0 20px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  letter-spacing: 0.8px;
+  opacity: 1;
+}
+
+.adminSidebar.collapsed .adminSectionTitle {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.adminNavItem {
+  margin-bottom: 2px;
+  position: relative;
+  cursor: pointer;
+}
+
+.adminNavLink {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  position: relative;
+  gap: 12px;
+  border-radius: 0;
+  margin: 0 8px;
+}
+
+.adminNavLink:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  transform: translateX(2px);
+}
+
+.adminNavLink.active {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.adminNavLink.active::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 24px;
+  background-color: var(--primary);
+  border-radius: 0 4px 4px 0;
+}
+
+.adminNavIcon {
+  font-size: 18px;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adminNavLink:hover .adminNavIcon {
+  transform: scale(1.1);
+}
+
+.adminNavText {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.adminSidebar.collapsed .adminNavText {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.adminSidebar.collapsed .adminNavLink {
+  justify-content: center;
+  padding: 16px;
+  margin: 0 8px 4px 8px;
+  border-radius: 12px;
+  position: relative;
+  min-height: 48px;
+}
+
+.adminSidebar.collapsed .adminNavLink:hover {
+  transform: scale(1.02);
+  background-color: var(--primary-light);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.adminSidebar.collapsed .adminNavLink.active {
+  background-color: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.adminSidebar.collapsed .adminNavLink.active::before {
+  display: none;
+}
+
+.adminSidebar.collapsed .adminNavIcon {
+  font-size: 22px;
+  min-width: 22px;
+  height: 22px;
+}
+
+/* 侧边栏底部装饰 */
+.adminSidebar::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+
+.adminSidebar.collapsed::after {
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+}
+
+/* 主内容区域 */
+.adminMainContent {
+  flex: 1;
+  margin-left: 240px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.adminMainContent.expanded {
+  margin-left: 80px;
+}
+
+/* 顶部栏样式 */
+.adminTopBar {
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 5px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.adminBreadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.breadcrumbSeparator {
+  color: var(--text-tertiary);
+}
+
+.breadcrumbLink {
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.breadcrumbLink:hover {
+  color: var(--primary);
+}
+
+.breadcrumbActive {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.adminTopBarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 用户信息区域 */
+.userInfoSection {
+  position: relative;
+}
+
+.userDisplay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+}
+
+.userDisplay:hover {
+  background-color: var(--bg-hover);
+}
+
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-primary);
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.userRole {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.2;
+}
+
+.userMenuArrow {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.userMenuArrow.open {
+  transform: rotate(180deg);
+}
+
+/* 用户下拉菜单 */
+.userDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  min-width: 280px;
+  z-index: 1000;
+  overflow: hidden;
+  animation: dropdownSlide 0.2s ease-out;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.dropdownAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-primary);
+}
+
+.dropdownUserInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.dropdownUserName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.dropdownUserEmail {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.dropdownDivider {
+  height: 1px;
+  background-color: var(--border-primary);
+}
+
+.dropdownMenu {
+  padding: 8px 0;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.dropdownItem:hover {
+  background-color: var(--bg-hover);
+}
+
+.dropdownItem svg {
+  color: var(--text-secondary);
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* 页面内容区域 */
+.adminPageContent {
+  padding: 24px;
+  background-color: var(--bg-primary);
+  flex: 1;
+}
+
+.adminPageHeader {
+  margin-bottom: 24px;
+}
+
+.adminPageTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.adminPageDescription {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .adminTopBar {
+    padding: 12px 16px;
+  }
+
+  .adminTopBarActions {
+    gap: 8px;
+  }
+
+  .userDisplay {
+    padding: 5px 8px;
+    gap: 6px;
+    min-height: 42px;
+  }
+
+  .userAvatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  .userDetails {
+    display: none;
+  }
+
+  .userDropdown {
+    min-width: 260px;
+    right: -8px;
+  }
+
+  .dropdownHeader {
+    padding: 14px 16px;
+  }
+
+  .dropdownAvatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .dropdownUserName {
+    font-size: 15px;
+  }
+
+  .dropdownUserEmail {
+    font-size: 13px;
+  }
+
+  .dropdownItem {
+    padding: 11px 14px;
+    font-size: 14px;
+  }
+
+  .dropdownItem svg {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+  }
+}
+
+@media (max-width: 900px) {
+  .adminSidebar {
+    transform: translateX(-100%);
+    width: 280px;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .adminSidebar.mobileOpen {
+    transform: translateX(0);
+  }
+
+  .adminMainContent {
+    margin-left: 0;
+  }
+
+  .adminMainContent.expanded {
+    margin-left: 0;
+  }
+
+  /* 移动端禁用收缩状态 */
+  .adminSidebar.collapsed {
+    width: 280px;
+  }
+
+  .adminSidebar.collapsed .adminLogoText,
+  .adminSidebar.collapsed .adminNavText {
+    opacity: 1;
+    width: auto;
+    margin: initial;
+  }
+
+  .adminSidebar.collapsed .adminSectionTitle {
+    opacity: 1;
+    height: auto;
+    margin: 0 20px 8px 20px;
+    padding: 0;
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     color: var(--text-tertiary);
     letter-spacing: 0.8px;
-    opacity: 1;
-}
+  }
 
-.adminSidebar.collapsed .adminSectionTitle {
-    opacity: 0;
-    height: 0;
-    margin: 0;
-    padding: 0;
-}
-
-.adminNavItem {
-    margin-bottom: 2px;
-    position: relative;
-    cursor: pointer;
-}
-
-.adminNavLink {
-    display: flex;
-    align-items: center;
+  .adminSidebar.collapsed .adminNavLink {
     padding: 12px 20px;
-    color: var(--text-secondary);
-    text-decoration: none;
-    position: relative;
-    gap: 12px;
-    border-radius: 0;
-    margin: 0 8px;
-}
-
-.adminNavLink:hover {
-    background-color: var(--bg-hover);
-    color: var(--text-primary);
-    transform: translateX(2px);
-}
-
-.adminNavLink.active {
-    background-color: var(--primary-light);
-    color: var(--primary);
-    font-weight: 600;
-}
-
-.adminNavLink.active::before {
-    content: "";
-    position: absolute;
-    left: -8px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 4px;
-    height: 24px;
-    background-color: var(--primary);
-    border-radius: 0 4px 4px 0;
-}
-
-.adminNavIcon {
-    font-size: 18px;
-    min-width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.adminNavLink:hover .adminNavIcon {
-    transform: scale(1.1);
-}
-
-.adminNavText {
-    font-size: 14px;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-.adminSidebar.collapsed .adminNavText {
-    opacity: 0;
-    width: 0;
-    overflow: hidden;
-}
-
-.adminSidebar.collapsed .adminNavLink {
-    justify-content: center;
-    padding: 16px;
-    margin: 0 8px 4px 8px;
-    border-radius: 12px;
-    position: relative;
-    min-height: 48px;
-}
-
-.adminSidebar.collapsed .adminNavLink:hover {
-    transform: scale(1.02);
-    background-color: var(--primary-light);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
-}
-
-.adminSidebar.collapsed .adminNavLink.active {
-    background-color: var(--primary);
-    color: white;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.adminSidebar.collapsed .adminNavLink.active::before {
-    display: none;
-}
-
-.adminSidebar.collapsed .adminNavIcon {
-    font-size: 22px;
-    min-width: 22px;
-    height: 22px;
-}
-
-/* 侧边栏底部装饰 */
-.adminSidebar::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary), var(--accent));
-}
-
-.adminSidebar.collapsed::after {
-    background: linear-gradient(90deg, var(--primary), var(--primary-hover));
-}
-
-/* 主内容区域 */
-.adminMainContent {
-    flex: 1;
-    margin-left: 240px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.adminMainContent.expanded {
-    margin-left: 80px;
-}
-
-/* 顶部栏样式 */
-.adminTopBar {
-    background-color: var(--card-bg);
-    border-bottom: 1px solid var(--border-primary);
-    padding: 5px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-
-.adminBreadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-
-.breadcrumbSeparator {
-    color: var(--text-tertiary);
-}
-
-.breadcrumbLink {
-    color: var(--text-secondary);
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.breadcrumbLink:hover {
-    color: var(--primary);
-}
-
-.breadcrumbActive {
-    color: var(--text-primary);
-    font-weight: 500;
-}
-
-.adminTopBarActions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* 用户信息区域 */
-.userInfoSection {
-    position: relative;
-}
-
-.userDisplay {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
+    justify-content: flex-start;
+    margin: 0 20px 2px 20px;
     border-radius: 8px;
-    cursor: pointer;
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-primary);
-}
+    min-height: 44px;
+  }
 
-.userDisplay:hover {
-    background-color: var(--bg-hover);
-}
+  .adminSidebar.collapsed .adminNavIcon {
+    font-size: 18px;
+    min-width: 18px;
+    height: 18px;
+  }
 
-.userAvatar {
+  .adminSidebar.collapsed .adminLogoIcon {
     width: 32px;
     height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--border-primary);
-}
+    font-size: 24px;
+  }
 
-.userDetails {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-}
-
-.userName {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-    line-height: 1.2;
-}
-
-.userRole {
-    font-size: 12px;
-    color: var(--text-secondary);
-    line-height: 1.2;
-}
-
-.userMenuArrow {
-    color: var(--text-tertiary);
-    font-size: 12px;
-    flex-shrink: 0;
-}
-
-.userMenuArrow.open {
-    transform: rotate(180deg);
-}
-
-/* 用户下拉菜单 */
-.userDropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-primary);
-    border-radius: 12px;
-    box-shadow: var(--shadow-lg);
-    min-width: 280px;
-    z-index: 1000;
-    overflow: hidden;
-    animation: dropdownSlide 0.2s ease-out;
-}
-
-@keyframes dropdownSlide {
-    from {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.dropdownHeader {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    border-bottom: 1px solid var(--border-primary);
-}
-
-.dropdownAvatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--border-primary);
-}
-
-.dropdownUserInfo {
-    flex: 1;
-    min-width: 0;
-}
-
-.dropdownUserName {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 4px;
-}
-
-.dropdownUserEmail {
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-
-.dropdownDivider {
-    height: 1px;
-    background-color: var(--border-primary);
-}
-
-.dropdownMenu {
-    padding: 8px 0;
-}
-
-.dropdownItem {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
+  .adminSidebar.collapsed .toggleSidebarBtn {
+    position: static;
+    transform: none;
+    width: 28px;
+    height: 28px;
     background: none;
     border: none;
-    width: 100%;
-    text-align: left;
-    color: var(--text-primary);
-    font-size: 14px;
-    cursor: pointer;
-    text-decoration: none;
-}
+    box-shadow: none;
+    color: var(--text-secondary);
+  }
 
-.dropdownItem:hover {
+  .adminSidebar.collapsed .toggleSidebarBtn:hover {
     background-color: var(--bg-hover);
-}
+    color: var(--primary);
+    transform: scale(1.05);
+  }
 
-.dropdownItem svg {
-    color: var(--text-secondary);
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-}
+  /* 移动端导航菜单优化 */
+  .adminNavMenu {
+    padding: 20px 0;
+  }
 
-/* 页面内容区域 */
-.adminPageContent {
-    padding: 24px;
-    background-color: var(--bg-primary);
-    flex: 1;
-}
+  .adminNavSection {
+    margin-bottom: 32px;
+  }
 
-.adminPageHeader {
-    margin-bottom: 24px;
-}
+  .mobileMenuOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+    opacity: 0;
+  }
 
-.adminPageTitle {
-    font-size: 24px;
-    font-weight: 600;
+  .mobileMenuOverlay.show {
+    display: block;
+    opacity: 1;
+  }
+
+  .mobileMenuBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid var(--border-primary);
     color: var(--text-primary);
-    margin-bottom: 8px;
-}
+    font-size: 18px;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 8px;
+    min-width: 44px;
+    min-height: 44px;
+  }
 
-.adminPageDescription {
-    color: var(--text-secondary);
-    font-size: 14px;
-}
+  .mobileMenuBtn:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .adminTopBar {
-        padding: 12px 16px;
-    }
+  .adminTopBar {
+    padding: 12px 16px;
+  }
 
-    .adminTopBarActions {
-        gap: 8px;
-    }
+  .adminPageContent {
+    padding: 16px;
+  }
 
-    .userDisplay {
-        padding: 5px 8px;
-        gap: 6px;
-        min-height: 42px;
-    }
-
-    .userAvatar {
-        width: 30px;
-        height: 30px;
-    }
-
-    .userDetails {
-        display: none;
-    }
-
-    .userDropdown {
-        min-width: 260px;
-        right: -8px;
-    }
-
-    .dropdownHeader {
-        padding: 14px 16px;
-    }
-
-    .dropdownAvatar {
-        width: 44px;
-        height: 44px;
-    }
-
-    .dropdownUserName {
-        font-size: 15px;
-    }
-
-    .dropdownUserEmail {
-        font-size: 13px;
-    }
-
-    .dropdownItem {
-        padding: 11px 14px;
-        font-size: 14px;
-    }
-
-    .dropdownItem svg {
-        font-size: 15px;
-        width: 15px;
-        height: 15px;
-    }
-}
-
-@media (max-width: 900px) {
-    .adminSidebar {
-        transform: translateX(-100%);
-        width: 280px;
-        box-shadow: 2px 0 16px rgba(0, 0, 0, 0.2);
-    }
-
-    .adminSidebar.mobileOpen {
-        transform: translateX(0);
-    }
-
-    .adminMainContent {
-        margin-left: 0;
-    }
-
-    .adminMainContent.expanded {
-        margin-left: 0;
-    }
-
-    /* 移动端禁用收缩状态 */
-    .adminSidebar.collapsed {
-        width: 280px;
-    }
-
-    .adminSidebar.collapsed .adminLogoText,
-    .adminSidebar.collapsed .adminNavText {
-        opacity: 1;
-        width: auto;
-        margin: initial;
-    }
-
-    .adminSidebar.collapsed .adminSectionTitle {
-        opacity: 1;
-        height: auto;
-        margin: 0 20px 8px 20px;
-        padding: 0;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: var(--text-tertiary);
-        letter-spacing: 0.8px;
-    }
-
-    .adminSidebar.collapsed .adminNavLink {
-        padding: 12px 20px;
-        justify-content: flex-start;
-        margin: 0 20px 2px 20px;
-        border-radius: 8px;
-        min-height: 44px;
-    }
-
-    .adminSidebar.collapsed .adminNavIcon {
-        font-size: 18px;
-        min-width: 18px;
-        height: 18px;
-    }
-
-    .adminSidebar.collapsed .adminLogoIcon {
-        width: 32px;
-        height: 32px;
-        font-size: 24px;
-    }
-
-    .adminSidebar.collapsed .toggleSidebarBtn {
-        position: static;
-        transform: none;
-        width: 28px;
-        height: 28px;
-        background: none;
-        border: none;
-        box-shadow: none;
-        color: var(--text-secondary);
-    }
-
-    .adminSidebar.collapsed .toggleSidebarBtn:hover {
-        background-color: var(--bg-hover);
-        color: var(--primary);
-        transform: scale(1.05);
-    }
-
-    /* 移动端导航菜单优化 */
-    .adminNavMenu {
-        padding: 20px 0;
-    }
-
-    .adminNavSection {
-        margin-bottom: 32px;
-    }
-
-    .mobileMenuOverlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 999;
-        display: none;
-        opacity: 0;
-    }
-
-    .mobileMenuOverlay.show {
-        display: block;
-        opacity: 1;
-    }
-
-    .mobileMenuBtn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: none;
-        border: 1px solid var(--border-primary);
-        color: var(--text-primary);
-        font-size: 18px;
-        padding: 8px 12px;
-        cursor: pointer;
-        border-radius: 8px;
-        min-width: 44px;
-        min-height: 44px;
-    }
-
-    .mobileMenuBtn:hover {
-        background-color: var(--bg-hover);
-        border-color: var(--primary);
-        color: var(--primary);
-    }
-
-    .adminTopBar {
-        padding: 12px 16px;
-    }
-
-    .adminPageContent {
-        padding: 16px;
-    }
-
-    .adminBreadcrumb {
-        font-size: 13px;
-    }
+  .adminBreadcrumb {
+    font-size: 13px;
+  }
 }
 
 /* 中等屏幕优化 (包含875px) */
 @media (max-width: 1024px) {
-    .adminSidebar.collapsed .toggleSidebarBtn {
-        right: -16px; /* 增加偏移确保完全显示 */
-        width: 30px;
-        height: 30px;
-    }
+  .adminSidebar.collapsed .toggleSidebarBtn {
+    right: -16px; /* 增加偏移确保完全显示 */
+    width: 30px;
+    height: 30px;
+  }
 }
 
 @media (max-width: 480px) {
-    .adminSidebar {
-        width: 100%;
-        max-width: 320px;
-    }
+  .adminSidebar {
+    width: 100%;
+    max-width: 320px;
+  }
 
-    .adminPageContent {
-        padding: 12px;
-    }
+  .adminPageContent {
+    padding: 12px;
+  }
 
-    .adminTopBar {
-        padding: 12px;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
+  .adminTopBar {
+    padding: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 
-    .adminTopBarActions {
-        gap: 6px;
-    }
+  .adminTopBarActions {
+    gap: 6px;
+  }
 
-    .userDisplay {
-        padding: 4px 6px;
-        gap: 4px;
-        min-height: 36px;
-    }
+  .userDisplay {
+    padding: 4px 6px;
+    gap: 4px;
+    min-height: 36px;
+  }
 
-    .userAvatar {
-        width: 28px;
-        height: 28px;
-        border-width: 1px;
-    }
+  .userAvatar {
+    width: 28px;
+    height: 28px;
+    border-width: 1px;
+  }
 
-    .userDetails {
-        display: none;
-    }
+  .userDetails {
+    display: none;
+  }
 
-    .userDropdown {
-        min-width: 240px;
-        right: -4px;
-        max-width: calc(100vw - 32px);
-    }
+  .userDropdown {
+    min-width: 240px;
+    right: -4px;
+    max-width: calc(100vw - 32px);
+  }
 
-    .dropdownHeader {
-        padding: 12px;
-    }
+  .dropdownHeader {
+    padding: 12px;
+  }
 
-    .dropdownAvatar {
-        width: 40px;
-        height: 40px;
-    }
+  .dropdownAvatar {
+    width: 40px;
+    height: 40px;
+  }
 
-    .dropdownUserName {
-        font-size: 14px;
-    }
+  .dropdownUserName {
+    font-size: 14px;
+  }
 
-    .dropdownUserEmail {
-        font-size: 12px;
-    }
+  .dropdownUserEmail {
+    font-size: 12px;
+  }
 
-    .dropdownItem {
-        padding: 10px 12px;
-        font-size: 13px;
-    }
+  .dropdownItem {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
 
-    .dropdownItem svg {
-        font-size: 14px;
-        width: 14px;
-        height: 14px;
-    }
+  .dropdownItem svg {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
 }
 
 @media (min-width: 901px) {
-    .mobileMenuBtn {
-        display: none !important;
-    }
+  .mobileMenuBtn {
+    display: none !important;
+  }
 
-    .mobileMenuOverlay {
-        display: none !important;
-    }
+  .mobileMenuOverlay {
+    display: none !important;
+  }
 }
 
 /* 动画效果 */
 @keyframes slideIn {
-    from {
-        transform: translateX(-100%);
-    }
-    to {
-        transform: translateX(0);
-    }
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 .adminSidebar {
-    animation: slideIn 0.3s ease-out;
+  animation: slideIn 0.3s ease-out;
 }

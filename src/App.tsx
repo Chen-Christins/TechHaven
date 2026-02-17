@@ -9,28 +9,28 @@ import { AuthProvider } from "./contexts/AuthContext";
 import RouterConfig from "./router/RouterConfig";
 
 function App() {
-    return (
-        <BrowserRouter>
-            <ThemeProvider>
-                <AuthProvider>
-                    <MessageProvider>
-                        <ConfirmProvider>
-                            <SimpleBar
-                                style={{
-                                    maxHeight: "100vh",
-                                    width: "100vw",
-                                    overflowX: "hidden",
-                                }}
-                                autoHide={false}
-                            >
-                                <RouterConfig />
-                            </SimpleBar>
-                        </ConfirmProvider>
-                    </MessageProvider>
-                </AuthProvider>
-            </ThemeProvider>
-        </BrowserRouter>
-    );
+  return (
+    <BrowserRouter>
+      <ThemeProvider>
+        <AuthProvider>
+          <MessageProvider>
+            <ConfirmProvider>
+              <SimpleBar
+                style={{
+                  maxHeight: "100vh",
+                  width: "100vw",
+                  overflowX: "hidden",
+                }}
+                autoHide={false}
+              >
+                <RouterConfig />
+              </SimpleBar>
+            </ConfirmProvider>
+          </MessageProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </BrowserRouter>
+  );
 }
 
 export default App;

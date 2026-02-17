@@ -1,61 +1,61 @@
 .authRequired {
-    position: relative;
+  position: relative;
 }
 
 .emptyState {
-    text-align: center;
-    background: var(--card-bg);
-    border-radius: 12px;
-    border: 1px solid var(--border-primary);
-    box-shadow: var(--shadow-sm);
-    margin: 4rem auto;
-    max-width: 600px;
-    padding: 4rem 2rem;
+  text-align: center;
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-sm);
+  margin: 4rem auto;
+  max-width: 600px;
+  padding: 4rem 2rem;
 }
 
 .emptyIcon {
-    font-size: 4rem;
-    color: var(--text-tertiary);
-    margin-bottom: 1rem;
-    background: var(--bg-secondary);
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem;
+  font-size: 4rem;
+  color: var(--text-tertiary);
+  margin-bottom: 1rem;
+  background: var(--bg-secondary);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
 }
 
 .emptyText {
-    font-size: 1.8rem;
-    color: var(--text-primary);
-    margin: 0 0 1rem 0;
+  font-size: 1.8rem;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
 }
 
 .emptySubtext {
-    color: var(--text-secondary);
-    margin: 0 0 2rem;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
+  color: var(--text-secondary);
+  margin: 0 0 2rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .loginBtn {
-    padding: 12px 24px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .loginBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }

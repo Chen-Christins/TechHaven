@@ -1,150 +1,150 @@
 .footer {
-    background-color: var(--bg-secondary);
-    border-top: 1px solid var(--border-primary);
-    padding: 20px 0;
-    margin-top: auto;
-    flex-shrink: 0;
-    width: 100%;
-    /* 确保footer在内容不足时能保持在底部 */
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
+  padding: 20px 0;
+  margin-top: auto;
+  flex-shrink: 0;
+  width: 100%;
+  /* 确保footer在内容不足时能保持在底部 */
 }
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 .content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    text-align: center;
-    flex-wrap: wrap;
-    flex-direction: column;
-    gap: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .copyright {
-    color: var(--text-secondary);
-    font-size: 14px;
-    line-height: 1.5;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .links {
-    display: flex;
-    gap: 24px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
 .link {
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-size: 14px;
-    position: relative;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  position: relative;
 }
 
 .link:hover {
-    color: var(--primary);
+  color: var(--primary);
 }
 
 .companyLink {
-    color: var(--text-secondary);
-    text-decoration: none;
+  color: var(--text-secondary);
+  text-decoration: none;
 }
 
 .companyLink:hover {
-    color: var(--primary);
+  color: var(--primary);
 }
 
 .link::after {
-    content: "";
-    position: absolute;
-    width: 0;
-    height: 1px;
-    bottom: -2px;
-    left: 0;
-    background-color: var(--primary);
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 1px;
+  bottom: -2px;
+  left: 0;
+  background-color: var(--primary);
 }
 
 .link:hover::after {
-    width: 100%;
+  width: 100%;
 }
 
 .divider {
-    color: var(--text-tertiary);
-    margin: 0 8px;
+  color: var(--text-tertiary);
+  margin: 0 8px;
 }
 
 .socialLinks {
-    display: flex;
-    gap: 16px;
-    align-items: center;
+  display: flex;
+  gap: 16px;
+  align-items: center;
 }
 
 .socialIcon {
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
-    background-color: transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background-color: transparent;
 }
 
 .socialIcon:hover {
-    color: var(--primary);
-    background-color: rgba(59, 130, 246, 0.1);
-    transform: translateY(-1px);
+  color: var(--primary);
+  background-color: rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
 }
 
 .bottomText {
-    text-align: center;
-    color: var(--text-tertiary);
-    font-size: 12px;
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border-primary);
-    width: 100%;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-primary);
+  width: 100%;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-    .content {
-        flex-direction: column;
-        text-align: center;
-        gap: 20px;
-    }
+  .content {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
 
-    .links {
-        justify-content: center;
-        gap: 16px;
-    }
+  .links {
+    justify-content: center;
+    gap: 16px;
+  }
 
-    .socialLinks {
-        justify-content: center;
-    }
+  .socialLinks {
+    justify-content: center;
+  }
 
-    .copyright {
-        text-align: center;
-    }
+  .copyright {
+    text-align: center;
+  }
 }
 
 @media (max-width: 480px) {
-    .footer {
-        padding: 20px 0;
-    }
+  .footer {
+    padding: 20px 0;
+  }
 
-    .container {
-        padding: 0 16px;
-    }
+  .container {
+    padding: 0 16px;
+  }
 
-    .links {
-        flex-direction: column;
-        gap: 12px;
-    }
+  .links {
+    flex-direction: column;
+    gap: 12px;
+  }
 
-    .link {
-        padding: 4px 0;
-    }
+  .link {
+    padding: 4px 0;
+  }
 }

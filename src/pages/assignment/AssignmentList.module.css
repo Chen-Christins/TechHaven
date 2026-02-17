@@ -1,259 +1,259 @@
 .container {
-    min-height: 100vh;
-    background-color: var(--bg-primary);
-    display: flex;
-    flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
 }
 
 .mainContent {
-    flex: 1;
-    max-width: 1540px;
-    margin: 0 auto;
-    width: 100%;
-    padding: 2rem 1rem;
+  flex: 1;
+  max-width: 1540px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 2rem 1rem;
 }
 
 .pageHeader {
-    margin-bottom: 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .pageTitle {
-    font-size: 1.8rem;
-    color: var(--text-primary);
-    font-weight: 600;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  font-size: 1.8rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .filterBar {
-    display: flex;
-    gap: 1rem;
+  display: flex;
+  gap: 1rem;
 }
 
 .filterBtn {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--border-primary);
-    background: var(--bg-card);
-    border-radius: 20px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-card);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .filterBtn:hover {
-    background: var(--bg-hover);
+  background: var(--bg-hover);
 }
 
 .filterBtn.active {
-    background: var(--primary);
-    color: var(--text-inverse);
-    border-color: var(--primary);
+  background: var(--primary);
+  color: var(--text-inverse);
+  border-color: var(--primary);
 }
 
 .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
 }
 
 .card {
-    background: var(--bg-card);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--border-primary);
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-primary);
 }
 
 .card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
 }
 
 .cardHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
 }
 
 .courseBadge {
-    background: var(--primary-light);
-    color: var(--primary);
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 500;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .statusBadge {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.85rem;
-    font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .statusPending {
-    color: var(--warning);
+  color: var(--warning);
 }
 .statusSubmitted {
-    color: var(--success);
+  color: var(--success);
 }
 .statusLate {
-    color: var(--error);
+  color: var(--error);
 }
 
 .cardTitle {
-    font-size: 1.2rem;
-    color: var(--text-primary);
-    margin: 0 0 0.8rem 0;
-    font-weight: 600;
-    line-height: 1.4;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  margin: 0 0 0.8rem 0;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .cardDesc {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    line-height: 1.5;
-    margin-bottom: 1.5rem;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    flex: 1;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
 }
 
 .cardFooter {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-primary);
-    margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-primary);
+  margin-top: auto;
 }
 
 .buttonGroup {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .deadline {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--text-tertiary);
-    font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
 }
 
 .actionBtn {
-    padding: 0.5rem 1.2rem;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .btnPrimary {
-    background: var(--button-primary);
-    color: var(--text-inverse);
+  background: var(--button-primary);
+  color: var(--text-inverse);
 }
 
 .btnPrimary:hover {
-    background: var(--button-primary-hover);
+  background: var(--button-primary-hover);
 }
 
 .btnSecondary {
-    background: var(--button-secondary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-primary);
+  background: var(--button-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
 }
 
 .viewBtn {
-    padding: 0.5rem;
-    background: var(--bg-hover);
-    color: var(--text-secondary);
-    min-width: 36px;
-    justify-content: center;
+  padding: 0.5rem;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  min-width: 36px;
+  justify-content: center;
 }
 
 .viewBtn:hover {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .btnSecondary:hover {
-    background: var(--button-secondary-hover);
+  background: var(--button-secondary-hover);
 }
 
 .emptyState {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 4rem 2rem;
-    text-align: center;
-    background: var(--card-bg);
-    border-radius: 16px;
-    border: 1px solid var(--border-primary);
-    color: var(--text-secondary);
-    margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: var(--card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+  margin-top: 2rem;
 }
 
 .emptyIcon {
-    font-size: 4rem;
-    margin-bottom: 1.5rem;
-    color: var(--text-tertiary);
-    opacity: 0.5;
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-tertiary);
+  opacity: 0.5;
 }
 
 .emptyText {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
 }
 
 .emptySubtext {
-    font-size: 0.95rem;
-    color: var(--text-secondary);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
 }
 
 .loginBtn {
-    padding: 1rem 3rem;
-    border-radius: 50px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1.1rem;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.8rem;
-    background: var(--primary);
-    color: white;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-    margin: 0 auto;
-    letter-spacing: 0.5px;
+  padding: 1rem 3rem;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  margin: 0 auto;
+  letter-spacing: 0.5px;
 }
 
 .loginBtn:hover {
-    background: var(--primary-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);
 }
 
 .loginBtn:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
