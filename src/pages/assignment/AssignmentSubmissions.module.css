@@ -10,7 +10,7 @@
   max-width: 1540px;
   width: 100%;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 2rem 1.8rem;
 }
 
 .card {
@@ -27,7 +27,7 @@
 
 /* 加载骨架样式 */
 .loadingContainer {
-  padding: 2rem 1rem;
+  padding: 2rem 1.8rem;
 }
 
 .loadingHeader {
