@@ -291,7 +291,7 @@ const GMDashboard: React.FC = () => {
             <Button color="primary" variant="solid" size="medium" onClick={handleSend} disabled={pending}>
               <FaTerminal /> 派发指令
             </Button>
-            <Button color="primary" variant="ghost" size="medium" onClick={() => message.info("已保存草稿（模拟）")}>
+            <Button color="primary" variant="outline" size="medium" onClick={() => message.info("已保存草稿（模拟）")}>
               保存草稿
             </Button>
           </div>

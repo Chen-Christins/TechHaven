@@ -1,0 +1,263 @@
+.serverPage {
+  /* 移除额外的 padding 以保持与 dashboard 一致的间距 */
+}
+
+.controlsFooter {
+  border-top: 1px solid var(--border-primary);
+  padding-top: 16px;
+  margin-top: 16px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+}
+
+.status {
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  max-width: 420px;
+}
+
+.status div {
+  margin-bottom: 8px;
+}
+
+.status div:last-child {
+  margin-bottom: 0;
+}
+
+.selectInput {
+  width: 100%;
+}
+
+.switchLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-top: 4px;
+  cursor: default;
+  justify-content: flex-start;
+}
+
+.switchLabel span {
+  font-size: 12px;
+  white-space: nowrap; /* 防止文字换行 */
+}
+
+.switchLabel span {
+  cursor: default; /* 确保文字不会显示手型光标 */
+  user-select: none; /* 防止文字被选中 */
+  padding: 4px 0; /* 给文字一些内边距，避免意外点击 */
+}
+
+.switchLabel span {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+/* 控件整体布局 */
+.controlsLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .controlsLayout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .controlsFooter {
+    gap: 4px;
+  }
+}
+
+/* 半宽度容器 */
+.halfWidthContainer {
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* 控制区域 */
+.controlSection {
+  flex: 1;
+}
+
+/* 底部按钮区域 */
+.controlsFooter {
+  border-top: 1px solid var(--border-primary);
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+/* 开关行布局 */
+.switchesRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.switchesRow .formRow {
+  margin-bottom: 0;
+}
+
+/* 状态面板 */
+.statusPanel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  padding: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.statusHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.statusHeader h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.statusIndicator {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.statusOnline {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.statusOffline {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 120px;
+}
+
+.statusContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.statusItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.statusLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.statusValue {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+
+/* 控制台样式 */
+.consoleContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.consoleOutput {
+  background: #1a1a1a;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 12px;
+  height: 300px;
+  overflow-y: auto;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #00ff00;
+  margin-bottom: 12px;
+}
+
+.consoleLine {
+  margin-bottom: 2px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.consoleActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* 滚动条样式 */
+.consoleOutput::-webkit-scrollbar {
+  width: 8px;
+}
+
+.consoleOutput::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.consoleOutput::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 4px;
+}
+
+.consoleOutput::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}

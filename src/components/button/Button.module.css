@@ -18,16 +18,22 @@
 }
 
 /* 尺寸样式 */
+.btn__tiny {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  min-height: 24px;
+}
+
 .btn__small {
-  padding: 6px 12px;
-  font-size: 0.875rem;
-  min-height: 32px;
+  padding: 5px 10px;
+  font-size: 0.80rem;
+  min-height: 28px;
 }
 
 .btn__medium {
-  padding: 10px 20px;
-  font-size: 1rem;
-  min-height: 40px;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  min-height: 30px;
 }
 
 .btn__large {

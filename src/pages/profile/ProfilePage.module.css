@@ -509,6 +509,93 @@
   gap: 16px;
 }
 
+.contributionHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.contributionHint {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.contributionLegend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.legendScale {
+  display: flex;
+  gap: 4px;
+}
+
+.legendBlock {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border-primary);
+}
+
+.contributionGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.contributionCell {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+}
+
+.contributionCell:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--border-secondary);
+}
+
+.contributionFooter {
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+}
+
+.level-0 {
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+}
+
+.level-1 {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.16), rgba(20, 184, 166, 0.18));
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.level-2 {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.28), rgba(20, 184, 166, 0.3));
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+.level-3 {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.42), rgba(16, 185, 129, 0.46));
+  border-color: rgba(59, 130, 246, 0.55);
+  color: var(--text-inverse);
+}
+
+.level-4 {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.64), rgba(16, 185, 129, 0.64));
+  border-color: rgba(59, 130, 246, 0.7);
+  color: var(--text-inverse);
+}
+
 .activityItem {
   display: flex;
   gap: 12px;

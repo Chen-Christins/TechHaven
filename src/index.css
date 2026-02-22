@@ -45,15 +45,20 @@
 
   /* 状态颜色 */
   --success: #10b981;
+  --success-hover: #059669;
   --warning: #f59e0b;
+  --warning-hover: #d97706;
   --error: #ef4444;
+  --error-hover: #dc2626;
   --info: #3b82f6;
+  --info-hover: #2563eb;
 
   /* 主题色 */
   --primary: #3b82f6;
   --primary-hover: #2563eb;
   --primary-active: #1d4ed8;
   --secondary: #64748b;
+  --secondary-hover: #475569;
   --accent: #8b5cf6;
 
   /* 特殊元素颜色 */
@@ -89,6 +94,12 @@
   --warn-light: rgba(245, 158, 11, 0.1);
   --primary-light: rgba(59, 130, 246, 0.1);
   --primary-hover-light: rgba(37, 99, 235, 0.1);
+  --primary-bg-hover: rgba(59, 130, 246, 0.1);
+  --secondary-bg-hover: rgba(100, 116, 139, 0.1);
+  --success-bg-hover: rgba(16, 185, 129, 0.1);
+  --warning-bg-hover: rgba(245, 158, 11, 0.1);
+  --error-bg-hover: rgba(239, 68, 68, 0.1);
+  --info-bg-hover: rgba(59, 130, 246, 0.1);
   --disabled: #94a3b8;
   --modal-overlay: rgba(0, 0, 0, 0.5);
   --primary-dark: #764ba2;
@@ -139,15 +150,20 @@
 
   /* 状态颜色 */
   --success: #34d399;
+  --success-hover: #10b981;
   --warning: #fbbf24;
+  --warning-hover: #f59e0b;
   --error: #f87171;
+  --error-hover: #ef4444;
   --info: #60a5fa;
+  --info-hover: #3b82f6;
 
   /* 主题色 */
   --primary: #3b82f6;
   --primary-hover: #60a5fa;
   --primary-active: #93c5fd;
   --secondary: #64748b;
+  --secondary-hover: #94a3b8;
   --accent: #a78bfa;
 
   /* 特殊元素颜色 */
@@ -183,6 +199,12 @@
   --warn-light: rgba(245, 158, 11, 0.1);
   --primary-light: rgba(59, 130, 246, 0.2);
   --primary-hover-light: rgba(37, 99, 235, 0.2);
+  --primary-bg-hover: rgba(59, 130, 246, 0.2);
+  --secondary-bg-hover: rgba(100, 116, 139, 0.2);
+  --success-bg-hover: rgba(52, 211, 153, 0.2);
+  --warning-bg-hover: rgba(251, 191, 36, 0.2);
+  --error-bg-hover: rgba(248, 113, 113, 0.2);
+  --info-bg-hover: rgba(96, 165, 250, 0.2);
   --disabled: #475569;
   --modal-overlay: rgba(0, 0, 0, 0.7);
   --primary-dark: #6a4c93;

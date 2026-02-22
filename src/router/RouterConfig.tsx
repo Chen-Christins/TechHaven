@@ -29,6 +29,7 @@ import ChunkUploadTest from "../pages/test/ChunkUploadTest";
 import GMShell from "../pages/gm/GMShell";
 import GMDashboard from "../pages/gm/GMDashboard";
 import GMProtocol from "../pages/gm/GMProtocol";
+import GMServer from "../pages/gm/GMServer";
 
 const RouterConfig: React.FC = () => {
   return (
@@ -90,6 +91,7 @@ const RouterConfig: React.FC = () => {
         <Route index element={<Navigate to="/gm/dashboard" replace />} />
         <Route path="dashboard" element={<GMDashboard />} />
         <Route path="protocol" element={<GMProtocol />} />
+        <Route path="server" element={<GMServer />} />
       </Route>
 
       {/* 404 页面 */}

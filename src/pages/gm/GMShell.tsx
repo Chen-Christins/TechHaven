@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import { FaGamepad, FaFileAlt } from "react-icons/fa";
+import { FaGamepad, FaFileAlt, FaServer } from "react-icons/fa";
 import GMLayout from "./GMLayout";
 import { useAuth } from "../../contexts/AuthContext";
 import NotFound404 from "../error/NotFound404";
@@ -10,6 +10,7 @@ import Loading from "../../components/loading/Loading";
 const gmNavItems = [
   { path: "/gm/dashboard", label: "总览", icon: <FaGamepad /> },
   { path: "/gm/protocol", label: "协议", icon: <FaFileAlt /> },
+  { path: "/gm/server", label: "服务器管理", icon: <FaServer /> },
 ];
 
 const GMShell: React.FC = () => {
