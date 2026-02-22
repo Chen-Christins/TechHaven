@@ -86,7 +86,6 @@
   background-color: #d1d5db;
   border-radius: 100px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.2s ease;
 }
 
 .checked .slider {
@@ -101,7 +100,6 @@
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transform: translateY(-50%);
-  transition: all 0.2s ease;
 }
 
 /* 悬浮效果 */

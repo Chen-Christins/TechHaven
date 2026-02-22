@@ -60,7 +60,6 @@
   color: var(--text-secondary);
 }
 
-
 .checkboxLabel {
   display: flex;
   align-items: center;
@@ -83,7 +82,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  align-items: start;
+  align-items: stretch; /* 改为stretch确保两边高度一致 */
 }
 
 /* 响应式布局 */
@@ -103,7 +102,6 @@
   min-width: 300px;
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 /* 控制区域 */
@@ -136,7 +134,7 @@
   border: 1px solid var(--border-primary);
   border-radius: 12px;
   padding: 16px;
-  height: 100%;
+  min-height: 280px; /* 设置最小高度保持一致性 */
   display: flex;
   flex-direction: column;
 }
@@ -180,7 +178,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 120px;
+  flex: 1;
+  min-height: 200px; /* 确保加载状态时有足够高度 */
 }
 
 .statusContent {
@@ -188,6 +187,7 @@
   flex-direction: column;
   gap: 8px;
   flex: 1;
+  min-height: 200px; /* 确保内容区域有足够高度 */
 }
 
 .statusItem {
@@ -209,7 +209,6 @@
   font-weight: 600;
 }
 
-
 /* 控制台样式 */
 .consoleContainer {
   display: flex;
@@ -224,7 +223,7 @@
   padding: 12px;
   height: 300px;
   overflow-y: auto;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
   font-size: 12px;
   line-height: 1.4;
   color: #00ff00;

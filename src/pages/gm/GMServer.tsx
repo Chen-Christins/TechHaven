@@ -32,7 +32,6 @@ const GMServer: React.FC = () => {
     { id: "server4", name: "服务器 4", color: "#8b5cf6" },
   ];
 
-  
   const [selectedServer, setSelectedServer] = useState<SelectOption | null>(serverOptions[0]);
   const [isHotUpdate, setIsHotUpdate] = useState<boolean>(true);
   const [updateConfig, setUpdateConfig] = useState<boolean>(false);
@@ -68,15 +67,15 @@ const GMServer: React.FC = () => {
   }, []);
 
   const addConsoleMessage = (message: string) => {
-    const timestamp = new Date().toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+    const timestamp = new Date().toLocaleString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
-    setConsoleOutput(prev => [...prev, `[${timestamp}] ${message}`]);
+    setConsoleOutput((prev) => [...prev, `[${timestamp}] ${message}`]);
   };
 
   const handleAction = async (action: "start" | "stop" | "update") => {
@@ -96,8 +95,10 @@ const GMServer: React.FC = () => {
         const updateType = isHotUpdate ? "热更新" : "冷更新";
         addConsoleMessage(`正在执行 ${selectedServer?.name} ${updateType}...`);
         await GMService.updateServer();
-        addConsoleMessage(`${selectedServer?.name} ${updateType}命令已发送${updateConfig ? '（包含资源配置）' : ''}`);
-        message.success(`${selectedServer?.name} ${isHotUpdate ? '热更新' : '冷更新'}命令已发送${updateConfig ? '（包含资源配置）' : ''}`);
+        addConsoleMessage(`${selectedServer?.name} ${updateType}命令已发送${updateConfig ? "（包含资源配置）" : ""}`);
+        message.success(
+          `${selectedServer?.name} ${isHotUpdate ? "热更新" : "冷更新"}命令已发送${updateConfig ? "（包含资源配置）" : ""}`,
+        );
       }
       await fetchStatus();
     } catch (err) {
@@ -141,12 +142,7 @@ const GMServer: React.FC = () => {
                 <div className={dashboardStyles.formRow}>
                   <div className={styles.switchLabel}>
                     <span onClick={(e) => e.stopPropagation()}>热更新</span>
-                    <Switch
-                      checked={isHotUpdate}
-                      onChange={setIsHotUpdate}
-                      disabled={actionLoading}
-                      size="default"
-                    />
+                    <Switch checked={isHotUpdate} onChange={setIsHotUpdate} disabled={actionLoading} size="default" />
                     <span onClick={(e) => e.stopPropagation()}>冷更新</span>
                   </div>
                 </div>
@@ -154,12 +150,7 @@ const GMServer: React.FC = () => {
                 <div className={dashboardStyles.formRow}>
                   <div className={styles.switchLabel}>
                     <span onClick={(e) => e.stopPropagation()}>更新资源配置</span>
-                    <Switch
-                      checked={updateConfig}
-                      onChange={setUpdateConfig}
-                      disabled={actionLoading}
-                      size="default"
-                    />
+                    <Switch checked={updateConfig} onChange={setUpdateConfig} disabled={actionLoading} size="default" />
                   </div>
                 </div>
               </div>
@@ -167,23 +158,29 @@ const GMServer: React.FC = () => {
 
             <div className={styles.controlsFooter}>
               <Button color="primary" variant="solid" size="medium" onClick={() => handleAction("start")} disabled={actionLoading}>
-                <FaPowerOff/> 启动
+                <FaPowerOff /> 启动
               </Button>
 
               <Button color="error" variant="solid" size="medium" onClick={() => handleAction("stop")} disabled={actionLoading}>
-                <FaPowerOff/> 停止
+                <FaPowerOff /> 停止
               </Button>
 
               <Button color="primary" variant="outline" size="medium" onClick={() => handleAction("update")} disabled={actionLoading}>
-                <FaArrowCircleUp/> 更新
+                <FaArrowCircleUp /> 更新
               </Button>
 
               <Button color="primary" variant="outline" size="medium" onClick={fetchStatus} disabled={loading || actionLoading}>
-                <FaSyncAlt/> 刷新状态
+                <FaSyncAlt /> 刷新状态
               </Button>
 
-              <Button color="primary" variant="outline" size="medium" onClick={() => setShowConsole(!showConsole)} disabled={actionLoading}>
-                <FaTerminal/> 控制台
+              <Button
+                color="primary"
+                variant="outline"
+                size="medium"
+                onClick={() => setShowConsole(!showConsole)}
+                disabled={actionLoading}
+              >
+                <FaTerminal /> 控制台
               </Button>
             </div>
           </div>
@@ -243,7 +240,7 @@ const GMServer: React.FC = () => {
       </div>
 
       {showConsole && (
-        <div className={dashboardStyles.card} style={{ marginTop: '16px' }}>
+        <div className={dashboardStyles.card} style={{ marginTop: "16px" }}>
           <div className={dashboardStyles.cardHeader}>
             <div>
               <p className={dashboardStyles.cardTag}>控制台输出</p>
@@ -277,8 +274,8 @@ const GMServer: React.FC = () => {
                 variant="outline"
                 size="tiny"
                 onClick={() => {
-                  navigator.clipboard.writeText(consoleOutput.join('\n'));
-                  message.success('日志已复制到剪贴板');
+                  navigator.clipboard.writeText(consoleOutput.join("\n"));
+                  message.success("日志已复制到剪贴板");
                 }}
                 disabled={consoleOutput.length === 0}
               >

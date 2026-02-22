@@ -15,7 +15,7 @@ let mockState: ServerStatusResponse = {
   message: "未连接真实后端，使用 mock 数据",
 };
 
-const simulateDelay = <T,>(result: T, delay = 500) => {
+const simulateDelay = <T>(result: T, delay = 500) => {
   return new Promise<T>((resolve) => setTimeout(() => resolve(result), delay));
 };
 
@@ -51,7 +51,7 @@ export class GMService {
 
   static async updateServer(): Promise<any> {
     if (import.meta.env.DEV) {
-      const nextVersion = mockState.version ? mockState.version.replace(/(\d+)$/,(m)=>String(Number(m)+1)) : "1.0.1";
+      const nextVersion = mockState.version ? mockState.version.replace(/(\d+)$/, (m) => String(Number(m) + 1)) : "1.0.1";
       mockState = { ...mockState, version: nextVersion, message: "已通过 mock 完成更新" };
       return simulateDelay({ success: true, version: nextVersion }, 800);
     }
