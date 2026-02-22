@@ -26,6 +26,8 @@ import AssignmentSubmit from "../pages/assignment/AssignmentSubmit";
 import AssignmentList from "../pages/assignment/AssignmentList";
 import AssignmentSubmissions from "../pages/assignment/AssignmentSubmissions";
 import ChunkUploadTest from "../pages/test/ChunkUploadTest";
+import CaptchaTest from "../pages/test/CaptchaTest";
+import TestList from "../pages/test/TestList";
 import GMShell from "../pages/gm/GMShell";
 import GMDashboard from "../pages/gm/GMDashboard";
 import GMProtocol from "../pages/gm/GMProtocol";
@@ -58,6 +60,8 @@ const RouterConfig: React.FC = () => {
       <Route path="/assignment/submissions/:id" element={<AssignmentSubmissions />} />
 
       {/* 测试页面（仅开发环境可见） */}
+      {import.meta.env.DEV && <Route path="/test" element={<TestList />} />}
+      {import.meta.env.DEV && <Route path="/test/captcha" element={<CaptchaTest />} />}
       {import.meta.env.DEV && <Route path="/test/chunk-upload" element={<ChunkUploadTest />} />}
 
       {/* 用户组织列表页 */}

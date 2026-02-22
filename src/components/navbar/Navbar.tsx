@@ -301,11 +301,11 @@ const Navbar: React.FC = () => {
               onClick={() => {
                 setUserMenuOpen(false);
                 setMobileMenuOpen(false);
-                navigate("/test/chunk-upload");
+                navigate("/test");
               }}
               type="button"
-              title="进入测试页面"
-              aria-label="进入测试页面"
+              title="进入测试中心"
+              aria-label="进入测试中心"
             >
               <FaFlask className={styles.testButtonIcon} />
             </button>

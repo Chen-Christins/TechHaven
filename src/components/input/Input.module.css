@@ -10,6 +10,19 @@
   /* 默认宽度100%，可由外部容器控制 */
 }
 
+/* 文本对齐样式 */
+.text-left .input {
+  text-align: left;
+}
+
+.text-center .input {
+  text-align: center;
+}
+
+.text-right .input {
+  text-align: right;
+}
+
 /* 悬浮状态 */
 .inputWrapper:not(.disabled):not(.loading):hover {
   border-color: var(--primary-hover);

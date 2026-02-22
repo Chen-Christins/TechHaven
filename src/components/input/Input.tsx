@@ -31,6 +31,11 @@ interface InputProps {
   onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void;
   onFocus?: (event: FocusEvent<HTMLInputElement>) => void;
   onBlur?: (event: FocusEvent<HTMLInputElement>) => void;
+  textAlign?: "left" | "center" | "right";
+  fontSize?: "small" | "default" | "large" | number;
+  fontWeight?: "normal" | "medium" | "semibold" | "bold";
+  letterSpacing?: number;
+  fontFamily?: string;
   // 其他原生input属性
   type?: string;
   autoFocus?: boolean;
@@ -69,6 +74,11 @@ const Input = forwardRef<InputRef, InputProps>((props, ref: ForwardedRef<InputRe
     placeholder,
     className = "",
     style,
+    textAlign = "left",
+    fontSize,
+    fontWeight,
+    letterSpacing,
+    fontFamily,
     ...restProps // 接收其他原生input属性
   } = props;
 
@@ -150,10 +160,49 @@ const Input = forwardRef<InputRef, InputProps>((props, ref: ForwardedRef<InputRe
     inputRef.current?.focus();
   };
 
+  // 构建输入框的动态样式
+  const inputStyle: React.CSSProperties = {};
+
+  // 处理字体大小
+  if (fontSize) {
+    if (typeof fontSize === "number") {
+      inputStyle.fontSize = `${fontSize}px`;
+    } else {
+      const fontSizeMap = {
+        small: "12px",
+        default: "14px",
+        large: "16px",
+      };
+      inputStyle.fontSize = fontSizeMap[fontSize as "small" | "default" | "large"];
+    }
+  }
+
+  // 处理字体粗细
+  if (fontWeight) {
+    const fontWeightMap = {
+      normal: "400",
+      medium: "500",
+      semibold: "600",
+      bold: "700",
+    };
+    inputStyle.fontWeight = fontWeightMap[fontWeight];
+  }
+
+  // 处理字母间距
+  if (letterSpacing !== undefined) {
+    inputStyle.letterSpacing = `${letterSpacing}px`;
+  }
+
+  // 处理字体族
+  if (fontFamily) {
+    inputStyle.fontFamily = fontFamily;
+  }
+
   // 组装最终的className
   const wrapperClassNames = [
     styles.inputWrapper,
     styles[`size-${size}`],
+    styles[`text-${textAlign}`],
     disabled ? styles.disabled : "",
     loading ? styles.loading : "",
     prefix ? styles.withPrefix : "",
@@ -177,6 +226,7 @@ const Input = forwardRef<InputRef, InputProps>((props, ref: ForwardedRef<InputRe
         {...restProps} // 展开其他原生属性（如type, maxLength, autoFocus等）
         ref={inputRef}
         className={styles.input}
+        style={inputStyle}
         value={displayedValue}
         onChange={handleChange}
         onKeyDown={handleKeyDown}

@@ -1,0 +1,205 @@
+.testListContainer {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px;
+}
+
+.header {
+  margin-bottom: 40px;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.headerIcon {
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  max-width: 600px;
+}
+
+.testGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.testCard {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-primary);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.testCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.iconContainer {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--primary);
+}
+
+.cardInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.statusBadge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+.statusBadge.ready {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.statusBadge.inProgress {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+}
+
+.statusBadge.completed {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+}
+
+.cardDescription {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+  flex: 1;
+}
+
+.cardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tag {
+  font-size: 12px;
+  padding: 4px 8px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-radius: 4px;
+  border: 1px solid var(--border-primary);
+}
+
+.cardActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.footer {
+  max-width: 1200px;
+  margin: 60px auto 0;
+  text-align: center;
+}
+
+.footerText {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .testListContainer {
+    padding: 20px 16px;
+  }
+
+  .headerContent {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+
+  .testGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .testCard {
+    padding: 20px;
+  }
+
+  .cardHeader {
+    gap: 12px;
+  }
+
+  .iconContainer {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .cardTitle {
+    font-size: 16px;
+  }
+
+  .cardDescription {
+    font-size: 13px;
+  }
+}

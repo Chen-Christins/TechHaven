@@ -5,6 +5,7 @@ import styles from "./AuthPage.module.css"; // 导入 CSS Modules
 import Footer from "../../components/footer/Footer";
 import { useAuth } from "../../contexts/AuthContext";
 import { AuthService } from "../../services/authService";
+import CaptchaModal from "../../components/captcha/CaptchaModal";
 
 // 定义表单类型
 type FormType = "login" | "register" | "forgotPassword";
@@ -110,6 +111,11 @@ const AuthPage: React.FC = () => {
     text: string;
     type: "success" | "error";
   } | null>(null);
+  const [showCaptchaModal, setShowCaptchaModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{
+    type: "login" | "register" | "forgotPassword" | "sendCode";
+    callback: () => void;
+  } | null>(null);
 
   // 处理输入变化
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,7 +133,7 @@ const AuthPage: React.FC = () => {
   };
 
   // 发送验证码
-  const handleSendCode = async () => {
+  const handleSendCode = () => {
     const email = formData.email;
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setErrors((prev) => ({ ...prev, email: "请输入有效的邮箱地址" }));
@@ -143,29 +149,36 @@ const AuthPage: React.FC = () => {
       });
     }
 
-    try {
-      setIsSubmitting(true);
+    // 显示验证码模态框
+    setPendingAction({
+      type: "sendCode",
+      callback: async () => {
+        try {
+          setIsSubmitting(true);
 
-      // 根据表单类型发送对应的验证码
-      if (formType === "register") {
-        await AuthService.sendRegisterCode(email);
-      } else if (formType === "forgotPassword") {
-        await AuthService.sendPasswordResetCode(email);
-      } else {
-        throw new Error("不支持的验证码类型");
-      }
+          // 根据表单类型发送对应的验证码
+          if (formType === "register") {
+            await AuthService.sendRegisterCode(email);
+          } else if (formType === "forgotPassword") {
+            await AuthService.sendPasswordResetCode(email);
+          } else {
+            throw new Error("不支持的验证码类型");
+          }
 
-      setCountdown(60);
-      setMessage({ text: "验证码已发送，请注意查收", type: "success" });
-    } catch (error: any) {
-      console.error("发送验证码失败:", error);
-      setMessage({
-        text: error.msg || error.message || "验证码发送失败",
-        type: "error",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+          setCountdown(60);
+          setMessage({ text: "验证码已发送，请注意查收", type: "success" });
+        } catch (error: any) {
+          console.error("发送验证码失败:", error);
+          setMessage({
+            text: error.msg || error.message || "验证码发送失败",
+            type: "error",
+          });
+        } finally {
+          setIsSubmitting(false);
+        }
+      },
+    });
+    setShowCaptchaModal(true);
   };
 
   // 倒计时效果
@@ -177,7 +190,7 @@ const AuthPage: React.FC = () => {
   }, [countdown]);
 
   // 处理表单提交
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     // 验证表单
@@ -187,38 +200,48 @@ const AuthPage: React.FC = () => {
       return;
     }
 
-    setIsSubmitting(true);
-    setMessage(null);
+    // 设置待执行的操作
+    const actionCallback = async () => {
+      setIsSubmitting(true);
+      setMessage(null);
 
-    try {
-      if (formType === "login") {
-        await login(formData.usernameOrEmail, formData.password);
-        setMessage({ text: "登录成功，正在跳转...", type: "success" });
-        setTimeout(() => {
-          navigate("/index");
-        }, 200);
-      } else if (formType === "register") {
-        await AuthService.register({
-          account: formData.account,
-          email: formData.email,
-          passwd: formData.password, // AuthService 内部会进行 MD5 加密
-          auth_code: formData.auth_code,
+      try {
+        if (formType === "login") {
+          await login(formData.usernameOrEmail, formData.password);
+          setMessage({ text: "登录成功，正在跳转...", type: "success" });
+          setTimeout(() => {
+            navigate("/index");
+          }, 200);
+        } else if (formType === "register") {
+          await AuthService.register({
+            account: formData.account,
+            email: formData.email,
+            passwd: formData.password, // AuthService 内部会进行 MD5 加密
+            auth_code: formData.auth_code,
+          });
+          setMessage({ text: "注册成功，请登录", type: "success" });
+          setTimeout(() => setFormType("login"), 200);
+        } else if (formType === "forgotPassword") {
+          await AuthService.forgetPassword(formData.email, formData.newPassword, formData.code);
+          setMessage({ text: "密码重置成功，请登录", type: "success" });
+          setTimeout(() => setFormType("login"), 200);
+        }
+      } catch (error: any) {
+        setMessage({
+          text: error.msg || error.message || `${formType === "login" ? "登录" : formType === "register" ? "注册" : "重置密码"}失败`,
+          type: "error",
         });
-        setMessage({ text: "注册成功，请登录", type: "success" });
-        setTimeout(() => setFormType("login"), 200);
-      } else if (formType === "forgotPassword") {
-        await AuthService.forgetPassword(formData.email, formData.newPassword, formData.code);
-        setMessage({ text: "密码重置成功，请登录", type: "success" });
-        setTimeout(() => setFormType("login"), 200);
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error: any) {
-      setMessage({
-        text: error.msg || error.message || `${formType === "login" ? "登录" : formType === "register" ? "注册" : "重置密码"}失败`,
-        type: "error",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    };
+
+    // 显示验证码模态框
+    setPendingAction({
+      type: formType,
+      callback: actionCallback,
+    });
+    setShowCaptchaModal(true);
   };
 
   // 切换表单视图
@@ -265,6 +288,21 @@ const AuthPage: React.FC = () => {
       default:
         return "";
     }
+  };
+
+  // 处理验证码验证成功
+  const handleCaptchaSuccess = () => {
+    if (pendingAction) {
+      pendingAction.callback();
+      setPendingAction(null);
+    }
+    setShowCaptchaModal(false);
+  };
+
+  // 处理验证码模态框关闭
+  const handleCaptchaClose = () => {
+    setShowCaptchaModal(false);
+    setPendingAction(null);
   };
 
   return (
@@ -686,6 +724,22 @@ const AuthPage: React.FC = () => {
         </div>
       </div>
       <Footer companyName="TechBlog" startYear={2025} />
+
+      {/* 验证码模态框 */}
+      <CaptchaModal
+        isOpen={showCaptchaModal}
+        onClose={handleCaptchaClose}
+        onSuccess={handleCaptchaSuccess}
+        title={
+          pendingAction?.type === "login"
+            ? "登录验证"
+            : pendingAction?.type === "register"
+              ? "注册验证"
+              : pendingAction?.type === "forgotPassword"
+                ? "密码重置验证"
+                : "邮箱验证"
+        }
+      />
     </div>
   );
 };
