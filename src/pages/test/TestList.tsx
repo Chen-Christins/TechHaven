@@ -77,13 +77,8 @@ const TestList: React.FC = () => {
           </div>
 
           <div className={styles.headerRight}>
-            <Button
-              color="info"
-              variant="solid"
-              size="small"
-              onClick={() => navigate('/')}
-            >
-              <FaHome/>
+            <Button color="info" variant="solid" size="small" onClick={() => navigate("/")}>
+              <FaHome />
               回到首页
             </Button>
           </div>
