@@ -1,6 +1,6 @@
 .testListContainer {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #eacd66 0%, #54a24b 100%);
   padding: 40px 20px;
 }
 
@@ -12,8 +12,22 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  justify-content: space-between;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .headerIcon {

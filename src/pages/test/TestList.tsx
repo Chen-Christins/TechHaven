@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaFlask, FaUpload, FaShieldAlt, FaCog, FaArrowRight } from "react-icons/fa";
+import { FaFlask, FaUpload, FaShieldAlt, FaCog, FaArrowRight, FaHome } from "react-icons/fa";
 import Button from "../../components/button/Button";
 import styles from "./TestList.module.css";
 
@@ -68,10 +68,24 @@ const TestList: React.FC = () => {
     <div className={styles.testListContainer}>
       <div className={styles.header}>
         <div className={styles.headerContent}>
-          <FaFlask className={styles.headerIcon} />
-          <div>
-            <h1 className={styles.title}>开发测试中心</h1>
-            <p className={styles.subtitle}>这里集成了各种功能测试页面，用于开发和验证新功能</p>
+          <div className={styles.headerLeft}>
+            <FaFlask className={styles.headerIcon} />
+            <div>
+              <h1 className={styles.title}>开发测试中心</h1>
+              <p className={styles.subtitle}>这里集成了各种功能测试页面，用于开发和验证新功能</p>
+            </div>
+          </div>
+
+          <div className={styles.headerRight}>
+            <Button
+              color="info"
+              variant="solid"
+              size="small"
+              onClick={() => navigate('/')}
+            >
+              <FaHome/>
+              回到首页
+            </Button>
           </div>
         </div>
       </div>
