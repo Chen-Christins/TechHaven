@@ -1,19 +1,57 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./GMServer.module.css";
 import dashboardStyles from "./GMDashboard.module.css";
 import { FaServer, FaPowerOff, FaSyncAlt, FaArrowCircleUp, FaTerminal } from "react-icons/fa";
 import Loading from "../../components/loading/Loading";
 import CustomSelect from "../../components/customSelect/CustomSelect";
-import Switch from "../../components/switcher/Switch";
 import Button from "../../components/button/Button";
 import GMService from "../../services/gmService";
 import type { ServerStatusResponse } from "../../services/gmService";
 import type { SelectOption } from "../../types";
 import { message } from "../../components/message/Message";
 
+interface ViewServerStatus {
+  running: boolean;
+  version?: string;
+  uptime?: number;
+  detail?: string;
+}
+
+const parseUptime = (value: number | string | undefined): number | undefined => {
+  if (value === undefined) return undefined;
+  if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const toViewStatus = (raw: ServerStatusResponse): ViewServerStatus => {
+  const normalized = raw.status?.toUpperCase();
+  const running = normalized === "RUNNING";
+
+  return {
+    running,
+    version: raw.version,
+    uptime: parseUptime(raw.run_time),
+    detail: raw.detail,
+  };
+};
+
+const optionColors = ["#3b82f6", "#f59e0b", "#10b981", "#8b5cf6", "#ef4444", "#06b6d4"];
+
+const toServerOptions = (servers: string[]): SelectOption[] => {
+  return servers.map((name, index) => ({
+    id: name,
+    name,
+    color: optionColors[index % optionColors.length],
+  }));
+};
+
 const GMServer: React.FC = () => {
-  const [status, setStatus] = useState<ServerStatusResponse | null>(null);
-  const [loading, setLoading] = useState(false);
+  const hasInitializedRef = useRef(false);
+  const [status, setStatus] = useState<ViewServerStatus | null>(null);
+  const [lastStatusDetail, setLastStatusDetail] = useState<string>("");
+  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
   const [consoleOutput, setConsoleOutput] = useState<string[]>([
@@ -25,16 +63,14 @@ const GMServer: React.FC = () => {
     "[2024-02-23 10:21:20] 等待客户端连接...",
   ]);
 
-  const serverOptions: SelectOption[] = [
-    { id: "server1", name: "服务器 1", color: "#3b82f6" },
-    { id: "server2", name: "服务器 2", color: "#f59e0b" },
-    { id: "server3", name: "服务器 3", color: "#10b981" },
-    { id: "server4", name: "服务器 4", color: "#8b5cf6" },
-  ];
-
-  const [selectedServer, setSelectedServer] = useState<SelectOption | null>(serverOptions[0]);
-  const [isHotUpdate, setIsHotUpdate] = useState<boolean>(true);
-  const [updateConfig, setUpdateConfig] = useState<boolean>(false);
+  const [serverOptions, setServerOptions] = useState<SelectOption[]>([]);
+  const [selectedServer, setSelectedServer] = useState<SelectOption | null>(null);
+  const statusIndicatorClass = loading
+    ? ""
+    : status?.running
+      ? styles.statusIndicatorOnline
+      : styles.statusIndicatorOffline;
+  const statusIndicatorText = loading ? "加载中" : status?.running ? "在线" : "离线";
 
   const formatUptime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
@@ -50,20 +86,49 @@ const GMServer: React.FC = () => {
     }
   };
 
-  const fetchStatus = async () => {
+  const fetchStatus = async (showError = true) => {
     try {
       setLoading(true);
       const s = await GMService.getServerStatus();
-      setStatus(s);
+      setStatus(toViewStatus(s));
+      if (s.detail && s.detail !== lastStatusDetail) {
+        addConsoleMessage(`状态详情: ${s.detail}`);
+        setLastStatusDetail(s.detail);
+      }
     } catch (err) {
-      message.error("无法获取服务器状态");
+      if (!showError) return;
+
+      if (status) {
+        addConsoleMessage("状态刷新失败，保留上次状态");
+      } else {
+        message.error("无法获取服务器状态");
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchServerList = async () => {
+    try {
+      const data = await GMService.getServerList();
+      const options = toServerOptions(data.list ?? []);
+      setServerOptions(options);
+      setSelectedServer((prev) => prev ?? options[0] ?? null);
+    } catch (err) {
+      message.error("无法获取服务器列表");
+    }
+  };
+
   useEffect(() => {
-    fetchStatus();
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+
+    const init = async () => {
+      await fetchServerList();
+      await fetchStatus(false);
+    };
+
+    init();
   }, []);
 
   const addConsoleMessage = (message: string) => {
@@ -92,15 +157,12 @@ const GMServer: React.FC = () => {
         addConsoleMessage(`${selectedServer?.name} 停止命令已发送`);
         message.success(`${selectedServer?.name} 停止命令已发送`);
       } else if (action === "update") {
-        const updateType = isHotUpdate ? "热更新" : "冷更新";
-        addConsoleMessage(`正在执行 ${selectedServer?.name} ${updateType}...`);
+        addConsoleMessage(`正在更新 ${selectedServer?.name}...`);
         await GMService.updateServer();
-        addConsoleMessage(`${selectedServer?.name} ${updateType}命令已发送${updateConfig ? "（包含资源配置）" : ""}`);
-        message.success(
-          `${selectedServer?.name} ${isHotUpdate ? "热更新" : "冷更新"}命令已发送${updateConfig ? "（包含资源配置）" : ""}`,
-        );
+        addConsoleMessage(`${selectedServer?.name} 更新命令已发送`);
+        message.success(`${selectedServer?.name} 更新命令已发送`);
       }
-      await fetchStatus();
+      await fetchStatus(false);
     } catch (err) {
       addConsoleMessage("操作失败");
       message.error("操作失败");
@@ -138,22 +200,6 @@ const GMServer: React.FC = () => {
                 />
               </div>
 
-              <div className={styles.switchesRow}>
-                <div className={dashboardStyles.formRow}>
-                  <div className={styles.switchLabel}>
-                    <span onClick={(e) => e.stopPropagation()}>热更新</span>
-                    <Switch checked={isHotUpdate} onChange={setIsHotUpdate} disabled={actionLoading} size="default" />
-                    <span onClick={(e) => e.stopPropagation()}>冷更新</span>
-                  </div>
-                </div>
-
-                <div className={dashboardStyles.formRow}>
-                  <div className={styles.switchLabel}>
-                    <span onClick={(e) => e.stopPropagation()}>更新资源配置</span>
-                    <Switch checked={updateConfig} onChange={setUpdateConfig} disabled={actionLoading} size="default" />
-                  </div>
-                </div>
-              </div>
             </div>
 
             <div className={styles.controlsFooter}>
@@ -169,7 +215,13 @@ const GMServer: React.FC = () => {
                 <FaArrowCircleUp /> 更新
               </Button>
 
-              <Button color="primary" variant="outline" size="medium" onClick={fetchStatus} disabled={loading || actionLoading}>
+              <Button
+                color="primary"
+                variant="outline"
+                size="medium"
+                onClick={() => fetchStatus(true)}
+                disabled={loading || actionLoading}
+              >
                 <FaSyncAlt /> 刷新状态
               </Button>
 
@@ -188,8 +240,8 @@ const GMServer: React.FC = () => {
           <div className={styles.statusPanel}>
             <div className={styles.statusHeader}>
               <h4>服务器状态</h4>
-              <div className={`${styles.statusIndicator} ${status?.running ? styles.statusOnline : styles.statusOffline}`}>
-                {status?.running ? "在线" : "离线"}
+              <div className={`${styles.statusIndicator} ${statusIndicatorClass}`}>
+                {statusIndicatorText}
               </div>
             </div>
 
@@ -221,10 +273,12 @@ const GMServer: React.FC = () => {
                     <span className={styles.statusValue}>{formatUptime(status.uptime)}</span>
                   </div>
                 )}
-                {status.message && (
+                {status.detail && (
                   <div className={styles.statusItem}>
                     <span className={styles.statusLabel}>消息:</span>
-                    <span className={styles.statusValue}>{status.message}</span>
+                    <span className={`${styles.statusValue} ${styles.statusValueEllipsis}`} title={status.detail}>
+                      {status.detail}
+                    </span>
                   </div>
                 )}
               </div>

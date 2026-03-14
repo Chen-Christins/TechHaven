@@ -1,62 +1,43 @@
 import http from "../utils/http";
 
 export interface ServerStatusResponse {
-  running: boolean;
+  status?: string;
   version?: string;
-  uptime?: number;
-  message?: string;
+  run_time?: number | string;
+  detail?: string;
 }
 
-// Simple in-memory mock state used in dev when backend is not ready
-let mockState: ServerStatusResponse = {
-  running: false,
-  version: "1.0.0",
-  uptime: 0,
-  message: "未连接真实后端，使用 mock 数据",
-};
+export interface ServerListResponse {
+  list?: string[];
+  total?: number;
+}
 
-const simulateDelay = <T>(result: T, delay = 500) => {
-  return new Promise<T>((resolve) => setTimeout(() => resolve(result), delay));
+const unwrapPayload = <T>(resp: unknown): T => {
+  const maybeWrapped = resp as { data?: T };
+  return (maybeWrapped?.data ?? (resp as T)) as T;
 };
 
 export class GMService {
-  static async getServerStatus(): Promise<ServerStatusResponse> {
-    if (import.meta.env.DEV) {
-      // simulate uptime increase
-      if (mockState.running) mockState.uptime = (mockState.uptime || 0) + 60;
-      return simulateDelay(mockState, 400);
-    }
+  static async getServerList(): Promise<ServerListResponse> {
+    const resp = await http.get<ServerListResponse>(`/game_server/list`);
+    return unwrapPayload<ServerListResponse>(resp);
+  }
 
-    const resp = await http.get<ServerStatusResponse>(`/gm/server/status`);
-    return resp.data;
+  static async getServerStatus(): Promise<ServerStatusResponse> {
+    const resp = await http.get<ServerStatusResponse>(`/game_server/status`);
+    return unwrapPayload<ServerStatusResponse>(resp);
   }
 
   static async startServer(): Promise<any> {
-    if (import.meta.env.DEV) {
-      mockState = { ...mockState, running: true, message: "已通过 mock 启动", uptime: 0 };
-      return simulateDelay({ success: true }, 400);
-    }
-
-    return http.post(`/gm/server/start`);
+    return http.post(`/game_server/start`);
   }
 
   static async stopServer(): Promise<any> {
-    if (import.meta.env.DEV) {
-      mockState = { ...mockState, running: false, message: "已通过 mock 停止" };
-      return simulateDelay({ success: true }, 400);
-    }
-
-    return http.post(`/gm/server/stop`);
+    return http.post(`/game_server/stop`);
   }
 
   static async updateServer(): Promise<any> {
-    if (import.meta.env.DEV) {
-      const nextVersion = mockState.version ? mockState.version.replace(/(\d+)$/, (m) => String(Number(m) + 1)) : "1.0.1";
-      mockState = { ...mockState, version: nextVersion, message: "已通过 mock 完成更新" };
-      return simulateDelay({ success: true, version: nextVersion }, 800);
-    }
-
-    return http.post(`/gm/server/update`);
+    return http.post(`/game_server/update`);
   }
 }
 
