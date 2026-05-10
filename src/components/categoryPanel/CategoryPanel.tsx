@@ -4,7 +4,12 @@ import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 import styles from "./CategoryPanel.module.css";
 import CategoryService from "../../services/categoryService";
 
-const CategoryPanel: React.FC = () => {
+interface CategoryPanelProps {
+  selectedCategoryId?: string | number;
+  onCategoryClick?: (id: string | number, name: string) => void;
+}
+
+const CategoryPanel: React.FC<CategoryPanelProps> = ({ selectedCategoryId, onCategoryClick }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
@@ -42,14 +47,6 @@ const CategoryPanel: React.FC = () => {
         });
 
         setCategories(rootCategories);
-
-        // 默认展开第一个有子分类的分类
-        // if (rootCategories.length > 0) {
-        // 	const firstWithChildren = rootCategories.find(c => c.children && c.children.length > 0);
-        // 	if (firstWithChildren) {
-        // 		setExpanded({ [firstWithChildren.id]: true });
-        // 	}
-        // }
       } catch (error) {
         console.error("获取分类失败:", error);
       }
@@ -63,6 +60,12 @@ const CategoryPanel: React.FC = () => {
       ...prev,
       [categoryId]: !prev[categoryId],
     }));
+  };
+
+  const handleCategoryClick = (id: string | number, name: string) => {
+    if (onCategoryClick) {
+      onCategoryClick(id, name);
+    }
   };
 
   return (
@@ -79,28 +82,24 @@ const CategoryPanel: React.FC = () => {
             return (
               <li key={category.id} className={styles.parentItem}>
                 {/* 父分类容器 */}
-                <div
-                  className={styles.parentCategory}
-                  onClick={(e) => {
-                    // 点击箭头或文字区域都能展开/折叠
-                    if (hasChildren) {
-                      toggleExpand(category.id);
-                      e.preventDefault(); // 阻止链接跳转
-                    }
-                  }}
-                >
+                <div className={styles.parentCategory}>
                   {/* 展开/折叠按钮 */}
-                  {hasChildren && (
-                    <div className={styles.toggleBtn}>
+                  {hasChildren ? (
+                    <div className={styles.toggleBtn} onClick={() => toggleExpand(category.id)}>
                       {isExpanded ? <FaChevronDown className={styles.chevron} /> : <FaChevronRight className={styles.chevron} />}
                     </div>
+                  ) : (
+                    <div className={styles.toggleBtn} />
                   )}
 
-                  {/* 父分类链接 */}
-                  <a href={`/category/${category.id}`} className={styles.parentLink}>
+                  {/* 父分类名称（点击筛选） */}
+                  <span
+                    className={`${styles.parentLink} ${selectedCategoryId === category.id ? styles.categorySelected : ""}`}
+                    onClick={() => handleCategoryClick(category.id, category.name)}
+                  >
                     <span className={styles.parentName}>{category.name}</span>
                     <span className={styles.parentCount}>{category.count}</span>
-                  </a>
+                  </span>
                 </div>
 
                 {/* 子分类列表（带动画过渡） */}
@@ -109,10 +108,13 @@ const CategoryPanel: React.FC = () => {
                     <ul className={styles.childrenList}>
                       {category.children?.map((child) => (
                         <li key={child.id} className={styles.childItem}>
-                          <a href={`/category/${category.id}/${child.id}`} className={styles.childLink}>
+                          <span
+                            className={`${styles.childLink} ${selectedCategoryId === child.id ? styles.categorySelected : ""}`}
+                            onClick={() => handleCategoryClick(child.id, child.name)}
+                          >
                             <span className={styles.childName}>{child.name}</span>
                             <span className={styles.childCount}>{child.count}</span>
-                          </a>
+                          </span>
                         </li>
                       ))}
                     </ul>

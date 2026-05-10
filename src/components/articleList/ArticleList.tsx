@@ -16,9 +16,11 @@ const STATE_MAP: Record<number, string> = {
 interface ArticleListProps {
   labelId?: string | number;
   labelName?: string;
+  categoryId?: string | number;
+  categoryName?: string;
 }
 
-const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName }) => {
+const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryId, categoryName }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const itemsPerPage = 6;
@@ -34,11 +36,16 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName }) => {
   };
 
   const prevLabelId = useRef<string | number | undefined>(labelId);
+  const prevCategoryId = useRef<string | number | undefined>(categoryId);
 
   useEffect(() => {
-    // 当 labelId 变化时，重置到第 1 页再请求
-    if (prevLabelId.current !== labelId) {
+    // 当 labelId 或 categoryId 变化时，重置到第 1 页再请求
+    const labelChanged = prevLabelId.current !== labelId;
+    const categoryChanged = prevCategoryId.current !== categoryId;
+
+    if (labelChanged || categoryChanged) {
       prevLabelId.current = labelId;
+      prevCategoryId.current = categoryId;
       if (currentPage !== 1) {
         setSearchParams({ page: "1" });
         return; // 触发 re-render 后 currentPage=1 再 fetch
@@ -55,6 +62,12 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName }) => {
         if (labelId) {
           res = await ArticleService.listByLabel({
             label_id: labelId,
+            page_from: currentPage,
+            page_size: itemsPerPage,
+          });
+        } else if (categoryId) {
+          res = await ArticleService.listByCategory({
+            category_id: categoryId,
             page_from: currentPage,
             page_size: itemsPerPage,
           });
@@ -100,7 +113,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName }) => {
     return () => {
       cancelled = true;
     };
-  }, [currentPage, labelId]);
+  }, [currentPage, labelId, categoryId]);
 
   const totalPages = Math.ceil(totalArticles / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -134,7 +147,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName }) => {
 
   return (
     <div className={styles.articleList}>
-      <h2 className={styles.title}>{labelName ? `标签：${labelName}` : "最新文章"}</h2>
+      <h2 className={styles.title}>{labelName ? `标签：${labelName}` : categoryName ? `分类：${categoryName}` : "最新文章"}</h2>
       <div className={styles.articles}>
         {articles.length === 0 ? (
           <></>
