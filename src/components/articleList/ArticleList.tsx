@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaChevronLeft, FaChevronRight, FaAngleDoubleLeft, FaAngleDoubleRight, FaCalendarAlt, FaUser, FaEye } from "react-icons/fa";
 import ArticleService from "../../services/articleService";
@@ -13,7 +13,12 @@ const STATE_MAP: Record<number, string> = {
   4: "private",
 };
 
-const ArticleList: React.FC = () => {
+interface ArticleListProps {
+  labelId?: string | number;
+  labelName?: string;
+}
+
+const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const itemsPerPage = 6;
@@ -28,14 +33,40 @@ const ArticleList: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const prevLabelId = useRef<string | number | undefined>(labelId);
+
   useEffect(() => {
+    // 当 labelId 变化时，重置到第 1 页再请求
+    if (prevLabelId.current !== labelId) {
+      prevLabelId.current = labelId;
+      if (currentPage !== 1) {
+        setSearchParams({ page: "1" });
+        return; // 触发 re-render 后 currentPage=1 再 fetch
+      }
+      // 已经在第 1 页，直接走下面的 fetch 逻辑
+    }
+
+    let cancelled = false;
+
     const fetchArticles = async () => {
       try {
-        const res = await ArticleService.listArticlesByUserIdPages({
-          page_from: currentPage,
-          page_size: itemsPerPage,
-          state: 2,
-        });
+        let res: { total: number; list: Array<{ id: string | number; title: string; author: string; summary: string; state: number; type: number; publish_time: number }> };
+
+        if (labelId) {
+          res = await ArticleService.listByLabel({
+            label_id: labelId,
+            page_from: currentPage,
+            page_size: itemsPerPage,
+          });
+        } else {
+          res = await ArticleService.listArticlesByUserIdPages({
+            page_from: currentPage,
+            page_size: itemsPerPage,
+            state: 2,
+          });
+        }
+
+        if (cancelled) return;
 
         setTotalArticles(res.total);
         setArticles(
@@ -49,21 +80,27 @@ const ArticleList: React.FC = () => {
                 state: STATE_MAP[item.state],
                 type: item.type === 1 ? "原创" : "转载",
                 publish_time: item.publish_time ? formatToChinaTime(item.publish_time) : "暂未发布",
-                views: 0, // 后续可通过详情接口补全
-                praise: 0, // 后续可通过详情接口补全
-                favorites: 0, // 后续可通过详情接口补全
-                category: "未分类", // 后续可通过详情接口补全
-                tags: [], // 后续可通过详情接口补全
+                views: 0,
+                praise: 0,
+                favorites: 0,
+                category: "未分类",
+                tags: [],
               }) as ArticleListItem,
           ),
         );
       } catch (err) {
+        if (cancelled) return;
         console.error("获取文章列表失败:", err);
         setArticles([]);
       }
     };
+
     fetchArticles();
-  }, [currentPage]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentPage, labelId]);
 
   const totalPages = Math.ceil(totalArticles / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -97,7 +134,7 @@ const ArticleList: React.FC = () => {
 
   return (
     <div className={styles.articleList}>
-      <h2 className={styles.title}>最新文章</h2>
+      <h2 className={styles.title}>{labelName ? `标签：${labelName}` : "最新文章"}</h2>
       <div className={styles.articles}>
         {articles.length === 0 ? (
           <></>
@@ -136,7 +173,7 @@ const ArticleList: React.FC = () => {
       </div>
 
       {/* 分页 */}
-      {totalPages > 1 && (
+      {totalArticles > 0 && (
         <div className={styles.pagination}>
           <div className={styles.paginationInfo}>
             显示 {startIndex + 1} - {Math.min(endIndex, totalArticles)} 条， 共 {totalArticles} 篇文章
