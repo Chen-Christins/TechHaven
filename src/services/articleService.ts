@@ -189,6 +189,36 @@ export class ArticleService {
     return response.data;
   }
 
+  /**
+   * 按标签分页获取文章列表
+   */
+  static async listByLabel(params: {
+    label_id: string | number;
+    page_from: number;
+    page_size?: number;
+  }): Promise<ListArticlesResponse> {
+    let url = `/article/list_by_label?label_id=${params.label_id}&page_from=${params.page_from}`;
+    if (params.page_size) url += `&page_size=${params.page_size}`;
+
+    const response = await http.get<ListArticlesResponse>(url);
+    return response.data;
+  }
+
+  /**
+   * 按分类分页获取文章列表
+   */
+  static async listByCategory(params: {
+    category_id: string | number;
+    page_from: number;
+    page_size?: number;
+  }): Promise<ListArticlesResponse> {
+    let url = `/article/list_by_category?category_id=${params.category_id}&page_from=${params.page_from}`;
+    if (params.page_size) url += `&page_size=${params.page_size}`;
+
+    const response = await http.get<ListArticlesResponse>(url);
+    return response.data;
+  }
+
   static async listAdminArticlesByPages(params: ListAdminArticlesParams): Promise<ListAdminArticlesResponse> {
     let url = `/article/admin/lists?page_num=${params.page_num}`;
     url += `&page_size=${params.page_size}`;

@@ -21,6 +21,10 @@ const IndexPage: React.FC = () => {
   const [tagsLoading, setTagsLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showContent, setShowContent] = useState(false);
+  const [selectedLabelId, setSelectedLabelId] = useState<string | number | undefined>(undefined);
+  const [selectedLabelName, setSelectedLabelName] = useState<string | undefined>(undefined);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | number | undefined>(undefined);
+  const [selectedCategoryName, setSelectedCategoryName] = useState<string | undefined>(undefined);
 
   // 获取标签（使用 LabelService），仅在已登录时请求
   useEffect(() => {
@@ -79,16 +83,53 @@ const IndexPage: React.FC = () => {
         <div className={`${styles.mainContent} ${showContent ? styles.contentVisible : styles.contentHidden}`}>
           {/* 左侧：文章列表 */}
           <div className={styles.leftColumn}>
-            <ArticleList />
+            <ArticleList
+              labelId={selectedLabelId}
+              labelName={selectedLabelName}
+              categoryId={selectedCategoryId}
+              categoryName={selectedCategoryName}
+            />
           </div>
 
           {/* 右侧：侧边栏 */}
           <div className={styles.rightColumn}>
             {/* 标签面板可能仍在加载，显示局部加载状态 */}
             <SearchPanel />
-            <TagPanel tags={tags} loading={tagsLoading} />
+            <TagPanel
+              tags={tags}
+              loading={tagsLoading}
+              selectedTagId={selectedLabelId}
+              onTagClick={(tag) => {
+                if (selectedLabelId === tag.id) {
+                  // 再次点击取消选中
+                  setSelectedLabelId(undefined);
+                  setSelectedLabelName(undefined);
+                } else {
+                  setSelectedLabelId(tag.id);
+                  setSelectedLabelName(tag.name);
+                  // 清除分类筛选
+                  setSelectedCategoryId(undefined);
+                  setSelectedCategoryName(undefined);
+                }
+              }}
+            />
             <SubscribeBox />
-            <CategoryPanel />
+            <CategoryPanel
+              selectedCategoryId={selectedCategoryId}
+              onCategoryClick={(id, name) => {
+                if (selectedCategoryId === id) {
+                  // 再次点击取消选中
+                  setSelectedCategoryId(undefined);
+                  setSelectedCategoryName(undefined);
+                } else {
+                  setSelectedCategoryId(id);
+                  setSelectedCategoryName(name);
+                  // 清除标签筛选
+                  setSelectedLabelId(undefined);
+                  setSelectedLabelName(undefined);
+                }
+              }}
+            />
             <StatsPanel />
             <Calendar />
           </div>

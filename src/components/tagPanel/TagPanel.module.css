@@ -47,6 +47,13 @@
   box-shadow: var(--shadow-md);
 }
 
+.tagSelected {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
 /* 尺寸变体 */
 .tagSmall {
   padding: 4px 8px;

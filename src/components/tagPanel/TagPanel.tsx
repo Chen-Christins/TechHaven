@@ -8,9 +8,10 @@ export interface TagPanelProps {
   tagSize?: "small" | "medium" | "large";
   layout?: "default" | "inline" | "vertical" | "centered";
   maxCount?: number;
-  gap?: number; // 新增 gap 属性
+  gap?: number;
   className?: string;
   loading?: boolean;
+  selectedTagId?: string | number;
   onTagClick?: (tag: Tag) => void;
 }
 
@@ -19,9 +20,10 @@ const TagPanel: React.FC<TagPanelProps> = ({
   tagSize = "medium",
   layout = "default",
   maxCount,
-  gap = 8, // 默认值
+  gap = 8,
   className = "",
   loading = false,
+  selectedTagId,
   onTagClick,
 }) => {
   const handleTagClick = (tag: Tag) => {
@@ -64,7 +66,7 @@ const TagPanel: React.FC<TagPanelProps> = ({
           displayTags.map((tag) => (
             <span
               key={tag.id}
-              className={`${styles.tag} ${styles[`tag${tagSize.charAt(0).toUpperCase() + tagSize.slice(1)}`]}`}
+              className={`${styles.tag} ${styles[`tag${tagSize.charAt(0).toUpperCase() + tagSize.slice(1)}`]} ${selectedTagId === tag.id ? styles.tagSelected : ""}`}
               style={{ backgroundColor: tag.color }}
               onClick={() => handleTagClick(tag)}
               title={tag.name}

@@ -172,6 +172,13 @@
     font-size: 1.2rem;
   }
 }
+.categorySelected {
+  color: var(--primary) !important;
+  font-weight: 700;
+  background-color: rgba(59, 130, 246, 0.08);
+  border-radius: 6px;
+}
+
 .emptyPlaceholder {
   width: 100%;
   text-align: center;
