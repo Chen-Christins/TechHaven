@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import styles from "./ProfilePage.module.css";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import BackToTop from "../../components/backToTop/BackToTop";
+import { useAuth } from "../../contexts/AuthContext";
+import AuthService from "../../services/authService";
+import ArticleService from "../../services/articleService";
+import LabelService from "../../services/labelService";
 import {
   MapPin,
   Calendar,
@@ -19,193 +24,194 @@ import {
   Edit,
   Share2,
   BookOpen,
+  Star,
+  UserPlus,
 } from "lucide-react";
 import type { Article, UserProfile } from "../../types/index";
 
-// 模拟数据
-const mockUser: UserProfile = {
-  id: 1,
-  name: "张明",
-  avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-  bio: "全栈开发者 | 技术博客作者 | 开源爱好者。热爱分享技术心得，专注于React、Node.js和云计算领域。",
-  location: "北京",
-  website: "https://zhangming.dev",
-  joinDate: "2020年3月",
-  stats: {
-    articles: 24,
-    followers: 1284,
-    following: 342,
-  },
-  account: "",
-  email: "",
-  role: "admin",
-};
-
-const mockArticles: Article[] = [
-  {
-    id: 1,
-    title: "React Hooks 最佳实践与性能优化",
-    content: "深入探讨React Hooks的使用技巧，如何避免常见陷阱，以及提升组件性能的各种策略。通过实际案例分析，掌握高级Hook用法。",
-    publish_time: "2024-01-15",
-    update_time: "2024-01-15",
-    categorys: ["前端技术"],
-    labels: [1, 2, 3],
-    views: 842,
-    praise: 45,
-    favorites: 12,
-    author: mockUser.name,
-    user_id: mockUser.id,
-    type: 1,
-    state: 1,
-    is_deleted: false,
-  },
-  {
-    id: 2,
-    title: "TypeScript在大型项目中的应用经验",
-    content: "分享在大型前端项目中TypeScript的类型设计、工程化配置和团队协作规范，帮助企业提升代码质量。",
-    publish_time: "2024-01-10",
-    update_time: "2024-01-10",
-    categorys: ["前端技术"],
-    labels: [4, 5],
-    views: 1256,
-    praise: 78,
-    favorites: 23,
-    author: mockUser.name,
-    user_id: mockUser.id,
-    type: 1,
-    state: 1,
-    is_deleted: false,
-  },
-  {
-    id: 3,
-    title: "Vue 3 Composition API 实战指南",
-    content: "详细介绍Vue 3 Composition API的使用方法，通过实际项目案例展示如何构建现代化的Vue应用。",
-    publish_time: "2024-01-05",
-    update_time: "2024-01-05",
-    categorys: ["前端技术"],
-    labels: [6, 7],
-    views: 945,
-    praise: 56,
-    favorites: 18,
-    author: mockUser.name,
-    user_id: mockUser.id,
-    type: 1,
-    state: 1,
-    is_deleted: false,
-  },
-  {
-    id: 4,
-    title: "微前端架构的落地实践",
-    content: "从单体应用到微前端的迁移过程，分享qiankun框架的使用经验和坑点总结，助力企业级应用拆分。",
-    publish_time: "2024-01-05",
-    update_time: "2024-01-05",
-    categorys: ["架构设计"],
-    labels: [8, 9, 10],
-    views: 892,
-    praise: 56,
-    favorites: 18,
-    author: mockUser.name,
-    user_id: mockUser.id,
-    type: 1,
-    state: 1,
-    is_deleted: false,
-  },
-  {
-    id: 5,
-    title: "Node.js 性能优化实战",
-    content: "深入分析Node.js应用的性能瓶颈，提供实用的优化策略和监控方案，包含大量实际案例。",
-    publish_time: "2023-12-28",
-    update_time: "2023-12-28",
-    categorys: ["后端技术"],
-    labels: [11, 12],
-    views: 734,
-    praise: 42,
-    favorites: 15,
-    author: mockUser.name,
-    user_id: mockUser.id,
-    type: 1,
-    state: 1,
-    is_deleted: false,
-  },
-  {
-    id: 6,
-    title: "CSS Grid 布局完全指南",
-    content: "全面介绍CSS Grid布局系统，从基础概念到高级应用，帮助开发者掌握现代网页布局技术。",
-    publish_time: "2023-12-20",
-    update_time: "2023-12-20",
-    categorys: ["前端技术"],
-    labels: [13, 14],
-    views: 656,
-    praise: 38,
-    favorites: 11,
-    author: mockUser.name,
-    user_id: mockUser.id,
-    type: 1,
-    state: 1,
-    is_deleted: false,
-  },
-];
-
-const popularTags = [
-  { name: "React", count: 15, color: "#61DAFB" },
-  { name: "TypeScript", count: 12, color: "#3178C6" },
-  { name: "Node.js", count: 8, color: "#339933" },
-  { name: "Vue", count: 6, color: "#4FC08D" },
-  { name: "微前端", count: 5, color: "#7B68EE" },
-  { name: "性能优化", count: 9, color: "#FF6B6B" },
-];
-
+// 文章数较小就用 mock 数据补充
 const recentActivities = [
   {
     id: 1,
     text: "发布了新文章",
     subText: "React Hooks 最佳实践与性能优化",
     time: "2小时前",
-    icon: "📝",
-    type: "article",
+    type: "article" as const,
   },
   {
     id: 2,
     text: "收到了 15 个新的关注",
     subText: "来自技术社区的同行们",
     time: "1天前",
-    icon: "❤️",
-    type: "follow",
+    type: "follow" as const,
   },
   {
     id: 3,
     text: "评论了文章",
     subText: "《Vue3 Composition API深度解析》",
     time: "2天前",
-    icon: "💬",
-    type: "comment",
+    type: "comment" as const,
   },
   {
     id: 4,
     text: "获得了 8 个赞",
     subText: "在文章《Docker容器化实践》中",
     time: "3天前",
-    icon: "⭐",
-    type: "like",
+    type: "like" as const,
   },
 ];
 
-const Profile: React.FC = () => {
-  // 视图模式状态管理
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+const activityIconMap = {
+  article: { icon: <FileText size={16} />, className: styles.activityIconArticle },
+  follow: { icon: <UserPlus size={16} />, className: styles.activityIconFollow },
+  comment: { icon: <MessageSquare size={16} />, className: styles.activityIconComment },
+  like: { icon: <Star size={16} />, className: styles.activityIconLike },
+};
 
-  const handleViewToggle = (mode: "list" | "grid") => {
-    setViewMode(mode);
-  };
+function formatDate(timestamp: number | string): string {
+  if (!timestamp) return "";
+  const ts = typeof timestamp === "string" ? parseInt(timestamp, 10) : timestamp;
+  if (isNaN(ts) || ts === 0) return "";
+  const date = new Date(ts * 1000);
+  return `${date.getFullYear()}年${date.getMonth() + 1}月`;
+}
+
+function formatPublishTime(timestamp: number | string): string {
+  if (!timestamp) return "";
+  const ts = typeof timestamp === "string" ? parseInt(timestamp, 10) : timestamp;
+  if (isNaN(ts) || ts === 0) return "";
+  const date = new Date(ts * 1000);
+  return date.toISOString().split("T")[0];
+}
+
+const Profile: React.FC = () => {
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const { user: currentUser, isAuthenticated } = useAuth();
+
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [tags, setTags] = useState<{ name: string; count: number; color: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [articleTotal, setArticleTotal] = useState(0);
+
+  const isOwnProfile = isAuthenticated && currentUser?.id.toString() === id;
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchProfileData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // 并行请求用户信息和文章列表
+        const [userResponse, articlesResponse, labelsData] = await Promise.all([
+          AuthService.getUserInfo(id).catch(() => null),
+          ArticleService.listArticlesByUserIdPages({
+            user_id: id,
+            page_from: 1,
+            page_size: 20,
+            state: 2,
+          }).catch(() => null),
+          LabelService.queryLabel({ user_id: id }).catch(() => []),
+        ]);
+
+        // 构建用户资料
+        const userData = userResponse?.data ?? (userResponse as any);
+        const mappedProfile: UserProfile = {
+          id: Number(id),
+          name: userData?.name || "未知用户",
+          avatar: userData?.avatar || `https://picsum.photos/id/${(Number(id) % 100) + 1}/150`,
+          bio: userData?.bio || userData?.signature || "",
+          account: userData?.account || "",
+          email: userData?.email || "",
+          role: userData?.role || "user",
+          location: userData?.location || "",
+          website: userData?.website || "",
+          joinDate: formatDate(userData?.create_time),
+          stats: {
+            articles: articlesResponse?.total ?? 0,
+            followers: userData?.followers_count ?? 0,
+            following: userData?.following_count ?? 0,
+          },
+        };
+        setProfile(mappedProfile);
+
+        // 构建文章列表
+        if (articlesResponse?.list) {
+          const mappedArticles: Article[] = articlesResponse.list.map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            content: item.summary || "",
+            author: item.author || mappedProfile.name,
+            user_id: item.user_id || id,
+            type: item.type ?? 1,
+            state: item.state ?? 2,
+            is_deleted: false,
+            publish_time: formatPublishTime(item.publish_time),
+            update_time: formatPublishTime(item.update_time || item.publish_time),
+            views: item.views ?? 0,
+            praise: item.praise ?? 0,
+            favorites: item.favorites ?? 0,
+            labels: item.labels || [],
+            categorys: item.categorys || [],
+          }));
+          setArticles(mappedArticles);
+          setArticleTotal(articlesResponse.total);
+        }
+
+        // 标签
+        if (Array.isArray(labelsData) && labelsData.length > 0) {
+          const tagColors = ["#61DAFB", "#3178C6", "#339933", "#4FC08D", "#7B68EE", "#FF6B6B"];
+          const mappedTags = labelsData.slice(0, 8).map((label: any, i: number) => ({
+            name: label.name || `标签${i + 1}`,
+            count: label.count ?? 0,
+            color: label.color || tagColors[i % tagColors.length],
+          }));
+          setTags(mappedTags);
+        }
+      } catch (err: any) {
+        setError(err.message || "加载失败");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className={styles.profile}>
+        <Navbar />
+        <div className={styles.loadingContainer}>
+          <div className={styles.spinner} />
+          <span>加载中...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <div className={styles.profile}>
+        <Navbar />
+        <div className={styles.loadingContainer}>
+          <span>{error || "用户不存在"}</span>
+        </div>
+      </div>
+    );
+  }
+
+  const popularTags = tags.length > 0 ? tags : [];
 
   return (
     <div className={styles.profile}>
-      {/* 顶部导航栏 */}
       <Navbar />
 
-      {/* 主内容区（左右分栏） */}
       <div className={styles.mainContent}>
-        {/* 左侧：个人信息 + 文章列表 */}
         <div className={styles.leftColumn}>
           {/* 个人信息卡片 */}
           <div className={styles.profileCard}>
@@ -213,25 +219,29 @@ const Profile: React.FC = () => {
             <div className={styles.profileContent}>
               <div className={styles.profileHeader}>
                 <div className={styles.avatarWrapper}>
-                  <img src={mockUser.avatar} alt={mockUser.name} className={styles.avatar} />
+                  <img src={profile.avatar} alt={profile.name} className={styles.avatar} />
                   <div className={styles.onlineIndicator}></div>
                 </div>
                 <div className={styles.userDetails}>
-                  <h1 className={styles.userName}>{mockUser.name}</h1>
-                  <p className={styles.bio}>{mockUser.bio}</p>
+                  <h1 className={styles.userName}>{profile.name}</h1>
+                  {profile.bio && <p className={styles.bio}>{profile.bio}</p>}
                   <div className={styles.metaInfo}>
-                    <div className={styles.metaItem}>
-                      <MapPin className={styles.metaIcon} size={14} />
-                      <span>{mockUser.location}</span>
-                    </div>
-                    <div className={styles.metaItem}>
-                      <Calendar className={styles.metaIcon} size={14} />
-                      <span>{mockUser.joinDate} 加入</span>
-                    </div>
-                    {mockUser.website && (
+                    {profile.location && (
+                      <div className={styles.metaItem}>
+                        <MapPin className={styles.metaIcon} size={14} />
+                        <span>{profile.location}</span>
+                      </div>
+                    )}
+                    {profile.joinDate && (
+                      <div className={styles.metaItem}>
+                        <Calendar className={styles.metaIcon} size={14} />
+                        <span>{profile.joinDate} 加入</span>
+                      </div>
+                    )}
+                    {profile.website && (
                       <div className={styles.metaItem}>
                         <Globe className={styles.metaIcon} size={14} />
-                        <a href={mockUser.website} target="_blank" rel="noopener noreferrer">
+                        <a href={profile.website} target="_blank" rel="noopener noreferrer">
                           个人网站
                         </a>
                       </div>
@@ -243,26 +253,28 @@ const Profile: React.FC = () => {
               <div className={styles.statsRow}>
                 <div className={styles.statItem}>
                   <FileText className={styles.statIcon} size={16} />
-                  <span className={styles.statNumber}>{mockUser.stats.articles}</span>
+                  <span className={styles.statNumber}>{profile.stats.articles}</span>
                   <span className={styles.statLabel}>文章</span>
                 </div>
                 <div className={styles.statItem}>
                   <Users className={styles.statIcon} size={16} />
-                  <span className={styles.statNumber}>{mockUser.stats.followers}</span>
+                  <span className={styles.statNumber}>{profile.stats.followers}</span>
                   <span className={styles.statLabel}>粉丝</span>
                 </div>
                 <div className={styles.statItem}>
                   <Heart className={styles.statIcon} size={16} />
-                  <span className={styles.statNumber}>{mockUser.stats.following}</span>
+                  <span className={styles.statNumber}>{profile.stats.following}</span>
                   <span className={styles.statLabel}>关注</span>
                 </div>
               </div>
 
               <div className={styles.actionButtons}>
-                <button className={styles.primaryButton}>
-                  <Edit size={14} />
-                  编辑资料
-                </button>
+                {isOwnProfile && (
+                  <button className={styles.primaryButton} onClick={() => navigate("/personal?tab=edit")}>
+                    <Edit size={14} />
+                    编辑资料
+                  </button>
+                )}
                 <button className={styles.secondaryButton}>
                   <Share2 size={14} />
                   分享主页
@@ -276,115 +288,123 @@ const Profile: React.FC = () => {
             <div className={styles.sectionHeader}>
               <div className={styles.sectionTitleWrapper}>
                 <BookOpen className={styles.sectionIcon} size={18} />
-                <h2 className={styles.sectionTitle}>我的文章</h2>
+                <h2 className={styles.sectionTitle}>文章 ({articleTotal})</h2>
               </div>
               <div className={styles.viewToggle}>
-                <button
-                  className={viewMode === "list" ? styles.activeView : styles.inactiveView}
-                  onClick={() => handleViewToggle("list")}
-                >
+                <button className={viewMode === "list" ? styles.activeView : styles.inactiveView} onClick={() => setViewMode("list")}>
                   列表
                 </button>
-                <button
-                  className={viewMode === "grid" ? styles.activeView : styles.inactiveView}
-                  onClick={() => handleViewToggle("grid")}
-                >
+                <button className={viewMode === "grid" ? styles.activeView : styles.inactiveView} onClick={() => setViewMode("grid")}>
                   网格
                 </button>
               </div>
             </div>
-            <div className={`${styles.articlesList} ${viewMode === "grid" ? styles.gridView : styles.listView}`}>
-              {mockArticles.map((article) => (
-                <article
-                  key={article.id}
-                  className={`${styles.articleCard} ${viewMode === "grid" ? styles.gridCard : styles.listCard}`}
-                >
-                  <div className={styles.articleHeader}>
-                    <div className={styles.articleCategory}>{article.categorys?.[0] || "未分类"}</div>
-                    <span className={styles.articleDate}>{article.publish_time}</span>
-                  </div>
-                  <h3 className={styles.articleTitle}>{article.title}</h3>
-                  <p className={styles.articleExcerpt}>{article.content?.substring(0, 100) || ""}...</p>
-                  <div className={styles.articleFooter}>
-                    <div className={styles.tags}>
-                      {article.labels?.slice(0, 3).map((tagId: string | number) => (
-                        <span key={tagId} className={styles.tag}>
-                          <Hash size={12} />
-                          标签{tagId}
-                        </span>
-                      ))}
-                      {(article.labels?.length || 0) > 3 && (
-                        <span className={styles.moreTags}>+{(article.labels?.length || 0) - 3}</span>
-                      )}
+            {articles.length === 0 ? (
+              <div className={styles.emptyArticles}>暂无文章</div>
+            ) : (
+              <div className={`${styles.articlesList} ${viewMode === "grid" ? styles.gridView : styles.listView}`}>
+                {articles.map((article) => (
+                  <article
+                    key={article.id}
+                    className={`${styles.articleCard} ${viewMode === "grid" ? styles.gridCard : styles.listCard}`}
+                    onClick={() => navigate(`/article/${article.id}`)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <div className={styles.articleHeader}>
+                      <div className={styles.articleCategory}>
+                        {Array.isArray(article.categorys) && article.categorys.length > 0 ? article.categorys[0] : "未分类"}
+                      </div>
+                      <span className={styles.articleDate}>{article.publish_time}</span>
                     </div>
-                    <div className={styles.articleStats}>
-                      <div className={styles.statItem}>
-                        <Eye size={14} />
-                        <span>{article.views}</span>
+                    <h3 className={styles.articleTitle}>{article.title}</h3>
+                    <p className={styles.articleExcerpt}>
+                      {(article.content || "").substring(0, 100)}
+                      {(article.content || "").length > 100 ? "..." : ""}
+                    </p>
+                    <div className={styles.articleFooter}>
+                      <div className={styles.tags}>
+                        {(article.labels || []).slice(0, 3).map((tagId: string | number) => (
+                          <span key={tagId} className={styles.tag}>
+                            <Hash size={12} />
+                            {tagId}
+                          </span>
+                        ))}
+                        {(article.labels?.length || 0) > 3 && (
+                          <span className={styles.moreTags}>+{(article.labels?.length || 0) - 3}</span>
+                        )}
                       </div>
-                      <div className={styles.statItem}>
-                        <Heart size={14} />
-                        <span>{article.praise}</span>
-                      </div>
-                      <div className={styles.statItem}>
-                        <MessageSquare size={14} />
-                        <span>{article.favorites}</span>
-                      </div>
-                      <div className={styles.statItem}>
-                        <Clock size={14} />
-                        <span>5分钟</span>
+                      <div className={styles.articleStats}>
+                        <div className={styles.statItem}>
+                          <Eye size={14} />
+                          <span>{article.views}</span>
+                        </div>
+                        <div className={styles.statItem}>
+                          <Heart size={14} />
+                          <span>{article.praise}</span>
+                        </div>
+                        <div className={styles.statItem}>
+                          <MessageSquare size={14} />
+                          <span>{article.favorites}</span>
+                        </div>
+                        <div className={styles.statItem}>
+                          <Clock size={14} />
+                          <span>5分钟</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-            <button className={styles.loadMoreButton}>加载更多文章</button>
+                  </article>
+                ))}
+              </div>
+            )}
+            {articles.length < articleTotal && <button className={styles.loadMoreButton}>加载更多文章</button>}
           </div>
         </div>
 
         {/* 右侧：侧边栏 */}
         <div className={styles.rightColumn}>
-          {/* 热门标签 */}
-          <div className={styles.widget}>
-            <div className={styles.widgetHeader}>
-              <TrendingUp className={styles.widgetIcon} size={16} />
-              <h3 className={styles.widgetTitle}>热门标签</h3>
+          {popularTags.length > 0 && (
+            <div className={styles.widget}>
+              <div className={styles.widgetHeader}>
+                <TrendingUp className={styles.widgetIcon} size={16} />
+                <h3 className={styles.widgetTitle}>常用标签</h3>
+              </div>
+              <div className={styles.popularTags}>
+                {popularTags.map((tag) => (
+                  <div
+                    key={tag.name}
+                    className={styles.popularTag}
+                    style={{
+                      backgroundColor: `${tag.color}20`,
+                      borderColor: tag.color,
+                    }}
+                  >
+                    <span className={styles.tagName}>{tag.name}</span>
+                    <span className={styles.tagCount}>{tag.count}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className={styles.popularTags}>
-              {popularTags.map((tag) => (
-                <div
-                  key={tag.name}
-                  className={styles.popularTag}
-                  style={{
-                    backgroundColor: `${tag.color}20`,
-                    borderColor: tag.color,
-                  }}
-                >
-                  <span className={styles.tagName}>{tag.name}</span>
-                  <span className={styles.tagCount}>{tag.count}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
 
-          {/* 最近动态 */}
           <div className={styles.widget}>
             <div className={styles.widgetHeader}>
               <Activity className={styles.widgetIcon} size={16} />
               <h3 className={styles.widgetTitle}>最近动态</h3>
             </div>
             <div className={styles.recentActivity}>
-              {recentActivities.map((activity) => (
-                <div key={activity.id} className={styles.activityItem}>
-                  <div className={styles.activityIcon}>{activity.icon}</div>
-                  <div className={styles.activityContent}>
-                    <div className={styles.activityText}>{activity.text}</div>
-                    <div className={styles.activitySubtext}>{activity.subText}</div>
-                    <div className={styles.activityTime}>{activity.time}</div>
+              {recentActivities.map((activity) => {
+                const meta = activityIconMap[activity.type];
+                return (
+                  <div key={activity.id} className={styles.activityItem}>
+                    <div className={`${styles.activityIcon} ${meta.className}`}>{meta.icon}</div>
+                    <div className={styles.activityContent}>
+                      <div className={styles.activityText}>{activity.text}</div>
+                      <div className={styles.activitySubtext}>{activity.subText}</div>
+                      <div className={styles.activityTime}>{activity.time}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

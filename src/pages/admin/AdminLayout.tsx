@@ -19,6 +19,7 @@ import {
 } from "react-icons/fa";
 import styles from "./AdminLayout.module.css";
 import ThemeToggle from "../../components/themeToggle/ThemeToggle";
+import Notification from "../../components/notification/Notification";
 import UserDropdown from "../../components/userDropdown/UserDropdown";
 import Footer from "../../components/footer/Footer";
 import { useAuth } from "../../contexts/AuthContext";
@@ -422,6 +423,7 @@ const AdminLayout: React.FC = () => {
             {/* 顶部操作区域 */}
             <div className={styles.adminTopBarActions}>
               <ThemeToggle />
+              <Notification />
 
               {/* 用户信息区域 */}
               <UserDropdown user={user} onLogout={handleLogout} showAdminLink={false} />

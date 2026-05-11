@@ -179,7 +179,7 @@
 }
 
 .userArea:hover {
-  background-color: var(--bg-hover);
+  /* no background change */
 }
 
 /* 用户头像 */

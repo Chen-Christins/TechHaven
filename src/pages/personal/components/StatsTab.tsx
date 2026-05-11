@@ -61,7 +61,7 @@ const StatsTab: React.FC<Props> = ({ articles, tags, totalArticles }) => {
       </div>
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <div className={styles.statIcon}>
+          <div className={`${styles.statIcon} ${styles.statIconBlue}`}>
             <FaFileAlt />
           </div>
           <div className={styles.statContent}>
@@ -70,7 +70,7 @@ const StatsTab: React.FC<Props> = ({ articles, tags, totalArticles }) => {
           </div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statIcon}>
+          <div className={`${styles.statIcon} ${styles.statIconGreen}`}>
             <FaEye />
           </div>
           <div className={styles.statContent}>
@@ -79,7 +79,7 @@ const StatsTab: React.FC<Props> = ({ articles, tags, totalArticles }) => {
           </div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statIcon}>
+          <div className={`${styles.statIcon} ${styles.statIconRed}`}>
             <FaThumbsUp />
           </div>
           <div className={styles.statContent}>
@@ -88,7 +88,7 @@ const StatsTab: React.FC<Props> = ({ articles, tags, totalArticles }) => {
           </div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statIcon}>
+          <div className={`${styles.statIcon} ${styles.statIconPurple}`}>
             <FaComment />
           </div>
           <div className={styles.statContent}>
@@ -97,7 +97,7 @@ const StatsTab: React.FC<Props> = ({ articles, tags, totalArticles }) => {
           </div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statIcon}>
+          <div className={`${styles.statIcon} ${styles.statIconOrange}`}>
             <FaTag />
           </div>
           <div className={styles.statContent}>
@@ -106,7 +106,7 @@ const StatsTab: React.FC<Props> = ({ articles, tags, totalArticles }) => {
           </div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statIcon}>
+          <div className={`${styles.statIcon} ${styles.statIconTeal}`}>
             <FaChartBar />
           </div>
           <div className={styles.statContent}>

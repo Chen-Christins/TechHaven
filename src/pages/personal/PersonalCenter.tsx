@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { FaTag, FaFileAlt, FaChartBar, FaBars, FaTimes, FaUserLock, FaUsers } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { FaTag, FaFileAlt, FaChartBar, FaBars, FaTimes, FaUserLock, FaUsers, FaBell, FaUserCircle, FaUserEdit } from "react-icons/fa";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Loading from "../../components/loading/Loading";
 import Skeleton from "../../components/skeleton/Skeleton";
 import ThemeToggle from "../../components/themeToggle/ThemeToggle";
+import Notification from "../../components/notification/Notification";
 import UserDropdown from "../../components/userDropdown/UserDropdown";
 import Footer from "../../components/footer/Footer";
 import { useAuth } from "../../contexts/AuthContext";
@@ -12,6 +13,8 @@ import MyArticlesTab from "./components/MyArticlesTab";
 import MyTagsTab from "./components/MyTagsTab";
 import StatsTab from "./components/StatsTab";
 import MyOrganizationsTab from "./components/MyOrganizationsTab";
+import NotificationsTab from "./components/NotificationsTab";
+import EditProfileTab from "./components/EditProfileTab";
 
 // 个人标签类型
 interface PersonalTag {
@@ -37,10 +40,11 @@ interface NavItem {
 
 const PersonalCenter: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, isAuthenticated, logout, loading: authLoading } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"articles" | "tags" | "stats" | "organizations">("articles");
+  const [activeTab, setActiveTab] = useState<"articles" | "tags" | "stats" | "organizations" | "notifications" | "edit">("articles");
   const [loading] = useState(false);
 
   // 标签管理状态 (needed for stats)
@@ -74,6 +78,12 @@ const PersonalCenter: React.FC = () => {
       icon: <FaFileAlt />,
       path: "/personal",
     },
+    {
+      id: "edit",
+      label: "编辑资料",
+      icon: <FaUserEdit />,
+      path: "/personal?tab=edit",
+    },
     { id: "tags", label: "我的标签", icon: <FaTag />, path: "/personal/tags" },
     {
       id: "stats",
@@ -87,12 +97,28 @@ const PersonalCenter: React.FC = () => {
       icon: <FaUsers />,
       path: "/personal/organizations",
     },
+    {
+      id: "notifications",
+      label: "通知中心",
+      icon: <FaBell />,
+      path: "/personal?tab=notifications",
+    },
   ];
 
   // 初始化标签数据
   useEffect(() => {
     setTags(mockPersonalTags);
   }, []);
+
+  // 从 URL 参数读取初始 tab
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "notifications") {
+      setActiveTab("notifications");
+    } else if (tab === "edit") {
+      setActiveTab("edit");
+    }
+  }, [searchParams]);
 
   // 清理tooltip
   useEffect(() => {
@@ -356,7 +382,9 @@ const PersonalCenter: React.FC = () => {
           {/* Logo区域 */}
           <div className={styles.adminSidebarHeader}>
             <div onClick={() => navigate("/personal")} className={styles.adminLogo}>
-              <span className={styles.adminLogoIcon}>👤</span>
+              <span className={styles.adminLogoIcon}>
+                <FaUserCircle />
+              </span>
               <span className={styles.adminLogoText}>个人中心</span>
             </div>
             <button className={styles.toggleSidebarBtn} onClick={toggleSidebar} title={sidebarCollapsed ? "展开侧边栏" : "收起侧边栏"}>
@@ -404,6 +432,7 @@ const PersonalCenter: React.FC = () => {
             {/* 顶部操作区域 */}
             <div className={styles.adminTopBarActions}>
               <ThemeToggle />
+              <Notification />
 
               {/* 用户信息区域 */}
               <UserDropdown user={currentUser} onLogout={handleLogout} showAdminLink={currentUser?.role === "管理员"} />
@@ -412,6 +441,38 @@ const PersonalCenter: React.FC = () => {
 
           {/* 页面内容 */}
           <div className={styles.adminPageContent}>
+            {/* 用户信息概览卡片 */}
+            <div className={styles.profileCard}>
+              <img src={currentUser.avatar} alt={currentUser.name} className={styles.profileAvatar} />
+              <div className={styles.profileInfo}>
+                <div className={styles.profileName}>
+                  {currentUser.name}
+                  <span className={styles.profileRoleTag}>{currentUser.role}</span>
+                </div>
+                <div className={styles.profileMeta}>
+                  <span className={styles.profileEmail}>{currentUser.email}</span>
+                  <button className={styles.profileEditBtn} onClick={() => setActiveTab("edit")}>
+                    <FaUserEdit />
+                    编辑资料
+                  </button>
+                </div>
+              </div>
+              <div className={styles.profileStats}>
+                <div className={styles.profileStatItem} onClick={() => setActiveTab("articles")}>
+                  <div className={styles.profileStatValue}>0</div>
+                  <div className={styles.profileStatLabel}>文章</div>
+                </div>
+                <div className={styles.profileStatItem} onClick={() => setActiveTab("tags")}>
+                  <div className={styles.profileStatValue}>0</div>
+                  <div className={styles.profileStatLabel}>标签</div>
+                </div>
+                <div className={styles.profileStatItem} onClick={() => setActiveTab("organizations")}>
+                  <div className={styles.profileStatValue}>0</div>
+                  <div className={styles.profileStatLabel}>组织</div>
+                </div>
+              </div>
+            </div>
+
             {/* 文章管理 */}
             {activeTab === "articles" && <MyArticlesTab />}
 
@@ -423,6 +484,12 @@ const PersonalCenter: React.FC = () => {
 
             {/* 我的组织 */}
             {activeTab === "organizations" && <MyOrganizationsTab />}
+
+            {/* 通知中心 */}
+            {activeTab === "notifications" && <NotificationsTab />}
+
+            {/* 编辑资料 */}
+            {activeTab === "edit" && <EditProfileTab />}
           </div>
 
           {/* Footer */}

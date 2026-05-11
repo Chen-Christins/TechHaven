@@ -226,10 +226,12 @@ export class AuthService {
    * @param name 新昵称 (可选)
    * @param passwd 新密码 (可选)
    */
-  static async updateUserProfile(name?: string, passwd?: string) {
+  static async updateUserProfile(name?: string, passwd?: string, bio?: string, website?: string) {
     const formData = new URLSearchParams();
     if (name) formData.append("name", name);
     if (passwd) formData.append("passwd", passwd);
+    if (bio !== undefined) formData.append("bio", bio);
+    if (website !== undefined) formData.append("website", website);
 
     return http.post("/user/update", formData.toString(), {
       headers: {
