@@ -1,17 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FaBell,
-  FaBellSlash,
-  FaComment,
-  FaHeart,
-  FaUserPlus,
-  FaBullhorn,
-  FaNewspaper,
-} from "react-icons/fa";
+import { FaBell, FaBellSlash, FaComment, FaHeart, FaUserPlus, FaBullhorn, FaNewspaper } from "react-icons/fa";
 import styles from "./Notification.module.css";
 import NotificationService from "../../services/NotificationService";
 import { isRead, markRead, markAllRead, subscribe } from "../../utils/notificationState";
+import { notificationWS } from "../../utils/websocket";
+import { useAuth } from "../../contexts/AuthContext";
 import type { Notification as NotificationItem } from "../../types/notification";
 
 const MOCK_ENABLED = true;
@@ -149,6 +143,7 @@ function formatTime(timestamp: number): string {
 
 const Notification: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -197,6 +192,32 @@ const Notification: React.FC = () => {
     });
   }, [fetchUnreadCount]);
 
+  // WebSocket connection management — connect when authenticated
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    notificationWS.connect();
+
+    const unsub = notificationWS.onMessage("notification", (data) => {
+      const newNotification: NotificationItem = {
+        id: data.id ?? Date.now(),
+        type: data.notification_type ?? data.type ?? "system",
+        title: data.title ?? "",
+        content: data.content ?? data.body ?? "",
+        is_read: false,
+        create_time: data.create_time ?? Math.floor(Date.now() / 1000),
+        link: data.link,
+      };
+      setNotifications((prev) => [newNotification, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+    });
+
+    return () => {
+      unsub();
+      notificationWS.disconnect();
+    };
+  }, [isAuthenticated]);
+
   useEffect(() => {
     fetchUnreadCount();
   }, [fetchUnreadCount]);
@@ -232,9 +253,7 @@ const Notification: React.FC = () => {
   const handleItemClick = (item: NotificationItem) => {
     if (!item.is_read) {
       markRead(item.id);
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n))
-      );
+      setNotifications((prev) => prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n)));
       setUnreadCount((prev) => Math.max(0, prev - 1));
       NotificationService.markAsRead(item.id).catch(() => {});
     }
@@ -249,18 +268,13 @@ const Notification: React.FC = () => {
     navigate("/personal?tab=notifications");
   };
 
-  const typeMeta = (type: string) =>
-    TYPE_ICON_MAP[type] || TYPE_ICON_MAP.system;
+  const typeMeta = (type: string) => TYPE_ICON_MAP[type] || TYPE_ICON_MAP.system;
 
   return (
     <div className={styles.wrapper} ref={wrapperRef}>
       <button className={styles.bellButton} onClick={handleToggle} title="通知">
         <FaBell className={styles.bellIcon} />
-        {unreadCount > 0 && (
-          <span className={styles.badge}>
-            {unreadCount > 99 ? "99+" : unreadCount}
-          </span>
-        )}
+        {unreadCount > 0 && <span className={styles.badge}>{unreadCount > 99 ? "99+" : unreadCount}</span>}
       </button>
 
       {open && (
@@ -291,9 +305,7 @@ const Notification: React.FC = () => {
                     className={`${styles.item} ${!item.is_read ? styles.itemUnread : ""}`}
                     onClick={() => handleItemClick(item)}
                   >
-                    <div className={`${styles.itemIcon} ${meta.className}`}>
-                      {meta.icon}
-                    </div>
+                    <div className={`${styles.itemIcon} ${meta.className}`}>{meta.icon}</div>
                     <div className={styles.itemBody}>
                       <div className={styles.itemTitle}>{item.title}</div>
                       <div className={styles.itemContent}>{item.content}</div>

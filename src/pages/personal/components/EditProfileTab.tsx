@@ -158,12 +158,7 @@ const EditProfileTab: React.FC = () => {
               </div>
               <div className={styles.editFormGroup}>
                 <label className={styles.editLabel}>邮箱</label>
-                <input
-                  type="email"
-                  className={styles.editInput}
-                  value={user?.email || ""}
-                  disabled
-                />
+                <input type="email" className={styles.editInput} value={user?.email || ""} disabled />
                 <span className={styles.editHint}>邮箱暂不支持自行修改</span>
               </div>
               <div className={styles.editFormGroup}>
@@ -194,11 +189,7 @@ const EditProfileTab: React.FC = () => {
                 />
               </div>
             </div>
-            <button
-              className={styles.editSaveBtn}
-              onClick={handleSaveProfile}
-              disabled={saving}
-            >
+            <button className={styles.editSaveBtn} onClick={handleSaveProfile} disabled={saving}>
               <FaSave />
               {saving ? "保存中..." : "保存修改"}
             </button>
@@ -242,11 +233,7 @@ const EditProfileTab: React.FC = () => {
                 placeholder="请再次输入新密码"
               />
             </div>
-            <button
-              className={styles.editSaveBtn}
-              onClick={handleChangePassword}
-              disabled={saving}
-            >
+            <button className={styles.editSaveBtn} onClick={handleChangePassword} disabled={saving}>
               <FaLock />
               {saving ? "修改中..." : "修改密码"}
             </button>

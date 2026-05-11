@@ -57,7 +57,18 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
 
     const fetchArticles = async () => {
       try {
-        let res: { total: number; list: Array<{ id: string | number; title: string; author: string; summary: string; state: number; type: number; publish_time: number }> };
+        let res: {
+          total: number;
+          list: Array<{
+            id: string | number;
+            title: string;
+            author: string;
+            summary: string;
+            state: number;
+            type: number;
+            publish_time: number;
+          }>;
+        };
 
         if (labelId) {
           res = await ArticleService.listByLabel({

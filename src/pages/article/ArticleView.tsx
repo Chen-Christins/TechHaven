@@ -293,17 +293,11 @@ const ArticleView: React.FC<ArticleViewProps> = ({
       <aside className={styles.sidebar}>
         {/* 作者卡片 */}
         <div className={styles.authorCard}>
-          <div
-            className={styles.authorCardAvatar}
-            onClick={() => authorId && navigate(`/profile/${authorId}`)}
-          >
+          <div className={styles.authorCardAvatar} onClick={() => authorId && navigate(`/profile/${authorId}`)}>
             <User size={22} />
           </div>
           <div className={styles.authorCardInfo}>
-            <span
-              className={styles.authorCardName}
-              onClick={() => authorId && navigate(`/profile/${authorId}`)}
-            >
+            <span className={styles.authorCardName} onClick={() => authorId && navigate(`/profile/${authorId}`)}>
               {author}
             </span>
             <span className={styles.authorCardMeta}>{pushlish_time} 发布</span>
@@ -331,10 +325,14 @@ const ArticleView: React.FC<ArticleViewProps> = ({
             <div className={styles.tagCardTitle}>分类 & 标签</div>
             <div className={styles.tagCardContent}>
               {categories.map((cat, i) => (
-                <span key={`cat-${i}`} className={styles.categoryBadge}>{cat}</span>
+                <span key={`cat-${i}`} className={styles.categoryBadge}>
+                  {cat}
+                </span>
               ))}
               {labels.map((label, i) => (
-                <span key={`label-${i}`} className={styles.labelTag}>{label}</span>
+                <span key={`label-${i}`} className={styles.labelTag}>
+                  {label}
+                </span>
               ))}
             </div>
           </div>
@@ -357,7 +355,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
             </div>
           </nav>
         )}
-        </aside>
+      </aside>
       <div className={styles.content}>
         <article className={styles.article}>
           {/* 文章头部 */}
@@ -365,14 +363,29 @@ const ArticleView: React.FC<ArticleViewProps> = ({
             <h1 className={styles.title}>{title}</h1>
 
             <div className={styles.metaRow}>
-              <span className={styles.metaItem}><Calendar size={13} />{pushlish_time} 发布</span>
-              {update_time !== pushlish_time && (
-                <span className={styles.metaItem}>{update_time} 更新</span>
+              <span className={styles.metaItem}>
+                <Calendar size={13} />
+                {pushlish_time} 发布
+              </span>
+              {update_time !== pushlish_time && <span className={styles.metaItem}>{update_time} 更新</span>}
+              <span className={styles.metaItem}>
+                <Eye size={14} />
+                {views} 阅读
+              </span>
+              <span className={styles.metaItem}>
+                <Heart size={14} />
+                {praises} 点赞
+              </span>
+              <span className={styles.metaItem}>
+                <MessageSquare size={14} />
+                {comments} 评论
+              </span>
+              {readingTime && (
+                <span className={styles.metaItem}>
+                  <Clock size={14} />
+                  {readingTime} 分钟阅读
+                </span>
               )}
-              <span className={styles.metaItem}><Eye size={14} />{views} 阅读</span>
-              <span className={styles.metaItem}><Heart size={14} />{praises} 点赞</span>
-              <span className={styles.metaItem}><MessageSquare size={14} />{comments} 评论</span>
-              {readingTime && <span className={styles.metaItem}><Clock size={14} />{readingTime} 分钟阅读</span>}
             </div>
           </header>
 

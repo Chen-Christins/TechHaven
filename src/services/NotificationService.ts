@@ -5,10 +5,7 @@ export class NotificationService {
   /**
    * 获取通知列表
    */
-  static async getNotifications(params?: {
-    page_num?: number;
-    page_size?: number;
-  }): Promise<NotificationListResponse> {
+  static async getNotifications(params?: { page_num?: number; page_size?: number }): Promise<NotificationListResponse> {
     const response = await http.get<NotificationListResponse>("/notification/list", {
       params: {
         page_num: params?.page_num ?? 1,

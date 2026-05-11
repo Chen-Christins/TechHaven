@@ -382,7 +382,9 @@ const PersonalCenter: React.FC = () => {
           {/* Logo区域 */}
           <div className={styles.adminSidebarHeader}>
             <div onClick={() => navigate("/personal")} className={styles.adminLogo}>
-              <span className={styles.adminLogoIcon}><FaUserCircle /></span>
+              <span className={styles.adminLogoIcon}>
+                <FaUserCircle />
+              </span>
               <span className={styles.adminLogoText}>个人中心</span>
             </div>
             <button className={styles.toggleSidebarBtn} onClick={toggleSidebar} title={sidebarCollapsed ? "展开侧边栏" : "收起侧边栏"}>
@@ -441,11 +443,7 @@ const PersonalCenter: React.FC = () => {
           <div className={styles.adminPageContent}>
             {/* 用户信息概览卡片 */}
             <div className={styles.profileCard}>
-              <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
-                className={styles.profileAvatar}
-              />
+              <img src={currentUser.avatar} alt={currentUser.name} className={styles.profileAvatar} />
               <div className={styles.profileInfo}>
                 <div className={styles.profileName}>
                   {currentUser.name}
@@ -453,34 +451,22 @@ const PersonalCenter: React.FC = () => {
                 </div>
                 <div className={styles.profileMeta}>
                   <span className={styles.profileEmail}>{currentUser.email}</span>
-                  <button
-                    className={styles.profileEditBtn}
-                    onClick={() => setActiveTab("edit")}
-                  >
+                  <button className={styles.profileEditBtn} onClick={() => setActiveTab("edit")}>
                     <FaUserEdit />
                     编辑资料
                   </button>
                 </div>
               </div>
               <div className={styles.profileStats}>
-                <div
-                  className={styles.profileStatItem}
-                  onClick={() => setActiveTab("articles")}
-                >
+                <div className={styles.profileStatItem} onClick={() => setActiveTab("articles")}>
                   <div className={styles.profileStatValue}>0</div>
                   <div className={styles.profileStatLabel}>文章</div>
                 </div>
-                <div
-                  className={styles.profileStatItem}
-                  onClick={() => setActiveTab("tags")}
-                >
+                <div className={styles.profileStatItem} onClick={() => setActiveTab("tags")}>
                   <div className={styles.profileStatValue}>0</div>
                   <div className={styles.profileStatLabel}>标签</div>
                 </div>
-                <div
-                  className={styles.profileStatItem}
-                  onClick={() => setActiveTab("organizations")}
-                >
+                <div className={styles.profileStatItem} onClick={() => setActiveTab("organizations")}>
                   <div className={styles.profileStatValue}>0</div>
                   <div className={styles.profileStatLabel}>组织</div>
                 </div>
