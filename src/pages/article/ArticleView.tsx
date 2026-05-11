@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -7,6 +8,7 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import "katex/dist/katex.min.css";
 import mermaid from "mermaid";
+import { Eye, Heart, MessageSquare, Clock, User, Calendar, FileText, Users } from "lucide-react";
 import styles from "./ArticleView.module.css";
 
 interface Heading {
@@ -15,15 +17,27 @@ interface Heading {
   level: number;
 }
 
+export interface AuthorStats {
+  followers: number;
+  articles: number;
+  likes: number;
+}
+
 interface ArticleViewProps {
   title: string;
   content: string;
   className?: string;
   author: string;
+  authorId?: string | number;
+  authorStats?: AuthorStats;
   views: number;
   praises: number;
+  comments?: number;
   update_time: string;
   pushlish_time: string;
+  categories?: string[];
+  labels?: string[];
+  readingTime?: number;
 }
 
 // 初始化 Mermaid 配置
@@ -86,13 +100,20 @@ interface HeadingComponentProps extends React.HTMLAttributes<HTMLHeadingElement>
 const ArticleView: React.FC<ArticleViewProps> = ({
   title,
   author,
+  authorId,
+  authorStats,
   views,
   praises,
+  comments = 0,
   update_time,
   pushlish_time,
   content,
   className = "",
+  categories = [],
+  labels = [],
+  readingTime,
 }) => {
+  const navigate = useNavigate();
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [activeId, setActiveId] = useState<string>("");
   const [isContentReady, setIsContentReady] = useState(false);
@@ -269,8 +290,43 @@ const ArticleView: React.FC<ArticleViewProps> = ({
 
   return (
     <div className={`${styles.container} ${className} ${!isContentReady ? styles.loading : styles.ready}`} ref={contentRef}>
-      {headings.length > 0 && (
-        <aside className={styles.sidebar}>
+      <aside className={styles.sidebar}>
+        {/* 作者卡片 */}
+        <div className={styles.authorCard}>
+          <div
+            className={styles.authorCardAvatar}
+            onClick={() => authorId && navigate(`/profile/${authorId}`)}
+          >
+            <User size={22} />
+          </div>
+          <div className={styles.authorCardInfo}>
+            <span
+              className={styles.authorCardName}
+              onClick={() => authorId && navigate(`/profile/${authorId}`)}
+            >
+              {author}
+            </span>
+            <span className={styles.authorCardMeta}>{pushlish_time} 发布</span>
+            {authorStats && (
+              <div className={styles.authorCardStats}>
+                <span className={styles.authorStatItem}>
+                  <FileText size={12} />
+                  {authorStats.articles}
+                </span>
+                <span className={styles.authorStatItem}>
+                  <Users size={12} />
+                  {authorStats.followers}
+                </span>
+                <span className={styles.authorStatItem}>
+                  <Heart size={12} />
+                  {authorStats.likes}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {headings.length > 0 && (
           <nav className={styles.toc}>
             <div className={styles.tocTitle}>目录</div>
             <div className={styles.tocList}>
@@ -286,18 +342,43 @@ const ArticleView: React.FC<ArticleViewProps> = ({
               ))}
             </div>
           </nav>
+        )}
         </aside>
-      )}
       <div className={styles.content}>
         <article className={styles.article}>
-          <h1 className={styles.title}>{title}</h1>
-          <div className={styles.articleMeta}>
-            <span>发布时间: {pushlish_time}</span>
-            <span>作者: {author}</span>
-            <span>阅读量: {views}</span>
-            <span>点赞量: {praises}</span>
-            <span>更新时间: {update_time}</span>
-          </div>
+          {/* 文章头部 */}
+          <header className={styles.articleHeader}>
+            {(categories.length > 0 || labels.length > 0) && (
+              <div className={styles.tagRow}>
+                <div className={styles.categoriesGroup}>
+                  {categories.map((cat, i) => (
+                    <span key={`cat-${i}`} className={styles.categoryBadge}>{cat}</span>
+                  ))}
+                </div>
+                {labels.length > 0 && (
+                  <div className={styles.labelsGroup}>
+                    {labels.map((label, i) => (
+                      <span key={`label-${i}`} className={styles.labelTag}>{label}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <h1 className={styles.title}>{title}</h1>
+
+            <div className={styles.metaRow}>
+              <span className={styles.metaItem}><Calendar size={13} />{pushlish_time} 发布</span>
+              {update_time !== pushlish_time && (
+                <span className={styles.metaItem}>{update_time} 更新</span>
+              )}
+              <span className={styles.metaItem}><Eye size={14} />{views} 阅读</span>
+              <span className={styles.metaItem}><Heart size={14} />{praises} 点赞</span>
+              <span className={styles.metaItem}><MessageSquare size={14} />{comments} 评论</span>
+              {readingTime && <span className={styles.metaItem}><Clock size={14} />{readingTime} 分钟阅读</span>}
+            </div>
+          </header>
+
           <div className={`${styles.markdownBody} ${!isContentReady ? styles.contentLoading : styles.contentReady}`}>
             {!isContentReady && (
               <div className={styles.loadingIndicator}>

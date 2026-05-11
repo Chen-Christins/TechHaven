@@ -1,0 +1,260 @@
+.wrapper {
+  position: relative;
+}
+
+.bellButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
+  margin-right: 0.25rem;
+}
+
+.bellButton:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.bellIcon {
+  font-size: 1.2rem;
+}
+
+.badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background-color: var(--error);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 360px;
+  max-height: 480px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  z-index: 1001;
+  overflow: hidden;
+  animation: dropdownSlide 0.2s ease-out;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.markAllRead {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.markAllRead:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.list {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  color: var(--text-tertiary);
+}
+
+.emptyIcon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: 14px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 0.15s;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item:hover {
+  background-color: var(--bg-hover);
+}
+
+.itemUnread {
+  background-color: rgba(59, 130, 246, 0.04);
+}
+
+.itemIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.iconSystem {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+}
+
+.iconComment {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.iconLike {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
+.iconFollow {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: var(--accent);
+}
+
+.iconArticle {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+}
+
+.itemBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemContent {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.itemTime {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+.unreadDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border-primary);
+}
+
+.viewAll {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.viewAll:hover {
+  color: var(--primary);
+  background-color: rgba(59, 130, 246, 0.08);
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .dropdown {
+    width: calc(100vw - 32px);
+    right: -140px;
+  }
+}

@@ -17,6 +17,7 @@ import {
 import styles from "./Navbar.module.css";
 import ThemeToggle from "../themeToggle/ThemeToggle";
 import AuthButtons from "../authButtons/AuthButtons";
+import Notification from "../notification/Notification";
 import { useAuth } from "../../contexts/AuthContext";
 
 const Navbar: React.FC = () => {
@@ -312,6 +313,9 @@ const Navbar: React.FC = () => {
           )}
           {/* 主题切换按钮 */}
           <ThemeToggle />
+
+          {/* 通知按钮 */}
+          {isAuthenticated && <Notification />}
 
           {loading ? (
             // 认证状态加载中 - 显示占位符以避免状态切换的闪烁

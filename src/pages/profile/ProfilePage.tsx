@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./ProfilePage.module.css";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import BackToTop from "../../components/backToTop/BackToTop";
+import { useAuth } from "../../contexts/AuthContext";
 import {
   MapPin,
   Calendar,
@@ -19,6 +21,8 @@ import {
   Edit,
   Share2,
   BookOpen,
+  Star,
+  UserPlus,
 } from "lucide-react";
 import type { Article, UserProfile } from "../../types/index";
 
@@ -161,36 +165,45 @@ const recentActivities = [
     text: "发布了新文章",
     subText: "React Hooks 最佳实践与性能优化",
     time: "2小时前",
-    icon: "📝",
-    type: "article",
+    type: "article" as const,
   },
   {
     id: 2,
     text: "收到了 15 个新的关注",
     subText: "来自技术社区的同行们",
     time: "1天前",
-    icon: "❤️",
-    type: "follow",
+    type: "follow" as const,
   },
   {
     id: 3,
     text: "评论了文章",
     subText: "《Vue3 Composition API深度解析》",
     time: "2天前",
-    icon: "💬",
-    type: "comment",
+    type: "comment" as const,
   },
   {
     id: 4,
     text: "获得了 8 个赞",
     subText: "在文章《Docker容器化实践》中",
     time: "3天前",
-    icon: "⭐",
-    type: "like",
+    type: "like" as const,
   },
 ];
 
+const activityIconMap = {
+  article: { icon: <FileText size={16} />, className: styles.activityIconArticle },
+  follow: { icon: <UserPlus size={16} />, className: styles.activityIconFollow },
+  comment: { icon: <MessageSquare size={16} />, className: styles.activityIconComment },
+  like: { icon: <Star size={16} />, className: styles.activityIconLike },
+};
+
 const Profile: React.FC = () => {
+  const navigate = useNavigate();
+  const { user: currentUser, isAuthenticated } = useAuth();
+
+  // 判断是否为本人主页
+  const isOwnProfile = isAuthenticated && currentUser?.id === mockUser.id;
+
   // 视图模式状态管理
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
@@ -259,10 +272,15 @@ const Profile: React.FC = () => {
               </div>
 
               <div className={styles.actionButtons}>
-                <button className={styles.primaryButton}>
-                  <Edit size={14} />
-                  编辑资料
-                </button>
+                {isOwnProfile && (
+                  <button
+                    className={styles.primaryButton}
+                    onClick={() => navigate("/personal?tab=edit")}
+                  >
+                    <Edit size={14} />
+                    编辑资料
+                  </button>
+                )}
                 <button className={styles.secondaryButton}>
                   <Share2 size={14} />
                   分享主页
@@ -375,16 +393,19 @@ const Profile: React.FC = () => {
               <h3 className={styles.widgetTitle}>最近动态</h3>
             </div>
             <div className={styles.recentActivity}>
-              {recentActivities.map((activity) => (
-                <div key={activity.id} className={styles.activityItem}>
-                  <div className={styles.activityIcon}>{activity.icon}</div>
-                  <div className={styles.activityContent}>
-                    <div className={styles.activityText}>{activity.text}</div>
-                    <div className={styles.activitySubtext}>{activity.subText}</div>
-                    <div className={styles.activityTime}>{activity.time}</div>
+              {recentActivities.map((activity) => {
+                const meta = activityIconMap[activity.type];
+                return (
+                  <div key={activity.id} className={styles.activityItem}>
+                    <div className={`${styles.activityIcon} ${meta.className}`}>{meta.icon}</div>
+                    <div className={styles.activityContent}>
+                      <div className={styles.activityText}>{activity.text}</div>
+                      <div className={styles.activitySubtext}>{activity.subText}</div>
+                      <div className={styles.activityTime}>{activity.time}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

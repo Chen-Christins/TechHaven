@@ -82,10 +82,20 @@ const ArticleViewPage: React.FC = () => {
                   title={article.title}
                   content={article.content}
                   author={article.author}
+                  authorId={article.user_id}
+                  authorStats={{
+                    articles: 24,
+                    followers: 1284,
+                    likes: 342,
+                  }}
                   views={article.views ?? 0}
                   praises={article.praise ?? article.praises ?? 0}
+                  comments={article.favorites ?? 0}
                   update_time={formatToChinaTime(Number(article.update_time))}
                   pushlish_time={article.publish_time ? formatToChinaTime(Number(article.publish_time)) : "暂未发布"}
+                  categories={article.categorys}
+                  labels={article.labels?.map((l: string | number) => String(l))}
+                  readingTime={article.content ? Math.max(1, Math.ceil(article.content.length / 500)) : undefined}
                 />
               )}
             </>
