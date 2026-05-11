@@ -42,7 +42,6 @@
   display: flex;
   flex-direction: column;
   box-shadow: 2px 0 12px rgba(0, 0, 0, 0.06);
-  transition: width 0.25s ease;
 }
 
 .adminSidebar:not(.collapsed) {
@@ -56,15 +55,22 @@
 
 .adminSidebarHeader {
   padding: 22px 18px;
-  border-bottom: 1px solid transparent;
-  background-image: linear-gradient(var(--card-bg), var(--card-bg)),
-    linear-gradient(90deg, var(--primary), var(--accent), transparent);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
   min-height: 68px;
+  position: relative;
+}
+
+.adminSidebarHeader::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--primary), var(--accent), transparent);
+  opacity: 0.3;
 }
 
 .adminSidebar.collapsed .adminSidebarHeader {
@@ -82,7 +88,6 @@
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: color 0.2s;
 }
 
 .adminLogo:hover {
@@ -104,7 +109,6 @@
   color: white;
   border-radius: 10px;
   flex-shrink: 0;
-  transition: all 0.25s ease;
 }
 
 .adminSidebar.collapsed .adminLogoIcon {
@@ -118,7 +122,6 @@
   letter-spacing: -0.3px;
   white-space: nowrap;
   overflow: hidden;
-  transition: opacity 0.25s ease;
 }
 
 .adminSidebar.collapsed .adminLogoText {
@@ -138,7 +141,6 @@
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  transition: all 0.2s;
 }
 
 .toggleSidebarBtn:hover {
@@ -188,7 +190,6 @@
   cursor: pointer;
   text-decoration: none;
   position: relative;
-  transition: all 0.2s ease;
 }
 
 .adminNavLink:hover {
@@ -221,7 +222,6 @@
   justify-content: center;
   min-width: 24px;
   color: currentColor;
-  transition: transform 0.2s;
 }
 
 .adminNavLink.active .adminNavIcon {
@@ -230,7 +230,6 @@
 
 .adminNavText {
   white-space: nowrap;
-  transition: opacity 0.25s ease;
 }
 
 .adminSidebar.collapsed .adminNavText {
@@ -257,7 +256,6 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  transition: margin-left 0.25s ease;
 }
 
 .adminMainContent.expanded {
@@ -1028,7 +1026,6 @@
   color: white;
   font-size: 22px;
   flex-shrink: 0;
-  transition: transform 0.2s;
 }
 
 .statCard:hover .statIcon {
@@ -1562,7 +1559,6 @@
   color: white;
   font-size: 12px;
   opacity: 0;
-  transition: opacity 0.2s;
   border-radius: 50%;
 }
 
@@ -1576,12 +1572,18 @@
   margin: 0;
 }
 
+.editFormGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 24px;
+}
+
 .editFormGroup {
   margin-bottom: 20px;
 }
 
-.editFormGroup:last-of-type {
-  margin-bottom: 24px;
+.editFormGrid .editFormGroup {
+  margin-bottom: 20px;
 }
 
 .editLabel {
@@ -1594,14 +1596,12 @@
 
 .editInput {
   width: 100%;
-  max-width: 480px;
   padding: 10px 14px;
   border: 1px solid var(--border-primary);
   border-radius: 10px;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-size: 14px;
-  transition: all 0.2s;
   box-sizing: border-box;
 }
 
@@ -1636,7 +1636,6 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 .editSaveBtn:hover:not(:disabled) {
@@ -1725,7 +1724,6 @@
   color: var(--text-secondary);
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 .profileEditBtn:hover {
@@ -1744,7 +1742,6 @@
   cursor: pointer;
   padding: 8px 16px;
   border-radius: 12px;
-  transition: all 0.2s;
   border: 1px solid transparent;
 }
 
@@ -1791,6 +1788,10 @@
 
   .profileStatValue {
     font-size: 20px;
+  }
+
+  .editFormGrid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1862,7 +1863,6 @@
   padding: 16px 20px;
   cursor: pointer;
   border-bottom: 1px solid var(--border-light);
-  transition: background-color 0.15s;
 }
 
 .notifItem:last-child {

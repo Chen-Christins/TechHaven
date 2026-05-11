@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { FaCamera, FaUser, FaLock, FaSave } from "react-icons/fa";
+import { FaCamera, FaUser, FaLock, FaSave, FaQuoteRight, FaGlobe } from "react-icons/fa";
 import { useAuth } from "../../../contexts/AuthContext";
 import { AuthService } from "../../../services/authService";
 import { FileService } from "../../../services/fileService";
@@ -11,6 +11,8 @@ const EditProfileTab: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState(user?.name || "");
+  const [motto, setMotto] = useState("");
+  const [website, setWebsite] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -65,7 +67,7 @@ const EditProfileTab: React.FC = () => {
 
     setSaving(true);
     try {
-      await AuthService.updateUserProfile(name.trim());
+      await AuthService.updateUserProfile(name.trim(), undefined, motto.trim(), website.trim());
       message.success("个人资料已更新");
     } catch (err: any) {
       message.error(err?.message || "保存失败");
@@ -143,25 +145,54 @@ const EditProfileTab: React.FC = () => {
             <span>基本信息</span>
           </div>
           <div className={styles.editCardBody}>
-            <div className={styles.editFormGroup}>
-              <label className={styles.editLabel}>昵称</label>
-              <input
-                type="text"
-                className={styles.editInput}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="请输入昵称"
-              />
-            </div>
-            <div className={styles.editFormGroup}>
-              <label className={styles.editLabel}>邮箱</label>
-              <input
-                type="email"
-                className={styles.editInput}
-                value={user?.email || ""}
-                disabled
-              />
-              <span className={styles.editHint}>邮箱暂不支持自行修改</span>
+            <div className={styles.editFormGrid}>
+              <div className={styles.editFormGroup}>
+                <label className={styles.editLabel}>昵称</label>
+                <input
+                  type="text"
+                  className={styles.editInput}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="请输入昵称"
+                />
+              </div>
+              <div className={styles.editFormGroup}>
+                <label className={styles.editLabel}>邮箱</label>
+                <input
+                  type="email"
+                  className={styles.editInput}
+                  value={user?.email || ""}
+                  disabled
+                />
+                <span className={styles.editHint}>邮箱暂不支持自行修改</span>
+              </div>
+              <div className={styles.editFormGroup}>
+                <label className={styles.editLabel}>
+                  <FaQuoteRight size={12} style={{ marginRight: 4 }} />
+                  座右铭
+                </label>
+                <input
+                  type="text"
+                  className={styles.editInput}
+                  value={motto}
+                  onChange={(e) => setMotto(e.target.value)}
+                  placeholder="一句话介绍自己"
+                  maxLength={100}
+                />
+              </div>
+              <div className={styles.editFormGroup}>
+                <label className={styles.editLabel}>
+                  <FaGlobe size={12} style={{ marginRight: 4 }} />
+                  个人网站
+                </label>
+                <input
+                  type="url"
+                  className={styles.editInput}
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="https://example.com"
+                />
+              </div>
             </div>
             <button
               className={styles.editSaveBtn}

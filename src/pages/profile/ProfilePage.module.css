@@ -85,7 +85,6 @@
   border: 4px solid var(--card-bg);
   object-fit: cover;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  transition: transform 0.2s;
 }
 
 .avatar:hover {
@@ -159,7 +158,6 @@
 .metaItem a {
   color: var(--primary);
   text-decoration: none;
-  transition: opacity 0.2s;
 }
 
 .metaItem a:hover {
@@ -184,7 +182,6 @@
   gap: 4px;
   padding: 8px 12px;
   border-radius: 10px;
-  transition: background-color 0.2s;
 }
 
 .statsRow .statItem:hover {
@@ -227,7 +224,6 @@
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: all 0.2s;
 }
 
 .primaryButton {
@@ -307,7 +303,6 @@
   font-size: 0.82rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 .activeView {
@@ -336,7 +331,6 @@
   padding: 22px;
   cursor: pointer;
   background: var(--card-bg);
-  transition: all 0.2s ease;
 }
 
 .articleCard:hover {
@@ -374,7 +368,6 @@
   color: var(--text-primary);
   margin: 0 0 10px 0;
   line-height: 1.4;
-  transition: color 0.15s;
 }
 
 .articleCard:hover .articleTitle {
@@ -418,7 +411,6 @@
   font-size: 0.78rem;
   font-weight: 500;
   border: 1px solid var(--border-primary);
-  transition: all 0.15s;
 }
 
 .tag:hover {
@@ -460,7 +452,6 @@
   font-weight: 600;
   cursor: pointer;
   margin-top: 20px;
-  transition: all 0.2s;
 }
 
 .loadMoreButton:hover {
@@ -512,7 +503,6 @@
   padding: 10px 14px;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s;
   border: 1px solid transparent;
 }
 
@@ -552,7 +542,6 @@
   cursor: pointer;
   border: 1px solid var(--border-light);
   background: var(--bg-primary);
-  transition: all 0.2s;
 }
 
 .activityItem:hover {

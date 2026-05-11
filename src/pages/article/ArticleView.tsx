@@ -326,6 +326,20 @@ const ArticleView: React.FC<ArticleViewProps> = ({
           </div>
         </div>
 
+        {(categories.length > 0 || labels.length > 0) && (
+          <div className={styles.tagCard}>
+            <div className={styles.tagCardTitle}>分类 & 标签</div>
+            <div className={styles.tagCardContent}>
+              {categories.map((cat, i) => (
+                <span key={`cat-${i}`} className={styles.categoryBadge}>{cat}</span>
+              ))}
+              {labels.map((label, i) => (
+                <span key={`label-${i}`} className={styles.labelTag}>{label}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {headings.length > 0 && (
           <nav className={styles.toc}>
             <div className={styles.tocTitle}>目录</div>
@@ -348,23 +362,6 @@ const ArticleView: React.FC<ArticleViewProps> = ({
         <article className={styles.article}>
           {/* 文章头部 */}
           <header className={styles.articleHeader}>
-            {(categories.length > 0 || labels.length > 0) && (
-              <div className={styles.tagRow}>
-                <div className={styles.categoriesGroup}>
-                  {categories.map((cat, i) => (
-                    <span key={`cat-${i}`} className={styles.categoryBadge}>{cat}</span>
-                  ))}
-                </div>
-                {labels.length > 0 && (
-                  <div className={styles.labelsGroup}>
-                    {labels.map((label, i) => (
-                      <span key={`label-${i}`} className={styles.labelTag}>{label}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
             <h1 className={styles.title}>{title}</h1>
 
             <div className={styles.metaRow}>

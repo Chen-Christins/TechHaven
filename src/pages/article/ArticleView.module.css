@@ -23,7 +23,6 @@
 .contentReady {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .loadingIndicator {
@@ -62,6 +61,10 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  position: sticky;
+  top: 80px;
+  align-self: flex-start;
+  max-height: calc(100vh - 96px);
 }
 
 /* 作者卡片（侧边栏） */
@@ -87,7 +90,6 @@
   justify-content: center;
   flex-shrink: 0;
   cursor: pointer;
-  transition: transform 0.2s;
 }
 
 .authorCardAvatar:hover {
@@ -106,7 +108,6 @@
   font-weight: 600;
   color: var(--text-primary);
   cursor: pointer;
-  transition: color 0.15s;
 }
 
 .authorCardName:hover {
@@ -138,9 +139,29 @@
   opacity: 0.6;
 }
 
+/* 分类 & 标签卡片 */
+.tagCard {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.tagCardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.tagCardContent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .toc {
-  position: sticky;
-  top: 80px;
   background: var(--card-bg);
   border-radius: 12px;
   padding: 18px;
@@ -186,7 +207,6 @@
   border-left: 2px solid transparent;
   border-radius: 0 6px 6px 0;
   cursor: pointer;
-  transition: all 0.15s;
 }
 
 .tocItem:hover {
@@ -232,23 +252,6 @@
   border-bottom: 1px solid var(--border-light);
 }
 
-.tagRow {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-.categoriesGroup,
-.labelsGroup {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
 .categoryBadge {
   padding: 4px 12px;
   border-radius: 6px;
@@ -290,7 +293,6 @@
   background: var(--bg-secondary);
   color: var(--text-secondary);
   border: 1px solid var(--border-primary);
-  transition: all 0.15s;
   cursor: pointer;
 }
 
@@ -356,7 +358,6 @@
   margin: 20px auto;
   border-radius: 10px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s;
 }
 
 .markdownBody img:hover {
@@ -487,7 +488,6 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 11px;
-  transition: all 0.15s;
 }
 
 .copyButton:hover {
@@ -573,10 +573,10 @@
   .sidebar {
     width: 100%;
     position: static;
+    max-height: none;
   }
 
   .toc {
-    position: static;
     max-height: none;
   }
 

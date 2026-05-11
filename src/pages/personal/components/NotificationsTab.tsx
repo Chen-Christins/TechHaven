@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaBellSlash,
@@ -10,6 +10,7 @@ import {
   FaCheckDouble,
 } from "react-icons/fa";
 import NotificationService from "../../../services/NotificationService";
+import { isRead, markRead, markAllRead, subscribe } from "../../../utils/notificationState";
 import type { Notification as NotificationItem } from "../../../types/notification";
 import styles from "../PersonalCenter.module.css";
 
@@ -120,9 +121,22 @@ function formatTime(timestamp: number): string {
 const NotificationsTab: React.FC = () => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<NotificationItem[]>(() =>
-    MOCK_ENABLED ? MOCK_NOTIFICATIONS : []
+    MOCK_ENABLED
+      ? MOCK_NOTIFICATIONS.map((n) => ({ ...n, is_read: n.is_read || isRead(n.id) }))
+      : []
   );
   const [loading, setLoading] = useState(false);
+  const [, setTick] = useState(0);
+
+  // Subscribe to shared state changes from the bell component
+  useEffect(() => {
+    return subscribe(() => {
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, is_read: n.is_read || isRead(n.id) }))
+      );
+      setTick((t) => t + 1);
+    });
+  }, []);
 
   const fetchNotifications = useCallback(async () => {
     if (MOCK_ENABLED) return;
@@ -143,28 +157,24 @@ const NotificationsTab: React.FC = () => {
     }
   }, [fetchNotifications]);
 
-  const handleMarkAllRead = async () => {
-    try {
-      if (!MOCK_ENABLED) {
-        await NotificationService.markAllAsRead();
-      }
-      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-    } catch {
-      // 静默处理
+  const handleMarkAllRead = () => {
+    // Update local/shared state first so UI responds immediately
+    markAllRead(notifications.map((n) => n.id));
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    // Fire-and-forget API call (don't block UI)
+    if (!MOCK_ENABLED) {
+      NotificationService.markAllAsRead().catch(() => {});
     }
   };
 
-  const handleItemClick = async (item: NotificationItem) => {
+  const handleItemClick = (item: NotificationItem) => {
     if (!item.is_read) {
-      try {
-        if (!MOCK_ENABLED) {
-          await NotificationService.markAsRead(item.id);
-        }
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n))
-        );
-      } catch {
-        // 静默处理
+      markRead(item.id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n))
+      );
+      if (!MOCK_ENABLED) {
+        NotificationService.markAsRead(item.id).catch(() => {});
       }
     }
     if (item.link) {
@@ -175,7 +185,7 @@ const NotificationsTab: React.FC = () => {
   const typeMeta = (type: string) =>
     TYPE_ICON_MAP[type] || TYPE_ICON_MAP.system;
 
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read && !isRead(n.id)).length;
 
   return (
     <div>

@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import styles from "./Notification.module.css";
 import NotificationService from "../../services/NotificationService";
+import { isRead, markRead, markAllRead, subscribe } from "../../utils/notificationState";
 import type { Notification as NotificationItem } from "../../types/notification";
 
 const MOCK_ENABLED = true;
@@ -158,8 +159,12 @@ const Notification: React.FC = () => {
     setLoading(true);
     try {
       if (MOCK_ENABLED) {
-        setNotifications(MOCK_NOTIFICATIONS);
-        setUnreadCount(MOCK_NOTIFICATIONS.filter((n) => !n.is_read).length);
+        const merged = MOCK_NOTIFICATIONS.map((n) => ({
+          ...n,
+          is_read: n.is_read || isRead(n.id),
+        }));
+        setNotifications(merged);
+        setUnreadCount(merged.filter((n) => !n.is_read).length);
       } else {
         const data = await NotificationService.getNotifications({ page_num: 1, page_size: 20 });
         setNotifications(data.list);
@@ -175,7 +180,7 @@ const Notification: React.FC = () => {
   const fetchUnreadCount = useCallback(async () => {
     try {
       if (MOCK_ENABLED) {
-        setUnreadCount(MOCK_NOTIFICATIONS.filter((n) => !n.is_read).length);
+        setUnreadCount(MOCK_NOTIFICATIONS.filter((n) => !n.is_read && !isRead(n.id)).length);
       } else {
         const data = await NotificationService.getUnreadCount();
         setUnreadCount(data.unread_count);
@@ -184,6 +189,13 @@ const Notification: React.FC = () => {
       // 静默处理
     }
   }, []);
+
+  // Subscribe to shared state changes so badge updates when NotificationsTab marks all read
+  useEffect(() => {
+    return subscribe(() => {
+      fetchUnreadCount();
+    });
+  }, [fetchUnreadCount]);
 
   useEffect(() => {
     fetchUnreadCount();
@@ -202,33 +214,29 @@ const Notification: React.FC = () => {
   const handleToggle = () => {
     const nextOpen = !open;
     setOpen(nextOpen);
-    if (nextOpen) {
+    if (nextOpen && notifications.length === 0) {
       fetchNotifications();
     }
   };
 
-  const handleMarkAllRead = async (e: React.MouseEvent) => {
+  const handleMarkAllRead = (e: React.MouseEvent) => {
     e.stopPropagation();
-    try {
-      await NotificationService.markAllAsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-      setUnreadCount(0);
-    } catch {
-      // 静默处理
-    }
+    // Update local/shared state first so UI responds immediately
+    markAllRead(notifications.map((n) => n.id));
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    setUnreadCount(0);
+    // Fire-and-forget API call (don't block UI)
+    NotificationService.markAllAsRead().catch(() => {});
   };
 
-  const handleItemClick = async (item: NotificationItem) => {
+  const handleItemClick = (item: NotificationItem) => {
     if (!item.is_read) {
-      try {
-        await NotificationService.markAsRead(item.id);
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n))
-        );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      } catch {
-        // 静默处理
-      }
+      markRead(item.id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+      NotificationService.markAsRead(item.id).catch(() => {});
     }
     if (item.link) {
       setOpen(false);
