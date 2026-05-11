@@ -1,5 +1,5 @@
-import http, { type HttpResponse } from "../utils/http";
-import type { Notification, NotificationListResponse } from "../types/notification";
+import http from "../utils/http";
+import type { NotificationListResponse } from "../types/notification";
 
 export class NotificationService {
   /**
