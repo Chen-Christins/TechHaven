@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { FaTag, FaFileAlt, FaChartBar, FaBars, FaTimes, FaUserLock, FaUsers, FaBell, FaUserCircle, FaUserEdit } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Loading from "../../components/loading/Loading";
@@ -8,6 +8,7 @@ import Notification from "../../components/notification/Notification";
 import UserDropdown from "../../components/userDropdown/UserDropdown";
 import Footer from "../../components/footer/Footer";
 import { useAuth } from "../../contexts/AuthContext";
+import AuthService, { type UserStats } from "../../services/authService";
 import styles from "./PersonalCenter.module.css";
 import MyArticlesTab from "./components/MyArticlesTab";
 import MyTagsTab from "./components/MyTagsTab";
@@ -15,21 +16,6 @@ import StatsTab from "./components/StatsTab";
 import MyOrganizationsTab from "./components/MyOrganizationsTab";
 import NotificationsTab from "./components/NotificationsTab";
 import EditProfileTab from "./components/EditProfileTab";
-
-// 个人标签类型
-interface PersonalTag {
-  id: number;
-  name: string;
-  description?: string | "暂无";
-  articleCount?: number | 0;
-  color: string;
-  createTime?: string | "未知时间";
-}
-
-// 个人统计类型
-
-// 标签数据暂时为空，后续可根据需要实现标签管理
-const mockPersonalTags: PersonalTag[] = [];
 
 interface NavItem {
   id: string;
@@ -46,9 +32,22 @@ const PersonalCenter: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"articles" | "tags" | "stats" | "organizations" | "notifications" | "edit">("articles");
   const [loading] = useState(false);
+  const [stats, setStats] = useState<UserStats | null>(null);
 
-  // 标签管理状态 (needed for stats)
-  const [tags, setTags] = useState<PersonalTag[]>([]);
+  const fetchStats = useCallback(async () => {
+    try {
+      const data = await AuthService.getUserStats();
+      setStats(data);
+    } catch {
+      // 静默处理
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchStats();
+    }
+  }, [isAuthenticated, fetchStats]);
 
   // 用户数据（从认证上下文获取，与导航栏保持一致）
   const currentUser = user
@@ -104,11 +103,6 @@ const PersonalCenter: React.FC = () => {
       path: "/personal?tab=notifications",
     },
   ];
-
-  // 初始化标签数据
-  useEffect(() => {
-    setTags(mockPersonalTags);
-  }, []);
 
   // 从 URL 参数读取初始 tab
   useEffect(() => {
@@ -459,15 +453,15 @@ const PersonalCenter: React.FC = () => {
               </div>
               <div className={styles.profileStats}>
                 <div className={styles.profileStatItem} onClick={() => setActiveTab("articles")}>
-                  <div className={styles.profileStatValue}>0</div>
+                  <div className={styles.profileStatValue}>{stats?.total_articles ?? "-"}</div>
                   <div className={styles.profileStatLabel}>文章</div>
                 </div>
                 <div className={styles.profileStatItem} onClick={() => setActiveTab("tags")}>
-                  <div className={styles.profileStatValue}>0</div>
+                  <div className={styles.profileStatValue}>{stats?.total_tags ?? "-"}</div>
                   <div className={styles.profileStatLabel}>标签</div>
                 </div>
                 <div className={styles.profileStatItem} onClick={() => setActiveTab("organizations")}>
-                  <div className={styles.profileStatValue}>0</div>
+                  <div className={styles.profileStatValue}>{stats?.total_organizations ?? "-"}</div>
                   <div className={styles.profileStatLabel}>组织</div>
                 </div>
               </div>
@@ -480,7 +474,7 @@ const PersonalCenter: React.FC = () => {
             {activeTab === "tags" && <MyTagsTab />}
 
             {/* 数据统计 */}
-            {activeTab === "stats" && <StatsTab tags={tags} articles={[]} totalArticles={0} />}
+            {activeTab === "stats" && stats && <StatsTab stats={stats} />}
 
             {/* 我的组织 */}
             {activeTab === "organizations" && <MyOrganizationsTab />}

@@ -36,6 +36,27 @@ export class NotificationService {
   static async markAllAsRead(): Promise<void> {
     await http.post("/notification/read_all");
   }
+
+  /**
+   * 管理员发送通知
+   */
+  static async sendNotification(params: {
+    title: string;
+    content: string;
+    type: string;
+    target: "all" | "users";
+    user_ids?: string;
+  }): Promise<void> {
+    const formData = new URLSearchParams();
+    formData.append("title", params.title);
+    formData.append("content", params.content);
+    formData.append("type", params.type);
+    formData.append("target", params.target);
+    if (params.user_ids) formData.append("user_ids", params.user_ids);
+    await http.post("/notification/send", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  }
 }
 
 export default NotificationService;

@@ -148,6 +148,7 @@ const Notification: React.FC = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = useCallback(async () => {
@@ -192,11 +193,9 @@ const Notification: React.FC = () => {
     });
   }, [fetchUnreadCount]);
 
-  // WebSocket connection management — connect when authenticated
+  // WebSocket real-time notification listener
   useEffect(() => {
     if (!isAuthenticated) return;
-
-    notificationWS.connect();
 
     const unsub = notificationWS.onMessage("notification", (data) => {
       const newNotification: NotificationItem = {
@@ -212,10 +211,7 @@ const Notification: React.FC = () => {
       setUnreadCount((prev) => prev + 1);
     });
 
-    return () => {
-      unsub();
-      notificationWS.disconnect();
-    };
+    return unsub;
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -230,6 +226,18 @@ const Notification: React.FC = () => {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // WebSocket 连接状态（仅开发环境）
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    setWsConnected(notificationWS.isConnected);
+    const unsubOpen = notificationWS.onOpen(() => setWsConnected(true));
+    const unsubClose = notificationWS.onClose(() => setWsConnected(false));
+    return () => {
+      unsubOpen();
+      unsubClose();
+    };
   }, []);
 
   const handleToggle = () => {
@@ -280,7 +288,26 @@ const Notification: React.FC = () => {
       {open && (
         <div className={styles.dropdown}>
           <div className={styles.header}>
-            <span className={styles.title}>通知</span>
+            <span className={styles.title}>
+              通知
+              {import.meta.env.DEV && (
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 7,
+                    height: 7,
+                    verticalAlign: "middle",
+                    marginLeft: 6,
+                    marginBottom: 6,
+                    borderRadius: "50%",
+                    backgroundColor: wsConnected ? "#22c55e" : "#ef4444",
+                    boxShadow: wsConnected ? "0 0 5px rgba(34, 197, 94, 0.6)" : "0 0 5px rgba(239, 68, 68, 0.6)",
+                    flexShrink: 0,
+                  }}
+                  title={wsConnected ? "WS 已连接" : "WS 未连接"}
+                />
+              )}
+            </span>
             {unreadCount > 0 && (
               <button className={styles.markAllRead} onClick={handleMarkAllRead}>
                 全部已读

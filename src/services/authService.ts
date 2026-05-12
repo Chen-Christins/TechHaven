@@ -277,6 +277,26 @@ export class AuthService {
       },
     });
   }
+
+  /**
+   * 获取用户统计数据
+   */
+  static async getUserStats(userId?: number | string): Promise<UserStats> {
+    const url = userId ? `/user/stats?user_id=${userId}` : "/user/stats";
+    const response = await http.get<UserStats>(url);
+    return response.data;
+  }
+}
+
+export interface UserStats {
+  total_articles: number;
+  published_articles: number;
+  private_articles: number;
+  total_views: number;
+  total_likes: number;
+  total_comments: number;
+  total_tags: number;
+  total_organizations: number;
 }
 
 export default AuthService;
