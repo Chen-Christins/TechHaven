@@ -50,6 +50,7 @@ interface OrganizationTabsProps {
   roleModalVisible: boolean;
   selectedTask: Task | null;
   taskPreviewModalVisible: boolean;
+  memberPreviewModalVisible: boolean;
   selectedMember: Member | null;
   selectedRole: number;
   getAvailableRoleOptions: () => any[];
@@ -64,6 +65,8 @@ interface OrganizationTabsProps {
   onSetMemberRole: (member: Member) => void;
   onRoleModalClose: () => void;
   onTaskPreviewModalClose: () => void;
+  onMemberPreviewModalClose: () => void;
+  onViewMember: (member: Member) => void;
   onRoleChange: (role: number) => void;
   onConfirmRole: () => void;
   onCreateTask: () => void;
@@ -104,6 +107,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
   tasksLoading,
   roleModalVisible,
   taskPreviewModalVisible,
+  memberPreviewModalVisible,
   selectedMember,
   selectedRole,
   selectedTask,
@@ -119,6 +123,8 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
   onSetMemberRole,
   onRoleModalClose,
   onTaskPreviewModalClose,
+  onMemberPreviewModalClose,
+  onViewMember,
   onRoleChange,
   onConfirmRole,
   onCreateTask,
@@ -223,7 +229,11 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                     <td>{member.joinTime || "-"}</td>
                     <td>
                       <div className={styles.actionButtons}>
-                        <button className={`${styles.actionButton} ${styles.viewButton}`} title="查看详情">
+                        <button
+                          className={`${styles.actionButton} ${styles.viewButton}`}
+                          title="查看详情"
+                          onClick={() => onViewMember(member)}
+                        >
                           <FaEye />
                         </button>
                         {canManageMember(member) && (
@@ -772,6 +782,86 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
             }}
           >
             未选择任务
+          </div>
+        )}
+      </Modal>
+
+      {/* 成员预览模态框 */}
+      <Modal
+        visible={memberPreviewModalVisible}
+        title="成员详情预览"
+        onClose={onMemberPreviewModalClose}
+        width={420}
+        footer={
+          <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={onMemberPreviewModalClose}>
+            关闭
+          </button>
+        }
+      >
+        {selectedMember ? (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
+              <img
+                src={
+                  selectedMember.avatar ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedMember.name)}&background=random&size=80`
+                }
+                alt={selectedMember.name}
+                style={{ width: 80, height: 80, borderRadius: "50%", objectFit: "cover" }}
+              />
+              <div>
+                <div style={{ fontSize: "18px", fontWeight: 600 }}>{selectedMember.name}</div>
+                {selectedMember.email && (
+                  <div style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "4px" }}>
+                    {selectedMember.email}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className={styles.detailRow}>
+              <div className={styles.detailGroup}>
+                <div className={styles.detailLabel}>角色</div>
+                <div className={styles.detailValue}>
+                  <span
+                    className={`${styles.roleBadge} ${
+                      selectedMember.role === "会长"
+                        ? styles.admin
+                        : selectedMember.role === "管理员"
+                          ? styles.moderator
+                          : styles.user
+                    }`}
+                  >
+                    {selectedMember.role === "会长" && <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />}
+                    {selectedMember.role === "管理员" && <FaUserShield style={{ color: "#4caf50", marginRight: 4 }} />}
+                    {selectedMember.role === "成员" && <FaUser style={{ color: "#2196f3", marginRight: 4 }} />}
+                    {selectedMember.role || "成员"}
+                  </span>
+                </div>
+              </div>
+              <div className={styles.detailGroup}>
+                <div className={styles.detailLabel}>状态</div>
+                <div className={styles.detailValue}>
+                  <span className={`${styles.statusBadge} ${selectedMember.status === "active" ? styles.active : styles.inactive}`}>
+                    <span className={styles.statusIndicator}></span>
+                    {selectedMember.status === "active" ? "活跃" : "非活跃"}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className={styles.detailGroup}>
+              <div className={styles.detailLabel}>加入时间</div>
+              <div className={styles.detailValue}>{selectedMember.joinTime || "-"}</div>
+            </div>
+          </div>
+        ) : (
+          <div
+            style={{
+              textAlign: "center",
+              color: "var(--text-secondary)",
+              padding: "40px",
+            }}
+          >
+            未选择成员
           </div>
         )}
       </Modal>

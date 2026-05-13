@@ -4,6 +4,7 @@ import { FaUserCircle, FaCog, FaSignOutAlt, FaHome } from "react-icons/fa";
 import styles from "./UserDropdown.module.css";
 
 interface User {
+  id: number | string;
   name: string;
   avatar?: string;
   role?: string;
@@ -95,7 +96,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout, showAdminLi
               className={styles.dropdownItem}
               onClick={() => {
                 closeDropdown();
-                navigate("/profile/1");
+                navigate(`/profile/${user.id}`);
               }}
             >
               <FaUserCircle />

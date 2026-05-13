@@ -97,6 +97,7 @@ export interface ArticleDetailsResponse {
   views: number;
   praise: number;
   favorites: number;
+  author_avatar?: string;
   labels?: Array<string | number>;
   categorys?: Array<string | number>;
 }

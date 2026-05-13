@@ -47,8 +47,8 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ selectedCategoryId, onCat
         });
 
         setCategories(rootCategories);
-      } catch (error) {
-        console.error("获取分类失败:", error);
+      } catch {
+        // 未登录等场景下 /category/admin/query 不可用，静默展示空列表
       }
     };
 

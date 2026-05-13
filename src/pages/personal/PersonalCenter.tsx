@@ -52,6 +52,7 @@ const PersonalCenter: React.FC = () => {
   // 用户数据（从认证上下文获取，与导航栏保持一致）
   const currentUser = user
     ? {
+        id: user.id,
         name: user.name || user.account || "用户",
         avatar: user.avatar || "https://picsum.photos/id/64/200", // 默认头像
         role: user.role || "用户",

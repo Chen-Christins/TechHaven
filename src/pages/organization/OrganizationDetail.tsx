@@ -90,6 +90,7 @@ const OrganizationDetail: React.FC = () => {
   const [pendingRequestsRefreshTrigger, setPendingRequestsRefreshTrigger] = useState(0); // 用于强制刷新待处理请求的触发器
   const [roleModalVisible, setRoleModalVisible] = useState(false);
   const [taskPreviewModalVisible, setTaskPreviewModalVisible] = useState(false);
+  const [memberPreviewModalVisible, setMemberPreviewModalVisible] = useState(false);
   const [taskCreateModalVisible, setTaskCreateModalVisible] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
@@ -619,6 +620,12 @@ const OrganizationDetail: React.FC = () => {
     setSelectedTask(_task);
   };
 
+  // 预览成员
+  const handleViewMember = (member: Member) => {
+    setSelectedMember(member);
+    setMemberPreviewModalVisible(true);
+  };
+
   // 编辑任务
   const handleEditTask = (_task: Task) => {
     setSelectedTask(_task);
@@ -863,6 +870,7 @@ const OrganizationDetail: React.FC = () => {
                     tasksLoading={tasksLoading}
                     roleModalVisible={roleModalVisible}
                     taskPreviewModalVisible={taskPreviewModalVisible}
+                    memberPreviewModalVisible={memberPreviewModalVisible}
                     selectedMember={selectedMember}
                     selectedRole={selectedRole}
                     getAvailableRoleOptions={getAvailableRoleOptions}
@@ -880,6 +888,8 @@ const OrganizationDetail: React.FC = () => {
                     onSetMemberRole={handleSetMemberRole}
                     onRoleModalClose={() => setRoleModalVisible(false)}
                     onTaskPreviewModalClose={() => setTaskPreviewModalVisible(false)}
+                    onMemberPreviewModalClose={() => setMemberPreviewModalVisible(false)}
+                    onViewMember={handleViewMember}
                     onRoleChange={setSelectedRole}
                     onConfirmRole={handleConfirmRole}
                     onCreateTask={handleCreateTask}

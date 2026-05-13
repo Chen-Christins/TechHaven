@@ -106,12 +106,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // WebSocket 连接管理 — 在 AuthProvider 层持久化，不会随路由切换重连
   useEffect(() => {
-    if (isAuthenticated) {
-      notificationWS.connect();
+    if (isAuthenticated && user) {
+      notificationWS.connect(user.id);
     } else {
       notificationWS.disconnect();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   // 登录方法
   const login = async (authId: string, password: string) => {

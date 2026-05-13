@@ -100,6 +100,13 @@
   transform: scale(1.08);
 }
 
+.authorCardAvatarImg {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .authorCardInfo {
   display: flex;
   flex-direction: column;

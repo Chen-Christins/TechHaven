@@ -365,7 +365,10 @@ class HttpClient {
                   }
                   break;
                 case 410:
-                  if (errorMsg.includes("account invalid state")) {
+                  if (errorMsg.includes("not login")) {
+                    mappedMessage = "未登录，请重新登录";
+                    this.handleUnauthorized();
+                  } else if (errorMsg.includes("account invalid state")) {
                     mappedMessage = "账号状态异常，请联系管理员";
                   } else if (errorMsg.includes("already login")) {
                     mappedMessage = "账号已在其他设备登录";
@@ -487,7 +490,10 @@ class HttpClient {
             case 410:
               // 根据后端返回的具体错误信息判断
               const statusErrorMsg = (data as any)?.msg || (data as any)?.message || "账号状态异常";
-              if (statusErrorMsg.includes("account invalid state")) {
+              if (statusErrorMsg.includes("not login")) {
+                message = "未登录，请重新登录";
+                this.handleUnauthorized();
+              } else if (statusErrorMsg.includes("account invalid state")) {
                 message = "账号状态异常，请联系管理员";
               } else if (statusErrorMsg.includes("already login")) {
                 message = "账号已在其他设备登录";

@@ -8,7 +8,7 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import "katex/dist/katex.min.css";
 import mermaid from "mermaid";
-import { Eye, Heart, MessageSquare, Clock, User, Calendar, FileText, Users } from "lucide-react";
+import { Eye, Heart, MessageSquare, Clock, Calendar, FileText, Users } from "lucide-react";
 import styles from "./ArticleView.module.css";
 
 interface Heading {
@@ -28,6 +28,7 @@ interface ArticleViewProps {
   content: string;
   className?: string;
   author: string;
+  authorAvatar?: string;
   authorId?: string | number;
   authorStats?: AuthorStats;
   views: number;
@@ -100,6 +101,7 @@ interface HeadingComponentProps extends React.HTMLAttributes<HTMLHeadingElement>
 const ArticleView: React.FC<ArticleViewProps> = ({
   title,
   author,
+  authorAvatar,
   authorId,
   authorStats,
   views,
@@ -294,7 +296,11 @@ const ArticleView: React.FC<ArticleViewProps> = ({
         {/* 作者卡片 */}
         <div className={styles.authorCard}>
           <div className={styles.authorCardAvatar} onClick={() => authorId && navigate(`/profile/${authorId}`)}>
-            <User size={22} />
+            <img
+              src={authorAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(author)}&background=random&size=96`}
+              alt={author}
+              className={styles.authorCardAvatarImg}
+            />
           </div>
           <div className={styles.authorCardInfo}>
             <span className={styles.authorCardName} onClick={() => authorId && navigate(`/profile/${authorId}`)}>
