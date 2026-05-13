@@ -8,7 +8,7 @@ import { notificationWS } from "../../utils/websocket";
 import { useAuth } from "../../contexts/AuthContext";
 import type { Notification as NotificationItem } from "../../types/notification";
 
-const MOCK_ENABLED = true;
+const MOCK_ENABLED = false;
 
 const NOW = Math.floor(Date.now() / 1000);
 
@@ -162,9 +162,8 @@ const Notification: React.FC = () => {
         setNotifications(merged);
         setUnreadCount(merged.filter((n) => !n.is_read).length);
       } else {
-        const data = await NotificationService.getNotifications({ page_num: 1, page_size: 20 });
+        const data = await NotificationService.getNotifications({ offset: 0, size: 50 });
         setNotifications(data.list);
-        setUnreadCount(data.unread_count);
       }
     } catch {
       // 后端接口未就绪时静默处理
@@ -179,16 +178,22 @@ const Notification: React.FC = () => {
         setUnreadCount(MOCK_NOTIFICATIONS.filter((n) => !n.is_read && !isRead(n.id)).length);
       } else {
         const data = await NotificationService.getUnreadCount();
-        setUnreadCount(data.unread_count);
+        setUnreadCount(data.count);
       }
     } catch {
       // 静默处理
     }
   }, []);
 
-  // Subscribe to shared state changes so badge updates when NotificationsTab marks all read
+  // Subscribe to shared state changes so badge updates when NotificationsTab marks all read.
+  // Uses a ref guard to avoid race: when this component itself triggers markRead,
+  // the synchronous subscriber would kick off an async fetchUnreadCount that
+  // overwrites the local optimistic decrement.
+  const selfUpdating = useRef(false);
+
   useEffect(() => {
     return subscribe(() => {
+      if (selfUpdating.current) return;
       fetchUnreadCount();
     });
   }, [fetchUnreadCount]);
@@ -243,26 +248,30 @@ const Notification: React.FC = () => {
   const handleToggle = () => {
     const nextOpen = !open;
     setOpen(nextOpen);
-    if (nextOpen && notifications.length === 0) {
+    if (nextOpen) {
       fetchNotifications();
+      fetchUnreadCount();
     }
   };
 
   const handleMarkAllRead = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Update local/shared state first so UI responds immediately
+    selfUpdating.current = true;
     markAllRead(notifications.map((n) => n.id));
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     setUnreadCount(0);
+    selfUpdating.current = false;
     // Fire-and-forget API call (don't block UI)
     NotificationService.markAllAsRead().catch(() => {});
   };
 
   const handleItemClick = (item: NotificationItem) => {
     if (!item.is_read) {
+      selfUpdating.current = true;
       markRead(item.id);
       setNotifications((prev) => prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n)));
       setUnreadCount((prev) => Math.max(0, prev - 1));
+      selfUpdating.current = false;
       NotificationService.markAsRead(item.id).catch(() => {});
     }
     if (item.link) {
