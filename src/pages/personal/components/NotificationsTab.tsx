@@ -7,7 +7,7 @@ import { notificationWS } from "../../../utils/websocket";
 import type { Notification as NotificationItem } from "../../../types/notification";
 import styles from "../PersonalCenter.module.css";
 
-const MOCK_ENABLED = true;
+const MOCK_ENABLED = false;
 
 const NOW = Math.floor(Date.now() / 1000);
 
@@ -201,7 +201,7 @@ const NotificationsTab: React.FC = () => {
     if (MOCK_ENABLED) return;
     setLoading(true);
     try {
-      const data = await NotificationService.getNotifications({ page_num: 1, page_size: 50 });
+      const data = await NotificationService.getNotifications({ offset: 0, size: 50 });
       setNotifications(data.list);
     } catch {
       // 静默处理

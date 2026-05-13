@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { AuthService } from "../services/authService";
 import { tokenManager, getTokenFromCookie } from "../utils/http";
+import { notificationWS } from "../utils/websocket";
 
 // 用户信息类型
 export interface User {
@@ -98,6 +99,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     initAuth();
   }, []);
 
+  // 计算是否已认证（必须在 WebSocket useEffect 之前声明）
+  const isAuthenticated = !!user;
+
+  // WebSocket 连接管理 — 在 AuthProvider 层持久化，不会随路由切换重连
+  useEffect(() => {
+    if (isAuthenticated) {
+      notificationWS.connect();
+    } else {
+      notificationWS.disconnect();
+    }
+  }, [isAuthenticated]);
+
   // 登录方法
   const login = async (authId: string, password: string) => {
     try {
@@ -185,9 +198,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const clearLoginError = () => {
     setLoginError(null);
   };
-
-  // 计算是否已认证
-  const isAuthenticated = !!user;
 
   const value: AuthContextType = {
     user,

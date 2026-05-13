@@ -16,6 +16,7 @@ import {
   FaLock,
   FaClipboardList,
   FaBuilding,
+  FaBell,
 } from "react-icons/fa";
 import styles from "./AdminLayout.module.css";
 import ThemeToggle from "../../components/themeToggle/ThemeToggle";
@@ -196,6 +197,12 @@ const AdminLayout: React.FC = () => {
           label: "评论管理",
           icon: <FaComments />,
           path: "/admin/comments",
+        },
+        {
+          id: "notifications",
+          label: "发送通知",
+          icon: <FaBell />,
+          path: "/admin/notifications",
         },
       ],
     },

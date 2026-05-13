@@ -9,7 +9,7 @@ export interface Notification {
 }
 
 export interface NotificationListResponse {
-  total: number;
-  unread_count: number;
   list: Notification[];
+  offset: number;
+  size: number;
 }

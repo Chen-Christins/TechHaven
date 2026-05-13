@@ -8,7 +8,7 @@ import { notificationWS } from "../../utils/websocket";
 import { useAuth } from "../../contexts/AuthContext";
 import type { Notification as NotificationItem } from "../../types/notification";
 
-const MOCK_ENABLED = true;
+const MOCK_ENABLED = false;
 
 const NOW = Math.floor(Date.now() / 1000);
 
@@ -148,6 +148,7 @@ const Notification: React.FC = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = useCallback(async () => {
@@ -161,9 +162,8 @@ const Notification: React.FC = () => {
         setNotifications(merged);
         setUnreadCount(merged.filter((n) => !n.is_read).length);
       } else {
-        const data = await NotificationService.getNotifications({ page_num: 1, page_size: 20 });
+        const data = await NotificationService.getNotifications({ offset: 0, size: 50 });
         setNotifications(data.list);
-        setUnreadCount(data.unread_count);
       }
     } catch {
       // 后端接口未就绪时静默处理
@@ -178,25 +178,29 @@ const Notification: React.FC = () => {
         setUnreadCount(MOCK_NOTIFICATIONS.filter((n) => !n.is_read && !isRead(n.id)).length);
       } else {
         const data = await NotificationService.getUnreadCount();
-        setUnreadCount(data.unread_count);
+        setUnreadCount(data.count);
       }
     } catch {
       // 静默处理
     }
   }, []);
 
-  // Subscribe to shared state changes so badge updates when NotificationsTab marks all read
+  // Subscribe to shared state changes so badge updates when NotificationsTab marks all read.
+  // Uses a ref guard to avoid race: when this component itself triggers markRead,
+  // the synchronous subscriber would kick off an async fetchUnreadCount that
+  // overwrites the local optimistic decrement.
+  const selfUpdating = useRef(false);
+
   useEffect(() => {
     return subscribe(() => {
+      if (selfUpdating.current) return;
       fetchUnreadCount();
     });
   }, [fetchUnreadCount]);
 
-  // WebSocket connection management — connect when authenticated
+  // WebSocket real-time notification listener
   useEffect(() => {
     if (!isAuthenticated) return;
-
-    notificationWS.connect();
 
     const unsub = notificationWS.onMessage("notification", (data) => {
       const newNotification: NotificationItem = {
@@ -212,10 +216,7 @@ const Notification: React.FC = () => {
       setUnreadCount((prev) => prev + 1);
     });
 
-    return () => {
-      unsub();
-      notificationWS.disconnect();
-    };
+    return unsub;
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -232,29 +233,45 @@ const Notification: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // WebSocket 连接状态（仅开发环境）
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    setWsConnected(notificationWS.isConnected);
+    const unsubOpen = notificationWS.onOpen(() => setWsConnected(true));
+    const unsubClose = notificationWS.onClose(() => setWsConnected(false));
+    return () => {
+      unsubOpen();
+      unsubClose();
+    };
+  }, []);
+
   const handleToggle = () => {
     const nextOpen = !open;
     setOpen(nextOpen);
-    if (nextOpen && notifications.length === 0) {
+    if (nextOpen) {
       fetchNotifications();
+      fetchUnreadCount();
     }
   };
 
   const handleMarkAllRead = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Update local/shared state first so UI responds immediately
+    selfUpdating.current = true;
     markAllRead(notifications.map((n) => n.id));
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     setUnreadCount(0);
+    selfUpdating.current = false;
     // Fire-and-forget API call (don't block UI)
     NotificationService.markAllAsRead().catch(() => {});
   };
 
   const handleItemClick = (item: NotificationItem) => {
     if (!item.is_read) {
+      selfUpdating.current = true;
       markRead(item.id);
       setNotifications((prev) => prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n)));
       setUnreadCount((prev) => Math.max(0, prev - 1));
+      selfUpdating.current = false;
       NotificationService.markAsRead(item.id).catch(() => {});
     }
     if (item.link) {
@@ -280,7 +297,26 @@ const Notification: React.FC = () => {
       {open && (
         <div className={styles.dropdown}>
           <div className={styles.header}>
-            <span className={styles.title}>通知</span>
+            <span className={styles.title}>
+              通知
+              {import.meta.env.DEV && (
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 7,
+                    height: 7,
+                    verticalAlign: "middle",
+                    marginLeft: 6,
+                    marginBottom: 6,
+                    borderRadius: "50%",
+                    backgroundColor: wsConnected ? "#22c55e" : "#ef4444",
+                    boxShadow: wsConnected ? "0 0 5px rgba(34, 197, 94, 0.6)" : "0 0 5px rgba(239, 68, 68, 0.6)",
+                    flexShrink: 0,
+                  }}
+                  title={wsConnected ? "WS 已连接" : "WS 未连接"}
+                />
+              )}
+            </span>
             {unreadCount > 0 && (
               <button className={styles.markAllRead} onClick={handleMarkAllRead}>
                 全部已读
