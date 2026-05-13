@@ -22,7 +22,7 @@ import message from "../../components/message/Message";
 import Modal from "../../components/modal/Modal";
 import CustomSelect from "../../components/customSelect/CustomSelect";
 import styles from "./OrganizationManagement.module.css";
-import OrganizationService from "../../services/organizationService";
+import OrganizationService, { type OrganizationStatsResponse } from "../../services/organizationService";
 
 interface Organization {
   id: string;
@@ -51,6 +51,26 @@ const OrganizationManagement: React.FC = () => {
   });
   const [previewOrg, setPreviewOrg] = useState<Organization | null>(null);
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+
+  // 统计数据
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    inactive: 0,
+  });
+
+  const fetchStats = async () => {
+    try {
+      const res: OrganizationStatsResponse = await OrganizationService.getAdminOrganizationStats();
+      setStats({
+        total: res.total_organizations,
+        active: res.active_organizations,
+        inactive: res.inactive_organizations,
+      });
+    } catch (error) {
+      console.error("获取统计数据失败:", error);
+    }
+  };
 
   const STATUS_STR_MAP_NUMBER: Record<string, number> = {
     active: 1,
@@ -97,6 +117,10 @@ const OrganizationManagement: React.FC = () => {
     fetchOrganizations();
     // eslint-disable-next-line
   }, [currentPage, statusFilter]);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
   // 打开创建模态框
   const openCreateModal = () => {
@@ -153,6 +177,7 @@ const OrganizationManagement: React.FC = () => {
       }
       setIsModalVisible(false);
       await fetchOrganizations();
+      fetchStats();
     } catch (e: any) {
       message.error(e.message || "操作失败");
     } finally {
@@ -206,6 +231,7 @@ const OrganizationManagement: React.FC = () => {
       try {
         await OrganizationService.deleteOrganizations({ ids: id });
         await fetchOrganizations();
+        fetchStats();
         message.success("组织已删除");
       } catch (e) {
         message.error("删除失败");
@@ -232,13 +258,6 @@ const OrganizationManagement: React.FC = () => {
       default:
         return null;
     }
-  };
-
-  // 统计数据
-  const stats = {
-    total: organizations.length,
-    active: organizations.filter((o) => o.status === "active").length,
-    inactive: organizations.filter((o) => o.status === "inactive").length,
   };
 
   if (loading) return <Loading />;

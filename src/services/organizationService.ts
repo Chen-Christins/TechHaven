@@ -45,6 +45,15 @@ export interface GetAdminOrganizationsResponse {
 /**
  * 删除组织参数
  */
+/**
+ * 管理端组织统计响应类型
+ */
+export interface OrganizationStatsResponse {
+  total_organizations: number;
+  active_organizations: number;
+  inactive_organizations: number;
+}
+
 export interface DeleteOrganizationParams {
   ids: string; // 逗号分隔的ID
 }
@@ -220,6 +229,14 @@ export class OrganizationService {
     }
 
     const response = await http.get<GetAdminOrganizationsResponse>(url);
+    return response.data;
+  }
+
+  /**
+   * 获取管理端组织统计数据
+   */
+  static async getAdminOrganizationStats(): Promise<OrganizationStatsResponse> {
+    const response = await http.get<OrganizationStatsResponse>("/organization/admin/stats");
     return response.data;
   }
 

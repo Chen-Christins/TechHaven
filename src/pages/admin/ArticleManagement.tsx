@@ -32,7 +32,7 @@ import Loading from "../../components/loading/Loading";
 import { confirm } from "../../components/confirm/Confirm";
 import type { SelectOption } from "../../types/index";
 import styles from "./ArticleManagement.module.css";
-import ArticleService, { type ListAdminArticlesResponse } from "../../services/articleService";
+import ArticleService, { type ListAdminArticlesResponse, type ArticleStatsResponse } from "../../services/articleService";
 import { CategoryService } from "../../services/categoryService";
 import { formatToChinaTime } from "../../utils/utils";
 import message from "../../components/message/Message";
@@ -115,7 +115,7 @@ const ArticleManagement: React.FC = () => {
   const navigate = useNavigate();
   // 状态管理
   const [articles, setArticles] = useState<Article[]>([]);
-  const [stats] = useState<ArticleStats>({
+  const [stats, setStats] = useState<ArticleStats>({
     totalArticles: 0,
     pendingArticles: 0,
     publishedArticles: 0,
@@ -155,6 +155,37 @@ const ArticleManagement: React.FC = () => {
     };
     fetchCategories();
   }, []);
+
+  // 加载统计数据
+  const fetchStats = async () => {
+    try {
+      const days = filters.dateRange === "7days" ? 7
+        : filters.dateRange === "30days" ? 30
+        : filters.dateRange === "90days" ? 90
+        : undefined;
+
+      const res: ArticleStatsResponse = await ArticleService.getAdminArticleStats({
+        category_id: filters.category || undefined,
+        role: filters.authorRole ? REVERSE_ROLE_MAP[filters.authorRole] : undefined,
+        days,
+        keyword: filters.search || undefined,
+      });
+      setStats({
+        totalArticles: res.total_articles,
+        pendingArticles: res.pending_articles,
+        publishedArticles: res.published_articles,
+        rejectedArticles: res.rejected_articles,
+        reportedArticles: res.reported_articles,
+      });
+    } catch (error) {
+      console.error("获取统计数据失败:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
 
   // 加载文章数据
   useEffect(() => {
@@ -319,6 +350,7 @@ const ArticleManagement: React.FC = () => {
                 : a,
             ),
           );
+          fetchStats();
         } catch (error) {
           console.error("审核失败:", error);
           message.error("操作失败，请重试");
@@ -365,6 +397,7 @@ const ArticleManagement: React.FC = () => {
                 : a,
             ),
           );
+          fetchStats();
         } catch (error) {
           console.error("拒绝失败:", error);
           message.error("操作失败，请重试");
@@ -406,6 +439,7 @@ const ArticleManagement: React.FC = () => {
                 : a,
             ),
           );
+          fetchStats();
         } catch (error) {
           console.error("下架失败:", error);
           message.error("操作失败，请重试");
@@ -431,6 +465,7 @@ const ArticleManagement: React.FC = () => {
         await ArticleService.deleteArticle({ ids: articleId });
         setArticles((prev) => prev.filter((article) => article.id !== articleId));
         setTotalArticles((prev) => Math.max(0, prev - 1));
+        fetchStats();
 
         // 如果当前页为空且不是第一页，则跳转到上一页
         if (articles.length === 1 && currentPage > 1) {

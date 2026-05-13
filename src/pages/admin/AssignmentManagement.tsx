@@ -24,7 +24,7 @@ import { confirm } from "../../components/confirm/Confirm";
 import message from "../../components/message/Message";
 import Modal from "../../components/modal/Modal";
 import styles from "./AssignmentManagement.module.css";
-import AssignmentService from "../../services/assignmentService";
+import AssignmentService, { type AssignmentStatsResponse } from "../../services/assignmentService";
 
 // 模拟任务数据接口
 interface Assignment {
@@ -75,6 +75,28 @@ const AssignmentManagement: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
+
+  // 统计数据
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    closed: 0,
+    draft: 0,
+  });
+
+  const fetchStats = async () => {
+    try {
+      const res: AssignmentStatsResponse = await AssignmentService.getAdminAssignmentStats();
+      setStats({
+        total: res.total_assignments,
+        active: res.active_assignments,
+        closed: res.closed_assignments,
+        draft: res.draft_assignments,
+      });
+    } catch (error) {
+      console.error("获取统计数据失败:", error);
+    }
+  };
 
   // 模态框状态
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -152,6 +174,10 @@ const AssignmentManagement: React.FC = () => {
     fetchAssignments();
   }, [fetchAssignments]);
 
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
   // 打开编辑模态框
   const openEditModal = (assignment: Assignment) => {
     setCurrentAssignment(assignment);
@@ -226,6 +252,7 @@ const AssignmentManagement: React.FC = () => {
           priority: PRIORITY_STR_MAP_NUMBER[formData.priority || "medium"],
         });
         await fetchAssignments(); // 刷新列表
+        fetchStats();
         message.success("任务更新成功");
       } else {
         // 创建模式
@@ -240,6 +267,7 @@ const AssignmentManagement: React.FC = () => {
           description: formData.description || "",
         });
         await fetchAssignments(); // 刷新列表
+        fetchStats();
         message.success("任务发布成功");
       }
       setIsModalVisible(false);
@@ -307,6 +335,7 @@ const AssignmentManagement: React.FC = () => {
       try {
         await AssignmentService.deleteAssignments({ ids: id });
         await fetchAssignments(); // 刷新列表
+        fetchStats();
         message.success("任务已删除");
       } catch (error) {
         console.error("删除失败:", error);
@@ -340,14 +369,6 @@ const AssignmentManagement: React.FC = () => {
       default:
         return null;
     }
-  };
-
-  // 统计数据
-  const stats = {
-    total: assignments.length,
-    active: assignments.filter((a) => a.status === "active").length,
-    closed: assignments.filter((a) => a.status === "closed").length,
-    draft: assignments.filter((a) => a.status === "draft").length,
   };
 
   if (loading) return <Loading />;
