@@ -2,7 +2,7 @@
 // Both Notification bell and NotificationsTab share this so
 // toggling a type in one place is reflected in the other — no localStorage needed.
 
-export type NotifType = "system" | "comment" | "like" | "follow" | "article";
+export type NotifType = "system" | "comment" | "like" | "follow" | "article" | "org_role_change" | "org_join_request" | "org_join_approved" | "org_join_rejected" | "org_member_kicked";
 
 const defaults: Record<NotifType, boolean> = {
   system: true,
@@ -10,6 +10,11 @@ const defaults: Record<NotifType, boolean> = {
   like: true,
   follow: true,
   article: true,
+  org_role_change: true,
+  org_join_request: true,
+  org_join_approved: true,
+  org_join_rejected: true,
+  org_member_kicked: true,
 };
 
 const settings: Record<NotifType, boolean> = { ...defaults };

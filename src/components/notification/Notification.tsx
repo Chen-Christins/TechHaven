@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaBell, FaBellSlash, FaComment, FaHeart, FaUserPlus, FaBullhorn, FaNewspaper, FaCog } from "react-icons/fa";
+import { FaBell, FaBellSlash, FaComment, FaHeart, FaUserPlus, FaBullhorn, FaNewspaper, FaCog, FaUserShield, FaUserClock, FaUserCheck, FaUserTimes, FaUserMinus } from "react-icons/fa";
 import styles from "./Notification.module.css";
 import NotificationService from "../../services/NotificationService";
 import { isRead, markRead, markAllRead, subscribe } from "../../utils/notificationState";
@@ -134,6 +134,11 @@ const TYPE_ICON_MAP: Record<string, { icon: React.ReactNode; className: string }
   like: { icon: <FaHeart />, className: styles.iconLike },
   follow: { icon: <FaUserPlus />, className: styles.iconFollow },
   article: { icon: <FaNewspaper />, className: styles.iconArticle },
+  org_role_change: { icon: <FaUserShield />, className: styles.iconOrgRoleChange },
+  org_join_request: { icon: <FaUserClock />, className: styles.iconOrgJoinRequest },
+  org_join_approved: { icon: <FaUserCheck />, className: styles.iconOrgJoinApproved },
+  org_join_rejected: { icon: <FaUserTimes />, className: styles.iconOrgJoinRejected },
+  org_member_kicked: { icon: <FaUserMinus />, className: styles.iconOrgMemberKicked },
 };
 
 function formatTime(timestamp: number): string {
@@ -222,11 +227,11 @@ const Notification: React.FC = () => {
 
     const unsub = notificationWS.onMessage("notification", (data) => {
       const newNotification: NotificationItem = {
-        id: data.id ?? Date.now(),
+        id: data.notification_id ?? data.id ?? Date.now(),
         type: data.notification_type ?? data.type ?? "system",
         title: data.title ?? "",
         content: data.content ?? data.body ?? "",
-        is_read: false,
+        is_read: data.is_read ?? false,
         create_time: data.create_time ?? Math.floor(Date.now() / 1000),
         link: data.link,
       };
@@ -322,6 +327,11 @@ const Notification: React.FC = () => {
     { key: "like", label: "点赞通知" },
     { key: "follow", label: "关注通知" },
     { key: "article", label: "文章通知" },
+    { key: "org_role_change", label: "角色变更通知" },
+    { key: "org_join_request", label: "加入申请通知" },
+    { key: "org_join_approved", label: "申请通过通知" },
+    { key: "org_join_rejected", label: "申请拒绝通知" },
+    { key: "org_member_kicked", label: "成员移出通知" },
   ];
 
   const typeMeta = (type: string) => TYPE_ICON_MAP[type] || TYPE_ICON_MAP.system;

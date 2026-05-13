@@ -1985,6 +1985,31 @@
   color: var(--warning);
 }
 
+.notifIconOrgRoleChange {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.notifIconOrgJoinRequest {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.notifIconOrgJoinApproved {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.notifIconOrgJoinRejected {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
+.notifIconOrgMemberKicked {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}
+
 .notifItemBody {
   flex: 1;
   min-width: 0;

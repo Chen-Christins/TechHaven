@@ -7,6 +7,11 @@ import {
   FaUserPlus,
   FaBullhorn,
   FaNewspaper,
+  FaUserShield,
+  FaUserClock,
+  FaUserCheck,
+  FaUserTimes,
+  FaUserMinus,
   FaCheckDouble,
   FaCog,
 } from "react-icons/fa";
@@ -168,6 +173,11 @@ const TYPE_ICON_MAP: Record<string, { icon: React.ReactNode; className: string }
   like: { icon: <FaHeart />, className: styles.notifIconLike },
   follow: { icon: <FaUserPlus />, className: styles.notifIconFollow },
   article: { icon: <FaNewspaper />, className: styles.notifIconArticle },
+  org_role_change: { icon: <FaUserShield />, className: styles.notifIconOrgRoleChange },
+  org_join_request: { icon: <FaUserClock />, className: styles.notifIconOrgJoinRequest },
+  org_join_approved: { icon: <FaUserCheck />, className: styles.notifIconOrgJoinApproved },
+  org_join_rejected: { icon: <FaUserTimes />, className: styles.notifIconOrgJoinRejected },
+  org_member_kicked: { icon: <FaUserMinus />, className: styles.notifIconOrgMemberKicked },
 };
 
 const TYPE_OPTIONS: SelectOption[] = [
@@ -177,6 +187,11 @@ const TYPE_OPTIONS: SelectOption[] = [
   { id: "like", name: "点赞", color: "#ef4444" },
   { id: "follow", name: "关注", color: "#8b5cf6" },
   { id: "article", name: "文章", color: "#f59e0b" },
+  { id: "org_role_change", name: "角色变更", color: "#8b5cf6" },
+  { id: "org_join_request", name: "加入申请", color: "#f59e0b" },
+  { id: "org_join_approved", name: "申请通过", color: "#10b981" },
+  { id: "org_join_rejected", name: "申请拒绝", color: "#ef4444" },
+  { id: "org_member_kicked", name: "成员移出", color: "#dc2626" },
 ];
 
 function formatTime(timestamp: number): string {
@@ -347,6 +362,11 @@ const NotificationsTab: React.FC = () => {
     { key: "like", label: "点赞通知" },
     { key: "follow", label: "关注通知" },
     { key: "article", label: "文章通知" },
+    { key: "org_role_change", label: "角色变更通知" },
+    { key: "org_join_request", label: "加入申请通知" },
+    { key: "org_join_approved", label: "申请通过通知" },
+    { key: "org_join_rejected", label: "申请拒绝通知" },
+    { key: "org_member_kicked", label: "成员移出通知" },
   ];
 
   return (
