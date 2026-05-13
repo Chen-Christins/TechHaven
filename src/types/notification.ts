@@ -10,6 +10,7 @@ export interface Notification {
 
 export interface NotificationListResponse {
   list: Notification[];
+  total: number;
   offset: number;
   size: number;
 }

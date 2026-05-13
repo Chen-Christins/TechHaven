@@ -5,11 +5,16 @@ export class NotificationService {
   /**
    * 获取通知列表
    */
-  static async getNotifications(params?: { offset?: number; size?: number }): Promise<NotificationListResponse> {
+  static async getNotifications(params?: {
+    offset?: number;
+    size?: number;
+    type?: string;
+  }): Promise<NotificationListResponse> {
     const response = await http.get<NotificationListResponse>("/notification/list", {
       params: {
         offset: params?.offset ?? 0,
         size: params?.size ?? 20,
+        ...(params?.type && params.type !== "all" ? { type: params.type } : {}),
       },
     });
     return response.data;

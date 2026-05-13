@@ -331,6 +331,8 @@ class HttpClient {
                     mappedMessage = "账号或邮箱不存在";
                   } else if (errorMsg.includes("invalid auth_code")) {
                     mappedMessage = "验证码无效或已过期";
+                  } else if (errorMsg.includes("invalid old password")) {
+                    mappedMessage = "当前密码错误，请重新输入";
                   } else if (errorMsg.includes("Access Denied")) {
                     mappedMessage = "权限不足，拒绝访问";
                   } else {
@@ -473,6 +475,8 @@ class HttpClient {
                 message = "验证码无效或已过期";
               } else if (invalidMsg.includes("invalid auth_id")) {
                 message = "账号或邮箱不存在";
+              } else if (invalidMsg.includes("invalid old password")) {
+                message = "当前密码错误，请重新输入";
               } else {
                 message = "账号状态异常";
               }

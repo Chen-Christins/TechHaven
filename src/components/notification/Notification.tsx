@@ -1,11 +1,20 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaBell, FaBellSlash, FaComment, FaHeart, FaUserPlus, FaBullhorn, FaNewspaper } from "react-icons/fa";
+import { FaBell, FaBellSlash, FaComment, FaHeart, FaUserPlus, FaBullhorn, FaNewspaper, FaCog } from "react-icons/fa";
 import styles from "./Notification.module.css";
 import NotificationService from "../../services/NotificationService";
 import { isRead, markRead, markAllRead, subscribe } from "../../utils/notificationState";
+import {
+  getSettings,
+  setTypeEnabled,
+  subscribe as subscribeSettings,
+  type NotifType,
+} from "../../utils/notificationSettingsState";
 import { notificationWS } from "../../utils/websocket";
 import { useAuth } from "../../contexts/AuthContext";
+import Modal from "../modal/Modal";
+import Switch from "../switcher/Switch";
+import { setFaviconBadge } from "../../utils/favicon";
 import type { Notification as NotificationItem } from "../../types/notification";
 
 const MOCK_ENABLED = false;
@@ -149,6 +158,15 @@ const Notification: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [wsConnected, setWsConnected] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState(getSettings);
+
+  // Subscribe to settings changes from NotificationsTab
+  useEffect(() => {
+    return subscribeSettings(() => {
+      setSettings(getSettings());
+    });
+  }, []);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = useCallback(async () => {
@@ -223,6 +241,14 @@ const Notification: React.FC = () => {
     fetchUnreadCount();
   }, [fetchUnreadCount]);
 
+  // Update browser tab favicon badge when unread count changes
+  useEffect(() => {
+    setFaviconBadge(unreadCount);
+    return () => {
+      setFaviconBadge(0); // restore original favicon on unmount
+    };
+  }, [unreadCount]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -284,6 +310,19 @@ const Notification: React.FC = () => {
     setOpen(false);
     navigate("/personal?tab=notifications");
   };
+
+  const handleSettingToggle = (type: NotifType, checked: boolean) => {
+    setTypeEnabled(type, checked);
+    setSettings(getSettings());
+  };
+
+  const settingTypes: { key: NotifType; label: string }[] = [
+    { key: "system", label: "系统通知" },
+    { key: "comment", label: "评论通知" },
+    { key: "like", label: "点赞通知" },
+    { key: "follow", label: "关注通知" },
+    { key: "article", label: "文章通知" },
+  ];
 
   const typeMeta = (type: string) => TYPE_ICON_MAP[type] || TYPE_ICON_MAP.system;
 
@@ -359,10 +398,51 @@ const Notification: React.FC = () => {
               <button className={styles.viewAll} onClick={handleViewAll}>
                 查看全部
               </button>
+              <button className={styles.viewAll} onClick={() => setShowSettings(true)}>
+                <FaCog />
+                通知设置
+              </button>
             </div>
           )}
         </div>
       )}
+
+      {/* Settings Modal */}
+      <Modal
+        visible={showSettings}
+        title="通知设置"
+        onClose={() => setShowSettings(false)}
+        size="small"
+        footer={
+          <button className={styles.viewAll} onClick={() => setShowSettings(false)} style={{ background: "none", border: "1px solid var(--border-primary)", padding: "8px 16px", borderRadius: 8, cursor: "pointer", color: "var(--text-primary)", fontSize: 14 }}>
+            关闭
+          </button>
+        }
+      >
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {settingTypes.map(({ key, label }) => {
+            const meta = typeMeta(key);
+            return (
+              <div
+                key={key}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "14px 0",
+                  borderBottom: key === "article" ? "none" : "1px solid var(--border-light)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, ...(key === "system" ? { backgroundColor: "rgba(59,130,246,0.1)", color: "var(--primary)" } : key === "comment" ? { backgroundColor: "rgba(16,185,129,0.1)", color: "var(--success)" } : key === "like" ? { backgroundColor: "rgba(239,68,68,0.1)", color: "var(--error)" } : key === "follow" ? { backgroundColor: "rgba(139,92,246,0.1)", color: "var(--accent)" } : { backgroundColor: "rgba(245,158,11,0.1)", color: "var(--warning)" }) }}>{meta.icon}</span>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: "var(--text-primary)" }}>{label}</span>
+                </div>
+                <Switch checked={settings[key]} size="small" onChange={(checked) => handleSettingToggle(key, checked)} />
+              </div>
+            );
+          })}
+        </div>
+      </Modal>
     </div>
   );
 };

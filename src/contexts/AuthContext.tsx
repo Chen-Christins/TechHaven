@@ -10,6 +10,8 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  bio?: string;
+  website?: string;
   role: string;
   login_time: number | string;
   status: number | string;

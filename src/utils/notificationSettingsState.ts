@@ -1,0 +1,47 @@
+// Shared in-memory notification settings state.
+// Both Notification bell and NotificationsTab share this so
+// toggling a type in one place is reflected in the other — no localStorage needed.
+
+export type NotifType = "system" | "comment" | "like" | "follow" | "article";
+
+const defaults: Record<NotifType, boolean> = {
+  system: true,
+  comment: true,
+  like: true,
+  follow: true,
+  article: true,
+};
+
+const settings: Record<NotifType, boolean> = { ...defaults };
+
+const listeners = new Set<() => void>();
+
+function notify() {
+  listeners.forEach((fn) => fn());
+}
+
+export function getSettings(): Record<NotifType, boolean> {
+  return { ...settings };
+}
+
+export function isTypeEnabled(type: NotifType): boolean {
+  return settings[type] ?? true;
+}
+
+export function getEnabledTypes(): NotifType[] {
+  return (Object.keys(settings) as NotifType[]).filter((t) => settings[t]);
+}
+
+export function setTypeEnabled(type: NotifType, enabled: boolean): void {
+  // noop if value hasn't changed
+  if (settings[type] === enabled) return;
+  settings[type] = enabled;
+  notify();
+}
+
+export function subscribe(fn: () => void): () => void {
+  listeners.add(fn);
+  return () => {
+    listeners.delete(fn);
+  };
+}

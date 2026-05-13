@@ -223,15 +223,30 @@ export class AuthService {
 
   /**
    * 更新用户资料
+   * - 改基本信息 (name/bio/website)：直接更新，无需 old_passwd
+   * - 改密码 (passwd)：必须同时传 old_passwd，后端校验通过后才生效
+   *
    * @param name 新昵称 (可选)
-   * @param passwd 新密码 (可选)
+   * @param passwd 新密码 (可选，至少6位)
+   * @param bio 座右铭 (可选)
+   * @param website 个人网站 (可选)
+   * @param oldPasswd 当前密码 (改密码时必传)
    */
-  static async updateUserProfile(name?: string, passwd?: string, bio?: string, website?: string) {
+  static async updateUserProfile(
+    name?: string,
+    passwd?: string,
+    bio?: string,
+    website?: string,
+    oldPasswd?: string,
+    avatar?: string,
+  ) {
     const formData = new URLSearchParams();
     if (name) formData.append("name", name);
     if (passwd) formData.append("passwd", passwd);
     if (bio !== undefined) formData.append("bio", bio);
     if (website !== undefined) formData.append("website", website);
+    if (oldPasswd) formData.append("old_passwd", oldPasswd);
+    if (avatar) formData.append("avatar", avatar);
 
     return http.post("/user/update", formData.toString(), {
       headers: {

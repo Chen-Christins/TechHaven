@@ -230,12 +230,15 @@
 .footer {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding: 10px 16px;
   border-top: 1px solid var(--border-primary);
 }
 
 .viewAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: none;
   border: none;
   color: var(--text-secondary);
