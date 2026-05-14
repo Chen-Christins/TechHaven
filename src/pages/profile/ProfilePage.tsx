@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import styles from "./ProfilePage.module.css";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
+import { encodeId, decodeId } from "../../utils/hashId";
 import BackToTop from "../../components/backToTop/BackToTop";
 import { useAuth } from "../../contexts/AuthContext";
 import AuthService from "../../services/authService";
@@ -86,7 +87,8 @@ function formatPublishTime(timestamp: number | string): string {
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  const { id: encodedId } = useParams<{ id: string }>();
+  const id = encodedId ? decodeId(encodedId) : null;
   const { user: currentUser, isAuthenticated } = useAuth();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -307,7 +309,7 @@ const Profile: React.FC = () => {
                   <article
                     key={article.id}
                     className={`${styles.articleCard} ${viewMode === "grid" ? styles.gridCard : styles.listCard}`}
-                    onClick={() => navigate(`/article/${article.id}`)}
+                    onClick={() => navigate(`/article/${encodeId(article.id)}`)}
                     style={{ cursor: "pointer" }}
                   >
                     <div className={styles.articleHeader}>

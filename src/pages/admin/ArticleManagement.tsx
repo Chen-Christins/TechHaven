@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { encodeId } from "../../utils/hashId";
 import {
   FaFileAlt,
   FaPlus,
@@ -448,12 +449,12 @@ const ArticleManagement: React.FC = () => {
 
   // 查看文章详情
   const handleViewArticle = (id: string) => {
-    navigate(`/article/${id}`);
+    navigate(`/article/${encodeId(id)}`);
   };
 
   // 编辑文章
   const handleEditArticle = (id: string) => {
-    navigate(`/article/edit/${id}`);
+    navigate(`/article/edit/${encodeId(id)}`);
   };
 
   // 删除文章

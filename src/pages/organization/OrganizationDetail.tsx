@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
+import { decodeId } from "../../utils/hashId";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import OrganizationDetailSkeleton from "../../components/organization/OrganizationDetailSkeleton";
@@ -66,7 +67,8 @@ const PAGE_SIZE = 15;
 const TASKS_PAGE_SIZE = 15; // 任务列表每页显示的条数
 
 const OrganizationDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: encodedId } = useParams<{ id: string }>();
+  const id = encodedId ? decodeId(encodedId) : null;
   const { user: currentUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [org, setOrg] = useState<OrganizationDetailType | null>(null);

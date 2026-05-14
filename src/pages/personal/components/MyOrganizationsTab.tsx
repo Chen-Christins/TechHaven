@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaUsers, FaPlus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { encodeId } from "../../../utils/hashId";
 import Loading from "../../../components/loading/Loading";
 import { useAuth } from "../../../contexts/AuthContext";
 import { OrganizationService } from "../../../services/organizationService";
@@ -73,7 +74,7 @@ const MyOrganizationsTab: React.FC = () => {
       ) : (
         <div className={styles.organizationsGrid}>
           {organizations.map((org) => (
-            <div key={org.id} className={styles.orgCard} onClick={() => navigate(`/organization/detail/${org.id}`)}>
+            <div key={org.id} className={styles.orgCard} onClick={() => navigate(`/organization/detail/${encodeId(org.id)}`)}>
               <div className={styles.orgHeader}>
                 <div className={styles.orgAvatar}>
                   {org.avatar ? (

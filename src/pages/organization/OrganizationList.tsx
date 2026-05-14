@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // Assuming react-router-dom is used
+import { encodeId } from "../../utils/hashId";
 import {
   FaBuilding,
   FaCheckCircle,
@@ -161,7 +162,7 @@ const OrganizationList: React.FC = () => {
                       </div>
                       <button
                         className={`${styles.actionBtn} ${styles.btnPrimary}`}
-                        onClick={() => navigate(`/organization/detail/${org.id}`)}
+                        onClick={() => navigate(`/organization/detail/${encodeId(org.id)}`)}
                       >
                         查看详情
                         <FaArrowRight />

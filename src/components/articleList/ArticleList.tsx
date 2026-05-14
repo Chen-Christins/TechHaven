@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaChevronLeft, FaChevronRight, FaAngleDoubleLeft, FaAngleDoubleRight, FaCalendarAlt, FaUser, FaEye } from "react-icons/fa";
 import ArticleService from "../../services/articleService";
 import styles from "./ArticleList.module.css";
+import { encodeId } from "../../utils/hashId";
 import { formatToChinaTime } from "../../utils/utils";
 import type { ArticleListItem } from "../../types/index";
 
@@ -185,7 +186,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
                 <div
                   className={styles.readMoreBtn}
                   onClick={() => {
-                    navigate(`/article/${article.id}`);
+                    navigate(`/article/${encodeId(article.id)}`);
                   }}
                 >
                   阅读全文 →

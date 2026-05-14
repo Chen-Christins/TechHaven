@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { encodeId } from "../../utils/hashId";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -295,7 +296,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
       <aside className={styles.sidebar}>
         {/* 作者卡片 */}
         <div className={styles.authorCard}>
-          <div className={styles.authorCardAvatar} onClick={() => authorId && navigate(`/profile/${authorId}`)}>
+          <div className={styles.authorCardAvatar} onClick={() => authorId && navigate(`/profile/${encodeId(authorId)}`)}>
             <img
               src={authorAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(author)}&background=random&size=96`}
               alt={author}
@@ -303,7 +304,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
             />
           </div>
           <div className={styles.authorCardInfo}>
-            <span className={styles.authorCardName} onClick={() => authorId && navigate(`/profile/${authorId}`)}>
+            <span className={styles.authorCardName} onClick={() => authorId && navigate(`/profile/${encodeId(authorId)}`)}>
               {author}
             </span>
             <span className={styles.authorCardMeta}>{pushlish_time} 发布</span>

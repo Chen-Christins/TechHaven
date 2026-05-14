@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { decodeId } from "../../utils/hashId";
 import {
   FaCloudUploadAlt,
   FaFileAlt,
@@ -39,7 +40,8 @@ const STATUS_MAP: { [key: string]: string } = {
 };
 
 const AssignmentSubmit: React.FC = () => {
-  const { id } = useParams();
+  const { id: encodedId } = useParams();
+  const id = encodedId ? decodeId(encodedId) : null;
   const navigate = useNavigate();
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [files, setFiles] = useState<File[]>([]);

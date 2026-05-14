@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { encodeId } from "../../utils/hashId";
 import { FaCheckCircle, FaExclamationCircle, FaArrowRight, FaCalendarAlt, FaClipboardList, FaTasks, FaEye } from "react-icons/fa";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
@@ -164,14 +165,14 @@ const AssignmentList: React.FC = () => {
                       <div className={styles.buttonGroup}>
                         <button
                           className={`${styles.actionBtn} ${styles.viewBtn}`}
-                          onClick={() => navigate(`/assignment/submissions/${item.id}`)}
+                          onClick={() => navigate(`/assignment/submissions/${encodeId(item.id)}`)}
                           title="查看提交详情"
                         >
                           <FaEye />
                         </button>
                         <button
                           className={`${styles.actionBtn} ${STATUS_MAP[item.status] === "closed" ? styles.btnSecondary : styles.btnPrimary}`}
-                          onClick={() => navigate(`/assignment/submit/${item.id}`)}
+                          onClick={() => navigate(`/assignment/submit/${encodeId(item.id)}`)}
                         >
                           {STATUS_MAP[item.status] === "closed" ? "查看详情" : "去提交"} <FaArrowRight />
                         </button>

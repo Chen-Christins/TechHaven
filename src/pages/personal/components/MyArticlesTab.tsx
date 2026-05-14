@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaEdit, FaTrash, FaPlus, FaEye, FaSearch, FaCalendarAlt, FaThumbsUp, FaComment, FaArrowDown, FaLock } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { encodeId } from "../../../utils/hashId";
 import CustomSelect from "../../../components/customSelect/CustomSelect";
 import { confirm } from "../../../components/confirm/Confirm";
 import { message } from "../../../components/message/Message";
@@ -293,10 +294,10 @@ const MyArticlesTab: React.FC = () => {
                 {article.publish_time ? article.publish_time : "-"}
               </div>
               <div className={styles.actions}>
-                <button className={styles.actionButton} title="查看" onClick={() => navigate(`/article/${article.id}`)}>
+                <button className={styles.actionButton} title="查看" onClick={() => navigate(`/article/${encodeId(article.id)}`)}>
                   <FaEye />
                 </button>
-                <button className={styles.actionButton} title="编辑" onClick={() => navigate(`/article/edit/${article.id}`)}>
+                <button className={styles.actionButton} title="编辑" onClick={() => navigate(`/article/edit/${encodeId(article.id)}`)}>
                   <FaEdit />
                 </button>
                 {article.state === "reviewing" && (

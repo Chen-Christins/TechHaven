@@ -17,6 +17,7 @@
     "axios": "^1.13.1",
     "crypto-js": "^4.2.0",
     "echarts": "^6.0.0",
+    "hashids": "^2.3.0",
     "highlight.js": "^11.11.1",
     "katex": "^0.16.25",
     "lucide-react": "^0.552.0",
