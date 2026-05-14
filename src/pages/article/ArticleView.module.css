@@ -75,12 +75,17 @@
 .authorCard {
   background: var(--card-bg);
   border-radius: 12px;
-  padding: 18px;
   border: 1px solid var(--border-light);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   display: flex;
+  flex-direction: column;
+}
+
+.authorCardTop {
+  display: flex;
   align-items: center;
   gap: 14px;
+  padding: 14px 18px 14px;
 }
 
 .authorCardAvatar {
@@ -571,6 +576,313 @@
 [data-theme="dark"] .mermaidDiagram .marker {
   fill: #60a5fa;
   stroke: #60a5fa;
+}
+
+/* ========== 作者卡片操作按钮 ========== */
+.authorCardActions {
+  display: flex;
+}
+
+.followButton {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  border-top: 1px solid var(--border-light);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.followButton:first-child {
+  border-right: 1px solid var(--border-light);
+  border-radius: 0 0 0 12px;
+}
+
+.followButton:last-child {
+  border-radius: 0 0 12px 0;
+}
+
+.followButton:hover {
+  color: var(--primary);
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.followButton.following {
+  background: rgba(59, 130, 246, 0.08);
+  color: var(--primary);
+}
+
+.followButton.following:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+}
+
+/* ========== 点赞区域（文章下方） ========== */
+.likeSection {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+  margin-top: 20px;
+}
+
+.likeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border: 2px solid var(--border-primary);
+  border-radius: 24px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.likeButton:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
+}
+
+.likeButton.liked {
+  border-color: var(--primary);
+  background: rgba(59, 130, 246, 0.06);
+  color: var(--primary);
+}
+
+.likeButton:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.likeIconActive {
+  animation: likePop 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes likePop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.likeCount {
+  font-weight: 700;
+  font-size: 0.9rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* ========== 评论区域 ========== */
+.commentSection {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 28px 40px;
+  margin-top: 20px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.commentHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.commentTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.writeCommentButton {
+  padding: 6px 16px;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.writeCommentButton:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* 评论输入框 */
+.commentInputWrapper {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.commentTextarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+}
+
+.commentTextarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.commentTextarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+.commentInputFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.commentHint {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+
+.commentSubmitButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.commentSubmitButton:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.commentSubmitButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 评论列表 */
+.commentList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.commentEmpty {
+  text-align: center;
+  padding: 32px 0;
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+}
+
+.commentItem {
+  display: flex;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.commentItem:last-child {
+  border-bottom: none;
+}
+
+.commentAvatar {
+  flex-shrink: 0;
+}
+
+.commentAvatar img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+}
+
+.commentBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.commentMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.commentUser {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.commentTime {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.commentContent {
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  line-height: 1.7;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.commentActions {
+  display: flex;
+  gap: 14px;
+}
+
+.commentActionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-tertiary);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.commentActionButton:hover {
+  color: var(--primary);
 }
 
 /* ========== 响应式 ========== */
