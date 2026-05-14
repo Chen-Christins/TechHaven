@@ -52,6 +52,7 @@ const PersonalCenter: React.FC = () => {
   // 用户数据（从认证上下文获取，与导航栏保持一致）
   const currentUser = user
     ? {
+        id: user.id,
         name: user.name || user.account || "用户",
         avatar: user.avatar || "https://picsum.photos/id/64/200", // 默认头像
         role: user.role || "用户",
@@ -75,7 +76,7 @@ const PersonalCenter: React.FC = () => {
       id: "articles",
       label: "我的文章",
       icon: <FaFileAlt />,
-      path: "/personal",
+      path: "/personal?tab=articles",
     },
     {
       id: "edit",
@@ -83,18 +84,18 @@ const PersonalCenter: React.FC = () => {
       icon: <FaUserEdit />,
       path: "/personal?tab=edit",
     },
-    { id: "tags", label: "我的标签", icon: <FaTag />, path: "/personal/tags" },
+    { id: "tags", label: "我的标签", icon: <FaTag />, path: "/personal?tab=tags" },
     {
       id: "stats",
       label: "数据统计",
       icon: <FaChartBar />,
-      path: "/personal/stats",
+      path: "/personal?tab=stats",
     },
     {
       id: "organizations",
       label: "我的组织",
       icon: <FaUsers />,
-      path: "/personal/organizations",
+      path: "/personal?tab=organizations",
     },
     {
       id: "notifications",
@@ -104,13 +105,11 @@ const PersonalCenter: React.FC = () => {
     },
   ];
 
-  // 从 URL 参数读取初始 tab
+  // 从 URL 参数读取初始 tab（刷新保持当前tab）
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab === "notifications") {
-      setActiveTab("notifications");
-    } else if (tab === "edit") {
-      setActiveTab("edit");
+    if (tab && navItems.some((item) => item.id === tab)) {
+      setActiveTab(tab as typeof activeTab);
     }
   }, [searchParams]);
 
@@ -395,6 +394,7 @@ const PersonalCenter: React.FC = () => {
                   onClick={() => {
                     setActiveTab(item.id as any);
                     closeMobileMenu();
+                    navigate(item.path, { replace: true });
                   }}
                   onMouseEnter={(e) => showTooltip(e, item.label)}
                   onMouseLeave={hideTooltip}

@@ -6,13 +6,15 @@ import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import BackToTop from "../../components/backToTop/BackToTop";
 import { formatToChinaTime } from "../../utils/utils";
+import { decodeId } from "../../utils/hashId";
 import { useAuth } from "../../contexts/AuthContext";
 import AuthRequired from "../../components/auth/AuthRequired";
 import ArticleErrorView from "../../components/articleView/ArticleErrorView";
 import SkeletonArticleView from "../../components/articleView/SkeletonArticleView";
 
 const ArticleViewPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: encodedId } = useParams<{ id: string }>();
+  const id = encodedId ? decodeId(encodedId) : null;
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +84,7 @@ const ArticleViewPage: React.FC = () => {
                   title={article.title}
                   content={article.content}
                   author={article.author}
+                  authorAvatar={article.author_avatar}
                   authorId={article.user_id}
                   authorStats={{
                     articles: 24,
@@ -90,11 +93,10 @@ const ArticleViewPage: React.FC = () => {
                   }}
                   views={article.views ?? 0}
                   praises={article.praise ?? article.praises ?? 0}
-                  comments={article.favorites ?? 0}
                   update_time={formatToChinaTime(Number(article.update_time))}
                   pushlish_time={article.publish_time ? formatToChinaTime(Number(article.publish_time)) : "暂未发布"}
                   categories={article.categorys}
-                  labels={article.labels?.map((l: string | number) => String(l))}
+                  labels={article.labels}
                   readingTime={article.content ? Math.max(1, Math.ceil(article.content.length / 500)) : undefined}
                 />
               )}

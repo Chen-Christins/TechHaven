@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { encodeId } from "../../utils/hashId";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -8,7 +9,7 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import "katex/dist/katex.min.css";
 import mermaid from "mermaid";
-import { Eye, Heart, MessageSquare, Clock, User, Calendar, FileText, Users } from "lucide-react";
+import { Eye, Heart, MessageSquare, Clock, Calendar, FileText, Users, UserPlus, UserCheck, ThumbsUp, Send } from "lucide-react";
 import styles from "./ArticleView.module.css";
 
 interface Heading {
@@ -28,17 +29,73 @@ interface ArticleViewProps {
   content: string;
   className?: string;
   author: string;
+  authorAvatar?: string;
   authorId?: string | number;
   authorStats?: AuthorStats;
   views: number;
   praises: number;
-  comments?: number;
   update_time: string;
   pushlish_time: string;
-  categories?: string[];
-  labels?: string[];
+  categories?: Array<{ id: number; name: string; color: string }>;
+  labels?: Array<{ id: number; name: string; color: string }>;
   readingTime?: number;
 }
+
+interface CommentItem {
+  id: number;
+  user: string;
+  avatar: string;
+  content: string;
+  time: string;
+  likes: number;
+  replies: CommentItem[];
+}
+
+const formatCommentTime = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+};
+
+// Mock 评论数据
+const MOCK_COMMENTS: CommentItem[] = [
+  {
+    id: 1,
+    user: "技术爱好者",
+    avatar: "",
+    content: "写得太好了！讲解非常清晰，受益匪浅。",
+    time: "2026-05-14 10:32",
+    likes: 12,
+    replies: [
+      {
+        id: 101,
+        user: "Christins",
+        avatar: "",
+        content: "感谢支持！有问题随时交流 :)",
+        time: "2026-05-14 10:45",
+        likes: 2,
+        replies: [],
+      },
+    ],
+  },
+  {
+    id: 2,
+    user: "代码诗人",
+    avatar: "",
+    content: "有个问题想请教，在实际项目中 Mermaid 图表的渲染性能怎么样？我们团队正在考虑引入。\n\n可以参考一下 `mermaid.render()` 的 **异步调用** 方式，性能方面建议 [查看官方文档](https://mermaid.js.org/)。",
+    time: "2026-05-14 11:05",
+    likes: 5,
+    replies: [],
+  },
+  {
+    id: 3,
+    user: "前端小王子",
+    avatar: "",
+    content: "感谢分享！已经收藏了，准备在项目中实践一下。",
+    time: "2026-05-14 13:18",
+    likes: 3,
+    replies: [],
+  },
+];
 
 // 初始化 Mermaid 配置
 mermaid.initialize({
@@ -100,11 +157,11 @@ interface HeadingComponentProps extends React.HTMLAttributes<HTMLHeadingElement>
 const ArticleView: React.FC<ArticleViewProps> = ({
   title,
   author,
+  authorAvatar,
   authorId,
   authorStats,
   views,
   praises,
-  comments = 0,
   update_time,
   pushlish_time,
   content,
@@ -119,6 +176,101 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   const [isContentReady, setIsContentReady] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // 互动状态 - Mock
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(authorStats?.followers ?? 0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(praises);
+  const [commentsList, setCommentsList] = useState(MOCK_COMMENTS);
+  const [commentText, setCommentText] = useState("");
+  const [showCommentInput, setShowCommentInput] = useState(false);
+  const [replyToId, setReplyToId] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [likedCommentIds, setLikedCommentIds] = useState<Set<number>>(new Set());
+
+  const handleFollowToggle = () => {
+    const willFollow = !isFollowing;
+    setIsFollowing(willFollow);
+    setFollowersCount((c) => (willFollow ? c + 1 : c - 1));
+  };
+
+  const handleLikeToggle = () => {
+    const willLike = !isLiked;
+    setIsLiked(willLike);
+    setLikesCount((c) => (willLike ? c + 1 : c - 1));
+  };
+
+  const handleCommentSubmit = () => {
+    const trimmed = commentText.trim();
+    if (!trimmed) return;
+    const newComment: CommentItem = {
+      id: Date.now(),
+      user: "当前用户",
+      avatar: authorAvatar || "",
+      content: trimmed,
+      time: formatCommentTime(),
+      likes: 0,
+      replies: [],
+    };
+    setCommentsList((prev) => [newComment, ...prev]);
+    setCommentText("");
+  };
+
+  const handleReplySubmit = (parentId: number) => {
+    const trimmed = replyText.trim();
+    if (!trimmed) return;
+    const newReply: CommentItem = {
+      id: Date.now(),
+      user: "当前用户",
+      avatar: authorAvatar || "",
+      content: trimmed,
+      time: formatCommentTime(),
+      likes: 0,
+      replies: [],
+    };
+    setCommentsList((prev) =>
+      prev.map((c) => {
+        if (c.id === parentId) {
+          return { ...c, replies: [...c.replies, newReply] };
+        }
+        return c;
+      })
+    );
+    setReplyText("");
+    setReplyToId(null);
+  };
+
+  const handleCommentLike = (commentId: number) => {
+    const isLiked = likedCommentIds.has(commentId);
+    const delta = isLiked ? -1 : 1;
+    setLikedCommentIds((prev) => {
+      const next = new Set(prev);
+      if (isLiked) {
+        next.delete(commentId);
+      } else {
+        next.add(commentId);
+      }
+      return next;
+    });
+    setCommentsList((prev) =>
+      prev.map((c) => toggleCommentLike(c, commentId, delta))
+    );
+  };
+
+  // 递归查找并更新评论/回复的点赞数
+  const toggleCommentLike = (comment: CommentItem, targetId: number, delta: number): CommentItem => {
+    if (comment.id === targetId) {
+      return { ...comment, likes: comment.likes + delta };
+    }
+    if (comment.replies.length > 0) {
+      return {
+        ...comment,
+        replies: comment.replies.map((r) => toggleCommentLike(r, targetId, delta)),
+      };
+    }
+    return comment;
+  };
 
   // 生成更安全的 ID
   const generateId = (text: string): string => {
@@ -293,30 +445,61 @@ const ArticleView: React.FC<ArticleViewProps> = ({
       <aside className={styles.sidebar}>
         {/* 作者卡片 */}
         <div className={styles.authorCard}>
-          <div className={styles.authorCardAvatar} onClick={() => authorId && navigate(`/profile/${authorId}`)}>
-            <User size={22} />
+          <div className={styles.authorCardTop}>
+            <div className={styles.authorCardAvatar} onClick={() => authorId && navigate(`/profile/${encodeId(authorId)}`)}>
+              <img
+                src={authorAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(author)}&background=random&size=96`}
+                alt={author}
+                className={styles.authorCardAvatarImg}
+              />
+            </div>
+            <div className={styles.authorCardInfo}>
+              <span className={styles.authorCardName} onClick={() => authorId && navigate(`/profile/${encodeId(authorId)}`)}>
+                {author}
+              </span>
+              <span className={styles.authorCardMeta}>{pushlish_time} 发布</span>
+              {authorStats && (
+                <div className={styles.authorCardStats}>
+                  <span className={styles.authorStatItem}>
+                    <FileText size={12} />
+                    {authorStats.articles}
+                  </span>
+                  <span className={styles.authorStatItem}>
+                    <Users size={12} />
+                    {followersCount}
+                  </span>
+                  <span className={styles.authorStatItem}>
+                    <Heart size={12} />
+                    {authorStats.likes}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
-          <div className={styles.authorCardInfo}>
-            <span className={styles.authorCardName} onClick={() => authorId && navigate(`/profile/${authorId}`)}>
-              {author}
-            </span>
-            <span className={styles.authorCardMeta}>{pushlish_time} 发布</span>
-            {authorStats && (
-              <div className={styles.authorCardStats}>
-                <span className={styles.authorStatItem}>
-                  <FileText size={12} />
-                  {authorStats.articles}
-                </span>
-                <span className={styles.authorStatItem}>
-                  <Users size={12} />
-                  {authorStats.followers}
-                </span>
-                <span className={styles.authorStatItem}>
-                  <Heart size={12} />
-                  {authorStats.likes}
-                </span>
-              </div>
-            )}
+          <div className={styles.authorCardActions}>
+            <button
+              className={`${styles.followButton} ${isFollowing ? styles.following : ""}`}
+              onClick={handleFollowToggle}
+            >
+              {isFollowing ? (
+                <>
+                  <UserCheck size={14} />
+                  已关注
+                </>
+              ) : (
+                <>
+                  <UserPlus size={14} />
+                  关注作者
+                </>
+              )}
+            </button>
+            <button
+              className={`${styles.followButton} ${isLiked ? styles.following : ""}`}
+              onClick={handleLikeToggle}
+            >
+              <ThumbsUp size={14} className={isLiked ? styles.likeIconActive : ""} />
+              {isLiked ? "已点赞" : "点赞文章"}
+            </button>
           </div>
         </div>
 
@@ -324,14 +507,14 @@ const ArticleView: React.FC<ArticleViewProps> = ({
           <div className={styles.tagCard}>
             <div className={styles.tagCardTitle}>分类 & 标签</div>
             <div className={styles.tagCardContent}>
-              {categories.map((cat, i) => (
-                <span key={`cat-${i}`} className={styles.categoryBadge}>
-                  {cat}
+              {categories.map((cat) => (
+                <span key={`cat-${cat.id}`} className={styles.categoryBadge}>
+                  {cat.name}
                 </span>
               ))}
-              {labels.map((label, i) => (
-                <span key={`label-${i}`} className={styles.labelTag}>
-                  {label}
+              {labels.map((label) => (
+                <span key={`label-${label.id}`} className={styles.labelTag}>
+                  {label.name}
                 </span>
               ))}
             </div>
@@ -374,11 +557,11 @@ const ArticleView: React.FC<ArticleViewProps> = ({
               </span>
               <span className={styles.metaItem}>
                 <Heart size={14} />
-                {praises} 点赞
+                {likesCount} 点赞
               </span>
               <span className={styles.metaItem}>
                 <MessageSquare size={14} />
-                {comments} 评论
+                {commentsList.length} 评论
               </span>
               {readingTime && (
                 <span className={styles.metaItem}>
@@ -467,6 +650,169 @@ const ArticleView: React.FC<ArticleViewProps> = ({
             </ReactMarkdown>
           </div>
         </article>
+
+        {/* 评论区域 */}
+        <div className={styles.commentSection}>
+          <div className={styles.commentHeader}>
+            <h3 className={styles.commentTitle}>
+              <MessageSquare size={18} />
+              评论 ({commentsList.length})
+            </h3>
+            <button
+              className={styles.writeCommentButton}
+              onClick={() => setShowCommentInput(!showCommentInput)}
+            >
+              {showCommentInput ? "收起" : "写评论"}
+            </button>
+          </div>
+
+          {/* 评论输入框 */}
+          {showCommentInput && (
+            <div className={styles.commentInputWrapper}>
+              <textarea
+                className={styles.commentTextarea}
+                placeholder="写下你的想法..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                rows={3}
+              />
+              <div className={styles.commentInputFooter}>
+                <span className={styles.commentHint}>支持 Markdown 语法</span>
+                <button
+                  className={styles.commentSubmitButton}
+                  onClick={handleCommentSubmit}
+                  disabled={!commentText.trim()}
+                >
+                  <Send size={14} />
+                  发布
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 评论列表 */}
+          <div className={styles.commentList}>
+            {commentsList.length === 0 ? (
+              <div className={styles.commentEmpty}>暂无评论，快来抢沙发吧~</div>
+            ) : (
+              commentsList.map((comment) => (
+                <React.Fragment key={comment.id}>
+                  <div className={styles.commentItem}>
+                    <div className={styles.commentAvatar}>
+                      <img
+                        src={
+                          comment.avatar ||
+                          `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user)}&background=random&size=40`
+                        }
+                        alt={comment.user}
+                      />
+                    </div>
+                    <div className={styles.commentBody}>
+                      <div className={styles.commentMeta}>
+                        <span className={styles.commentUser}>{comment.user}</span>
+                        <span className={styles.commentTime}>{comment.time}</span>
+                      </div>
+                      <div className={styles.commentContent}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {comment.content}
+                        </ReactMarkdown>
+                      </div>
+                      <div className={styles.commentActions}>
+                        <button
+                          className={`${styles.commentActionButton} ${likedCommentIds.has(comment.id) ? styles.commentLiked : ""}`}
+                          onClick={() => handleCommentLike(comment.id)}
+                        >
+                          <ThumbsUp size={12} />
+                          {comment.likes > 0 ? comment.likes : "赞"}
+                        </button>
+                        <button
+                          className={styles.commentActionButton}
+                          onClick={() => setReplyToId(replyToId === comment.id ? null : comment.id)}
+                        >
+                          回复
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 子回复列表 */}
+                  {comment.replies.length > 0 && (
+                    <div className={styles.replyList}>
+                      {comment.replies.map((reply) => (
+                        <div key={reply.id} className={styles.replyItem}>
+                          <div className={styles.commentAvatar}>
+                            <img
+                              src={
+                                reply.avatar ||
+                                `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user)}&background=random&size=32`
+                              }
+                              alt={reply.user}
+                            />
+                          </div>
+                          <div className={styles.commentBody}>
+                            <div className={styles.commentMeta}>
+                              <span className={styles.commentUser}>{reply.user}</span>
+                              <span className={styles.commentTime}>{reply.time}</span>
+                            </div>
+                            <div className={styles.commentContent}>
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {reply.content}
+                              </ReactMarkdown>
+                            </div>
+                            <div className={styles.commentActions}>
+                              <button
+                                className={`${styles.commentActionButton} ${likedCommentIds.has(reply.id) ? styles.commentLiked : ""}`}
+                                onClick={() => handleCommentLike(reply.id)}
+                              >
+                                <ThumbsUp size={12} />
+                                {reply.likes > 0 ? reply.likes : "赞"}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 回复输入框 */}
+                  {replyToId === comment.id && (
+                    <div className={styles.replyInputWrapper}>
+                      <textarea
+                        className={styles.commentTextarea}
+                        placeholder={`回复 ${comment.user}...`}
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        rows={2}
+                      />
+                      <div className={styles.commentInputFooter}>
+                        <span className={styles.commentHint}>支持 Markdown 语法</span>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button
+                            className={styles.writeCommentButton}
+                            onClick={() => {
+                              setReplyToId(null);
+                              setReplyText("");
+                            }}
+                          >
+                            取消
+                          </button>
+                          <button
+                            className={styles.commentSubmitButton}
+                            onClick={() => handleReplySubmit(comment.id)}
+                            disabled={!replyText.trim()}
+                          >
+                            <Send size={14} />
+                            回复
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </React.Fragment>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

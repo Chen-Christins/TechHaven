@@ -119,6 +119,16 @@ export interface DeleteAssignmentParams {
 /**
  * 删除作业响应
  */
+/**
+ * 管理端任务统计响应类型
+ */
+export interface AssignmentStatsResponse {
+  total_assignments: number;
+  active_assignments: number;
+  closed_assignments: number;
+  draft_assignments: number;
+}
+
 export interface DeleteAssignmentResponse {
   ids: Array<number | string>;
 }
@@ -264,6 +274,14 @@ export class AssignmentService {
     let url = `/assignment/detail?id=${params.id}`;
 
     const response = await http.get<GetAssignmentDetailResponse>(url);
+    return response.data;
+  }
+
+  /**
+   * 获取管理端任务统计数据
+   */
+  static async getAdminAssignmentStats(): Promise<AssignmentStatsResponse> {
+    const response = await http.get<AssignmentStatsResponse>("/assignment/admin/stats");
     return response.data;
   }
 

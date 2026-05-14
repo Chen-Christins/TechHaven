@@ -30,6 +30,7 @@ export class WebSocketClient {
   private errorHandlers: Set<EventHandler> = new Set();
   private intentionalClose = false;
   private pendingSend: string[] = [];
+  private uid: string | number | undefined;
 
   /**
    * @param path WebSocket 路径，如 "/notification"
@@ -51,24 +52,26 @@ export class WebSocketClient {
     return this.ws?.readyState === WebSocket.OPEN;
   }
 
-  /** 建立连接（从 Cookie 读取 uid / token / token_time） */
-  connect() {
+  /** 建立连接（uid 从 AuthContext 传入，token / token_time 从 Cookie 读取） */
+  connect(uid?: string | number) {
+    if (uid !== undefined) {
+      this.uid = uid;
+    }
     if (this.ws?.readyState === WebSocket.OPEN || this.ws?.readyState === WebSocket.CONNECTING) {
       return;
     }
     this.intentionalClose = false;
 
-    const uid = getCookie("S_UID");
     const token = getCookie("S_TOKEN");
     const tokenTime = getCookie("S_TOKEN_TIME");
 
     const params = new URLSearchParams();
-    if (uid) params.set("uid", uid);
+    if (this.uid !== undefined && this.uid !== null && this.uid !== "") params.set("uid", String(this.uid));
     if (token) params.set("token", token);
     if (tokenTime) params.set("token_time", tokenTime);
 
     const connectUrl = `${this.basePath}?${params.toString()}`;
-    console.log("[WS] 正在连接:", connectUrl, { uid, token: token ? "***" : null, tokenTime });
+    console.log("[WS] 正在连接:", connectUrl, { uid: this.uid, token: token ? "***" : null, tokenTime });
 
     this.ws = new WebSocket(connectUrl);
 

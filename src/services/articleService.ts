@@ -97,8 +97,9 @@ export interface ArticleDetailsResponse {
   views: number;
   praise: number;
   favorites: number;
-  labels?: Array<string | number>;
-  categorys?: Array<string | number>;
+  author_avatar?: string;
+  labels?: Array<{ id: number; name: string; color: string }>;
+  categorys?: Array<{ id: number; name: string; color: string }>;
 }
 
 /**
@@ -170,6 +171,17 @@ export interface UpdateArticleCategoryResponse {
 export interface SwitchArticleStateParams {
   id: string | number;
   state: number;
+}
+
+/**
+ * 管理端文章统计响应类型
+ */
+export interface ArticleStatsResponse {
+  total_articles: number;
+  pending_articles: number;
+  published_articles: number;
+  rejected_articles: number;
+  reported_articles: number;
 }
 
 /**
@@ -359,6 +371,35 @@ export class ArticleService {
         "Content-Type": "application/x-www-form-urlencoded",
       },
     });
+  }
+
+  /**
+   * 获取管理端文章统计数据
+   */
+  static async getAdminArticleStats(params?: {
+    category_id?: string | number;
+    role?: number;
+    days?: number;
+    keyword?: string;
+  }): Promise<ArticleStatsResponse> {
+    let url = `/article/admin/stats`;
+    const queryParts: string[] = [];
+    if (params?.category_id !== undefined && params?.category_id !== "") {
+      queryParts.push(`category_id=${params.category_id}`);
+    }
+    if (params?.role !== undefined && params?.role !== -1) {
+      queryParts.push(`role=${params.role}`);
+    }
+    if (params?.days !== undefined) {
+      queryParts.push(`days=${params.days}`);
+    }
+    if (params?.keyword !== undefined && params?.keyword !== "") {
+      queryParts.push(`keyword=${encodeURIComponent(params.keyword)}`);
+    }
+    if (queryParts.length) url += `?${queryParts.join("&")}`;
+
+    const response = await http.get<ArticleStatsResponse>(url);
+    return response.data;
   }
 }
 

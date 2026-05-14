@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import styles from "./ProfilePage.module.css";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
+import { encodeId, decodeId } from "../../utils/hashId";
 import BackToTop from "../../components/backToTop/BackToTop";
 import { useAuth } from "../../contexts/AuthContext";
 import AuthService from "../../services/authService";
@@ -86,7 +87,8 @@ function formatPublishTime(timestamp: number | string): string {
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  const { id: encodedId } = useParams<{ id: string }>();
+  const id = encodedId ? decodeId(encodedId) : null;
   const { user: currentUser, isAuthenticated } = useAuth();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -307,12 +309,16 @@ const Profile: React.FC = () => {
                   <article
                     key={article.id}
                     className={`${styles.articleCard} ${viewMode === "grid" ? styles.gridCard : styles.listCard}`}
-                    onClick={() => navigate(`/article/${article.id}`)}
+                    onClick={() => navigate(`/article/${encodeId(article.id)}`)}
                     style={{ cursor: "pointer" }}
                   >
                     <div className={styles.articleHeader}>
                       <div className={styles.articleCategory}>
-                        {Array.isArray(article.categorys) && article.categorys.length > 0 ? article.categorys[0] : "未分类"}
+                        {Array.isArray(article.categorys) && article.categorys.length > 0
+                          ? typeof article.categorys[0] === "object"
+                            ? (article.categorys[0] as any).name
+                            : article.categorys[0]
+                          : "未分类"}
                       </div>
                       <span className={styles.articleDate}>{article.publish_time}</span>
                     </div>
@@ -323,10 +329,10 @@ const Profile: React.FC = () => {
                     </p>
                     <div className={styles.articleFooter}>
                       <div className={styles.tags}>
-                        {(article.labels || []).slice(0, 3).map((tagId: string | number) => (
-                          <span key={tagId} className={styles.tag}>
+                        {(article.labels || []).slice(0, 3).map((label: any) => (
+                          <span key={typeof label === "object" ? label.id : label} className={styles.tag}>
                             <Hash size={12} />
-                            {tagId}
+                            {typeof label === "object" ? label.name : label}
                           </span>
                         ))}
                         {(article.labels?.length || 0) > 3 && (

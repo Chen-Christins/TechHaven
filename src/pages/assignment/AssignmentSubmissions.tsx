@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { decodeId } from "../../utils/hashId";
 import {
   FaArrowLeft,
   FaBookOpen,
@@ -60,7 +61,8 @@ interface AssignmentSubmissionItem {
 }
 
 const AssignmentSubmissions: React.FC = () => {
-  const { id } = useParams();
+  const { id: encodedId } = useParams();
+  const id = encodedId ? decodeId(encodedId) : null;
   const navigate = useNavigate();
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [submissions, setSubmissions] = useState<AssignmentSubmissionItem[]>([]);

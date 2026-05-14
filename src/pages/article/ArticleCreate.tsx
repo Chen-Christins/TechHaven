@@ -3,6 +3,7 @@ import CategoryService from "../../services/categoryService";
 import LabelService from "../../services/labelService";
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { encodeId, decodeId } from "../../utils/hashId";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
@@ -118,9 +119,11 @@ const MermaidComponent: React.FC<{ code: string }> = ({ code }) => {
 
 const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDraft, onPublish, initialData }) => {
   const { user } = useAuth();
-  const { id } = useParams();
+  const { id: encodedId } = useParams();
+  const id = encodedId ? decodeId(encodedId) : null;
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [formData, setFormData] = useState<ArticleFormData>({
     title: "",
@@ -230,20 +233,20 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
                 title: article.title,
                 content: article.content,
                 articleType: article.type === 1 ? "original" : "repost",
-                category: formattedCategories.find((c) => c.id == article.categorys?.[0]) || null,
+                category: formattedCategories.find((c) => c.id == article.categorys?.[0]?.id) || null,
                 tags: [],
               }));
 
               // 填充标签
               if (article.labels && article.labels.length > 0) {
-                const articleTags = formattedTags.filter((t) => article.labels?.includes(t.id));
+                const articleTags = formattedTags.filter((t) => article.labels?.some((l) => l.id === t.id));
                 setSelectedTags(articleTags);
                 setFormData((prev) => ({ ...prev, tags: articleTags }));
               }
 
               // 填充分类
               if (article.categorys && article.categorys.length > 0) {
-                const cat = formattedCategories.find((c) => c.id == article.categorys![0]);
+                const cat = formattedCategories.find((c) => c.id == article.categorys![0]?.id);
                 if (cat) {
                   setFormData((prev) => ({ ...prev, category: cat }));
                 }
@@ -322,7 +325,9 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
 
   // 保存草稿：只创建文章
   const handleSaveDraft = async () => {
+    if (submitting) return;
     onSaveDraft?.(formData);
+    setSubmitting(true);
     try {
       const labelIds = selectedTags.length > 0 ? selectedTags.map((t) => t.id).join(",") : "";
       const categoryId = formData.category?.id ? String(formData.category.id) : "";
@@ -351,12 +356,16 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
     } catch (err) {
       console.error("保存草稿失败:", err);
       message.error("保存草稿失败");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   // 发布文章：先创建再发布
   const handlePublish = async () => {
+    if (submitting) return;
     onPublish?.(formData);
+    setSubmitting(true);
     try {
       // 选中的标签id
       const labelIds = selectedTags.length > 0 ? selectedTags.map((t) => t.id).join(",") : "";
@@ -370,7 +379,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
           content: formData.content,
         });
         message.success("文章更新成功");
-        navigate(`/article/${id}`);
+        navigate(`/article/${encodeId(id)}`);
       } else {
         const createRes = await ArticleService.createArticle({
           title: formData.title,
@@ -387,7 +396,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
             publish_time: timestamp,
           });
           message.success("文章发布成功, 待审核");
-          navigate(`/article/${createRes.id}`);
+          navigate(`/article/${encodeId(createRes.id)}`);
           // console.log('发布文章成功:', publishRes);
         } else {
           // console.error('创建文章失败，无法发布');
@@ -397,6 +406,8 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
     } catch (err) {
       console.error("发布文章失败:", err);
       message.error("发布文章失败");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -758,10 +769,10 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
 
           {/* 操作按钮 */}
           <div className={styles.actionButtons}>
-            <button className={`${styles.btn} ${styles.btnOutline}`} onClick={handleSaveDraft}>
+            <button className={`${styles.btn} ${styles.btnOutline}`} onClick={handleSaveDraft} disabled={submitting}>
               <FaSave /> {id ? "保存修改" : "保存草稿"}
             </button>
-            <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handlePublish}>
+            <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handlePublish} disabled={submitting}>
               <FaFly /> {id ? "更新文章" : "发布文章"}
             </button>
           </div>

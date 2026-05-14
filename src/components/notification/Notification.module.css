@@ -187,6 +187,46 @@
   color: var(--warning);
 }
 
+.iconOrgRoleChange {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.iconOrgJoinRequest {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.iconOrgJoinApproved {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.iconOrgJoinRejected {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
+.iconOrgMemberKicked {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}
+
+.iconArticleReviewRequest {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.iconArticleReviewApproved {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.iconArticleReviewRejected {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
 .itemBody {
   flex: 1;
   min-width: 0;
@@ -230,12 +270,15 @@
 .footer {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding: 10px 16px;
   border-top: 1px solid var(--border-primary);
 }
 
 .viewAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: none;
   border: none;
   color: var(--text-secondary);

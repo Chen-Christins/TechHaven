@@ -1197,6 +1197,12 @@
     box-sizing: border-box;
   }
 
+  .notifTypeFilter {
+    max-width: none;
+    width: 100%;
+    margin-left: 0;
+  }
+
   .listHeader {
     display: none;
   }
@@ -1793,6 +1799,74 @@
   }
 }
 
+/* 通知类型筛选 */
+.notifTypeFilter {
+  flex: 1;
+  width: 100%;
+}
+
+/* 通知设置按钮 */
+.notifSettingsBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.notifSettingsBtn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* 通知设置列表 */
+.settingsList {
+  display: flex;
+  flex-direction: column;
+}
+
+.settingsItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+
+.settingsItem:not(:last-child) {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.settingsItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settingsItemIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.settingsItemLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
 /* ========== 通知中心样式 ========== */
 
 .pageHeader {
@@ -1911,6 +1985,46 @@
   color: var(--warning);
 }
 
+.notifIconOrgRoleChange {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.notifIconOrgJoinRequest {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.notifIconOrgJoinApproved {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.notifIconOrgJoinRejected {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
+.notifIconOrgMemberKicked {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}
+
+.notifIconArticleReviewRequest {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.notifIconArticleReviewApproved {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.notifIconArticleReviewRejected {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
 .notifItemBody {
   flex: 1;
   min-width: 0;
@@ -1964,4 +2078,31 @@
 .notifEmptyIcon {
   font-size: 2.5rem;
   opacity: 0.4;
+}
+
+/* 加载更多按钮 */
+.loadMoreBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 0 0 8px 8px;
+}
+
+.loadMoreBtn:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+  color: var(--primary);
+}
+
+.loadMoreBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

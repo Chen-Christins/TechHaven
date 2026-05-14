@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
+import { decodeId } from "../../utils/hashId";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import OrganizationDetailSkeleton from "../../components/organization/OrganizationDetailSkeleton";
@@ -66,7 +67,8 @@ const PAGE_SIZE = 15;
 const TASKS_PAGE_SIZE = 15; // 任务列表每页显示的条数
 
 const OrganizationDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: encodedId } = useParams<{ id: string }>();
+  const id = encodedId ? decodeId(encodedId) : null;
   const { user: currentUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [org, setOrg] = useState<OrganizationDetailType | null>(null);
@@ -90,6 +92,7 @@ const OrganizationDetail: React.FC = () => {
   const [pendingRequestsRefreshTrigger, setPendingRequestsRefreshTrigger] = useState(0); // 用于强制刷新待处理请求的触发器
   const [roleModalVisible, setRoleModalVisible] = useState(false);
   const [taskPreviewModalVisible, setTaskPreviewModalVisible] = useState(false);
+  const [memberPreviewModalVisible, setMemberPreviewModalVisible] = useState(false);
   const [taskCreateModalVisible, setTaskCreateModalVisible] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
@@ -619,6 +622,12 @@ const OrganizationDetail: React.FC = () => {
     setSelectedTask(_task);
   };
 
+  // 预览成员
+  const handleViewMember = (member: Member) => {
+    setSelectedMember(member);
+    setMemberPreviewModalVisible(true);
+  };
+
   // 编辑任务
   const handleEditTask = (_task: Task) => {
     setSelectedTask(_task);
@@ -863,6 +872,7 @@ const OrganizationDetail: React.FC = () => {
                     tasksLoading={tasksLoading}
                     roleModalVisible={roleModalVisible}
                     taskPreviewModalVisible={taskPreviewModalVisible}
+                    memberPreviewModalVisible={memberPreviewModalVisible}
                     selectedMember={selectedMember}
                     selectedRole={selectedRole}
                     getAvailableRoleOptions={getAvailableRoleOptions}
@@ -880,6 +890,8 @@ const OrganizationDetail: React.FC = () => {
                     onSetMemberRole={handleSetMemberRole}
                     onRoleModalClose={() => setRoleModalVisible(false)}
                     onTaskPreviewModalClose={() => setTaskPreviewModalVisible(false)}
+                    onMemberPreviewModalClose={() => setMemberPreviewModalVisible(false)}
+                    onViewMember={handleViewMember}
                     onRoleChange={setSelectedRole}
                     onConfirmRole={handleConfirmRole}
                     onCreateTask={handleCreateTask}

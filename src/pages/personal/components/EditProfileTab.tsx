@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { FaCamera, FaUser, FaLock, FaSave, FaQuoteRight, FaGlobe } from "react-icons/fa";
+import { FaCamera, FaUser, FaLock, FaSave, FaQuoteRight, FaGlobe, FaLink } from "react-icons/fa";
 import { useAuth } from "../../../contexts/AuthContext";
 import { AuthService } from "../../../services/authService";
 import { FileService } from "../../../services/fileService";
@@ -11,12 +11,13 @@ const EditProfileTab: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState(user?.name || "");
-  const [motto, setMotto] = useState("");
-  const [website, setWebsite] = useState("");
+  const [motto, setMotto] = useState(user?.bio || "");
+  const [website, setWebsite] = useState(user?.website || "");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || "https://picsum.photos/id/64/200");
+  const [avatarInput, setAvatarInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -45,6 +46,7 @@ const EditProfileTab: React.FC = () => {
       if (result.data?.file_path || result.data?.url) {
         const newAvatar = result.data.file_path || result.data.url;
         setAvatarUrl(newAvatar);
+        await AuthService.updateUserProfile(undefined, undefined, undefined, undefined, undefined, newAvatar);
         message.success("头像上传成功");
       } else {
         message.warn("头像上传失败，请重试");
@@ -59,6 +61,29 @@ const EditProfileTab: React.FC = () => {
     }
   };
 
+  const handleApplyAvatarUrl = async () => {
+    const trimmed = avatarInput.trim();
+    if (!trimmed) {
+      message.warn("请输入头像URL");
+      return;
+    }
+    if (!/^https?:\/\/.+/.test(trimmed)) {
+      message.warn("请输入有效的 HTTP/HTTPS 链接");
+      return;
+    }
+    setSaving(true);
+    try {
+      await AuthService.updateUserProfile(undefined, undefined, undefined, undefined, undefined, trimmed);
+      setAvatarUrl(trimmed);
+      setAvatarInput("");
+      message.success("头像已更新");
+    } catch (err: any) {
+      message.error(err?.message || "头像更新失败");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSaveProfile = async () => {
     if (!name.trim()) {
       message.warn("请输入昵称");
@@ -67,7 +92,7 @@ const EditProfileTab: React.FC = () => {
 
     setSaving(true);
     try {
-      await AuthService.updateUserProfile(name.trim(), undefined, motto.trim(), website.trim());
+      await AuthService.updateUserProfile(name.trim(), undefined, motto.trim(), website.trim(), undefined, avatarUrl);
       message.success("个人资料已更新");
     } catch (err: any) {
       message.error(err?.message || "保存失败");
@@ -92,7 +117,7 @@ const EditProfileTab: React.FC = () => {
 
     setSaving(true);
     try {
-      await AuthService.updateUserProfile(undefined, newPassword);
+      await AuthService.updateUserProfile(undefined, newPassword, undefined, undefined, currentPassword);
       message.success("密码已修改，下次登录时生效");
       setCurrentPassword("");
       setNewPassword("");
@@ -126,7 +151,21 @@ const EditProfileTab: React.FC = () => {
                   <span>{uploading ? "上传中..." : "更换头像"}</span>
                 </div>
               </div>
-              <p className={styles.avatarHint}>支持 JPG、PNG 格式，大小不超过 5MB</p>
+              <p className={styles.avatarHint}>支持 JPG、PNG 格式，大小不超过 5MB，或直接输入图片链接</p>
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <input
+                  type="url"
+                  className={styles.editInput}
+                  value={avatarInput}
+                  onChange={(e) => setAvatarInput(e.target.value)}
+                  placeholder={user?.avatar || "https://example.com/avatar.jpg"}
+                  style={{ flex: 1 }}
+                />
+                <button type="button" className={styles.editSaveBtn} onClick={handleApplyAvatarUrl} style={{ whiteSpace: "nowrap" }}>
+                  <FaLink size={12} />
+                  应用
+                </button>
+              </div>
             </div>
             <input
               ref={fileInputRef}
@@ -153,7 +192,7 @@ const EditProfileTab: React.FC = () => {
                   className={styles.editInput}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="请输入昵称"
+                  placeholder={user?.name || "请输入昵称"}
                 />
               </div>
               <div className={styles.editFormGroup}>
@@ -171,7 +210,7 @@ const EditProfileTab: React.FC = () => {
                   className={styles.editInput}
                   value={motto}
                   onChange={(e) => setMotto(e.target.value)}
-                  placeholder="一句话介绍自己"
+                  placeholder={user?.bio || "一句话介绍自己"}
                   maxLength={100}
                 />
               </div>
@@ -185,7 +224,7 @@ const EditProfileTab: React.FC = () => {
                   className={styles.editInput}
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
-                  placeholder="https://example.com"
+                  placeholder={user?.website || "https://example.com"}
                 />
               </div>
             </div>
