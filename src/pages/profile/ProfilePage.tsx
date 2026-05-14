@@ -312,7 +312,11 @@ const Profile: React.FC = () => {
                   >
                     <div className={styles.articleHeader}>
                       <div className={styles.articleCategory}>
-                        {Array.isArray(article.categorys) && article.categorys.length > 0 ? article.categorys[0] : "未分类"}
+                        {Array.isArray(article.categorys) && article.categorys.length > 0
+                          ? typeof article.categorys[0] === "object"
+                            ? (article.categorys[0] as any).name
+                            : article.categorys[0]
+                          : "未分类"}
                       </div>
                       <span className={styles.articleDate}>{article.publish_time}</span>
                     </div>
@@ -323,10 +327,10 @@ const Profile: React.FC = () => {
                     </p>
                     <div className={styles.articleFooter}>
                       <div className={styles.tags}>
-                        {(article.labels || []).slice(0, 3).map((tagId: string | number) => (
-                          <span key={tagId} className={styles.tag}>
+                        {(article.labels || []).slice(0, 3).map((label: any) => (
+                          <span key={typeof label === "object" ? label.id : label} className={styles.tag}>
                             <Hash size={12} />
-                            {tagId}
+                            {typeof label === "object" ? label.name : label}
                           </span>
                         ))}
                         {(article.labels?.length || 0) > 3 && (

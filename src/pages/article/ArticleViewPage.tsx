@@ -95,7 +95,7 @@ const ArticleViewPage: React.FC = () => {
                   update_time={formatToChinaTime(Number(article.update_time))}
                   pushlish_time={article.publish_time ? formatToChinaTime(Number(article.publish_time)) : "暂未发布"}
                   categories={article.categorys}
-                  labels={article.labels?.map((l: string | number) => String(l))}
+                  labels={article.labels}
                   readingTime={article.content ? Math.max(1, Math.ceil(article.content.length / 500)) : undefined}
                 />
               )}

@@ -230,20 +230,20 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
                 title: article.title,
                 content: article.content,
                 articleType: article.type === 1 ? "original" : "repost",
-                category: formattedCategories.find((c) => c.id == article.categorys?.[0]) || null,
+                category: formattedCategories.find((c) => c.id == article.categorys?.[0]?.id) || null,
                 tags: [],
               }));
 
               // 填充标签
               if (article.labels && article.labels.length > 0) {
-                const articleTags = formattedTags.filter((t) => article.labels?.includes(t.id));
+                const articleTags = formattedTags.filter((t) => article.labels?.some((l) => l.id === t.id));
                 setSelectedTags(articleTags);
                 setFormData((prev) => ({ ...prev, tags: articleTags }));
               }
 
               // 填充分类
               if (article.categorys && article.categorys.length > 0) {
-                const cat = formattedCategories.find((c) => c.id == article.categorys![0]);
+                const cat = formattedCategories.find((c) => c.id == article.categorys![0]?.id);
                 if (cat) {
                   setFormData((prev) => ({ ...prev, category: cat }));
                 }

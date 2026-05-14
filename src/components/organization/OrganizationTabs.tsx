@@ -812,9 +812,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
               <div>
                 <div style={{ fontSize: "18px", fontWeight: 600 }}>{selectedMember.name}</div>
                 {selectedMember.email && (
-                  <div style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "4px" }}>
-                    {selectedMember.email}
-                  </div>
+                  <div style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "4px" }}>{selectedMember.email}</div>
                 )}
               </div>
             </div>
@@ -824,11 +822,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                 <div className={styles.detailValue}>
                   <span
                     className={`${styles.roleBadge} ${
-                      selectedMember.role === "会长"
-                        ? styles.admin
-                        : selectedMember.role === "管理员"
-                          ? styles.moderator
-                          : styles.user
+                      selectedMember.role === "会长" ? styles.admin : selectedMember.role === "管理员" ? styles.moderator : styles.user
                     }`}
                   >
                     {selectedMember.role === "会长" && <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />}

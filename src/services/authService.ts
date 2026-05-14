@@ -232,14 +232,7 @@ export class AuthService {
    * @param website 个人网站 (可选)
    * @param oldPasswd 当前密码 (改密码时必传)
    */
-  static async updateUserProfile(
-    name?: string,
-    passwd?: string,
-    bio?: string,
-    website?: string,
-    oldPasswd?: string,
-    avatar?: string,
-  ) {
+  static async updateUserProfile(name?: string, passwd?: string, bio?: string, website?: string, oldPasswd?: string, avatar?: string) {
     const formData = new URLSearchParams();
     if (name) formData.append("name", name);
     if (passwd) formData.append("passwd", passwd);

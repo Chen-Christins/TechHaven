@@ -212,6 +212,21 @@
   color: #dc2626;
 }
 
+.iconArticleReviewRequest {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.iconArticleReviewApproved {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.iconArticleReviewRejected {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
 .itemBody {
   flex: 1;
   min-width: 0;

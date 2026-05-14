@@ -98,8 +98,8 @@ export interface ArticleDetailsResponse {
   praise: number;
   favorites: number;
   author_avatar?: string;
-  labels?: Array<string | number>;
-  categorys?: Array<string | number>;
+  labels?: Array<{ id: number; name: string; color: string }>;
+  categorys?: Array<{ id: number; name: string; color: string }>;
 }
 
 /**

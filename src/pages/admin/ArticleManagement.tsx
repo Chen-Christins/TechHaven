@@ -159,10 +159,8 @@ const ArticleManagement: React.FC = () => {
   // 加载统计数据
   const fetchStats = async () => {
     try {
-      const days = filters.dateRange === "7days" ? 7
-        : filters.dateRange === "30days" ? 30
-        : filters.dateRange === "90days" ? 90
-        : undefined;
+      const days =
+        filters.dateRange === "7days" ? 7 : filters.dateRange === "30days" ? 30 : filters.dateRange === "90days" ? 90 : undefined;
 
       const res: ArticleStatsResponse = await ArticleService.getAdminArticleStats({
         category_id: filters.category || undefined,

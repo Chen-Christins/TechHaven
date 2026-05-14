@@ -12,6 +12,9 @@ import {
   FaUserCheck,
   FaUserTimes,
   FaUserMinus,
+  FaFileUpload,
+  FaClipboardCheck,
+  FaBan,
   FaCheckDouble,
   FaCog,
 } from "react-icons/fa";
@@ -178,6 +181,9 @@ const TYPE_ICON_MAP: Record<string, { icon: React.ReactNode; className: string }
   org_join_approved: { icon: <FaUserCheck />, className: styles.notifIconOrgJoinApproved },
   org_join_rejected: { icon: <FaUserTimes />, className: styles.notifIconOrgJoinRejected },
   org_member_kicked: { icon: <FaUserMinus />, className: styles.notifIconOrgMemberKicked },
+  article_review_request: { icon: <FaFileUpload />, className: styles.notifIconArticleReviewRequest },
+  article_review_approved: { icon: <FaClipboardCheck />, className: styles.notifIconArticleReviewApproved },
+  article_review_rejected: { icon: <FaBan />, className: styles.notifIconArticleReviewRejected },
 };
 
 const TYPE_OPTIONS: SelectOption[] = [
@@ -192,6 +198,9 @@ const TYPE_OPTIONS: SelectOption[] = [
   { id: "org_join_approved", name: "申请通过", color: "#10b981" },
   { id: "org_join_rejected", name: "申请拒绝", color: "#ef4444" },
   { id: "org_member_kicked", name: "成员移出", color: "#dc2626" },
+  { id: "article_review_request", name: "待审核", color: "#f59e0b" },
+  { id: "article_review_approved", name: "审核通过", color: "#10b981" },
+  { id: "article_review_rejected", name: "审核拒绝", color: "#ef4444" },
 ];
 
 function formatTime(timestamp: number): string {
@@ -367,6 +376,9 @@ const NotificationsTab: React.FC = () => {
     { key: "org_join_approved", label: "申请通过通知" },
     { key: "org_join_rejected", label: "申请拒绝通知" },
     { key: "org_member_kicked", label: "成员移出通知" },
+    { key: "article_review_request", label: "文章待审核通知" },
+    { key: "article_review_approved", label: "文章审核通过通知" },
+    { key: "article_review_rejected", label: "文章审核拒绝通知" },
   ];
 
   return (
@@ -388,13 +400,7 @@ const NotificationsTab: React.FC = () => {
       {/* Filter bar */}
       <div className={styles.searchFilterBar}>
         <div className={styles.notifTypeFilter}>
-          <CustomSelect
-            name="类型"
-            options={TYPE_OPTIONS}
-            value={selectedType}
-            onChange={handleTypeChange}
-            hideBadge={true}
-          />
+          <CustomSelect name="类型" options={TYPE_OPTIONS} value={selectedType} onChange={handleTypeChange} hideBadge={true} />
         </div>
         <button className={styles.notifSettingsBtn} onClick={() => setShowSettings(true)}>
           <FaCog />
@@ -444,11 +450,7 @@ const NotificationsTab: React.FC = () => {
             显示 {startIndex + 1} - {endIndex} 条，共 {total} 条通知
           </div>
           <div className={styles.paginationControls}>
-            <button
-              className={styles.paginationButton}
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-            >
+            <button className={styles.paginationButton} onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
               首页
             </button>
             <button
@@ -507,11 +509,7 @@ const NotificationsTab: React.FC = () => {
                   <span className={`${styles.settingsItemIcon} ${meta.className}`}>{meta.icon}</span>
                   <span className={styles.settingsItemLabel}>{label}</span>
                 </div>
-                <Switch
-                  checked={settings[key]}
-                  size="small"
-                  onChange={(checked) => handleSettingToggle(key, checked)}
-                />
+                <Switch checked={settings[key]} size="small" onChange={(checked) => handleSettingToggle(key, checked)} />
               </div>
             );
           })}

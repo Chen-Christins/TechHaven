@@ -36,8 +36,8 @@ interface ArticleViewProps {
   comments?: number;
   update_time: string;
   pushlish_time: string;
-  categories?: string[];
-  labels?: string[];
+  categories?: Array<{ id: number; name: string; color: string }>;
+  labels?: Array<{ id: number; name: string; color: string }>;
   readingTime?: number;
 }
 
@@ -330,14 +330,14 @@ const ArticleView: React.FC<ArticleViewProps> = ({
           <div className={styles.tagCard}>
             <div className={styles.tagCardTitle}>分类 & 标签</div>
             <div className={styles.tagCardContent}>
-              {categories.map((cat, i) => (
-                <span key={`cat-${i}`} className={styles.categoryBadge}>
-                  {cat}
+              {categories.map((cat) => (
+                <span key={`cat-${cat.id}`} className={styles.categoryBadge}>
+                  {cat.name}
                 </span>
               ))}
-              {labels.map((label, i) => (
-                <span key={`label-${i}`} className={styles.labelTag}>
-                  {label}
+              {labels.map((label) => (
+                <span key={`label-${label.id}`} className={styles.labelTag}>
+                  {label.name}
                 </span>
               ))}
             </div>
