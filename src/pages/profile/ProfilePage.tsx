@@ -27,8 +27,12 @@ import {
   BookOpen,
   Star,
   UserPlus,
+  UserCheck,
+  Loader2,
 } from "lucide-react";
 import type { Article, UserProfile } from "../../types/index";
+import FollowService from "../../services/followService";
+import message from "../../components/message/Message";
 
 // 文章数较小就用 mock 数据补充
 const recentActivities = [
@@ -98,6 +102,9 @@ const Profile: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [articleTotal, setArticleTotal] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
 
   const isOwnProfile = isAuthenticated && String(currentUser?.id) === String(id);
 
@@ -120,6 +127,11 @@ const Profile: React.FC = () => {
           LabelService.queryLabel({ user_id: id }).catch(() => []),
         ]);
 
+        // 检查当前用户是否已关注此用户
+        if (isAuthenticated && !isOwnProfile) {
+          FollowService.isFollowing(id).then(setIsFollowing).catch(() => {});
+        }
+
         // 构建用户资料
         const userData = userResponse?.data ?? (userResponse as any);
         const mappedProfile: UserProfile = {
@@ -135,11 +147,12 @@ const Profile: React.FC = () => {
           joinDate: formatDate(userData?.create_time),
           stats: {
             articles: articlesResponse?.total ?? 0,
-            followers: userData?.followers_count ?? 0,
+            followers: userData?.follower_count ?? 0,
             following: userData?.following_count ?? 0,
           },
         };
         setProfile(mappedProfile);
+        setFollowersCount(mappedProfile.stats.followers);
 
         // 构建文章列表
         if (articlesResponse?.list) {
@@ -183,6 +196,33 @@ const Profile: React.FC = () => {
 
     fetchProfileData();
   }, [id]);
+
+  const handleFollowToggle = async () => {
+    if (!isAuthenticated) {
+      message.info("请先登录");
+      navigate("/auth");
+      return;
+    }
+    if (!id) return;
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await FollowService.unfollow(id);
+        setIsFollowing(false);
+        setFollowersCount((c) => Math.max(0, c - 1));
+        message.success("已取消关注");
+      } else {
+        await FollowService.follow(id);
+        setIsFollowing(true);
+        setFollowersCount((c) => c + 1);
+        message.success("关注成功");
+      }
+    } catch (err: any) {
+      message.error(err?.response?.data?.msg || err?.message || "操作失败");
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -258,12 +298,18 @@ const Profile: React.FC = () => {
                   <span className={styles.statNumber}>{profile.stats.articles}</span>
                   <span className={styles.statLabel}>文章</span>
                 </div>
-                <div className={styles.statItem}>
+                <div
+                  className={`${styles.statItem} ${isOwnProfile ? styles.statItemClickable : ""}`}
+                  onClick={() => isOwnProfile && navigate("/personal?tab=followers")}
+                >
                   <Users className={styles.statIcon} size={16} />
-                  <span className={styles.statNumber}>{profile.stats.followers}</span>
+                  <span className={styles.statNumber}>{followersCount}</span>
                   <span className={styles.statLabel}>粉丝</span>
                 </div>
-                <div className={styles.statItem}>
+                <div
+                  className={`${styles.statItem} ${isOwnProfile ? styles.statItemClickable : ""}`}
+                  onClick={() => isOwnProfile && navigate("/personal?tab=following")}
+                >
                   <Heart className={styles.statIcon} size={16} />
                   <span className={styles.statNumber}>{profile.stats.following}</span>
                   <span className={styles.statLabel}>关注</span>
@@ -271,10 +317,30 @@ const Profile: React.FC = () => {
               </div>
 
               <div className={styles.actionButtons}>
-                {isOwnProfile && (
+                {isOwnProfile ? (
                   <button className={styles.primaryButton} onClick={() => navigate("/personal?tab=edit")}>
                     <Edit size={14} />
                     编辑资料
+                  </button>
+                ) : (
+                  <button
+                    className={`${styles.primaryButton} ${isFollowing ? styles.followingButton : ""}`}
+                    onClick={handleFollowToggle}
+                    disabled={followLoading}
+                  >
+                    {followLoading ? (
+                      <Loader2 size={14} className={styles.loadingSpin} />
+                    ) : isFollowing ? (
+                      <>
+                        <UserCheck size={14} />
+                        已关注
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus size={14} />
+                        关注
+                      </>
+                    )}
                   </button>
                 )}
                 <button className={styles.secondaryButton}>

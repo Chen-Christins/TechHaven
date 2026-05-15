@@ -54,6 +54,10 @@
   }
 }
 
+.loadingSpin {
+  animation: spin 1s linear infinite;
+}
+
 .content {
   flex: 1;
   min-width: 0;

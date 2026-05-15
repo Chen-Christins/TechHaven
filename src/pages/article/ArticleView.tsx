@@ -9,8 +9,11 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import "katex/dist/katex.min.css";
 import mermaid from "mermaid";
-import { Eye, Heart, MessageSquare, Clock, Calendar, FileText, Users, UserPlus, UserCheck, ThumbsUp, Send } from "lucide-react";
+import { Eye, Heart, MessageSquare, Clock, Calendar, FileText, Users, UserPlus, UserCheck, ThumbsUp, Send, Loader2 } from "lucide-react";
 import styles from "./ArticleView.module.css";
+import FollowService from "../../services/followService";
+import { useAuth } from "../../contexts/AuthContext";
+import message from "../../components/message/Message";
 
 interface Heading {
   id: string;
@@ -171,14 +174,17 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   readingTime,
 }) => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const isOwnArticle = isAuthenticated && authorId != null && String(user?.id) === String(authorId);
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [activeId, setActiveId] = useState<string>("");
   const [isContentReady, setIsContentReady] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // 互动状态 - Mock
+  // 互动状态
   const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(authorStats?.followers ?? 0);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(praises);
@@ -189,10 +195,37 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   const [replyText, setReplyText] = useState("");
   const [likedCommentIds, setLikedCommentIds] = useState<Set<number>>(new Set());
 
-  const handleFollowToggle = () => {
-    const willFollow = !isFollowing;
-    setIsFollowing(willFollow);
-    setFollowersCount((c) => (willFollow ? c + 1 : c - 1));
+  // 页面加载时判断是否已关注作者
+  useEffect(() => {
+    if (!isAuthenticated || !authorId) return;
+    FollowService.isFollowing(authorId).then(setIsFollowing).catch(() => {});
+  }, [isAuthenticated, authorId]);
+
+  const handleFollowToggle = async () => {
+    if (!isAuthenticated) {
+      message.info("请先登录");
+      navigate("/auth");
+      return;
+    }
+    if (!authorId) return;
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await FollowService.unfollow(authorId);
+        setIsFollowing(false);
+        setFollowersCount((c) => Math.max(0, c - 1));
+        message.success("已取消关注");
+      } else {
+        await FollowService.follow(authorId);
+        setIsFollowing(true);
+        setFollowersCount((c) => c + 1);
+        message.success("关注成功");
+      }
+    } catch (err: any) {
+      message.error(err?.response?.data?.msg || err?.message || "操作失败");
+    } finally {
+      setFollowLoading(false);
+    }
   };
 
   const handleLikeToggle = () => {
@@ -477,22 +510,27 @@ const ArticleView: React.FC<ArticleViewProps> = ({
             </div>
           </div>
           <div className={styles.authorCardActions}>
-            <button
-              className={`${styles.followButton} ${isFollowing ? styles.following : ""}`}
-              onClick={handleFollowToggle}
-            >
-              {isFollowing ? (
-                <>
-                  <UserCheck size={14} />
-                  已关注
-                </>
-              ) : (
-                <>
-                  <UserPlus size={14} />
-                  关注作者
-                </>
-              )}
-            </button>
+            {!isOwnArticle && (
+              <button
+                className={`${styles.followButton} ${isFollowing ? styles.following : ""}`}
+                onClick={handleFollowToggle}
+                disabled={followLoading}
+              >
+                {followLoading ? (
+                  <Loader2 size={14} className={styles.loadingSpin} />
+                ) : isFollowing ? (
+                  <>
+                    <UserCheck size={14} />
+                    已关注
+                  </>
+                ) : (
+                  <>
+                    <UserPlus size={14} />
+                    关注作者
+                  </>
+                )}
+              </button>
+            )}
             <button
               className={`${styles.followButton} ${isLiked ? styles.following : ""}`}
               onClick={handleLikeToggle}

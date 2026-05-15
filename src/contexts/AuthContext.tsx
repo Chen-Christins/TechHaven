@@ -15,6 +15,8 @@ export interface User {
   role: string;
   login_time: number | string;
   status: number | string;
+  following_count?: number;
+  follower_count?: number;
 }
 
 // 认证上下文类型
