@@ -26,6 +26,8 @@ export interface UserInfo {
   update_time: number;
   login_time: number;
   status: number;
+  following_count?: number;
+  follower_count?: number;
 }
 
 export interface UserAdminListParams {

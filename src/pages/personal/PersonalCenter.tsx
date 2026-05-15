@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FaTag, FaFileAlt, FaChartBar, FaBars, FaTimes, FaUserLock, FaUsers, FaBell, FaUserCircle, FaUserEdit } from "react-icons/fa";
+import { FaTag, FaFileAlt, FaChartBar, FaBars, FaTimes, FaUserLock, FaUsers, FaBell, FaUserCircle, FaUserEdit, FaUserPlus, FaUserFriends } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Loading from "../../components/loading/Loading";
 import Skeleton from "../../components/skeleton/Skeleton";
@@ -16,6 +16,8 @@ import StatsTab from "./components/StatsTab";
 import MyOrganizationsTab from "./components/MyOrganizationsTab";
 import NotificationsTab from "./components/NotificationsTab";
 import EditProfileTab from "./components/EditProfileTab";
+import FollowingTab from "./components/FollowingTab";
+import FollowerTab from "./components/FollowerTab";
 
 interface NavItem {
   id: string;
@@ -30,7 +32,7 @@ const PersonalCenter: React.FC = () => {
   const { user, isAuthenticated, logout, loading: authLoading } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"articles" | "tags" | "stats" | "organizations" | "notifications" | "edit">("articles");
+  const [activeTab, setActiveTab] = useState<"articles" | "tags" | "stats" | "organizations" | "notifications" | "edit" | "following" | "followers">("articles");
   const [loading] = useState(false);
   const [stats, setStats] = useState<UserStats | null>(null);
 
@@ -96,6 +98,18 @@ const PersonalCenter: React.FC = () => {
       label: "我的组织",
       icon: <FaUsers />,
       path: "/personal?tab=organizations",
+    },
+    {
+      id: "following",
+      label: "我的关注",
+      icon: <FaUserPlus />,
+      path: "/personal?tab=following",
+    },
+    {
+      id: "followers",
+      label: "我的粉丝",
+      icon: <FaUserFriends />,
+      path: "/personal?tab=followers",
     },
     {
       id: "notifications",
@@ -456,6 +470,14 @@ const PersonalCenter: React.FC = () => {
                   <div className={styles.profileStatValue}>{stats?.total_articles ?? "-"}</div>
                   <div className={styles.profileStatLabel}>文章</div>
                 </div>
+                <div className={styles.profileStatItem} onClick={() => setActiveTab("following")}>
+                  <div className={styles.profileStatValue}>{user?.following_count ?? 0}</div>
+                  <div className={styles.profileStatLabel}>关注</div>
+                </div>
+                <div className={styles.profileStatItem} onClick={() => setActiveTab("followers")}>
+                  <div className={styles.profileStatValue}>{user?.follower_count ?? 0}</div>
+                  <div className={styles.profileStatLabel}>粉丝</div>
+                </div>
                 <div className={styles.profileStatItem} onClick={() => setActiveTab("tags")}>
                   <div className={styles.profileStatValue}>{stats?.total_tags ?? "-"}</div>
                   <div className={styles.profileStatLabel}>标签</div>
@@ -478,6 +500,12 @@ const PersonalCenter: React.FC = () => {
 
             {/* 我的组织 */}
             {activeTab === "organizations" && <MyOrganizationsTab />}
+
+            {/* 我的关注 */}
+            {activeTab === "following" && <FollowingTab />}
+
+            {/* 我的粉丝 */}
+            {activeTab === "followers" && <FollowerTab />}
 
             {/* 通知中心 */}
             {activeTab === "notifications" && <NotificationsTab />}

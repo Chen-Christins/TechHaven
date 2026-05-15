@@ -5,7 +5,7 @@ export interface Notification {
   type:
     | "system"
     | "comment"
-    | "like"
+    | "praise"
     | "follow"
     | "article"
     | "org_role_change"

@@ -29,121 +29,11 @@ import Switch from "../switcher/Switch";
 import { setFaviconBadge } from "../../utils/favicon";
 import type { Notification as NotificationItem } from "../../types/notification";
 
-const MOCK_ENABLED = false;
-
-const NOW = Math.floor(Date.now() / 1000);
-
-const MOCK_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: 1,
-    type: "system",
-    title: "系统维护通知",
-    content: "本站将于 2026-05-15 凌晨 2:00-4:00 进行服务器升级维护，届时部分功能可能暂时不可用，敬请谅解。",
-    is_read: false,
-    create_time: NOW - 120,
-  },
-  {
-    id: 2,
-    type: "comment",
-    title: "张三 评论了你的文章",
-    content: "这篇关于 React 状态管理的文章写得太好了，尤其是 useReducer 和 Context 结合使用的部分，解决了我一直以来的困惑！",
-    is_read: false,
-    create_time: NOW - 600,
-    link: "/article/1",
-  },
-  {
-    id: 3,
-    type: "like",
-    title: "李四 点赞了你的文章",
-    content: "你的文章《TypeScript 高级类型技巧》获得了 1 个赞",
-    is_read: false,
-    create_time: NOW - 1800,
-    link: "/article/2",
-  },
-  {
-    id: 4,
-    type: "follow",
-    title: "王五 关注了你",
-    content: "王五 开始关注你，你们现在可以互相看到对方的动态了",
-    is_read: false,
-    create_time: NOW - 3600,
-    link: "/profile/wangwu",
-  },
-  {
-    id: 5,
-    type: "article",
-    title: "你关注的文章已更新",
-    content: "《深入理解 Vite 插件机制》发布了新章节「插件钩子执行顺序详解」，点击查看最新内容",
-    is_read: false,
-    create_time: NOW - 7200,
-    link: "/article/3",
-  },
-  {
-    id: 6,
-    type: "comment",
-    title: "赵六 回复了你的评论",
-    content: "同意你的观点，不过我觉得还可以补充一下关于异步更新的处理方式",
-    is_read: false,
-    create_time: NOW - 10800,
-    link: "/article/1",
-  },
-  {
-    id: 7,
-    type: "like",
-    title: "你的评论获得了 5 个赞",
-    content: "你在文章《CSS Grid 布局实战》中的评论「Grid 配合 subgrid 可以实现非常灵活的嵌套布局」获得了 5 个赞",
-    is_read: false,
-    create_time: NOW - 18000,
-  },
-  {
-    id: 8,
-    type: "system",
-    title: "欢迎加入 TechBlog",
-    content: "感谢你的注册！你可以在个人中心完善资料，或直接开始撰写你的第一篇文章。",
-    is_read: true,
-    create_time: NOW - 86400,
-  },
-  {
-    id: 9,
-    type: "follow",
-    title: "孙七 关注了你",
-    content: "孙七 开始关注你",
-    is_read: true,
-    create_time: NOW - 172800,
-  },
-  {
-    id: 10,
-    type: "article",
-    title: "你的文章入选了精选推荐",
-    content: "恭喜！你的文章《React 性能优化实战》已被编辑推荐到首页精选栏目，预计将获得更多曝光。",
-    is_read: true,
-    create_time: NOW - 259200,
-    link: "/article/4",
-  },
-  {
-    id: 11,
-    type: "like",
-    title: "你的文章获得了 10 个赞",
-    content: "《Node.js 微服务架构设计》获得了 10 个赞",
-    is_read: true,
-    create_time: NOW - 432000,
-    link: "/article/5",
-  },
-  {
-    id: 12,
-    type: "comment",
-    title: "周八 评论了你的文章",
-    content: "学到了",
-    is_read: true,
-    create_time: NOW - 604800,
-    link: "/article/2",
-  },
-];
 
 const TYPE_ICON_MAP: Record<string, { icon: React.ReactNode; className: string }> = {
   system: { icon: <FaBullhorn />, className: styles.iconSystem },
   comment: { icon: <FaComment />, className: styles.iconComment },
-  like: { icon: <FaHeart />, className: styles.iconLike },
+  praise: { icon: <FaHeart />, className: styles.iconLike },
   follow: { icon: <FaUserPlus />, className: styles.iconFollow },
   article: { icon: <FaNewspaper />, className: styles.iconArticle },
   org_role_change: { icon: <FaUserShield />, className: styles.iconOrgRoleChange },
@@ -192,19 +82,10 @@ const Notification: React.FC = () => {
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
     try {
-      if (MOCK_ENABLED) {
-        const merged = MOCK_NOTIFICATIONS.map((n) => ({
-          ...n,
-          is_read: n.is_read || isRead(n.id),
-        }));
-        setNotifications(merged);
-        setUnreadCount(merged.filter((n) => !n.is_read).length);
-      } else {
-        const data = await NotificationService.getNotifications({ offset: 0, size: 50 });
-        setNotifications(data.list);
-      }
+      const data = await NotificationService.getNotifications({ offset: 0, size: 50 });
+      setNotifications(data.list);
     } catch {
-      // 后端接口未就绪时静默处理
+      // 静默处理
     } finally {
       setLoading(false);
     }
@@ -212,12 +93,8 @@ const Notification: React.FC = () => {
 
   const fetchUnreadCount = useCallback(async () => {
     try {
-      if (MOCK_ENABLED) {
-        setUnreadCount(MOCK_NOTIFICATIONS.filter((n) => !n.is_read && !isRead(n.id)).length);
-      } else {
-        const data = await NotificationService.getUnreadCount();
-        setUnreadCount(data.count);
-      }
+      const data = await NotificationService.getUnreadCount();
+      setUnreadCount(data.count);
     } catch {
       // 静默处理
     }
@@ -339,7 +216,7 @@ const Notification: React.FC = () => {
   const settingTypes: { key: NotifType; label: string }[] = [
     { key: "system", label: "系统通知" },
     { key: "comment", label: "评论通知" },
-    { key: "like", label: "点赞通知" },
+    { key: "praise", label: "文章点赞通知" },
     { key: "follow", label: "关注通知" },
     { key: "article", label: "文章通知" },
     { key: "org_role_change", label: "角色变更通知" },

@@ -86,10 +86,11 @@ const ArticleViewPage: React.FC = () => {
                   author={article.author}
                   authorAvatar={article.author_avatar}
                   authorId={article.user_id}
+                  articleId={article.id}
                   authorStats={{
-                    articles: 24,
-                    followers: 1284,
-                    likes: 342,
+                    articles: article.author_article_count ?? 0,
+                    followers: article.author_follower_count ?? 0,
+                    likes: article.author_praise_count ?? 0,
                   }}
                   views={article.views ?? 0}
                   praises={article.praise ?? article.praises ?? 0}

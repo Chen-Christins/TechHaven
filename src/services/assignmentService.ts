@@ -81,6 +81,8 @@ export interface GetAdminAssignmentsResponse {
     id: string | number;
     name: string;
     subject_name: string;
+    organization_name: string;
+    assigned_by: string;
     end_time: number;
     status: string;
     priority: number;

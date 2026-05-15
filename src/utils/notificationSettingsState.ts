@@ -5,7 +5,7 @@
 export type NotifType =
   | "system"
   | "comment"
-  | "like"
+  | "praise"
   | "follow"
   | "article"
   | "org_role_change"
@@ -20,7 +20,7 @@ export type NotifType =
 const defaults: Record<NotifType, boolean> = {
   system: true,
   comment: true,
-  like: true,
+  praise: true,
   follow: true,
   article: true,
   org_role_change: true,

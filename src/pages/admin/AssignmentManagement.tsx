@@ -31,6 +31,8 @@ interface Assignment {
   id: string;
   title: string;
   courseName: string;
+  organizationName: string;
+  assignedBy: string;
   deadline: string;
   status: "active" | "draft" | "closed";
   submissionCount: number;
@@ -133,6 +135,8 @@ const AssignmentManagement: React.FC = () => {
         id: String(item.id),
         title: item.name,
         courseName: item.subject_name,
+        organizationName: item.organization_name || "",
+        assignedBy: item.assigned_by || "",
         deadline: new Date(item.end_time * 1000)
           .toLocaleString("zh-CN", {
             year: "numeric",
@@ -282,7 +286,10 @@ const AssignmentManagement: React.FC = () => {
   // 筛选逻辑 (仅在当前页搜索)
   const filteredAssignments = assignments.filter((item) => {
     const matchesSearch =
-      item.title.toLowerCase().includes(searchTerm.toLowerCase()) || item.courseName.toLowerCase().includes(searchTerm.toLowerCase());
+      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.courseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.organizationName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.assignedBy.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
@@ -478,6 +485,8 @@ const AssignmentManagement: React.FC = () => {
             <tr>
               <th style={{ textAlign: "left" }}>任务信息</th>
               <th>所属类型</th>
+              <th>所属组织</th>
+              <th>负责人</th>
               <th>优先级</th>
               <th>截止时间</th>
               <th>提交情况</th>
@@ -523,6 +532,8 @@ const AssignmentManagement: React.FC = () => {
                     </div>
                   </td>
                   <td>{item.courseName}</td>
+                  <td>{item.organizationName || "-"}</td>
+                  <td>{item.assignedBy || "-"}</td>
                   <td style={{ textAlign: "center" }}>
                     <span className={`${styles.priorityBadge} ${styles[item.priority]}`}>
                       <FaFlag />
@@ -590,7 +601,7 @@ const AssignmentManagement: React.FC = () => {
             ) : (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={10}
                   style={{
                     textAlign: "center",
                     padding: "40px",
@@ -819,6 +830,17 @@ const AssignmentManagement: React.FC = () => {
               <div className={styles.detailGroup}>
                 <div className={styles.detailLabel}>所属类型</div>
                 <div className={styles.detailValue}>{currentAssignment.courseName}</div>
+              </div>
+              <div className={styles.detailGroup}>
+                <div className={styles.detailLabel}>所属组织</div>
+                <div className={styles.detailValue}>{currentAssignment.organizationName || "-"}</div>
+              </div>
+            </div>
+
+            <div className={styles.detailRow}>
+              <div className={styles.detailGroup}>
+                <div className={styles.detailLabel}>负责人</div>
+                <div className={styles.detailValue}>{currentAssignment.assignedBy || "-"}</div>
               </div>
               <div className={styles.detailGroup}>
                 <div className={styles.detailLabel}>当前状态</div>
