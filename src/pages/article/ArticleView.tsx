@@ -12,6 +12,7 @@ import mermaid from "mermaid";
 import { Eye, Heart, MessageSquare, Clock, Calendar, FileText, Users, UserPlus, UserCheck, ThumbsUp, Send, Loader2 } from "lucide-react";
 import styles from "./ArticleView.module.css";
 import FollowService from "../../services/followService";
+import PraiseService from "../../services/praiseService";
 import { useAuth } from "../../contexts/AuthContext";
 import message from "../../components/message/Message";
 
@@ -34,6 +35,7 @@ interface ArticleViewProps {
   author: string;
   authorAvatar?: string;
   authorId?: string | number;
+  articleId?: string | number;
   authorStats?: AuthorStats;
   views: number;
   praises: number;
@@ -162,6 +164,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   author,
   authorAvatar,
   authorId,
+  articleId,
   authorStats,
   views,
   praises,
@@ -187,6 +190,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   const [followLoading, setFollowLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(authorStats?.followers ?? 0);
   const [isLiked, setIsLiked] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
   const [likesCount, setLikesCount] = useState(praises);
   const [commentsList, setCommentsList] = useState(MOCK_COMMENTS);
   const [commentText, setCommentText] = useState("");
@@ -195,11 +199,16 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   const [replyText, setReplyText] = useState("");
   const [likedCommentIds, setLikedCommentIds] = useState<Set<number>>(new Set());
 
-  // 页面加载时判断是否已关注作者
+  // 页面加载时判断是否已关注作者、是否已点赞
   useEffect(() => {
-    if (!isAuthenticated || !authorId) return;
-    FollowService.isFollowing(authorId).then(setIsFollowing).catch(() => {});
-  }, [isAuthenticated, authorId]);
+    if (!isAuthenticated) return;
+    if (authorId) {
+      FollowService.isFollowing(authorId).then(setIsFollowing).catch(() => {});
+    }
+    if (articleId) {
+      PraiseService.isPraising(articleId).then(setIsLiked).catch(() => {});
+    }
+  }, [isAuthenticated, authorId, articleId]);
 
   const handleFollowToggle = async () => {
     if (!isAuthenticated) {
@@ -228,10 +237,23 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     }
   };
 
-  const handleLikeToggle = () => {
-    const willLike = !isLiked;
-    setIsLiked(willLike);
-    setLikesCount((c) => (willLike ? c + 1 : c - 1));
+  const handleLikeToggle = async () => {
+    if (!isAuthenticated) {
+      message.info("请先登录");
+      navigate("/auth");
+      return;
+    }
+    if (!articleId) return;
+    setLikeLoading(true);
+    try {
+      const res = await PraiseService.toggle(articleId);
+      setIsLiked(res.is_praising);
+      setLikesCount(res.praise_count);
+    } catch (err: any) {
+      message.error(err?.response?.data?.msg || err?.message || "操作失败");
+    } finally {
+      setLikeLoading(false);
+    }
   };
 
   const handleCommentSubmit = () => {
@@ -534,9 +556,16 @@ const ArticleView: React.FC<ArticleViewProps> = ({
             <button
               className={`${styles.followButton} ${isLiked ? styles.following : ""}`}
               onClick={handleLikeToggle}
+              disabled={likeLoading}
             >
-              <ThumbsUp size={14} className={isLiked ? styles.likeIconActive : ""} />
-              {isLiked ? "已点赞" : "点赞文章"}
+              {likeLoading ? (
+                <Loader2 size={14} className={styles.loadingSpin} />
+              ) : (
+                <>
+                  <ThumbsUp size={14} className={isLiked ? styles.likeIconActive : ""} />
+                  {isLiked ? "已点赞" : "点赞文章"}
+                </>
+              )}
             </button>
           </div>
         </div>

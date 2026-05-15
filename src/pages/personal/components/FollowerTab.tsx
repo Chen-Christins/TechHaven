@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { encodeId } from "../../../utils/hashId";
 import { FaUserSlash } from "react-icons/fa";
 import FollowService from "../../../services/followService";
 import type { FollowUser } from "../../../types/follow";
@@ -75,7 +76,7 @@ const FollowerTab: React.FC = () => {
             <div key={user.id} className={styles.followItem}>
               <div
                 className={styles.followItemLeft}
-                onClick={() => navigate(`/profile/${user.id}`)}
+                onClick={() => navigate(`/profile/${encodeId(user.id)}`)}
                 style={{ cursor: "pointer" }}
               >
                 <img src={user.avatar || `https://picsum.photos/id/${(user.id % 100) + 1}/80`} alt={user.name} className={styles.followAvatar} />
