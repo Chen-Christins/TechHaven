@@ -99,7 +99,7 @@ const Profile: React.FC = () => {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [articleTotal, setArticleTotal] = useState(0);
 
-  const isOwnProfile = isAuthenticated && currentUser?.id.toString() === id;
+  const isOwnProfile = isAuthenticated && String(currentUser?.id) === String(id);
 
   useEffect(() => {
     if (!id) return;
