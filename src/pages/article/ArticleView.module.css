@@ -956,6 +956,49 @@
   color: var(--primary);
 }
 
+/* 编辑评论 */
+.commentEditActions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.commentEditSave {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.commentEditSave:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.commentEditCancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.commentEditCancel:hover {
+  border-color: var(--text-secondary);
+}
+
 /* ========== 响应式 ========== */
 @media (max-width: 1164px) {
   .container {

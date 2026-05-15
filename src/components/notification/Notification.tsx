@@ -20,7 +20,7 @@ import {
 } from "react-icons/fa";
 import styles from "./Notification.module.css";
 import NotificationService from "../../services/NotificationService";
-import { isRead, markRead, markAllRead, subscribe } from "../../utils/notificationState";
+import { markRead, markAllRead, subscribe } from "../../utils/notificationState";
 import { getSettings, setTypeEnabled, subscribe as subscribeSettings, type NotifType } from "../../utils/notificationSettingsState";
 import { notificationWS } from "../../utils/websocket";
 import { useAuth } from "../../contexts/AuthContext";
@@ -100,18 +100,18 @@ const Notification: React.FC = () => {
     }
   }, []);
 
-  // Subscribe to shared state changes so badge updates when NotificationsTab marks all read.
-  // Uses a ref guard to avoid race: when this component itself triggers markRead,
-  // the synchronous subscriber would kick off an async fetchUnreadCount that
-  // overwrites the local optimistic decrement.
+  // Subscribe to shared state changes so badge updates when NotificationsTab marks read.
+  // Uses a ref guard to avoid double-update: when this component itself triggers
+  // markRead/markAllRead, the synchronous subscriber would fire but we already
+  // optimistically update unreadCount locally — skip the delta in that case.
   const selfUpdating = useRef(false);
 
   useEffect(() => {
-    return subscribe(() => {
+    return subscribe((delta) => {
       if (selfUpdating.current) return;
-      fetchUnreadCount();
+      setUnreadCount((prev) => Math.max(0, prev - delta));
     });
-  }, [fetchUnreadCount]);
+  }, []);
 
   // WebSocket real-time notification listener
   useEffect(() => {
@@ -366,7 +366,7 @@ const Notification: React.FC = () => {
                         ? { backgroundColor: "rgba(59,130,246,0.1)", color: "var(--primary)" }
                         : key === "comment"
                           ? { backgroundColor: "rgba(16,185,129,0.1)", color: "var(--success)" }
-                          : key === "like"
+                          : key === "praise"
                             ? { backgroundColor: "rgba(239,68,68,0.1)", color: "var(--error)" }
                             : key === "follow"
                               ? { backgroundColor: "rgba(139,92,246,0.1)", color: "var(--accent)" }
