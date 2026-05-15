@@ -192,6 +192,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   const [isLiked, setIsLiked] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
   const [likesCount, setLikesCount] = useState(praises);
+  const [authorLikesCount, setAuthorLikesCount] = useState(authorStats?.likes ?? 0);
   const [commentsList, setCommentsList] = useState(MOCK_COMMENTS);
   const [commentText, setCommentText] = useState("");
   const [showCommentInput, setShowCommentInput] = useState(false);
@@ -249,6 +250,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
       const res = await PraiseService.toggle(articleId);
       setIsLiked(res.is_praising);
       setLikesCount(res.praise_count);
+      setAuthorLikesCount((c) => (res.is_praising ? c + 1 : Math.max(0, c - 1)));
     } catch (err: any) {
       message.error(err?.response?.data?.msg || err?.message || "操作失败");
     } finally {
@@ -525,7 +527,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                   </span>
                   <span className={styles.authorStatItem}>
                     <Heart size={12} />
-                    {authorStats.likes}
+                    {authorLikesCount}
                   </span>
                 </div>
               )}

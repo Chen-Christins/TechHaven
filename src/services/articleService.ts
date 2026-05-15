@@ -23,6 +23,9 @@ export interface ListArticlesResponse {
     state: number;
     type: number;
     publish_time: number;
+    views: number;
+    praise: number;
+    favorites: number;
   }>;
 }
 
@@ -52,6 +55,9 @@ export interface ListAdminArticlesResponse {
     publish_time: string;
     author_role: number;
     user_id: string | number;
+    views: number;
+    praise: number;
+    favorites: number;
   }>;
 }
 
@@ -83,23 +89,25 @@ export interface ArticleDetailsParams {
  * 文章详情响应类型
  */
 export interface ArticleDetailsResponse {
-  email: string;
   id: string | number;
   author: string;
+  author_avatar: string;
+  author_article_count: number;
+  author_praise_count: number;
+  author_follower_count: number;
   title: string;
   content: string;
   user_id: string | number;
   type: number;
-  publish_time: string;
-  update_time: string;
+  publish_time: number;
+  update_time: number;
   state: number;
-  is_deleted: boolean;
+  is_deleted: number;
   views: number;
   praise: number;
   favorites: number;
-  author_avatar?: string;
-  labels?: Array<{ id: number; name: string; color: string }>;
   categorys?: Array<{ id: number; name: string; color: string }>;
+  labels?: Array<{ id: number; name: string; color: string }>;
 }
 
 /**
@@ -277,6 +285,20 @@ export class ArticleService {
    */
   static async getArticleDetails(params: ArticleDetailsParams): Promise<ArticleDetailsResponse> {
     const response = await http.get<ArticleDetailsResponse>(`/article/detail?id=${params.id}&type=${params.type}`);
+    return response.data;
+  }
+
+  /**
+   * 文章阅读计数（10分钟内同一用户不重复计数）
+   */
+  static async viewArticle(articleId: string | number): Promise<{ views: number }> {
+    const formData = new URLSearchParams();
+    formData.append("article_id", String(articleId));
+    const response = await http.post<{ views: number }>("/article/view", formData.toString(), {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
     return response.data;
   }
 

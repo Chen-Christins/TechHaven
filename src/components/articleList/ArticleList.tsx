@@ -68,6 +68,9 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
             state: number;
             type: number;
             publish_time: number;
+            views: number;
+            praise: number;
+            favorites: number;
           }>;
         };
 
@@ -105,9 +108,9 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
                 state: STATE_MAP[item.state],
                 type: item.type === 1 ? "原创" : "转载",
                 publish_time: item.publish_time ? formatToChinaTime(item.publish_time) : "暂未发布",
-                views: 0,
-                praise: 0,
-                favorites: 0,
+                views: item.views ?? 0,
+                praise: item.praise ?? 0,
+                favorites: item.favorites ?? 0,
                 category: "未分类",
                 tags: [],
               }) as ArticleListItem,

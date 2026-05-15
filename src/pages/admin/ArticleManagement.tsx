@@ -223,9 +223,9 @@ const ArticleManagement: React.FC = () => {
             tags: [], // 占位符，API未提供
             status: STATE_MAP[article.state] || "draft",
             featured: false, // 占位符，API未提供
-            views: 0, // 占位符，API未提供
-            likes: 0, // 占位符，API未提供
-            comments: 0, // 占位符，API未提供
+            views: article.views ?? 0,
+            likes: article.praise ?? 0,
+            comments: article.favorites ?? 0,
             readTime: 0, // 占位符，API未提供
             publishedAt: article.publish_time ? formatToChinaTime(Number(article.publish_time)) : "暂未发布",
             createdAt: formatToChinaTime(Number(article.publish_time)),
