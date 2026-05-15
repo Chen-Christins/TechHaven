@@ -29,7 +29,6 @@ import Switch from "../switcher/Switch";
 import { setFaviconBadge } from "../../utils/favicon";
 import type { Notification as NotificationItem } from "../../types/notification";
 
-
 const TYPE_ICON_MAP: Record<string, { icon: React.ReactNode; className: string }> = {
   system: { icon: <FaBullhorn />, className: styles.iconSystem },
   comment: { icon: <FaComment />, className: styles.iconComment },

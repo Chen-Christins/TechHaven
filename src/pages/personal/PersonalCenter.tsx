@@ -1,5 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FaTag, FaFileAlt, FaChartBar, FaBars, FaTimes, FaUserLock, FaUsers, FaBell, FaUserCircle, FaUserEdit, FaUserPlus, FaUserFriends } from "react-icons/fa";
+import {
+  FaTag,
+  FaFileAlt,
+  FaChartBar,
+  FaBars,
+  FaTimes,
+  FaUserLock,
+  FaUsers,
+  FaBell,
+  FaUserCircle,
+  FaUserEdit,
+  FaUserPlus,
+  FaUserFriends,
+} from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Loading from "../../components/loading/Loading";
 import Skeleton from "../../components/skeleton/Skeleton";
@@ -32,7 +45,9 @@ const PersonalCenter: React.FC = () => {
   const { user, isAuthenticated, logout, loading: authLoading } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"articles" | "tags" | "stats" | "organizations" | "notifications" | "edit" | "following" | "followers">("articles");
+  const [activeTab, setActiveTab] = useState<
+    "articles" | "tags" | "stats" | "organizations" | "notifications" | "edit" | "following" | "followers"
+  >("articles");
   const [loading] = useState(false);
   const [stats, setStats] = useState<UserStats | null>(null);
 

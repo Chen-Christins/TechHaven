@@ -9,7 +9,20 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import "katex/dist/katex.min.css";
 import mermaid from "mermaid";
-import { Eye, Heart, MessageSquare, Clock, Calendar, FileText, Users, UserPlus, UserCheck, ThumbsUp, Send, Loader2 } from "lucide-react";
+import {
+  Eye,
+  Heart,
+  MessageSquare,
+  Clock,
+  Calendar,
+  FileText,
+  Users,
+  UserPlus,
+  UserCheck,
+  ThumbsUp,
+  Send,
+  Loader2,
+} from "lucide-react";
 import styles from "./ArticleView.module.css";
 import FollowService from "../../services/followService";
 import PraiseService from "../../services/praiseService";
@@ -167,10 +180,14 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   useEffect(() => {
     if (!isAuthenticated) return;
     if (authorId) {
-      FollowService.isFollowing(authorId).then(setIsFollowing).catch(() => {});
+      FollowService.isFollowing(authorId)
+        .then(setIsFollowing)
+        .catch(() => {});
     }
     if (articleId) {
-      PraiseService.isPraising(articleId).then(setIsLiked).catch(() => {});
+      PraiseService.isPraising(articleId)
+        .then(setIsLiked)
+        .catch(() => {});
     }
   }, [isAuthenticated, authorId, articleId]);
 
@@ -341,9 +358,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
         }
         return next;
       });
-      setCommentsList((prev) =>
-        prev.map((c) => toggleCommentLike(c, commentId, delta))
-      );
+      setCommentsList((prev) => prev.map((c) => toggleCommentLike(c, commentId, delta)));
     } catch (err: any) {
       message.error(err?.response?.data?.msg || err?.msg || err?.message || "操作失败");
     }
@@ -354,7 +369,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     if (comment.id === targetId) {
       return { ...comment, likes: comment.likes + delta };
     }
-    if (comment.replies.length > 0) {
+    if (comment.replies?.length) {
       return {
         ...comment,
         replies: comment.replies.map((r) => toggleCommentLike(r, targetId, delta)),
@@ -368,7 +383,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     if (comment.id === targetId) {
       return { ...comment, content: newContent };
     }
-    if (comment.replies.length > 0) {
+    if (comment.replies?.length) {
       return {
         ...comment,
         replies: comment.replies.map((r) => updateComment(r, targetId, newContent)),
@@ -799,10 +814,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
               <MessageSquare size={18} />
               评论 ({commentsList.length})
             </h3>
-            <button
-              className={styles.writeCommentButton}
-              onClick={() => setShowCommentInput(!showCommentInput)}
-            >
+            <button className={styles.writeCommentButton} onClick={() => setShowCommentInput(!showCommentInput)}>
               {showCommentInput ? "收起" : "写评论"}
             </button>
           </div>
@@ -819,11 +831,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
               />
               <div className={styles.commentInputFooter}>
                 <span className={styles.commentHint}>支持 Markdown 语法</span>
-                <button
-                  className={styles.commentSubmitButton}
-                  onClick={handleCommentSubmit}
-                  disabled={!commentText.trim()}
-                >
+                <button className={styles.commentSubmitButton} onClick={handleCommentSubmit} disabled={!commentText.trim()}>
                   <Send size={14} />
                   发布
                 </button>
@@ -878,9 +886,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                         </div>
                       ) : (
                         <div className={styles.commentContent}>
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {comment.content}
-                          </ReactMarkdown>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment.content}</ReactMarkdown>
                         </div>
                       )}
                       <div className={styles.commentActions}>
@@ -898,10 +904,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                           回复
                         </button>
                         {isAuthenticated && user?.id === comment.user_id && (
-                          <button
-                            className={styles.commentActionButton}
-                            onClick={() => handleStartEdit(comment)}
-                          >
+                          <button className={styles.commentActionButton} onClick={() => handleStartEdit(comment)}>
                             编辑
                           </button>
                         )}
@@ -951,9 +954,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                               </div>
                             ) : (
                               <div className={styles.commentContent}>
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                  {reply.content}
-                                </ReactMarkdown>
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{reply.content}</ReactMarkdown>
                               </div>
                             )}
                             <div className={styles.commentActions}>
@@ -965,10 +966,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                                 {reply.likes > 0 ? reply.likes : "赞"}
                               </button>
                               {isAuthenticated && user?.id === reply.user_id && (
-                                <button
-                                  className={styles.commentActionButton}
-                                  onClick={() => handleStartEdit(reply)}
-                                >
+                                <button className={styles.commentActionButton} onClick={() => handleStartEdit(reply)}>
                                   编辑
                                 </button>
                               )}

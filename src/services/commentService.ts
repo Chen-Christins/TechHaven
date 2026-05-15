@@ -10,58 +10,39 @@ import type {
 
 export class CommentService {
   /** 获取文章评论列表 */
-  static async getList(params: {
-    article_id: number | string;
-    offset?: number;
-    size?: number;
-  }): Promise<CommentListResponse> {
+  static async getList(params: { article_id: number | string; offset?: number; size?: number }): Promise<CommentListResponse> {
     const response = await http.get<CommentListResponse>("/article/comment/list", { params });
     return response.data;
   }
 
   /** 获取评论的回复列表 */
-  static async getReplies(params: {
-    comment_id: number | string;
-    offset?: number;
-    size?: number;
-  }): Promise<CommentListResponse> {
+  static async getReplies(params: { comment_id: number | string; offset?: number; size?: number }): Promise<CommentListResponse> {
     const response = await http.get<CommentListResponse>("/article/comment/replies", { params });
     return response.data;
   }
 
   /** 发表评论 */
-  static async create(params: {
-    article_id: number | string;
-    content: string;
-    parent_id?: number;
-  }): Promise<CreateCommentResponse> {
+  static async create(params: { article_id: number | string; content: string; parent_id?: number }): Promise<CreateCommentResponse> {
     const formData = new URLSearchParams();
     formData.append("article_id", String(params.article_id));
     formData.append("content", params.content);
     if (params.parent_id !== undefined) {
       formData.append("parent_id", String(params.parent_id));
     }
-    const response = await http.post<CreateCommentResponse>(
-      "/article/comment/create",
-      formData.toString(),
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
-    );
+    const response = await http.post<CreateCommentResponse>("/article/comment/create", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
     return response.data;
   }
 
   /** 编辑评论 */
-  static async update(params: {
-    id: number | string;
-    content: string;
-  }): Promise<CreateCommentResponse> {
+  static async update(params: { id: number | string; content: string }): Promise<CreateCommentResponse> {
     const formData = new URLSearchParams();
     formData.append("id", String(params.id));
     formData.append("content", params.content);
-    const response = await http.post<CreateCommentResponse>(
-      "/article/comment/update",
-      formData.toString(),
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
-    );
+    const response = await http.post<CreateCommentResponse>("/article/comment/update", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
     return response.data;
   }
 
@@ -78,11 +59,9 @@ export class CommentService {
   static async togglePraise(commentId: number | string): Promise<CommentPraiseResponse> {
     const formData = new URLSearchParams();
     formData.append("comment_id", String(commentId));
-    const response = await http.post<CommentPraiseResponse>(
-      "/article/comment/praise",
-      formData.toString(),
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
-    );
+    const response = await http.post<CommentPraiseResponse>("/article/comment/praise", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
     return response.data;
   }
 
@@ -105,11 +84,9 @@ export class CommentService {
   static async approve(ids: string[]): Promise<BatchOperationResponse> {
     const formData = new URLSearchParams();
     formData.append("ids", ids.join(","));
-    const response = await http.post<BatchOperationResponse>(
-      "/admin/comment/approve",
-      formData.toString(),
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
-    );
+    const response = await http.post<BatchOperationResponse>("/admin/comment/approve", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
     return response.data;
   }
 
@@ -117,11 +94,9 @@ export class CommentService {
   static async reject(ids: string[]): Promise<BatchOperationResponse> {
     const formData = new URLSearchParams();
     formData.append("ids", ids.join(","));
-    const response = await http.post<BatchOperationResponse>(
-      "/admin/comment/reject",
-      formData.toString(),
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
-    );
+    const response = await http.post<BatchOperationResponse>("/admin/comment/reject", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
     return response.data;
   }
 
@@ -129,11 +104,9 @@ export class CommentService {
   static async markSpam(ids: string[]): Promise<BatchOperationResponse> {
     const formData = new URLSearchParams();
     formData.append("ids", ids.join(","));
-    const response = await http.post<BatchOperationResponse>(
-      "/admin/comment/spam",
-      formData.toString(),
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
-    );
+    const response = await http.post<BatchOperationResponse>("/admin/comment/spam", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
     return response.data;
   }
 
@@ -141,11 +114,9 @@ export class CommentService {
   static async batchDelete(ids: string[]): Promise<BatchOperationResponse> {
     const formData = new URLSearchParams();
     formData.append("ids", ids.join(","));
-    const response = await http.post<BatchOperationResponse>(
-      "/admin/comment/delete",
-      formData.toString(),
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
-    );
+    const response = await http.post<BatchOperationResponse>("/admin/comment/delete", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
     return response.data;
   }
 
