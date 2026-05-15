@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
   FaBell,
@@ -82,7 +83,11 @@ const Notification: React.FC = () => {
     setLoading(true);
     try {
       const data = await NotificationService.getNotifications({ offset: 0, size: 50 });
-      setNotifications(data.list);
+      setNotifications((prev) => {
+        const apiIds = new Set(data.list.map((n: NotificationItem) => n.id));
+        const wsOnlyItems = prev.filter((n) => !apiIds.has(n.id));
+        return [...wsOnlyItems, ...data.list];
+      });
     } catch {
       // 静默处理
     } finally {
@@ -93,7 +98,8 @@ const Notification: React.FC = () => {
   const fetchUnreadCount = useCallback(async () => {
     try {
       const data = await NotificationService.getUnreadCount();
-      setUnreadCount(data.count);
+      // 用 Math.max 防止覆盖 WebSocket 已递增的计数
+      setUnreadCount((prev) => Math.max(prev, data.count ?? 0));
     } catch {
       // 静默处理
     }
@@ -116,7 +122,7 @@ const Notification: React.FC = () => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const unsub = notificationWS.onMessage("notification", (data) => {
+    const handleNotification = (data: any) => {
       const newNotification: NotificationItem = {
         id: data.notification_id ?? data.id ?? Date.now(),
         type: data.notification_type ?? data.type ?? "system",
@@ -126,16 +132,52 @@ const Notification: React.FC = () => {
         create_time: data.create_time ?? Math.floor(Date.now() / 1000),
         link: data.link,
       };
-      setNotifications((prev) => [newNotification, ...prev]);
-      setUnreadCount((prev) => prev + 1);
+      // flushSync 确保 React 立即提交渲染，不等下一次事件循环
+      flushSync(() => {
+        setNotifications((prev) => [newNotification, ...prev]);
+        setUnreadCount((prev) => prev + 1);
+      });
+    };
+
+    // 注册指定 type="notification" 的处理器
+    const unsub1 = notificationWS.onMessage("notification", handleNotification);
+    // 兜底：同时注册通配符处理器，覆盖服务端 type 字段不一致的情况
+    const unsub2 = notificationWS.onMessage("*", (data: any) => {
+      // 如果已有精确匹配的 "notification" 处理器触发过，这里就不重复处理
+      // 通配符只在消息格式不标准时兜底
+      const msgType = data?.type || data?.event || "";
+      if (msgType === "notification") return; // 已由精确处理器处理
+      // 只要携带了通知相关字段就视为通知
+      if (data?.notification_id || data?.title || data?.content) {
+        handleNotification(data);
+      }
     });
 
-    return unsub;
+    return () => {
+      unsub1();
+      unsub2();
+    };
   }, [isAuthenticated]);
 
+  // 认证完成后拉取初始未读数
   useEffect(() => {
+    if (!isAuthenticated) return;
     fetchUnreadCount();
-  }, [fetchUnreadCount]);
+  }, [isAuthenticated, fetchUnreadCount]);
+
+  // WebSocket 重连后刷新，补拉断线期间错过的通知
+  const wsFirstOpen = useRef(true);
+  useEffect(() => {
+    const unsub = notificationWS.onOpen(() => {
+      if (wsFirstOpen.current) {
+        wsFirstOpen.current = false;
+        return;
+      }
+      fetchUnreadCount();
+      fetchNotifications();
+    });
+    return unsub;
+  }, [fetchNotifications, fetchUnreadCount]);
 
   // Update browser tab favicon badge when unread count changes
   useEffect(() => {
@@ -172,7 +214,6 @@ const Notification: React.FC = () => {
     setOpen(nextOpen);
     if (nextOpen) {
       fetchNotifications();
-      fetchUnreadCount();
     }
   };
 
