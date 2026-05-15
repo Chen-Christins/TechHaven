@@ -6,6 +6,15 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), "");
     const apiTarget = env.VITE_API_BASE_URL || "http://127.0.0.1:8088";
 
+    const timeStamp = () => {
+      const d = new Date();
+      const ns = process.hrtime()[1];
+      const us = Math.floor(ns / 1000)
+        .toString()
+        .padStart(6, "0");
+      return `[${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}.${us}]`;
+    };
+
     return {
         plugins: [react()],
         server: {
@@ -20,13 +29,13 @@ export default defineConfig(({ mode }) => {
                     },
                     configure: (proxy, _options) => {
                         proxy.on("error", (err, _req, _res) => {
-                            console.log("代理错误:", err);
+                            console.log(timeStamp(), "代理错误:", err);
                         });
                         proxy.on("proxyReq", (proxyReq, req, _res) => {
-                            console.log("代理请求:", req.method, req.url, "→ 转发到:", proxyReq.path);
+                            console.log(timeStamp(), "代理请求:", req.method, req.url, "→ 转发到:", proxyReq.path);
                         });
                         proxy.on("proxyRes", (proxyRes, req, _res) => {
-                            console.log("代理响应:", proxyRes.statusCode, req.url);
+                            console.log(timeStamp(), "代理响应:", proxyRes.statusCode, req.url);
                         });
                     },
                 },
@@ -38,15 +47,15 @@ export default defineConfig(({ mode }) => {
                     agent: false,
                     configure: (proxy, _options) => {
                         proxy.on("error", (err, _req, _res) => {
-                            console.log("文件代理错误:", err);
+                            console.log(timeStamp(), "文件代理错误:", err);
                         });
                         proxy.on("proxyReq", (proxyReq, req, _res) => {
-                            console.log("文件代理请求:", req.method, req.url, "→ 转发到:", proxyReq.path);
+                            console.log(timeStamp(), "文件代理请求:", req.method, req.url, "→ 转发到:", proxyReq.path);
                             // 设置连接保持活跃
                             proxyReq.setHeader("Connection", "keep-alive");
                         });
                         proxy.on("proxyRes", (proxyRes, req, _res) => {
-                            console.log("文件代理响应:", proxyRes.statusCode, req.url);
+                            console.log(timeStamp(), "文件代理响应:", proxyRes.statusCode, req.url);
                         });
                     },
                 },
@@ -54,15 +63,3 @@ export default defineConfig(({ mode }) => {
         },
     };
 });
-
-// vite.config.ts (或 vite.config.js) 示例
-// 请将此内容添加到你的 Vite 配置文件中
-//
-// import { defineConfig } from 'vite';
-// export default defineConfig({
-//   server: {
-//     proxy: {
-//       '/file': 'http://localhost:8088',
-//     },
-//   },
-// });
