@@ -9,10 +9,24 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import "katex/dist/katex.min.css";
 import mermaid from "mermaid";
-import { Eye, Heart, MessageSquare, Clock, Calendar, FileText, Users, UserPlus, UserCheck, ThumbsUp, Send, Loader2 } from "lucide-react";
+import {
+  Eye,
+  Heart,
+  MessageSquare,
+  Clock,
+  Calendar,
+  FileText,
+  Users,
+  UserPlus,
+  UserCheck,
+  ThumbsUp,
+  Send,
+  Loader2,
+} from "lucide-react";
 import styles from "./ArticleView.module.css";
 import FollowService from "../../services/followService";
 import PraiseService from "../../services/praiseService";
+import CommentService from "../../services/commentService";
 import { useAuth } from "../../contexts/AuthContext";
 import message from "../../components/message/Message";
 
@@ -50,57 +64,16 @@ interface CommentItem {
   id: number;
   user: string;
   avatar: string;
+  user_id?: number;
   content: string;
   time: string;
   likes: number;
   replies: CommentItem[];
+  is_liked?: boolean;
+  reply_count?: number;
 }
 
-const formatCommentTime = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-};
-
-// Mock 评论数据
-const MOCK_COMMENTS: CommentItem[] = [
-  {
-    id: 1,
-    user: "技术爱好者",
-    avatar: "",
-    content: "写得太好了！讲解非常清晰，受益匪浅。",
-    time: "2026-05-14 10:32",
-    likes: 12,
-    replies: [
-      {
-        id: 101,
-        user: "Christins",
-        avatar: "",
-        content: "感谢支持！有问题随时交流 :)",
-        time: "2026-05-14 10:45",
-        likes: 2,
-        replies: [],
-      },
-    ],
-  },
-  {
-    id: 2,
-    user: "代码诗人",
-    avatar: "",
-    content: "有个问题想请教，在实际项目中 Mermaid 图表的渲染性能怎么样？我们团队正在考虑引入。\n\n可以参考一下 `mermaid.render()` 的 **异步调用** 方式，性能方面建议 [查看官方文档](https://mermaid.js.org/)。",
-    time: "2026-05-14 11:05",
-    likes: 5,
-    replies: [],
-  },
-  {
-    id: 3,
-    user: "前端小王子",
-    avatar: "",
-    content: "感谢分享！已经收藏了，准备在项目中实践一下。",
-    time: "2026-05-14 13:18",
-    likes: 3,
-    replies: [],
-  },
-];
+const COMMENT_PAGE_SIZE = 20;
 
 // 初始化 Mermaid 配置
 mermaid.initialize({
@@ -192,23 +165,52 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   const [isLiked, setIsLiked] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
   const [likesCount, setLikesCount] = useState(praises);
-  const [commentsList, setCommentsList] = useState(MOCK_COMMENTS);
+  const [authorLikesCount, setAuthorLikesCount] = useState(authorStats?.likes ?? 0);
+  const [commentsList, setCommentsList] = useState<CommentItem[]>([]);
+  const [commentLoading, setCommentLoading] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [replyToId, setReplyToId] = useState<number | null>(null);
   const [replyText, setReplyText] = useState("");
   const [likedCommentIds, setLikedCommentIds] = useState<Set<number>>(new Set());
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editText, setEditText] = useState("");
 
   // 页面加载时判断是否已关注作者、是否已点赞
   useEffect(() => {
     if (!isAuthenticated) return;
     if (authorId) {
-      FollowService.isFollowing(authorId).then(setIsFollowing).catch(() => {});
+      FollowService.isFollowing(authorId)
+        .then(setIsFollowing)
+        .catch(() => {});
     }
     if (articleId) {
-      PraiseService.isPraising(articleId).then(setIsLiked).catch(() => {});
+      PraiseService.isPraising(articleId)
+        .then(setIsLiked)
+        .catch(() => {});
     }
   }, [isAuthenticated, authorId, articleId]);
+
+  // 加载评论列表
+  useEffect(() => {
+    if (!articleId) return;
+    setCommentLoading(true);
+    CommentService.getList({ article_id: articleId, offset: 0, size: COMMENT_PAGE_SIZE })
+      .then((data) => {
+        setCommentsList(data.list);
+        const liked = new Set<number>();
+        const collectLiked = (comments: CommentItem[]) => {
+          comments.forEach((c) => {
+            if (c.is_liked) liked.add(c.id);
+            if (c.replies?.length) collectLiked(c.replies);
+          });
+        };
+        collectLiked(data.list);
+        setLikedCommentIds(liked);
+      })
+      .catch(() => {})
+      .finally(() => setCommentLoading(false));
+  }, [articleId]);
 
   const handleFollowToggle = async () => {
     if (!isAuthenticated) {
@@ -249,6 +251,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
       const res = await PraiseService.toggle(articleId);
       setIsLiked(res.is_praising);
       setLikesCount(res.praise_count);
+      setAuthorLikesCount((c) => (res.is_praising ? c + 1 : Math.max(0, c - 1)));
     } catch (err: any) {
       message.error(err?.response?.data?.msg || err?.message || "操作失败");
     } finally {
@@ -256,61 +259,109 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     }
   };
 
-  const handleCommentSubmit = () => {
+  const handleCommentSubmit = async () => {
     const trimmed = commentText.trim();
-    if (!trimmed) return;
-    const newComment: CommentItem = {
-      id: Date.now(),
-      user: "当前用户",
-      avatar: authorAvatar || "",
-      content: trimmed,
-      time: formatCommentTime(),
-      likes: 0,
-      replies: [],
-    };
-    setCommentsList((prev) => [newComment, ...prev]);
-    setCommentText("");
+    if (!trimmed || !articleId) return;
+    if (!isAuthenticated) {
+      message.info("请先登录");
+      navigate("/auth");
+      return;
+    }
+    try {
+      const newComment = await CommentService.create({
+        article_id: articleId,
+        content: trimmed,
+      });
+      setCommentsList((prev) => [
+        {
+          id: newComment.id,
+          user: newComment.user,
+          avatar: newComment.avatar,
+          user_id: newComment.user_id,
+          content: newComment.content,
+          time: newComment.time,
+          likes: newComment.likes,
+          replies: [],
+          is_liked: newComment.is_liked,
+          reply_count: newComment.reply_count,
+        },
+        ...prev,
+      ]);
+      setCommentText("");
+      message.success("评论发表成功");
+    } catch (err: any) {
+      message.error(err?.response?.data?.msg || err?.msg || err?.message || "评论发表失败");
+    }
   };
 
-  const handleReplySubmit = (parentId: number) => {
+  const handleReplySubmit = async (parentId: number) => {
     const trimmed = replyText.trim();
-    if (!trimmed) return;
-    const newReply: CommentItem = {
-      id: Date.now(),
-      user: "当前用户",
-      avatar: authorAvatar || "",
-      content: trimmed,
-      time: formatCommentTime(),
-      likes: 0,
-      replies: [],
-    };
-    setCommentsList((prev) =>
-      prev.map((c) => {
-        if (c.id === parentId) {
-          return { ...c, replies: [...c.replies, newReply] };
-        }
-        return c;
-      })
-    );
-    setReplyText("");
-    setReplyToId(null);
+    if (!trimmed || !articleId) return;
+    if (!isAuthenticated) {
+      message.info("请先登录");
+      navigate("/auth");
+      return;
+    }
+    try {
+      const newReply = await CommentService.create({
+        article_id: articleId,
+        content: trimmed,
+        parent_id: parentId,
+      });
+      setCommentsList((prev) =>
+        prev.map((c) => {
+          if (c.id === parentId) {
+            return {
+              ...c,
+              replies: [
+                ...c.replies,
+                {
+                  id: newReply.id,
+                  user: newReply.user,
+                  avatar: newReply.avatar,
+                  user_id: newReply.user_id,
+                  content: newReply.content,
+                  time: newReply.time,
+                  likes: newReply.likes,
+                  replies: [],
+                  is_liked: newReply.is_liked,
+                },
+              ],
+            };
+          }
+          return c;
+        }),
+      );
+      setReplyText("");
+      setReplyToId(null);
+      message.success("回复发表成功");
+    } catch (err: any) {
+      message.error(err?.response?.data?.msg || err?.msg || err?.message || "回复发表失败");
+    }
   };
 
-  const handleCommentLike = (commentId: number) => {
-    const isLiked = likedCommentIds.has(commentId);
-    const delta = isLiked ? -1 : 1;
-    setLikedCommentIds((prev) => {
-      const next = new Set(prev);
-      if (isLiked) {
-        next.delete(commentId);
-      } else {
-        next.add(commentId);
-      }
-      return next;
-    });
-    setCommentsList((prev) =>
-      prev.map((c) => toggleCommentLike(c, commentId, delta))
-    );
+  const handleCommentLike = async (commentId: number) => {
+    if (!isAuthenticated) {
+      message.info("请先登录");
+      navigate("/auth");
+      return;
+    }
+    try {
+      const res = await CommentService.togglePraise(commentId);
+      const delta = res.is_praising ? 1 : -1;
+      setLikedCommentIds((prev) => {
+        const next = new Set(prev);
+        if (res.is_praising) {
+          next.add(commentId);
+        } else {
+          next.delete(commentId);
+        }
+        return next;
+      });
+      setCommentsList((prev) => prev.map((c) => toggleCommentLike(c, commentId, delta)));
+    } catch (err: any) {
+      message.error(err?.response?.data?.msg || err?.msg || err?.message || "操作失败");
+    }
   };
 
   // 递归查找并更新评论/回复的点赞数
@@ -318,13 +369,51 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     if (comment.id === targetId) {
       return { ...comment, likes: comment.likes + delta };
     }
-    if (comment.replies.length > 0) {
+    if (comment.replies?.length) {
       return {
         ...comment,
         replies: comment.replies.map((r) => toggleCommentLike(r, targetId, delta)),
       };
     }
     return comment;
+  };
+
+  // 递归更新评论/回复的内容
+  const updateComment = (comment: CommentItem, targetId: number, newContent: string): CommentItem => {
+    if (comment.id === targetId) {
+      return { ...comment, content: newContent };
+    }
+    if (comment.replies?.length) {
+      return {
+        ...comment,
+        replies: comment.replies.map((r) => updateComment(r, targetId, newContent)),
+      };
+    }
+    return comment;
+  };
+
+  const handleStartEdit = (comment: CommentItem) => {
+    setEditingId(comment.id);
+    setEditText(comment.content);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditText("");
+  };
+
+  const handleSaveEdit = async (commentId: number) => {
+    const trimmed = editText.trim();
+    if (!trimmed || trimmed === commentsList.find((c) => c.id === commentId)?.content) return;
+    try {
+      await CommentService.update({ id: commentId, content: trimmed });
+      setCommentsList((prev) => prev.map((c) => updateComment(c, commentId, trimmed)));
+      setEditingId(null);
+      setEditText("");
+      message.success("评论已更新");
+    } catch (err: any) {
+      message.error(err?.response?.data?.msg || err?.msg || err?.message || "编辑失败");
+    }
   };
 
   // 生成更安全的 ID
@@ -525,7 +614,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                   </span>
                   <span className={styles.authorStatItem}>
                     <Heart size={12} />
-                    {authorStats.likes}
+                    {authorLikesCount}
                   </span>
                 </div>
               )}
@@ -725,10 +814,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
               <MessageSquare size={18} />
               评论 ({commentsList.length})
             </h3>
-            <button
-              className={styles.writeCommentButton}
-              onClick={() => setShowCommentInput(!showCommentInput)}
-            >
+            <button className={styles.writeCommentButton} onClick={() => setShowCommentInput(!showCommentInput)}>
               {showCommentInput ? "收起" : "写评论"}
             </button>
           </div>
@@ -745,11 +831,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
               />
               <div className={styles.commentInputFooter}>
                 <span className={styles.commentHint}>支持 Markdown 语法</span>
-                <button
-                  className={styles.commentSubmitButton}
-                  onClick={handleCommentSubmit}
-                  disabled={!commentText.trim()}
-                >
+                <button className={styles.commentSubmitButton} onClick={handleCommentSubmit} disabled={!commentText.trim()}>
                   <Send size={14} />
                   发布
                 </button>
@@ -759,7 +841,9 @@ const ArticleView: React.FC<ArticleViewProps> = ({
 
           {/* 评论列表 */}
           <div className={styles.commentList}>
-            {commentsList.length === 0 ? (
+            {commentLoading ? (
+              <div className={styles.commentEmpty}>加载评论中...</div>
+            ) : commentsList.length === 0 ? (
               <div className={styles.commentEmpty}>暂无评论，快来抢沙发吧~</div>
             ) : (
               commentsList.map((comment) => (
@@ -779,11 +863,32 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                         <span className={styles.commentUser}>{comment.user}</span>
                         <span className={styles.commentTime}>{comment.time}</span>
                       </div>
-                      <div className={styles.commentContent}>
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {comment.content}
-                        </ReactMarkdown>
-                      </div>
+                      {editingId === comment.id ? (
+                        <div className={styles.commentEditSection}>
+                          <textarea
+                            className={styles.commentTextarea}
+                            value={editText}
+                            onChange={(e) => setEditText(e.target.value)}
+                            rows={3}
+                          />
+                          <div className={styles.commentEditActions}>
+                            <button
+                              className={styles.commentEditSave}
+                              onClick={() => handleSaveEdit(comment.id)}
+                              disabled={!editText.trim() || editText.trim() === comment.content}
+                            >
+                              保存
+                            </button>
+                            <button className={styles.commentEditCancel} onClick={handleCancelEdit}>
+                              取消
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className={styles.commentContent}>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment.content}</ReactMarkdown>
+                        </div>
+                      )}
                       <div className={styles.commentActions}>
                         <button
                           className={`${styles.commentActionButton} ${likedCommentIds.has(comment.id) ? styles.commentLiked : ""}`}
@@ -798,6 +903,11 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                         >
                           回复
                         </button>
+                        {isAuthenticated && user?.id === comment.user_id && (
+                          <button className={styles.commentActionButton} onClick={() => handleStartEdit(comment)}>
+                            编辑
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -821,11 +931,32 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                               <span className={styles.commentUser}>{reply.user}</span>
                               <span className={styles.commentTime}>{reply.time}</span>
                             </div>
-                            <div className={styles.commentContent}>
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {reply.content}
-                              </ReactMarkdown>
-                            </div>
+                            {editingId === reply.id ? (
+                              <div className={styles.commentEditSection}>
+                                <textarea
+                                  className={styles.commentTextarea}
+                                  value={editText}
+                                  onChange={(e) => setEditText(e.target.value)}
+                                  rows={2}
+                                />
+                                <div className={styles.commentEditActions}>
+                                  <button
+                                    className={styles.commentEditSave}
+                                    onClick={() => handleSaveEdit(reply.id)}
+                                    disabled={!editText.trim() || editText.trim() === reply.content}
+                                  >
+                                    保存
+                                  </button>
+                                  <button className={styles.commentEditCancel} onClick={handleCancelEdit}>
+                                    取消
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className={styles.commentContent}>
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{reply.content}</ReactMarkdown>
+                              </div>
+                            )}
                             <div className={styles.commentActions}>
                               <button
                                 className={`${styles.commentActionButton} ${likedCommentIds.has(reply.id) ? styles.commentLiked : ""}`}
@@ -834,6 +965,11 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                                 <ThumbsUp size={12} />
                                 {reply.likes > 0 ? reply.likes : "赞"}
                               </button>
+                              {isAuthenticated && user?.id === reply.user_id && (
+                                <button className={styles.commentActionButton} onClick={() => handleStartEdit(reply)}>
+                                  编辑
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>

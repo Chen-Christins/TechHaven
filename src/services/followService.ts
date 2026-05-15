@@ -41,11 +41,7 @@ export class FollowService {
    * 获取关注列表
    * @param userId 不传则查当前用户
    */
-  static async getFollowingList(params?: {
-    user_id?: number | string;
-    offset?: number;
-    size?: number;
-  }): Promise<FollowListResponse> {
+  static async getFollowingList(params?: { user_id?: number | string; offset?: number; size?: number }): Promise<FollowListResponse> {
     const response = await http.get<FollowListResponse>("/user/following/list", { params });
     return response.data;
   }
@@ -54,11 +50,7 @@ export class FollowService {
    * 获取粉丝列表
    * @param userId 不传则查当前用户
    */
-  static async getFollowerList(params?: {
-    user_id?: number | string;
-    offset?: number;
-    size?: number;
-  }): Promise<FollowListResponse> {
+  static async getFollowerList(params?: { user_id?: number | string; offset?: number; size?: number }): Promise<FollowListResponse> {
     const response = await http.get<FollowListResponse>("/user/follower/list", { params });
     return response.data;
   }

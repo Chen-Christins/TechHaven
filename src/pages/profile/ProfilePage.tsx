@@ -129,7 +129,9 @@ const Profile: React.FC = () => {
 
         // 检查当前用户是否已关注此用户
         if (isAuthenticated && !isOwnProfile) {
-          FollowService.isFollowing(id).then(setIsFollowing).catch(() => {});
+          FollowService.isFollowing(id)
+            .then(setIsFollowing)
+            .catch(() => {});
         }
 
         // 构建用户资料

@@ -21,9 +21,15 @@ function getPageNumbers(current: number, total: number): (number | string)[] {
   } else {
     const start = Math.max(1, current - 2);
     const end = Math.min(total, start + 4);
-    if (start > 1) { pages.push(1); if (start > 2) pages.push("..."); }
+    if (start > 1) {
+      pages.push(1);
+      if (start > 2) pages.push("...");
+    }
     for (let i = start; i <= end; i++) pages.push(i);
-    if (end < total) { if (end < total - 1) pages.push("..."); pages.push(total); }
+    if (end < total) {
+      if (end < total - 1) pages.push("...");
+      pages.push(total);
+    }
   }
   return pages;
 }
@@ -64,7 +70,9 @@ const FollowerTab: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className={styles.notifEmpty}><span>加载中...</span></div>
+        <div className={styles.notifEmpty}>
+          <span>加载中...</span>
+        </div>
       ) : list.length === 0 ? (
         <div className={styles.notifEmpty}>
           <FaUserSlash className={styles.notifEmptyIcon} />
@@ -79,11 +87,17 @@ const FollowerTab: React.FC = () => {
                 onClick={() => navigate(`/profile/${encodeId(user.id)}`)}
                 style={{ cursor: "pointer" }}
               >
-                <img src={user.avatar || `https://picsum.photos/id/${(user.id % 100) + 1}/80`} alt={user.name} className={styles.followAvatar} />
+                <img
+                  src={user.avatar || `https://picsum.photos/id/${(user.id % 100) + 1}/80`}
+                  alt={user.name}
+                  className={styles.followAvatar}
+                />
                 <div className={styles.followItemInfo}>
                   <div className={styles.followItemName}>{user.name}</div>
                   {user.bio && <div className={styles.followItemBio}>{user.bio}</div>}
-                  <div className={styles.followItemTime}>@{user.account} · {formatDate(user.create_time)} 加入</div>
+                  <div className={styles.followItemTime}>
+                    @{user.account} · {formatDate(user.create_time)} 加入
+                  </div>
                   <div className={styles.followItemStats}>
                     <span>{user.following_count ?? 0} 关注</span>
                     <span>{user.follower_count ?? 0} 粉丝</span>
@@ -102,18 +116,40 @@ const FollowerTab: React.FC = () => {
             显示 {startIndex + 1} - {Math.min(startIndex + PAGE_SIZE, total)} 条，共 {total} 条
           </div>
           <div className={styles.paginationControls}>
-            <button className={styles.paginationButton} onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>首页</button>
-            <button className={styles.paginationButton} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}>上一页</button>
+            <button className={styles.paginationButton} onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
+              首页
+            </button>
+            <button
+              className={styles.paginationButton}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              上一页
+            </button>
             {getPageNumbers(currentPage, totalPages).map((page, i) => (
               <button
                 key={i}
                 className={`${styles.paginationButton} ${currentPage === page ? styles.active : ""}`}
                 onClick={() => page !== "..." && setCurrentPage(page as number)}
                 disabled={page === "..."}
-              >{page}</button>
+              >
+                {page}
+              </button>
             ))}
-            <button className={styles.paginationButton} onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>下一页</button>
-            <button className={styles.paginationButton} onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>末页</button>
+            <button
+              className={styles.paginationButton}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              下一页
+            </button>
+            <button
+              className={styles.paginationButton}
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+            >
+              末页
+            </button>
           </div>
         </div>
       )}

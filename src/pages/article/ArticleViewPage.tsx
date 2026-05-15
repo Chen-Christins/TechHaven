@@ -42,6 +42,12 @@ const ArticleViewPage: React.FC = () => {
         try {
           const res = await ArticleService.getArticleDetails({ id, type: 0 });
           setArticle(res);
+          // 上报阅读（10分钟内同用户不重复计数）
+          ArticleService.viewArticle(id)
+            .then((viewRes) => {
+              setArticle((prev: any) => (prev ? { ...prev, views: viewRes.views } : prev));
+            })
+            .catch(() => {});
           // 成功获取数据后，不立即隐藏骨架屏
           // 让渲染逻辑处理从骨架屏到内容的过渡
         } catch (err: any) {
