@@ -19,6 +19,8 @@ export interface Notification {
   is_read: boolean;
   create_time: number;
   link?: string;
+  article_id?: number | string;
+  comment_id?: number | string;
 }
 
 export interface NotificationListResponse {

@@ -29,6 +29,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import Modal from "../modal/Modal";
 import Switch from "../switcher/Switch";
 import { setFaviconBadge } from "../../utils/favicon";
+import { encodeId } from "../../utils/hashId";
 import type { Notification as NotificationItem } from "../../types/notification";
 
 const TYPE_ICON_MAP: Record<string, { icon: React.ReactNode; className: string }> = {
@@ -132,6 +133,8 @@ const Notification: React.FC = () => {
         is_read: data.is_read ?? false,
         create_time: data.create_time ?? Math.floor(Date.now() / 1000),
         link: data.link,
+        article_id: data.article_id,
+        comment_id: data.comment_id,
       };
       // 播放提示音
       playNotificationSound();
@@ -241,7 +244,10 @@ const Notification: React.FC = () => {
       selfUpdating.current = false;
       NotificationService.markAsRead(item.id).catch(() => {});
     }
-    if (item.link) {
+    if (item.article_id) {
+      setOpen(false);
+      navigate(`/article/${encodeId(item.article_id)}`);
+    } else if (item.link) {
       setOpen(false);
       navigate(item.link);
     }
