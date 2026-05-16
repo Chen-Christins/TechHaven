@@ -1,39 +1,47 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import type { StatsData } from "../../types/index";
 import { FaUsers, FaEye, FaChartLine, FaUserCheck } from "react-icons/fa";
+import StatsService from "../../services/statsService";
 import styles from "./StatsPanel.module.css";
 
-// 模拟统计数据
-const mockStats: StatsData = {
-  onlineUsers: 28,
-  totalVisits: 15682,
-  todayVisits: 326,
-  totalVisitors: 8945,
+const defaults: StatsData = {
+  onlineUsers: 0,
+  totalVisits: 0,
+  todayVisits: 0,
+  totalVisitors: 0,
 };
 
 const StatsPanel: React.FC = () => {
+  const [stats, setStats] = useState<StatsData>(defaults);
+
+  useEffect(() => {
+    StatsService.getStats()
+      .then(setStats)
+      .catch(() => {});
+  }, []);
+
   const statsItems = [
     {
       title: "在线用户",
-      value: mockStats.onlineUsers,
+      value: stats.onlineUsers,
       icon: <FaUsers className={styles.statIcon} />,
       color: styles.online,
     },
     {
       title: "今日访问",
-      value: mockStats.todayVisits,
+      value: stats.todayVisits,
       icon: <FaChartLine className={styles.statIcon} />,
       color: styles.today,
     },
     {
       title: "累计访问",
-      value: mockStats.totalVisits.toLocaleString(),
+      value: stats.totalVisits.toLocaleString(),
       icon: <FaEye className={styles.statIcon} />,
       color: styles.total,
     },
     {
       title: "累计访客",
-      value: mockStats.totalVisitors.toLocaleString(),
+      value: stats.totalVisitors.toLocaleString(),
       icon: <FaUserCheck className={styles.statIcon} />,
       color: styles.visitors,
     },
