@@ -19,14 +19,10 @@ export default defineConfig(({ mode }) => {
         plugins: [react()],
         server: {
             proxy: {
-                "^/api(.*)": {
+                "^/api/v1": {
                     target: apiTarget,
                     changeOrigin: true,
                     secure: false,
-                    rewrite: (path) => {
-                        const newPath = path.replace(/^\/api/, "");
-                        return newPath;
-                    },
                     configure: (proxy, _options) => {
                         proxy.on("error", (err, _req, _res) => {
                             console.log(timeStamp(), "代理错误:", err);

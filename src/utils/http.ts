@@ -186,7 +186,7 @@ class HttpClient {
     const useProxy = import.meta.env.VITE_USE_PROXY === "true";
     const requireCredentials = import.meta.env.VITE_REQUIRE_CREDENTIALS === "true";
 
-    this.baseURL = config.baseURL || (useProxy ? "/api" : `${import.meta.env.VITE_API_BASE_URL}`);
+    this.baseURL = config.baseURL || (useProxy ? "/api/v1" : `${import.meta.env.VITE_API_BASE_URL}`);
     this.timeout = config.timeout || 10000;
 
     this.instance = axios.create({

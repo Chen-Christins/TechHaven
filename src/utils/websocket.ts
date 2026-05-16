@@ -191,7 +191,7 @@ export class WebSocketClient {
   }
 }
 
-/** 通知 WebSocket 单例（path: /notification） */
-export const notificationWS = new WebSocketClient("/notification");
+/** 通知 WebSocket 单例（path: /ws/v1/notification） */
+export const notificationWS = new WebSocketClient("/ws/v1/notification");
 
 export default WebSocketClient;
