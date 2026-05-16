@@ -24,6 +24,7 @@ import NotificationService from "../../services/NotificationService";
 import { markRead, markAllRead, subscribe } from "../../utils/notificationState";
 import { getSettings, setTypeEnabled, subscribe as subscribeSettings, type NotifType } from "../../utils/notificationSettingsState";
 import { notificationWS } from "../../utils/websocket";
+import { playNotificationSound } from "../../utils/notificationSound";
 import { useAuth } from "../../contexts/AuthContext";
 import Modal from "../modal/Modal";
 import Switch from "../switcher/Switch";
@@ -132,6 +133,9 @@ const Notification: React.FC = () => {
         create_time: data.create_time ?? Math.floor(Date.now() / 1000),
         link: data.link,
       };
+      // 播放提示音
+      playNotificationSound();
+
       // flushSync 确保 React 立即提交渲染，不等下一次事件循环
       flushSync(() => {
         setNotifications((prev) => [newNotification, ...prev]);
