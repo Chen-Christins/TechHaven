@@ -126,10 +126,10 @@ const CategoryManagement: React.FC = () => {
         color: item.color,
         icon: item.icon,
         parentId: item.parent_id,
-        articleCount: 0, // 暂时没有这个字段
-        views: 0, // 暂时没有这个字段
-        createdAt: new Date().toISOString().split("T")[0], // 暂时没有这个字段
-        updatedAt: new Date().toISOString().split("T")[0], // 暂时没有这个字段
+        articleCount: item.article_count || 0,
+        views: item.view_count || 0,
+        createdAt: item.create_time ? new Date(item.create_time * 1000).toISOString().split("T")[0] : "",
+        updatedAt: item.update_time ? new Date(item.update_time * 1000).toISOString().split("T")[0] : "",
         status: item.status === 1 ? "active" : "inactive",
         level: item.parent_id ? 1 : 0,
         children: [],

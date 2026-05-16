@@ -4,6 +4,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { AuthService } from "../../../services/authService";
 import { FileService } from "../../../services/fileService";
 import { message } from "../../../components/message/Message";
+import Avatar from "../../../components/avatar/Avatar";
 import styles from "../PersonalCenter.module.css";
 
 const EditProfileTab: React.FC = () => {
@@ -145,7 +146,7 @@ const EditProfileTab: React.FC = () => {
           <div className={styles.editCardBody}>
             <div className={styles.avatarSection}>
               <div className={styles.avatarWrapper} onClick={handleAvatarClick}>
-                <img src={avatarUrl} alt="头像" className={styles.editAvatar} />
+                <Avatar src={avatarUrl} name={name || user?.name || "用户"} size={100} className={styles.editAvatar} />
                 <div className={styles.avatarOverlay}>
                   <FaCamera />
                   <span>{uploading ? "上传中..." : "更换头像"}</span>

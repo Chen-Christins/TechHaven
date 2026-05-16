@@ -296,11 +296,7 @@ const Profile: React.FC = () => {
           </div>
           <div className={styles.featuredGrid}>
             {articles.slice(0, 6).map((article) => (
-              <article
-                key={article.id}
-                className={styles.featuredCard}
-                onClick={() => navigate(`/article/${encodeId(article.id)}`)}
-              >
+              <article key={article.id} className={styles.featuredCard} onClick={() => navigate(`/article/${encodeId(article.id)}`)}>
                 <div className={styles.featuredCardHeader}>
                   <span className={styles.articleCategoryBadge}>
                     {Array.isArray(article.categorys) && article.categorys.length > 0
@@ -318,9 +314,15 @@ const Profile: React.FC = () => {
                 <div className={styles.featuredCardFooter}>
                   <span className={styles.featuredCardDate}>{article.publish_time}</span>
                   <div className={styles.featuredCardStats}>
-                    <span><Eye size={13} /> {article.views}</span>
-                    <span><Heart size={13} /> {article.praise}</span>
-                    <span><MessageSquare size={13} /> {article.favorites}</span>
+                    <span>
+                      <Eye size={13} /> {article.views}
+                    </span>
+                    <span>
+                      <Heart size={13} /> {article.praise}
+                    </span>
+                    <span>
+                      <MessageSquare size={13} /> {article.favorites}
+                    </span>
                   </div>
                 </div>
               </article>
@@ -344,16 +346,10 @@ const Profile: React.FC = () => {
       <div className={styles.articlesToolbar}>
         <span className={styles.articlesCount}>{articleTotal} 篇文章</span>
         <div className={styles.viewToggle}>
-          <button
-            className={viewMode === "list" ? styles.activeView : styles.inactiveView}
-            onClick={() => setViewMode("list")}
-          >
+          <button className={viewMode === "list" ? styles.activeView : styles.inactiveView} onClick={() => setViewMode("list")}>
             列表
           </button>
-          <button
-            className={viewMode === "grid" ? styles.activeView : styles.inactiveView}
-            onClick={() => setViewMode("grid")}
-          >
+          <button className={viewMode === "grid" ? styles.activeView : styles.inactiveView} onClick={() => setViewMode("grid")}>
             网格
           </button>
         </div>
@@ -396,15 +392,21 @@ const Profile: React.FC = () => {
                       {typeof label === "object" ? label.name : label}
                     </span>
                   ))}
-                  {(article.labels?.length || 0) > 3 && (
-                    <span className={styles.moreTags}>+{(article.labels?.length || 0) - 3}</span>
-                  )}
+                  {(article.labels?.length || 0) > 3 && <span className={styles.moreTags}>+{(article.labels?.length || 0) - 3}</span>}
                 </div>
                 <div className={styles.articleStats}>
-                  <span><Eye size={14} /> {article.views}</span>
-                  <span><Heart size={14} /> {article.praise}</span>
-                  <span><MessageSquare size={14} /> {article.favorites}</span>
-                  <span><Clock size={14} /> 5分钟</span>
+                  <span>
+                    <Eye size={14} /> {article.views}
+                  </span>
+                  <span>
+                    <Heart size={14} /> {article.praise}
+                  </span>
+                  <span>
+                    <MessageSquare size={14} /> {article.favorites}
+                  </span>
+                  <span>
+                    <Clock size={14} /> 5分钟
+                  </span>
                 </div>
               </div>
             </article>
@@ -413,11 +415,7 @@ const Profile: React.FC = () => {
       )}
 
       {articles.length < articleTotal && (
-        <button
-          className={styles.loadMoreButton}
-          onClick={handleLoadMore}
-          disabled={loadingMore}
-        >
+        <button className={styles.loadMoreButton} onClick={handleLoadMore} disabled={loadingMore}>
           {loadingMore ? (
             <>
               <Loader2 size={14} className={styles.loadingSpin} />
@@ -442,11 +440,7 @@ const Profile: React.FC = () => {
       ) : (
         <div className={styles.tagsGrid}>
           {tags.map((tag) => (
-            <div
-              key={tag.name}
-              className={styles.tagCard}
-              style={{ borderLeftColor: tag.color }}
-            >
+            <div key={tag.name} className={styles.tagCard} style={{ borderLeftColor: tag.color }}>
               <div className={styles.tagCardHeader}>
                 <span className={styles.tagCardName} style={{ color: tag.color }}>
                   <Hash size={14} />
@@ -483,11 +477,7 @@ const Profile: React.FC = () => {
         {/* Left sidebar */}
         <aside className={styles.sidebar}>
           <div className={styles.sidebarInner}>
-            <img
-              src={profile.avatar}
-              alt={profile.name}
-              className={styles.avatar}
-            />
+            <img src={profile.avatar} alt={profile.name} className={styles.avatar} />
 
             <div className={styles.sidebarNameBlock}>
               <h1 className={styles.fullName}>{profile.name}</h1>
@@ -498,10 +488,7 @@ const Profile: React.FC = () => {
 
             <div className={styles.sidebarActions}>
               {isOwnProfile ? (
-                <button
-                  className={styles.editButton}
-                  onClick={() => navigate("/personal?tab=edit")}
-                >
+                <button className={styles.editButton} onClick={() => navigate("/personal?tab=edit")}>
                   <Edit size={14} />
                   编辑资料
                 </button>
@@ -608,9 +595,7 @@ const Profile: React.FC = () => {
                 onClick={() => setActiveTab(tab.key)}
               >
                 {tab.label}
-                {tab.key === "articles" && articleTotal > 0 && (
-                  <span className={styles.contentTabCount}>{articleTotal}</span>
-                )}
+                {tab.key === "articles" && articleTotal > 0 && <span className={styles.contentTabCount}>{articleTotal}</span>}
               </button>
             ))}
           </nav>

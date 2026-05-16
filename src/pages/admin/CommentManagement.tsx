@@ -11,7 +11,6 @@ import {
   FaChevronRight,
   FaAngleDoubleLeft,
   FaAngleDoubleRight,
-  FaUser,
   FaFileAlt,
   FaClock,
   FaExclamationTriangle,
@@ -21,6 +20,7 @@ import {
 import CustomSelect from "../../components/customSelect/CustomSelect";
 import Input from "../../components/input/Input";
 import Loading from "../../components/loading/Loading";
+import Avatar from "../../components/avatar/Avatar";
 import { confirm } from "../../components/confirm/Confirm";
 import CommentService from "../../services/commentService";
 import type { AdminComment } from "../../types/comment";
@@ -381,9 +381,7 @@ const CommentManagement: React.FC = () => {
                       className={styles.commentCheckbox}
                     />
                     <div className={styles.authorInfo}>
-                      <div className={styles.authorAvatar}>
-                        {comment.author.avatar ? <img src={comment.author.avatar} alt={comment.author.name} /> : <FaUser />}
-                      </div>
+                      <Avatar src={comment.author.avatar} name={comment.author.name} size={40} />
                       <div className={styles.authorDetails}>
                         <div className={styles.authorName}>{comment.author.name}</div>
                         <div className={styles.authorEmail}>{comment.author.email}</div>
@@ -472,9 +470,7 @@ const CommentManagement: React.FC = () => {
                       <div key={reply.id} className={styles.replyItem}>
                         <div className={styles.replyHeader}>
                           <div className={styles.replyAuthor}>
-                            <div className={styles.replyAvatar}>
-                              {reply.author.avatar ? <img src={reply.author.avatar} alt={reply.author.name} /> : <FaUser />}
-                            </div>
+                            <Avatar src={reply.author.avatar} name={reply.author.name} size={32} />
                             <div className={styles.replyInfo}>
                               <span className={styles.replyName}>{reply.author.name}</span>
                               <span className={styles.replyTime}>{formatDate(reply.created_at)}</span>

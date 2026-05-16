@@ -17,6 +17,10 @@ export interface CategoryInfo {
     description: string;
     parent_id: string | number;
     status: number;
+    article_count: number;
+    view_count: number;
+    create_time: number;
+    update_time: number;
   }>;
 }
 

@@ -302,6 +302,11 @@
   margin-bottom: 4px;
 }
 
+.dropdownUserEmail {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
 .dropdownUserRole {
   font-size: 14px;
   color: var(--text-secondary);

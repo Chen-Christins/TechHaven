@@ -18,6 +18,7 @@ import styles from "./Navbar.module.css";
 import ThemeToggle from "../themeToggle/ThemeToggle";
 import AuthButtons from "../authButtons/AuthButtons";
 import Notification from "../notification/Notification";
+import Avatar from "../avatar/Avatar";
 import { useAuth } from "../../contexts/AuthContext";
 
 const Navbar: React.FC = () => {
@@ -329,7 +330,7 @@ const Navbar: React.FC = () => {
               <div className={styles.userArea} onClick={toggleUserMenu}>
                 {/* 用户头像 */}
                 <div className={styles.avatarContainer}>
-                  <img src={currentUser.avatar} alt={currentUser.name} className={styles.avatar} />
+                  <Avatar src={currentUser.avatar} name={currentUser.name} size={36} className={styles.avatar} />
                   {/* 在线状态指示器 */}
                   <span className={styles.statusIndicator}></span>
                 </div>
@@ -345,7 +346,7 @@ const Navbar: React.FC = () => {
               {userMenuOpen && (
                 <div className={styles.userDropdown}>
                   <div className={styles.dropdownHeader}>
-                    <img src={currentUser.avatar} alt={currentUser.name} className={styles.dropdownAvatar} />
+                    <Avatar src={currentUser.avatar} name={currentUser.name} size={48} />
                     <div className={styles.dropdownUserInfo}>
                       <div className={styles.dropdownUserName}>{currentUser.name}</div>
                       <div className={styles.dropdownUserEmail}>{currentUser.email}</div>

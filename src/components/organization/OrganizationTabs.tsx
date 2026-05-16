@@ -20,6 +20,7 @@ import {
   FaPlus,
 } from "react-icons/fa";
 import type { Member, Task, OrganizationDetail } from "./types";
+import Avatar from "../avatar/Avatar";
 import styles from "../../pages/organization/OrganizationDetail.module.css";
 import Modal from "../modal/Modal";
 // import Input from '../input/Input';
@@ -197,13 +198,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                   <tr key={member.id} className={styles.tableRow}>
                     <td>
                       <div className={styles.userInfo}>
-                        <img
-                          src={
-                            member.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=random`
-                          }
-                          alt={member.name}
-                          className={styles.userAvatar}
-                        />
+                        <Avatar src={member.avatar} name={member.name} size={40} className={styles.userAvatar} />
                         <div className={styles.userDetails}>
                           <div className={styles.userName}>{member.name}</div>
                           {member.email && <div className={styles.userEmail}>{member.email}</div>}
@@ -345,14 +340,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                     <tr key={request.id} className={styles.tableRow}>
                       <td>
                         <div className={styles.userInfo}>
-                          <img
-                            src={
-                              request.avatar ||
-                              `https://ui-avatars.com/api/?name=${encodeURIComponent(request.name)}&background=random`
-                            }
-                            alt={request.name}
-                            className={styles.userAvatar}
-                          />
+                          <Avatar src={request.avatar} name={request.name} size={40} className={styles.userAvatar} />
                           <div className={styles.userDetails}>
                             <div className={styles.userName}>{request.name}</div>
                             {request.email && <div className={styles.userEmail}>{request.email}</div>}
@@ -801,14 +789,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
         {selectedMember ? (
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
-              <img
-                src={
-                  selectedMember.avatar ||
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedMember.name)}&background=random&size=80`
-                }
-                alt={selectedMember.name}
-                style={{ width: 80, height: 80, borderRadius: "50%", objectFit: "cover" }}
-              />
+              <Avatar src={selectedMember.avatar} name={selectedMember.name} size={80} />
               <div>
                 <div style={{ fontSize: "18px", fontWeight: 600 }}>{selectedMember.name}</div>
                 {selectedMember.email && (

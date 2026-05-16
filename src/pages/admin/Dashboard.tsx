@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useMemo } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as echarts from "echarts";
 import {
@@ -15,83 +15,63 @@ import {
   FaUserPlus,
   FaChevronRight,
 } from "react-icons/fa";
+import Loading from "../../components/loading/Loading";
+import Avatar from "../../components/avatar/Avatar";
+import DashboardService, {
+  type DashboardStats,
+  type DashboardTrend,
+  type DashboardActivity,
+  type DashboardRecentUser,
+} from "../../services/dashboardService";
 import styles from "./Dashboard.module.css";
 
 const Dashboard: React.FC = () => {
-  // 访问趋势mock数据
   const [selectedPeriod, setSelectedPeriod] = React.useState("7天");
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
 
-  const visitTrendData = useMemo(
-    () => ({
-      "7天": [
-        { day: "周一", visits: 820, date: "11-15" },
-        { day: "周二", visits: 932, date: "11-16" },
-        { day: "周三", visits: 901, date: "11-17" },
-        { day: "周四", visits: 934, date: "11-18" },
-        { day: "周五", visits: 1290, date: "11-19" },
-        { day: "周六", visits: 1330, date: "11-20" },
-        { day: "周日", visits: 892, date: "11-21" },
-      ],
-      "30天": [
-        { day: "第1周", visits: 5800, date: "10-22~10-28" },
-        { day: "第2周", visits: 6200, date: "10-29~11-04" },
-        { day: "第3周", visits: 7100, date: "11-05~11-11" },
-        { day: "第4周", visits: 6892, date: "11-12~11-21" },
-      ],
-      "90天": [
-        { day: "9月", visits: 19800, date: "2024-09" },
-        { day: "10月", visits: 25900, date: "2024-10" },
-        { day: "11月", visits: 19892, date: "2024-11" },
-      ],
-    }),
-    [],
-  );
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [trendData, setTrendData] = useState<DashboardTrend | null>(null);
+  const [activities, setActivities] = useState<DashboardActivity[]>([]);
+  const [recentUsers, setRecentUsers] = useState<DashboardRecentUser[]>([]);
 
-  // 模拟统计数据
-  const stats = [
-    {
-      title: "总用户数",
-      value: "1,234",
-      change: "+12%",
-      changeType: "positive" as const,
-      icon: <FaUsers />,
-      iconColor: "blue",
-    },
-    {
-      title: "文章总数",
-      value: "456",
-      change: "+8%",
-      changeType: "positive" as const,
-      icon: <FaFileAlt />,
-      iconColor: "green",
-    },
-    {
-      title: "评论总数",
-      value: "2,789",
-      change: "-3%",
-      changeType: "negative" as const,
-      icon: <FaComments />,
-      iconColor: "orange",
-    },
-    {
-      title: "今日访问",
-      value: "892",
-      change: "+15%",
-      changeType: "positive" as const,
-      icon: <FaEye />,
-      iconColor: "purple",
-    },
-    {
-      title: "新增用户",
-      value: "23",
-      change: "0%",
-      changeType: "neutral" as const,
-      icon: <FaUserPlus />,
-      iconColor: "blue",
-    },
-  ];
+  // 首次加载：stats + activities + recent-users + trend
+  useEffect(() => {
+    const fetchOnce = async () => {
+      setLoading(true);
+      try {
+        const [statsRes, trendRes, activitiesRes, usersRes] = await Promise.all([
+          DashboardService.getStats(),
+          DashboardService.getTrend(7),
+          DashboardService.getActivities(5),
+          DashboardService.getRecentUsers(5),
+        ]);
+        setStats(statsRes);
+        setTrendData(trendRes);
+        setActivities(activitiesRes.list || []);
+        setRecentUsers(usersRes.list || []);
+      } catch {
+        // error handled by interceptor
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOnce();
+  }, []);
+
+  // 切换周期时仅重新请求趋势数据
+  useEffect(() => {
+    const fetchTrend = async () => {
+      try {
+        const trendRes = await DashboardService.getTrend(selectedPeriod === "7天" ? 7 : selectedPeriod === "30天" ? 30 : 90);
+        setTrendData(trendRes);
+      } catch {
+        // error handled by interceptor
+      }
+    };
+    fetchTrend();
+  }, [selectedPeriod]);
 
   // 快速操作数据
   const quickActions = [
@@ -121,73 +101,95 @@ const Dashboard: React.FC = () => {
     },
   ];
 
-  // 最近活动数据
-  const recentActivities = [
-    {
-      type: "user" as const,
-      title: '新用户 "张三" 注册了账户',
-      time: "2分钟前",
-      icon: <FaUsers />,
-    },
-    {
-      type: "article" as const,
-      title: "李四 发布了新文章《React Hooks 最佳实践》",
-      time: "15分钟前",
-      icon: <FaFileAlt />,
-    },
-    {
-      type: "comment" as const,
-      title: "王五 在《TypeScript 入门》中发表了评论",
-      time: "1小时前",
-      icon: <FaComments />,
-    },
-    {
-      type: "system" as const,
-      title: "系统自动备份完成",
-      time: "2小时前",
-      icon: <FaCog />,
-    },
-    {
-      type: "user" as const,
-      title: "赵六 更新了个人资料",
-      time: "3小时前",
-      icon: <FaUsers />,
-    },
-  ];
+  const getChangeType = (change: number): "positive" | "negative" | "neutral" => {
+    if (change > 0) return "positive";
+    if (change < 0) return "negative";
+    return "neutral";
+  };
 
-  // 最近用户数据
-  const recentUsers = [
-    {
-      name: "张三",
-      role: "普通用户",
-      avatar: "https://picsum.photos/id/1/100",
-      status: "active",
-    },
-    {
-      name: "李四",
-      role: "版主",
-      avatar: "https://picsum.photos/id/2/100",
-      status: "active",
-    },
-    {
-      name: "王五",
-      role: "普通用户",
-      avatar: "https://picsum.photos/id/3/100",
-      status: "active",
-    },
-    {
-      name: "赵六",
-      role: "管理员",
-      avatar: "https://picsum.photos/id/4/100",
-      status: "active",
-    },
-    {
-      name: "钱七",
-      role: "普通用户",
-      avatar: "https://picsum.photos/id/5/100",
-      status: "inactive",
-    },
-  ];
+  const formatChange = (change: number) => (change > 0 ? "+" : "") + change + "%";
+
+  // 统计卡片数据（从 API 数据派生）
+  const statCards = stats
+    ? [
+        {
+          title: "总用户数",
+          value: stats.total_users.toLocaleString(),
+          change: formatChange(stats.total_users_change),
+          changeType: getChangeType(stats.total_users_change),
+          icon: <FaUsers />,
+          iconColor: "blue" as const,
+        },
+        {
+          title: "文章总数",
+          value: stats.total_articles.toLocaleString(),
+          change: formatChange(stats.total_articles_change),
+          changeType: getChangeType(stats.total_articles_change),
+          icon: <FaFileAlt />,
+          iconColor: "green" as const,
+        },
+        {
+          title: "评论总数",
+          value: stats.total_comments.toLocaleString(),
+          change: formatChange(stats.total_comments_change),
+          changeType: getChangeType(stats.total_comments_change),
+          icon: <FaComments />,
+          iconColor: "orange" as const,
+        },
+        {
+          title: "今日活动",
+          value: stats.today_visits.toLocaleString(),
+          change: formatChange(stats.today_visits_change),
+          changeType: getChangeType(stats.today_visits_change),
+          icon: <FaEye />,
+          iconColor: "purple" as const,
+          hint: "活动量 = 今日新增用户 + 文章 + 评论",
+        },
+        {
+          title: "新增用户",
+          value: stats.new_users_today.toLocaleString(),
+          change: formatChange(stats.new_users_today_change),
+          changeType: getChangeType(stats.new_users_today_change),
+          icon: <FaUserPlus />,
+          iconColor: "blue" as const,
+        },
+      ]
+    : [];
+
+  // 活动图标映射
+  const getActivityIcon = (type: DashboardActivity["type"]) => {
+    switch (type) {
+      case "user_register":
+      case "profile_update":
+        return <FaUsers />;
+      case "article_publish":
+        return <FaFileAlt />;
+      case "comment_create":
+        return <FaComments />;
+      case "system_backup":
+        return <FaCog />;
+      default:
+        return <FaUsers />;
+    }
+  };
+
+  // 活动类型 -> CSS class
+  const getActivityTypeClass = (type: DashboardActivity["type"]): string => {
+    if (type === "user_register" || type === "profile_update") return "user";
+    if (type === "article_publish") return "article";
+    if (type === "comment_create") return "comment";
+    return "system";
+  };
+
+  // 角色名称映射
+  const getRoleName = (role: string) => {
+    const roleMap: Record<string, string> = {
+      admin: "管理员",
+      moderator: "版主",
+      user: "普通用户",
+    };
+    return roleMap[role] || role;
+  };
 
   // 获取变化指示器
   const getChangeIndicator = (change: string, type: "positive" | "negative" | "neutral") => {
@@ -222,7 +224,7 @@ const Dashboard: React.FC = () => {
     }
 
     const chart = chartInstance.current;
-    const data = visitTrendData[selectedPeriod as keyof typeof visitTrendData];
+    const data = trendData?.list || [];
 
     // ECharts配置
     const option = {
@@ -244,7 +246,8 @@ const Dashboard: React.FC = () => {
           return `
                         <div style="padding: 4px 0;">
                             <div style="font-weight: 600; margin-bottom: 4px; color: #333;">${point.name}</div>
-                            <div style="color: #4361ee; font-weight: 500;">访问量: ${point.value.toLocaleString()}</div>
+                            <div style="color: #4361ee; font-weight: 500;">活动量: ${point.value.toLocaleString()}</div>
+                            <div style="font-size: 11px; color: #999999; margin-top: 4px;">（新增用户 + 文章 + 评论）</div>
                             <div style="font-size: 11px; color: #666666; margin-top: 2px;">${item.date}</div>
                         </div>
                     `;
@@ -253,13 +256,13 @@ const Dashboard: React.FC = () => {
       grid: {
         left: "2%",
         right: "3%",
-        bottom: "12%",
+        bottom: 0,
         top: "8%",
         containLabel: true,
       },
       xAxis: {
         type: "category",
-        data: data.map((item) => item.day),
+        data: data.map((item) => item.label),
         axisLine: {
           lineStyle: {
             color: "#e1e5e9",
@@ -273,8 +276,10 @@ const Dashboard: React.FC = () => {
           color: "#666666",
           fontSize: 11,
           interval: 0,
-          rotate: 0,
+          rotate: data.length > 4 ? 30 : 0,
           margin: 8,
+          overflow: "truncate",
+          width: 60,
         },
       },
       yAxis: {
@@ -307,7 +312,7 @@ const Dashboard: React.FC = () => {
       },
       series: [
         {
-          name: "访问量",
+          name: "活动量",
           type: "line",
           data: data.map((item) => item.visits),
           smooth: true,
@@ -383,35 +388,48 @@ const Dashboard: React.FC = () => {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [selectedPeriod, visitTrendData]);
+  }, [selectedPeriod, trendData]);
 
-  // 渲染访问趋势图表
+  // 渲染活动趋势图表
   const renderVisitTrendChart = () => {
-    const data = visitTrendData[selectedPeriod as keyof typeof visitTrendData];
-    const totalVisits = data.reduce((sum, item) => sum + item.visits, 0);
-    const avgVisits = Math.round(totalVisits / data.length);
-    const maxVisits = Math.max(...data.map((d) => d.visits));
+    const totalVisits = trendData?.total_visits ?? 0;
+    const avgVisits = trendData?.avg_visits ?? 0;
+    const maxVisits = trendData?.max_visits ?? 0;
 
     return (
       <div className={styles.visitTrendChart}>
         <div className={styles.echartContainer} ref={chartRef} />
         <div className={styles.chartSummary}>
           <div className={styles.summaryItem}>
-            <span className={styles.summaryLabel}>总访问量</span>
+            <span className={styles.summaryLabel} title="活动量 = 新增用户 + 文章 + 评论">
+              总活动量
+            </span>
             <span className={styles.summaryValue}>{totalVisits.toLocaleString()}</span>
           </div>
           <div className={styles.summaryItem}>
-            <span className={styles.summaryLabel}>日均访问</span>
+            <span className={styles.summaryLabel} title="活动量 = 新增用户 + 文章 + 评论">
+              日均活动量
+            </span>
             <span className={styles.summaryValue}>{avgVisits.toLocaleString()}</span>
           </div>
           <div className={styles.summaryItem}>
-            <span className={styles.summaryLabel}>峰值</span>
+            <span className={styles.summaryLabel} title="活动量峰值">
+              峰值
+            </span>
             <span className={styles.summaryValue}>{maxVisits.toLocaleString()}</span>
           </div>
         </div>
       </div>
     );
   };
+
+  if (loading) {
+    return (
+      <div className={styles.dashboard}>
+        <Loading text="加载仪表盘中..." size="large" />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.dashboard}>
@@ -423,14 +441,17 @@ const Dashboard: React.FC = () => {
 
       {/* 统计卡片 */}
       <div className={styles.statsGrid}>
-        {stats.map((stat, index) => (
+        {statCards.map((stat, index) => (
           <div key={index} className={styles.statCard}>
             <div className={styles.statHeader}>
               <div className={`${styles.statIcon} ${styles[stat.iconColor]}`}>{stat.icon}</div>
               {getChangeIndicator(stat.change, stat.changeType)}
             </div>
             <div className={styles.statValue}>{stat.value}</div>
-            <div className={styles.statLabel}>{stat.title}</div>
+            <div className={styles.statLabel} title={stat.hint}>
+              {stat.title}
+              {stat.hint ? <span style={{ color: "var(--text-tertiary)", cursor: "help" }}> *</span> : null}
+            </div>
           </div>
         ))}
       </div>
@@ -440,7 +461,12 @@ const Dashboard: React.FC = () => {
         {/* 图表区域 */}
         <div className={styles.chartCard}>
           <div className={styles.chartHeader}>
-            <h3 className={styles.chartTitle}>访问趋势</h3>
+            <h3 className={styles.chartTitle}>
+              活动趋势
+              <span style={{ fontSize: "12px", color: "var(--text-tertiary)", fontWeight: 400, marginLeft: "8px" }}>
+                （活动量 = 新增用户 + 文章 + 评论）
+              </span>
+            </h3>
             <div className={styles.chartActions}>
               <button
                 className={`${styles.btn} ${styles.btnOutline} ${styles.btnSm} ${selectedPeriod === "7天" ? styles.active : ""}`}
@@ -489,9 +515,9 @@ const Dashboard: React.FC = () => {
         <div className={styles.recentActivityCard}>
           <h3 className={styles.cardTitle}>最近活动</h3>
           <div className={styles.activityList}>
-            {recentActivities.map((activity, index) => (
+            {activities.map((activity, index) => (
               <div key={index} className={styles.activityItem}>
-                <div className={getActivityIconClass(activity.type)}>{activity.icon}</div>
+                <div className={getActivityIconClass(getActivityTypeClass(activity.type))}>{getActivityIcon(activity.type)}</div>
                 <div className={styles.activityContent}>
                   <div className={styles.activityTitle}>{activity.title}</div>
                   <div className={styles.activityTime}>{activity.time}</div>
@@ -507,10 +533,10 @@ const Dashboard: React.FC = () => {
           <div className={styles.userList}>
             {recentUsers.map((user, index) => (
               <div key={index} className={styles.userItem}>
-                <img src={user.avatar} alt={user.name} className={styles.userAvatar} />
+                <Avatar src={user.avatar} name={user.name} size={40} />
                 <div className={styles.userInfo}>
                   <div className={styles.userName}>{user.name}</div>
-                  <div className={styles.userRole}>{user.role}</div>
+                  <div className={styles.userRole}>{getRoleName(user.role)}</div>
                 </div>
                 <div
                   className={styles.userStatus}

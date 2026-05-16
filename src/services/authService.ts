@@ -44,6 +44,7 @@ export interface UserAdminListResponse {
     id: number | string;
     name: string;
     email: string;
+    avatar?: string;
     role: string;
     state: number;
     create_time: number;

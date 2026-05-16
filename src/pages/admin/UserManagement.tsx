@@ -15,6 +15,7 @@ import CustomSelect from "../../components/customSelect/CustomSelect";
 import Input from "../../components/input/Input";
 import Button from "../../components/button/Button";
 import Loading from "../../components/loading/Loading";
+import Avatar from "../../components/avatar/Avatar";
 import type { SelectOption } from "../../types/index";
 import styles from "./UserManagement.module.css";
 import { AuthService } from "../../services/authService";
@@ -107,7 +108,7 @@ const UserManagement: React.FC = () => {
             id: user.id,
             username: user.name,
             email: user.email,
-            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=random`, // 使用占位头像
+            avatar: user.avatar || `https://picsum.photos/id/${(Number(user.id) % 100) + 1}/80`,
             role: user.role,
             status: user.state === 1 ? "active" : "inactive",
             createdAt: formatToChinaTime(user.create_time),
@@ -404,7 +405,7 @@ const UserManagement: React.FC = () => {
                 <tr key={user.id}>
                   <td>
                     <div className={styles.userInfo}>
-                      <img src={user.avatar} alt={user.username} className={styles.userAvatar} />
+                      <Avatar src={user.avatar} name={user.username} size={40} />
                       <div className={styles.userDetails}>
                         <div className={styles.userName}>{user.username}</div>
                         <div className={styles.userEmail}>{user.email}</div>

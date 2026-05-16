@@ -20,6 +20,7 @@ import ThemeToggle from "../../components/themeToggle/ThemeToggle";
 import Notification from "../../components/notification/Notification";
 import UserDropdown from "../../components/userDropdown/UserDropdown";
 import Footer from "../../components/footer/Footer";
+import Avatar from "../../components/avatar/Avatar";
 import { useAuth } from "../../contexts/AuthContext";
 import AuthService, { type UserStats } from "../../services/authService";
 import styles from "./PersonalCenter.module.css";
@@ -466,7 +467,7 @@ const PersonalCenter: React.FC = () => {
           <div className={styles.adminPageContent}>
             {/* 用户信息概览卡片 */}
             <div className={styles.profileCard}>
-              <img src={currentUser.avatar} alt={currentUser.name} className={styles.profileAvatar} />
+              <Avatar src={currentUser.avatar} name={currentUser.name} size={80} className={styles.profileAvatar} />
               <div className={styles.profileInfo}>
                 <div className={styles.profileName}>
                   {currentUser.name}

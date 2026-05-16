@@ -21,6 +21,7 @@ import CustomSelect from "../../components/customSelect/CustomSelect";
 import Input from "../../components/input/Input";
 import Loading from "../../components/loading/Loading";
 import { confirm } from "../../components/confirm/Confirm";
+import Avatar from "../../components/avatar/Avatar";
 import type { SelectOption } from "../../types/index";
 import styles from "./PermissionManagement.module.css";
 
@@ -783,7 +784,7 @@ const PermissionManagement: React.FC = () => {
                   <tr key={userPermission.id}>
                     <td>
                       <div className={styles.userInfo}>
-                        <img src={userPermission.avatar} alt={userPermission.username} className={styles.userAvatar} />
+                        <Avatar src={userPermission.avatar} name={userPermission.username} size={40} className={styles.userAvatar} />
                         <div className={styles.userDetails}>
                           <div className={styles.userName}>{userPermission.username}</div>
                           <div className={styles.userEmail}>{userPermission.email}</div>

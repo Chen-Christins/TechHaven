@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { encodeId } from "../../utils/hashId";
 import { FaUserCircle, FaCog, FaSignOutAlt, FaHome } from "react-icons/fa";
+import Avatar from "../avatar/Avatar";
 import styles from "./UserDropdown.module.css";
 
 interface User {
@@ -61,11 +62,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout, showAdminLi
     <div ref={dropdownRef} className={`${styles.userDropdown} ${className}`}>
       {/* 用户显示区域 */}
       <div className={styles.userDisplay} onClick={toggleDropdown}>
-        <img
-          src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
-          alt={user.name}
-          className={styles.userAvatar}
-        />
+        <Avatar src={user.avatar} name={user.name} size={36} className={styles.userAvatar} />
         <div className={styles.userDetails}>
           <div className={styles.userName}>{user.name}</div>
           {user.role && <div className={styles.userRole}>{user.role}</div>}
@@ -81,11 +78,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout, showAdminLi
       {isOpen && (
         <div className={styles.dropdown}>
           <div className={styles.dropdownHeader}>
-            <img
-              src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
-              alt={user.name}
-              className={styles.dropdownAvatar}
-            />
+            <Avatar src={user.avatar} name={user.name} size={48} className={styles.dropdownAvatar} />
             <div className={styles.dropdownUserInfo}>
               <div className={styles.dropdownUserName}>{user.name}</div>
               <div className={styles.dropdownUserEmail}>{user.email}</div>

@@ -24,6 +24,7 @@ import {
   Loader2,
 } from "lucide-react";
 import styles from "./ArticleView.module.css";
+import Avatar from "../../components/avatar/Avatar";
 import FollowService from "../../services/followService";
 import PraiseService from "../../services/praiseService";
 import CommentService from "../../services/commentService";
@@ -591,11 +592,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
         <div className={styles.authorCard}>
           <div className={styles.authorCardTop}>
             <div className={styles.authorCardAvatar} onClick={() => authorId && navigate(`/profile/${encodeId(authorId)}`)}>
-              <img
-                src={authorAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(author)}&background=random&size=96`}
-                alt={author}
-                className={styles.authorCardAvatarImg}
-              />
+              <Avatar src={authorAvatar} name={author} size={64} className={styles.authorCardAvatarImg} />
             </div>
             <div className={styles.authorCardInfo}>
               <span className={styles.authorCardName} onClick={() => authorId && navigate(`/profile/${encodeId(authorId)}`)}>
@@ -850,13 +847,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                 <React.Fragment key={comment.id}>
                   <div className={styles.commentItem}>
                     <div className={styles.commentAvatar}>
-                      <img
-                        src={
-                          comment.avatar ||
-                          `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user)}&background=random&size=40`
-                        }
-                        alt={comment.user}
-                      />
+                      <Avatar src={comment.avatar} name={comment.user} size={40} />
                     </div>
                     <div className={styles.commentBody}>
                       <div className={styles.commentMeta}>
@@ -918,13 +909,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                       {comment.replies.map((reply) => (
                         <div key={reply.id} className={styles.replyItem}>
                           <div className={styles.commentAvatar}>
-                            <img
-                              src={
-                                reply.avatar ||
-                                `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user)}&background=random&size=32`
-                              }
-                              alt={reply.user}
-                            />
+                            <Avatar src={reply.avatar} name={reply.user} size={32} />
                           </div>
                           <div className={styles.commentBody}>
                             <div className={styles.commentMeta}>

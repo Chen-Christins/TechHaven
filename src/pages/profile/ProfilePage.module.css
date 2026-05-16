@@ -1,8 +1,21 @@
 .profile {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background-color: var(--bg-primary, #ffffff);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: var(--text-primary, #1f2328);
+}
+
+/* ========== Main Content Layout ========== */
+.mainContent {
+  flex: 1;
+  display: flex;
+  max-width: 1500px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 32px;
+  gap: 24px;
 }
 
 /* ========== Content Tabs ========== */
@@ -54,16 +67,6 @@
   color: var(--text-secondary, #656d76);
   background: var(--bg-tertiary, #eaeef2);
   border-radius: 20px;
-}
-
-/* ========== Main Content Layout ========== */
-.mainContent {
-  display: flex;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 24px 32px;
-  gap: 24px;
-  min-height: calc(100vh - 160px);
 }
 
 /* ========== Left Sidebar ========== */
@@ -740,8 +743,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loadingSpin {

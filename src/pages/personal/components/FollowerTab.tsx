@@ -4,6 +4,7 @@ import { encodeId } from "../../../utils/hashId";
 import { FaUserSlash } from "react-icons/fa";
 import FollowService from "../../../services/followService";
 import type { FollowUser } from "../../../types/follow";
+import Avatar from "../../../components/avatar/Avatar";
 import styles from "../PersonalCenter.module.css";
 
 const PAGE_SIZE = 20;
@@ -87,11 +88,7 @@ const FollowerTab: React.FC = () => {
                 onClick={() => navigate(`/profile/${encodeId(user.id)}`)}
                 style={{ cursor: "pointer" }}
               >
-                <img
-                  src={user.avatar || `https://picsum.photos/id/${(user.id % 100) + 1}/80`}
-                  alt={user.name}
-                  className={styles.followAvatar}
-                />
+                <Avatar src={user.avatar} name={user.name} size={48} className={styles.followAvatar} />
                 <div className={styles.followItemInfo}>
                   <div className={styles.followItemName}>{user.name}</div>
                   {user.bio && <div className={styles.followItemBio}>{user.bio}</div>}
