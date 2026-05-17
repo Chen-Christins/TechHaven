@@ -166,7 +166,9 @@
   background-color: var(--card-bg);
   border: 1px solid var(--border-primary);
   border-radius: 8px;
-  overflow: hidden;
+  overflow-y: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tableHeader {
@@ -191,6 +193,7 @@
 
 .usersTable {
   width: 100%;
+  min-width: 600px;
   border-collapse: collapse;
 }
 
@@ -460,6 +463,62 @@
   .actionButtons {
     flex-direction: column;
     gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.2rem;
+  }
+
+  .statCard {
+    padding: 14px;
+  }
+
+  .statValue {
+    font-size: 22px;
+  }
+
+  .filterSection {
+    padding: 12px;
+  }
+
+  .tableContainer {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .usersTable {
+    min-width: 0;
+  }
+
+  .usersTable th,
+  .usersTable td {
+    padding: 10px 6px;
+    font-size: 0.75rem;
+  }
+
+  /* 隐藏: 注册时间(4) 最后登录(5) 文章数(6) 评论数(7) */
+  .usersTable th:nth-child(4),
+  .usersTable td:nth-child(4),
+  .usersTable th:nth-child(5),
+  .usersTable td:nth-child(5),
+  .usersTable th:nth-child(6),
+  .usersTable td:nth-child(6),
+  .usersTable th:nth-child(7),
+  .usersTable td:nth-child(7) {
+    display: none;
+  }
+
+  .actionButton {
+    padding: 4px 6px;
+    font-size: 12px;
+  }
+
+  .paginationButton {
+    min-width: 28px;
+    height: 28px;
+    font-size: 12px;
   }
 }
 

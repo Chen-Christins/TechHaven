@@ -133,6 +133,169 @@ interface HeadingComponentProps extends React.HTMLAttributes<HTMLHeadingElement>
   node?: any;
 }
 
+// 最大回复嵌套深度（0=顶级评论，每级回复+1）
+const MAX_REPLY_DEPTH = 4;
+
+interface CommentNodeProps {
+  comment: CommentItem;
+  depth: number;
+  likedCommentIds: Set<number>;
+  editingId: number | null;
+  editText: string;
+  replyToId: number | null;
+  replyText: string;
+  currentUserId?: number;
+  isAuthenticated: boolean;
+  onLike: (id: number) => void;
+  onToggleReply: (id: number) => void;
+  onStartEdit: (comment: CommentItem) => void;
+  onSaveEdit: (id: number) => void;
+  onCancelEdit: () => void;
+  onReplyTextChange: (text: string) => void;
+  onReplySubmit: (parentId: number) => void;
+  onReplyCancel: () => void;
+  onEditTextChange: (text: string) => void;
+}
+
+const CommentNode: React.FC<CommentNodeProps> = ({
+  comment,
+  depth,
+  likedCommentIds,
+  editingId,
+  editText,
+  replyToId,
+  replyText,
+  currentUserId,
+  isAuthenticated,
+  onLike,
+  onToggleReply,
+  onStartEdit,
+  onSaveEdit,
+  onCancelEdit,
+  onReplyTextChange,
+  onReplySubmit,
+  onReplyCancel,
+  onEditTextChange,
+}) => {
+  const isReply = depth > 0;
+  const canReply = depth < MAX_REPLY_DEPTH;
+
+  return (
+    <>
+      <div className={isReply ? styles.replyItem : styles.commentItem}>
+        <div className={styles.commentAvatar}>
+          <Avatar src={comment.avatar} name={comment.user} size={isReply ? 32 : 40} />
+        </div>
+        <div className={styles.commentBody}>
+          <div className={styles.commentMeta}>
+            <span className={styles.commentUser}>{comment.user}</span>
+            <span className={styles.commentTime}>{comment.time}</span>
+          </div>
+          {editingId === comment.id ? (
+            <div className={styles.commentEditSection}>
+              <textarea
+                className={styles.commentTextarea}
+                value={editText}
+                onChange={(e) => onEditTextChange(e.target.value)}
+                rows={isReply ? 2 : 3}
+              />
+              <div className={styles.commentEditActions}>
+                <button
+                  className={styles.commentEditSave}
+                  onClick={() => onSaveEdit(comment.id)}
+                  disabled={!editText.trim() || editText.trim() === comment.content}
+                >
+                  保存
+                </button>
+                <button className={styles.commentEditCancel} onClick={onCancelEdit}>
+                  取消
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.commentContent}>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment.content}</ReactMarkdown>
+            </div>
+          )}
+          <div className={styles.commentActions}>
+            <button
+              className={`${styles.commentActionButton} ${likedCommentIds.has(comment.id) ? styles.commentLiked : ""}`}
+              onClick={() => onLike(comment.id)}
+            >
+              <ThumbsUp size={12} />
+              {comment.likes > 0 ? comment.likes : "赞"}
+            </button>
+            {canReply && (
+              <button className={styles.commentActionButton} onClick={() => onToggleReply(comment.id)}>
+                回复
+              </button>
+            )}
+            {isAuthenticated && currentUserId === comment.user_id && (
+              <button className={styles.commentActionButton} onClick={() => onStartEdit(comment)}>
+                编辑
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 子回复列表 */}
+      {comment.replies?.length > 0 && (
+        <div className={styles.replyList}>
+          {comment.replies.map((reply) => (
+            <CommentNode
+              key={reply.id}
+              comment={reply}
+              depth={depth + 1}
+              likedCommentIds={likedCommentIds}
+              editingId={editingId}
+              editText={editText}
+              replyToId={replyToId}
+              replyText={replyText}
+              currentUserId={currentUserId}
+              isAuthenticated={isAuthenticated}
+              onLike={onLike}
+              onToggleReply={onToggleReply}
+              onStartEdit={onStartEdit}
+              onSaveEdit={onSaveEdit}
+              onCancelEdit={onCancelEdit}
+              onReplyTextChange={onReplyTextChange}
+              onReplySubmit={onReplySubmit}
+              onReplyCancel={onReplyCancel}
+              onEditTextChange={onEditTextChange}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* 回复输入框 */}
+      {replyToId === comment.id && (
+        <div className={styles.replyInputWrapper}>
+          <textarea
+            className={styles.commentTextarea}
+            placeholder={`回复 ${comment.user}...`}
+            value={replyText}
+            onChange={(e) => onReplyTextChange(e.target.value)}
+            rows={2}
+          />
+          <div className={styles.commentInputFooter}>
+            <span className={styles.commentHint}>支持 Markdown 语法</span>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button className={styles.writeCommentButton} onClick={onReplyCancel}>
+                取消
+              </button>
+              <button className={styles.commentSubmitButton} onClick={() => onReplySubmit(comment.id)} disabled={!replyText.trim()}>
+                <Send size={14} />
+                回复
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
 const ArticleView: React.FC<ArticleViewProps> = ({
   title,
   author,
@@ -192,26 +355,44 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     }
   }, [isAuthenticated, authorId, articleId]);
 
-  // 加载评论列表
-  useEffect(() => {
+  // 评论数据获取（供首次加载与轮询复用）
+  const fetchComments = useCallback(() => {
     if (!articleId) return;
-    setCommentLoading(true);
     CommentService.getList({ article_id: articleId, offset: 0, size: COMMENT_PAGE_SIZE })
       .then((data) => {
         setCommentsList(data.list);
-        const liked = new Set<number>();
-        const collectLiked = (comments: CommentItem[]) => {
-          comments.forEach((c) => {
-            if (c.is_liked) liked.add(c.id);
-            if (c.replies?.length) collectLiked(c.replies);
-          });
-        };
-        collectLiked(data.list);
-        setLikedCommentIds(liked);
+        setLikedCommentIds((prev) => {
+          const liked = new Set<number>();
+          const collectLiked = (comments: CommentItem[]) => {
+            comments.forEach((c) => {
+              if (c.is_liked) liked.add(c.id);
+              if (c.replies?.length) collectLiked(c.replies);
+            });
+          };
+          collectLiked(data.list);
+          // 合并本地已有的点赞状态（用户操作过但服务端可能尚未反映的）
+          prev.forEach((id) => liked.add(id));
+          return liked;
+        });
+        setCommentLoading(false);
       })
-      .catch(() => {})
-      .finally(() => setCommentLoading(false));
+      .catch(() => {});
   }, [articleId]);
+
+  useEffect(() => {
+    if (!articleId) return;
+    setCommentLoading(true);
+    fetchComments();
+  }, [fetchComments]);
+
+  // 评论轮询：每 15 秒自动刷新评论列表
+  useEffect(() => {
+    if (!articleId) return;
+    const timer = setInterval(() => {
+      fetchComments();
+    }, 1500);
+    return () => clearInterval(timer);
+  }, [fetchComments]);
 
   const handleFollowToggle = async () => {
     if (!isAuthenticated) {
@@ -310,27 +491,16 @@ const ArticleView: React.FC<ArticleViewProps> = ({
         parent_id: parentId,
       });
       setCommentsList((prev) =>
-        prev.map((c) => {
-          if (c.id === parentId) {
-            return {
-              ...c,
-              replies: [
-                ...c.replies,
-                {
-                  id: newReply.id,
-                  user: newReply.user,
-                  avatar: newReply.avatar,
-                  user_id: newReply.user_id,
-                  content: newReply.content,
-                  time: newReply.time,
-                  likes: newReply.likes,
-                  replies: [],
-                  is_liked: newReply.is_liked,
-                },
-              ],
-            };
-          }
-          return c;
+        addReplyToTree(prev, parentId, {
+          id: newReply.id,
+          user: newReply.user,
+          avatar: newReply.avatar,
+          user_id: newReply.user_id,
+          content: newReply.content,
+          time: newReply.time,
+          likes: newReply.likes,
+          replies: [],
+          is_liked: newReply.is_liked,
         }),
       );
       setReplyText("");
@@ -391,6 +561,20 @@ const ArticleView: React.FC<ArticleViewProps> = ({
       };
     }
     return comment;
+  };
+
+  // 递归向评论树中添加回复
+  const addReplyToTree = (comments: CommentItem[], parentId: number, newReply: CommentItem): CommentItem[] => {
+    return comments.map((c) => {
+      if (c.id === parentId) {
+        const replies = Array.isArray(c.replies) ? c.replies : [];
+        return { ...c, replies: [...replies, newReply] };
+      }
+      if (c.replies?.length) {
+        return { ...c, replies: addReplyToTree(c.replies, parentId, newReply) };
+      }
+      return c;
+    });
   };
 
   const handleStartEdit = (comment: CommentItem) => {
@@ -844,159 +1028,30 @@ const ArticleView: React.FC<ArticleViewProps> = ({
               <div className={styles.commentEmpty}>暂无评论，快来抢沙发吧~</div>
             ) : (
               commentsList.map((comment) => (
-                <React.Fragment key={comment.id}>
-                  <div className={styles.commentItem}>
-                    <div className={styles.commentAvatar}>
-                      <Avatar src={comment.avatar} name={comment.user} size={40} />
-                    </div>
-                    <div className={styles.commentBody}>
-                      <div className={styles.commentMeta}>
-                        <span className={styles.commentUser}>{comment.user}</span>
-                        <span className={styles.commentTime}>{comment.time}</span>
-                      </div>
-                      {editingId === comment.id ? (
-                        <div className={styles.commentEditSection}>
-                          <textarea
-                            className={styles.commentTextarea}
-                            value={editText}
-                            onChange={(e) => setEditText(e.target.value)}
-                            rows={3}
-                          />
-                          <div className={styles.commentEditActions}>
-                            <button
-                              className={styles.commentEditSave}
-                              onClick={() => handleSaveEdit(comment.id)}
-                              disabled={!editText.trim() || editText.trim() === comment.content}
-                            >
-                              保存
-                            </button>
-                            <button className={styles.commentEditCancel} onClick={handleCancelEdit}>
-                              取消
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className={styles.commentContent}>
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment.content}</ReactMarkdown>
-                        </div>
-                      )}
-                      <div className={styles.commentActions}>
-                        <button
-                          className={`${styles.commentActionButton} ${likedCommentIds.has(comment.id) ? styles.commentLiked : ""}`}
-                          onClick={() => handleCommentLike(comment.id)}
-                        >
-                          <ThumbsUp size={12} />
-                          {comment.likes > 0 ? comment.likes : "赞"}
-                        </button>
-                        <button
-                          className={styles.commentActionButton}
-                          onClick={() => setReplyToId(replyToId === comment.id ? null : comment.id)}
-                        >
-                          回复
-                        </button>
-                        {isAuthenticated && user?.id === comment.user_id && (
-                          <button className={styles.commentActionButton} onClick={() => handleStartEdit(comment)}>
-                            编辑
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 子回复列表 */}
-                  {comment.replies.length > 0 && (
-                    <div className={styles.replyList}>
-                      {comment.replies.map((reply) => (
-                        <div key={reply.id} className={styles.replyItem}>
-                          <div className={styles.commentAvatar}>
-                            <Avatar src={reply.avatar} name={reply.user} size={32} />
-                          </div>
-                          <div className={styles.commentBody}>
-                            <div className={styles.commentMeta}>
-                              <span className={styles.commentUser}>{reply.user}</span>
-                              <span className={styles.commentTime}>{reply.time}</span>
-                            </div>
-                            {editingId === reply.id ? (
-                              <div className={styles.commentEditSection}>
-                                <textarea
-                                  className={styles.commentTextarea}
-                                  value={editText}
-                                  onChange={(e) => setEditText(e.target.value)}
-                                  rows={2}
-                                />
-                                <div className={styles.commentEditActions}>
-                                  <button
-                                    className={styles.commentEditSave}
-                                    onClick={() => handleSaveEdit(reply.id)}
-                                    disabled={!editText.trim() || editText.trim() === reply.content}
-                                  >
-                                    保存
-                                  </button>
-                                  <button className={styles.commentEditCancel} onClick={handleCancelEdit}>
-                                    取消
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className={styles.commentContent}>
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{reply.content}</ReactMarkdown>
-                              </div>
-                            )}
-                            <div className={styles.commentActions}>
-                              <button
-                                className={`${styles.commentActionButton} ${likedCommentIds.has(reply.id) ? styles.commentLiked : ""}`}
-                                onClick={() => handleCommentLike(reply.id)}
-                              >
-                                <ThumbsUp size={12} />
-                                {reply.likes > 0 ? reply.likes : "赞"}
-                              </button>
-                              {isAuthenticated && user?.id === reply.user_id && (
-                                <button className={styles.commentActionButton} onClick={() => handleStartEdit(reply)}>
-                                  编辑
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* 回复输入框 */}
-                  {replyToId === comment.id && (
-                    <div className={styles.replyInputWrapper}>
-                      <textarea
-                        className={styles.commentTextarea}
-                        placeholder={`回复 ${comment.user}...`}
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                        rows={2}
-                      />
-                      <div className={styles.commentInputFooter}>
-                        <span className={styles.commentHint}>支持 Markdown 语法</span>
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <button
-                            className={styles.writeCommentButton}
-                            onClick={() => {
-                              setReplyToId(null);
-                              setReplyText("");
-                            }}
-                          >
-                            取消
-                          </button>
-                          <button
-                            className={styles.commentSubmitButton}
-                            onClick={() => handleReplySubmit(comment.id)}
-                            disabled={!replyText.trim()}
-                          >
-                            <Send size={14} />
-                            回复
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </React.Fragment>
+                <CommentNode
+                  key={comment.id}
+                  comment={comment}
+                  depth={0}
+                  likedCommentIds={likedCommentIds}
+                  editingId={editingId}
+                  editText={editText}
+                  replyToId={replyToId}
+                  replyText={replyText}
+                  currentUserId={user?.id != null ? Number(user.id) : undefined}
+                  isAuthenticated={isAuthenticated}
+                  onLike={handleCommentLike}
+                  onToggleReply={(id) => setReplyToId(replyToId === id ? null : id)}
+                  onStartEdit={handleStartEdit}
+                  onSaveEdit={handleSaveEdit}
+                  onCancelEdit={handleCancelEdit}
+                  onReplyTextChange={setReplyText}
+                  onReplySubmit={handleReplySubmit}
+                  onReplyCancel={() => {
+                    setReplyToId(null);
+                    setReplyText("");
+                  }}
+                  onEditTextChange={setEditText}
+                />
               ))
             )}
           </div>

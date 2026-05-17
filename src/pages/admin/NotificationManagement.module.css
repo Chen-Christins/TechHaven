@@ -163,3 +163,32 @@
     align-items: flex-start;
   }
 }
+
+@media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.2rem;
+  }
+
+  .formCard {
+    padding: 12px;
+  }
+
+  .formGrid {
+    gap: 10px;
+  }
+
+  .formActions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .formActions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .textarea {
+    min-height: 100px;
+    font-size: 13px;
+  }
+}

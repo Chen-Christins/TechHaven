@@ -32,6 +32,7 @@ import CustomSelect from "../../../components/customSelect/CustomSelect";
 import Modal from "../../../components/modal/Modal";
 import Switch from "../../../components/switcher/Switch";
 import type { SelectOption } from "../../../types/index";
+import { encodeId } from "../../../utils/hashId";
 import type { Notification as NotificationItem } from "../../../types/notification";
 import styles from "../PersonalCenter.module.css";
 
@@ -196,7 +197,9 @@ const NotificationsTab: React.FC = () => {
       NotificationService.markAsRead(item.id).catch(() => {});
       setNotifications((prev) => prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n)));
     }
-    if (item.link) {
+    if (item.article_id) {
+      navigate(`/article/${encodeId(item.article_id)}`);
+    } else if (item.link) {
       navigate(item.link);
     }
   };

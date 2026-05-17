@@ -431,6 +431,59 @@
   }
 }
 
+@media (max-width: 480px) {
+  .pageTitle {
+    font-size: 20px;
+  }
+
+  .pageDescription {
+    font-size: 13px;
+  }
+
+  .statsGrid {
+    gap: 12px;
+  }
+
+  .statCard {
+    padding: 14px;
+  }
+
+  .statValue {
+    font-size: 24px;
+  }
+
+  .statLabel {
+    font-size: 12px;
+  }
+
+  .chartCard,
+  .quickActionsCard,
+  .recentActivityCard,
+  .recentUsersCard {
+    padding: 14px;
+  }
+
+  .chartTitle,
+  .quickActionsTitle,
+  .cardTitle {
+    font-size: 16px;
+  }
+
+  .chartContainer {
+    height: 200px;
+    min-height: 200px;
+  }
+
+  .chartSummary {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .summaryValue {
+    font-size: 14px;
+  }
+}
+
 /* 通用按钮样式 */
 .btn {
   padding: 8px 16px;

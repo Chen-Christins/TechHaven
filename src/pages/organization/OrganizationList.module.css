@@ -269,3 +269,52 @@
   transform: translateY(0);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .mainContent {
+    padding: 1.2rem 1rem;
+  }
+
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .pageTitle {
+    font-size: 1.4rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .card {
+    padding: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mainContent {
+    padding: 1rem 0.8rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .cardTitle {
+    font-size: 1.05rem;
+  }
+
+  .filterBar {
+    gap: 0.5rem;
+  }
+
+  .filterBtn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.82rem;
+  }
+}

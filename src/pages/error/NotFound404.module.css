@@ -140,3 +140,48 @@
   --notfound-bg: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
   --notfound-text: var(--text-primary, #222);
 }
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .container {
+    padding: 2rem 1rem;
+  }
+
+  .code {
+    font-size: 5rem;
+    letter-spacing: 4px;
+  }
+
+  .title {
+    font-size: 1.6rem;
+  }
+
+  .desc {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1.5rem 0.8rem;
+  }
+
+  .code {
+    font-size: 3.5rem;
+    letter-spacing: 2px;
+  }
+
+  .title {
+    font-size: 1.3rem;
+  }
+
+  .desc {
+    font-size: 0.9rem;
+  }
+
+  .homeBtn {
+    padding: 10px 24px;
+    font-size: 1rem;
+  }
+}

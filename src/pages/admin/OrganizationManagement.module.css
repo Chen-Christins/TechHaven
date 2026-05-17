@@ -4,6 +4,8 @@
   border: 1px solid var(--border-primary);
   border-radius: 8px;
   overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   margin-bottom: 24px;
 }
 .tableHeader {
@@ -208,48 +210,6 @@
   color: var(--text-secondary);
 }
 
-/* 表格样式 */
-.tableContainer {
-  background-color: var(--card-bg);
-  border-radius: 8px;
-  border: 1px solid var(--border-primary);
-  overflow: hidden;
-  margin-bottom: 24px;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th,
-.table td {
-  padding: 16px;
-  text-align: center;
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.table th:first-child,
-.table td:first-child {
-  text-align: left;
-}
-
-.table th {
-  background-color: var(--bg-secondary);
-  font-weight: 600;
-  color: var(--text-secondary);
-  font-size: 14px;
-  white-space: nowrap;
-}
-
-.table tr:last-child td {
-  border-bottom: none;
-}
-
-.table tr:hover {
-  background-color: var(--bg-hover);
-}
-
 /* 状态标签 */
 .statusBadge {
   display: inline-flex;
@@ -362,17 +322,92 @@
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-  .filterBar {
+  .pageHeader {
     flex-direction: column;
-    align-items: stretch;
+    gap: 12px;
   }
 
-  .filterGroup {
-    flex-direction: column;
+  .headerActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .filterForm {
+    grid-template-columns: 1fr;
+  }
+
+  .statsContainer {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .tableContainer {
     overflow-x: auto;
+  }
+
+  .orgTable th,
+  .orgTable td {
+    padding: 12px 8px;
+    font-size: 0.82rem;
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.2rem;
+  }
+
+  .statCard {
+    padding: 14px;
+  }
+
+  .statValue {
+    font-size: 22px;
+  }
+
+  .filterSection {
+    padding: 12px;
+  }
+
+  .tableContainer {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .orgTable {
+    min-width: 0;
+  }
+
+  .orgTable th,
+  .orgTable td {
+    padding: 8px 6px;
+    font-size: 0.75rem;
+  }
+
+  /* 隐藏: 类型(2) 成员人数(3) 创建时间(5) */
+  .orgTable th:nth-child(2),
+  .orgTable td:nth-child(2),
+  .orgTable th:nth-child(3),
+  .orgTable td:nth-child(3),
+  .orgTable th:nth-child(5),
+  .orgTable td:nth-child(5) {
+    display: none;
+  }
+
+  .actionBtn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .pageBtn {
+    width: 30px;
+    height: 30px;
   }
 }
 

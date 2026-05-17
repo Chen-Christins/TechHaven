@@ -647,13 +647,47 @@
 }
 
 @media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.2rem;
+  }
+
   .commentCard {
-    padding: 16px;
+    padding: 12px;
+  }
+
+  .filterSection {
+    padding: 12px;
+  }
+
+  .filterHeader {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .filterTitle {
+    font-size: 14px;
+  }
+
+  .batchActions {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
   }
 
   .batchButtons {
     flex-direction: column;
     gap: 8px;
+  }
+
+  .commentHeader {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .commentActions {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .btnSm {
@@ -669,5 +703,19 @@
   .reportedBadge {
     font-size: 10px;
     padding: 2px 6px;
+  }
+
+  .paginationContainer {
+    padding: 12px;
+  }
+
+  .paginationButton {
+    min-width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .paginationInfo {
+    font-size: 12px;
   }
 }

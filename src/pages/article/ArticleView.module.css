@@ -931,6 +931,19 @@
   margin-bottom: 16px;
 }
 
+/* 嵌套回复列表：逐级减少缩进，避免过深嵌套时内容过窄 */
+.replyList .replyList {
+  margin-left: 28px;
+}
+
+.replyList .replyList .replyList {
+  margin-left: 20px;
+}
+
+.replyList .replyList .replyList .replyList {
+  margin-left: 14px;
+}
+
 .commentActions {
   display: flex;
   gap: 14px;

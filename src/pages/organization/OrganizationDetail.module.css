@@ -733,6 +733,54 @@
   }
 }
 
+@media (max-width: 480px) {
+  .mainContent {
+    padding: 1rem 0.8rem;
+  }
+
+  .detailCard {
+    padding: 1rem;
+  }
+
+  .pageTitle {
+    font-size: 1.3rem;
+  }
+
+  .headerContent {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .headerRight {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .description {
+    font-size: 0.95rem;
+    padding: 1rem;
+  }
+
+  .statsContainer {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .statCard {
+    padding: 16px;
+  }
+
+  .usersTable th,
+  .usersTable td {
+    padding: 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .memberHeader {
+    font-size: 1rem;
+  }
+}
+
 .loginBtn {
   padding: 12px 24px;
   background: linear-gradient(135deg, var(--primary), var(--accent));

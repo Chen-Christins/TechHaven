@@ -624,6 +624,21 @@
   text-align: center;
   color: var(--text-secondary);
   font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+}
+
+.categoryBadge {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  border: 1px solid var(--border-primary);
+  white-space: nowrap;
 }
 
 /* 状态单元格 */
@@ -1273,6 +1288,10 @@
 @media (max-width: 480px) {
   .contentSection {
     padding: 12px;
+  }
+
+  .adminPageContent {
+    padding: 0.8rem;
   }
 
   .addButton {

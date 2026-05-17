@@ -172,6 +172,8 @@
   border: 1px solid var(--border-primary);
   border-radius: 8px;
   overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tableHeader {
@@ -196,6 +198,7 @@
 
 .articlesTable {
   width: 100%;
+  min-width: 700px;
   border-collapse: collapse;
 }
 
@@ -573,8 +576,100 @@
 }
 
 @media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.2rem;
+  }
+
   .statsContainer {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .statCard {
+    padding: 12px;
+  }
+
+  .statValue {
+    font-size: 22px;
+  }
+
+  .statLabel {
+    font-size: 12px;
+  }
+
+  .filterSection {
+    padding: 12px;
+  }
+
+  .filterHeader {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .filterTitle {
+    font-size: 14px;
+  }
+
+  .tableContainer {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .articlesTable {
+    min-width: 0;
+    font-size: 0.75rem;
+  }
+
+  /* 隐藏: 作者(2) 分类(3) 统计数据(5) 发布时间(6) */
+  /* 保留: 文章信息(1) 状态(4) 操作(7) */
+  .articlesTable th:nth-child(2),
+  .articlesTable td:nth-child(2),
+  .articlesTable th:nth-child(3),
+  .articlesTable td:nth-child(3),
+  .articlesTable th:nth-child(5),
+  .articlesTable td:nth-child(5),
+  .articlesTable th:nth-child(6),
+  .articlesTable td:nth-child(6) {
+    display: none;
+  }
+
+  .articlesTable th,
+  .articlesTable td {
+    padding: 8px 6px;
+    font-size: 0.78rem;
+  }
+
+  .tableHeader {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .tableTitle {
+    font-size: 1rem;
+  }
+
+  .paginationContainer {
+    padding: 12px;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .paginationButton {
+    min-width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .paginationInfo {
+    font-size: 12px;
+  }
+
+  .actionButton {
+    padding: 4px 6px;
+    font-size: 12px;
   }
 }
 
