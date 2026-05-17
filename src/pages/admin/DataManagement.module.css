@@ -363,6 +363,8 @@
   border: 1px solid var(--border-primary);
   border-radius: 8px;
   overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tableHeader {
@@ -388,6 +390,7 @@
 
 .recordsTable {
   width: 100%;
+  min-width: 650px;
   border-collapse: collapse;
 }
 
@@ -737,8 +740,131 @@
 }
 
 @media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.2rem;
+  }
+
   .statsGrid {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .statCard {
+    padding: 12px;
+  }
+
+  .statValue {
+    font-size: 20px;
+  }
+
+  .statLabel {
+    font-size: 12px;
+  }
+
+  .storageSection {
+    padding: 12px;
+  }
+
+  .storageCards {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .storageCard {
+    padding: 12px;
+  }
+
+  .actionCards {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .actionCard {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .actionTitle {
+    font-size: 14px;
+  }
+
+  .filterSection {
+    padding: 12px;
+  }
+
+  .filterHeader {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .tabContainer {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .tabButton {
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .tableContainer {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .recordsTable {
+    min-width: 0;
+  }
+
+  .recordsTable th,
+  .recordsTable td {
+    padding: 8px 6px;
+    font-size: 0.72rem;
+  }
+
+  /* 隐藏次要列: 类型(2) 格式/大小(3) 大小/文件数(4) */
+  .recordsTable th:nth-child(2),
+  .recordsTable td:nth-child(2),
+  .recordsTable th:nth-child(3),
+  .recordsTable td:nth-child(3),
+  .recordsTable th:nth-child(4),
+  .recordsTable td:nth-child(4) {
+    display: none;
+  }
+
+  .tableHeader {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .tableTitle {
+    font-size: 1rem;
+  }
+
+  .paginationContainer {
+    padding: 12px;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .paginationButton {
+    min-width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .paginationInfo {
+    font-size: 12px;
+  }
+
+  .actionButton {
+    padding: 4px 6px;
+    font-size: 12px;
   }
 }
 

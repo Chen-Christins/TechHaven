@@ -30,6 +30,7 @@ export interface ArticleListItem {
   favorites: number;
   category: string;
   tags: string[];
+  categories?: Array<{ id: number; name: string }>;
 }
 
 export interface UserProfile {

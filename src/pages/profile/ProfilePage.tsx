@@ -136,7 +136,7 @@ const Profile: React.FC = () => {
             praise: item.praise ?? 0,
             favorites: item.favorites ?? 0,
             labels: item.labels || [],
-            categorys: item.categorys || [],
+            categorys: item.categories || item.categorys || [],
           }));
           setArticles(mappedArticles);
           setArticleTotal(articlesResponse.total);
@@ -200,7 +200,7 @@ const Profile: React.FC = () => {
           praise: item.praise ?? 0,
           favorites: item.favorites ?? 0,
           labels: item.labels || [],
-          categorys: item.categorys || [],
+          categorys: item.categories || item.categorys || [],
         }));
         setArticles((prev) => [...prev, ...newArticles]);
         setArticlePage(nextPage);

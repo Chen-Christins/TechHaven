@@ -8,7 +8,6 @@
 .mainContent {
   display: flex;
   gap: 1.5rem;
-  min-width: 640px;
   max-width: 1560px;
   margin: 2rem auto;
   padding: 0 1.8rem;
@@ -85,7 +84,7 @@
 
 .leftColumn {
   flex: 2;
-  min-width: 768px;
+  min-width: 0;
 }
 
 .rightColumn {
@@ -93,27 +92,34 @@
   display: flex;
   flex-direction: column;
   max-width: 460px;
-  min-width: 320px;
+  min-width: 0;
   gap: 1rem;
 }
 
-/* 响应式适配（移动端） */
+/* 平板：左右布局改为上下布局 */
 @media (max-width: 1164px) {
   .mainContent {
     flex-direction: column;
     align-items: center;
+    padding: 0 1.2rem;
   }
 
   .leftColumn {
-    flex: 2;
     width: 100%;
-    max-width: 1164px;
-    min-width: 640px;
+    max-width: 100%;
   }
 
   .rightColumn {
     width: 100%;
-    max-width: 1164px;
-    min-width: 640px;
+    max-width: 100%;
+  }
+}
+
+/* 手机端 */
+@media (max-width: 768px) {
+  .mainContent {
+    padding: 0 0.8rem;
+    margin: 1rem auto;
+    gap: 1rem;
   }
 }

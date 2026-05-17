@@ -84,8 +84,9 @@ const MyArticlesTab: React.FC = () => {
               views: article.views ?? 0,
               praise: article.praise ?? 0,
               favorites: article.favorites ?? 0,
-              category: "未分类",
+              category: article.categories?.map((c: any) => c.name).join("、") || "未分类",
               tags: [],
+              categories: article.categories || [],
             })),
           );
         } else {
@@ -266,7 +267,13 @@ const MyArticlesTab: React.FC = () => {
                 <div>{article.title}</div>
                 <div className={styles.articleSummary}>{article.summary}...</div>
               </div>
-              <div className={styles.articleCategory}>{article.category}</div>
+              <div className={styles.articleCategory}>
+                {article.categories && article.categories.length > 0
+                  ? article.categories.map((cat) => (
+                      <span key={cat.id} className={styles.categoryBadge}>{cat.name}</span>
+                    ))
+                  : article.category}
+              </div>
               <div className={styles.statusCell}>
                 <span className={`${styles.statusBadge} ${styles[article.state]}`}>
                   {article.state === "published"

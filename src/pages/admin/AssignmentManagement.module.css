@@ -35,6 +35,8 @@
   border: 1px solid var(--border-primary);
   border-radius: 8px;
   overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   margin-bottom: 24px;
 }
 
@@ -230,65 +232,6 @@
   color: var(--text-secondary);
 }
 
-/* 表格样式 */
-.tableContainer {
-  background-color: var(--card-bg);
-  border-radius: 8px;
-  border: 1px solid var(--border-primary);
-  overflow: hidden;
-  margin-bottom: 24px;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th,
-.table td {
-  padding: 16px;
-  text-align: center;
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.table th:first-child,
-.table td:first-child {
-  text-align: left;
-}
-
-.table th {
-  background-color: var(--bg-secondary);
-  font-weight: 600;
-  color: var(--text-secondary);
-  font-size: 14px;
-  white-space: nowrap;
-}
-
-.table tr:last-child td {
-  border-bottom: none;
-}
-
-.tableContainer {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 24px;
-}
-
-.tableHeader {
-  padding: 20px;
-  border-bottom: 1px solid var(--border-primary);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.statusClosed {
-  background-color: var(--error-light);
-  color: var(--error);
-}
-
 /* 操作按钮 */
 .actionButtons {
   display: flex;
@@ -380,9 +323,9 @@
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-  .filterBar {
+  .pageHeader {
     flex-direction: column;
-    align-items: stretch;
+    gap: 12px;
   }
 
   .headerActions {
@@ -390,12 +333,97 @@
     justify-content: flex-start;
   }
 
-  .filterGroup {
-    flex-direction: column;
+  .filterForm {
+    grid-template-columns: 1fr;
+  }
+
+  .filterSection {
+    padding: 16px;
+  }
+
+  .statsContainer {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .tableContainer {
     overflow-x: auto;
+  }
+
+  .assignmentTable th,
+  .assignmentTable td {
+    padding: 12px 8px;
+    font-size: 0.82rem;
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.2rem;
+  }
+
+  .statCard {
+    padding: 14px;
+  }
+
+  .statValue {
+    font-size: 22px;
+  }
+
+  .filterSection {
+    padding: 12px;
+  }
+
+  .tableContainer {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .assignmentTable {
+    min-width: 0;
+  }
+
+  .assignmentTable th,
+  .assignmentTable td {
+    padding: 8px 6px;
+    font-size: 0.75rem;
+  }
+
+  /* 隐藏: 所属类型(2) 所属组织(3) 负责人(4) 截止时间(6) 提交情况(7) 创建时间(9) */
+  .assignmentTable th:nth-child(2),
+  .assignmentTable td:nth-child(2),
+  .assignmentTable th:nth-child(3),
+  .assignmentTable td:nth-child(3),
+  .assignmentTable th:nth-child(4),
+  .assignmentTable td:nth-child(4),
+  .assignmentTable th:nth-child(6),
+  .assignmentTable td:nth-child(6),
+  .assignmentTable th:nth-child(7),
+  .assignmentTable td:nth-child(7),
+  .assignmentTable th:nth-child(9),
+  .assignmentTable td:nth-child(9) {
+    display: none;
+  }
+
+  .actionBtn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .pageBtn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .detailRow {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 }
 

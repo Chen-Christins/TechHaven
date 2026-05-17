@@ -862,3 +862,72 @@
     gap: 8px;
   }
 }
+
+@media (max-width: 480px) {
+  .mainContent {
+    padding: 12px 0.8rem;
+    gap: 16px;
+  }
+
+  .sidebarInner {
+    gap: 8px;
+  }
+
+  .avatar {
+    width: 96px;
+    height: 96px;
+  }
+
+  .fullName {
+    font-size: 1.25rem;
+  }
+
+  .username {
+    font-size: 1rem;
+  }
+
+  .statsCards {
+    gap: 6px;
+  }
+
+  .statsCard {
+    padding: 14px 10px;
+  }
+
+  .statsCardNumber {
+    font-size: 1.2rem;
+  }
+
+  .contentTab {
+    padding: 0 8px;
+    font-size: 0.75rem;
+  }
+
+  .articleCard {
+    padding: 16px 0;
+  }
+
+  .articleTitle {
+    font-size: 0.9375rem;
+  }
+
+  .featuredGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .featuredCard {
+    padding: 12px;
+  }
+
+  .tagsGrid {
+    gap: 8px;
+  }
+
+  .tagCard {
+    padding: 12px;
+  }
+
+  .gridView {
+    grid-template-columns: 1fr;
+  }
+}

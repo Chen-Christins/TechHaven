@@ -186,6 +186,8 @@
   border: 1px solid var(--border-primary);
   border-radius: 8px;
   overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tableHeader {
@@ -211,6 +213,7 @@
 .rolesTable,
 .usersTable {
   width: 100%;
+  min-width: 650px;
   border-collapse: collapse;
 }
 
@@ -532,8 +535,109 @@
 }
 
 @media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.2rem;
+  }
+
   .statsContainer {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .statCard {
+    padding: 12px;
+  }
+
+  .statValue {
+    font-size: 22px;
+  }
+
+  .statLabel {
+    font-size: 12px;
+  }
+
+  .tabContainer {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .tabButton {
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .filterSection {
+    padding: 12px;
+  }
+
+  .filterHeader {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .filterTitle {
+    font-size: 14px;
+  }
+
+  .tableContainer {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .rolesTable,
+  .usersTable {
+    min-width: 0;
+  }
+
+  .rolesTable th,
+  .rolesTable td,
+  .usersTable th,
+  .usersTable td {
+    padding: 8px 6px;
+    font-size: 0.72rem;
+  }
+
+  /* 用户表隐藏: 权限数量(3) 最后登录(5) */
+  .usersTable th:nth-child(3),
+  .usersTable td:nth-child(3),
+  .usersTable th:nth-child(5),
+  .usersTable td:nth-child(5) {
+    display: none;
+  }
+
+  .tableHeader {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .tableTitle {
+    font-size: 1rem;
+  }
+
+  .paginationContainer {
+    padding: 12px;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .paginationButton {
+    min-width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .paginationInfo {
+    font-size: 12px;
+  }
+
+  .actionButton {
+    padding: 4px 6px;
+    font-size: 12px;
   }
 }
 

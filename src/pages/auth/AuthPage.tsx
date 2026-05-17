@@ -632,38 +632,20 @@ const AuthPage: React.FC = () => {
               {/* 表单切换链接 */}
               <div className={styles.formSwitch}>
                 {formType === "login" ? (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignContent: "center",
-                      justifyContent: "center",
-                      gap: "20px",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <div>
+                  <div className={styles.formSwitchRow}>
+                    <span className={styles.formSwitchItem}>
                       忘记密码？
                       <button type="button" onClick={() => switchForm("forgotPassword")} className={`${styles.btn} ${styles.textBtn}`}>
                         点击重置
                       </button>
-                    </div>
-
-                    {/* 竖直分隔符 */}
-                    <div
-                      style={{
-                        width: "1px",
-                        height: "20px",
-
-                        backgroundColor: "#ddd",
-                      }}
-                    ></div>
-
-                    <div>
+                    </span>
+                    <div className={styles.formSwitchDivider}></div>
+                    <span className={styles.formSwitchItem}>
                       还没有账号？
                       <button type="button" onClick={() => switchForm("register")} className={`${styles.btn} ${styles.textBtn}`}>
                         立即注册
                       </button>
-                    </div>
+                    </span>
                   </div>
                 ) : formType === "register" ? (
                   <div>

@@ -294,9 +294,32 @@
 }
 
 /* Mobile responsive */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .dropdown {
     width: calc(100vw - 32px);
-    right: -140px;
+    max-width: 360px;
+    right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .dropdown {
+    position: fixed;
+    top: 60px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-width: none;
+    max-height: calc(100vh - 80px);
+    animation: none;
+  }
+
+  .item {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .list {
+    max-height: calc(100vh - 200px);
   }
 }

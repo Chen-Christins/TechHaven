@@ -23,7 +23,7 @@
   margin: 30px auto 20px auto;
   width: calc(100% - 60px);
   max-width: 1460px;
-  min-width: 640px;
+  min-width: 0;
 }
 
 .editorHeader {
@@ -302,7 +302,9 @@
 /* 响应式调整 */
 @media (max-width: 768px) {
   .editorContainer {
+    width: calc(100% - 32px);
     padding: 20px;
+    margin: 20px auto;
   }
 
   .editorContent {
@@ -326,6 +328,46 @@
   .toolbarLeft,
   .toolbarRight {
     justify-content: center;
+  }
+
+  .editorHeader h2 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .editorContainer {
+    width: calc(100% - 16px);
+    padding: 16px;
+    margin: 12px auto;
+  }
+
+  .editorHeader h2 {
+    font-size: 18px;
+  }
+
+  .editorContent {
+    height: 300px;
+  }
+
+  .btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .formControl {
+    padding: 10px 12px;
+    font-size: 14px;
+    min-height: 40px;
+  }
+
+  .editorTab {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  .radioGroup {
+    gap: 10px;
   }
 }
 

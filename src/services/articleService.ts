@@ -26,6 +26,7 @@ export interface ListArticlesResponse {
     views: number;
     praise: number;
     favorites: number;
+    categories?: Array<{ id: number; name: string }>;
   }>;
 }
 
