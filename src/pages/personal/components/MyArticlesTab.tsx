@@ -270,7 +270,9 @@ const MyArticlesTab: React.FC = () => {
               <div className={styles.articleCategory}>
                 {article.categories && article.categories.length > 0
                   ? article.categories.map((cat) => (
-                      <span key={cat.id} className={styles.categoryBadge}>{cat.name}</span>
+                      <span key={cat.id} className={styles.categoryBadge}>
+                        {cat.name}
+                      </span>
                     ))
                   : article.category}
               </div>

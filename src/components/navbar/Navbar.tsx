@@ -163,10 +163,16 @@ const Navbar: React.FC = () => {
       if (path === "/gm") {
         return location.pathname.startsWith("/gm");
       }
+      if (path === "/rd") {
+        return location.pathname.startsWith("/rd");
+      }
       return location.pathname === path;
     };
 
     const links = [...navLinks];
+    if (isAuthenticated) {
+      links.push({ label: "研发平台", icon: <FaFlask />, path: "/rd" });
+    }
     if (isAuthenticated && user?.role === "管理员") {
       links.push({ label: "游戏", icon: <FaGamepad />, path: "/gm" });
     }
@@ -198,7 +204,10 @@ const Navbar: React.FC = () => {
       <div className={`${styles.mobileMenu} ${mobileMenuOpen ? styles.mobileMenuOpen : ""}`}>
         <ul className={styles.mobileNavLinks}>
           {navLinks
-            .concat(isAuthenticated && user?.role === "管理员" ? [{ label: "GM 控制台", icon: <FaGamepad />, path: "/gm" }] : [])
+            .concat(
+              isAuthenticated ? [{ label: "研发平台", icon: <FaFlask />, path: "/rd" }] : [],
+              isAuthenticated && user?.role === "管理员" ? [{ label: "GM 控制台", icon: <FaGamepad />, path: "/gm" }] : [],
+            )
             .map((link, index) => (
               <li key={index} className={styles.mobileNavItem}>
                 <a
