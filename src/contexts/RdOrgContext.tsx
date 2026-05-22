@@ -8,10 +8,6 @@ interface RdOrgContextType {
   userOrgIds: string[];
   isAdmin: boolean;
   loading: boolean;
-  selectedOrgId: string;
-  setSelectedOrgId: (id: string) => void;
-  /** 实际传给 API 的 organizationIds 参数 */
-  filterOrgIds: string[] | undefined;
   /** orgId → orgName 映射，用于详情展示 */
   orgNameMap: Record<string, string>;
   /** 用户在所有组织中的最高角色（1-5），用于前端权限判断 */
@@ -23,9 +19,6 @@ const RdOrgContext = createContext<RdOrgContextType>({
   userOrgIds: [],
   isAdmin: false,
   loading: true,
-  selectedOrgId: "",
-  setSelectedOrgId: () => {},
-  filterOrgIds: undefined,
   orgNameMap: {},
   maxOrgRole: 1,
 });
@@ -39,7 +32,6 @@ export const RdOrgProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const { user } = useAuth();
   const [orgs, setOrgs] = useState<RdOrgInfo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOrgId, setSelectedOrgId] = useState("");
 
   const isAdmin = user?.role === "管理员";
 
@@ -72,30 +64,16 @@ export const RdOrgProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return Math.max(...orgs.map((o) => o.role));
   }, [orgs, isAdmin]);
 
-  const filterOrgIds = useMemo<string[] | undefined>(() => {
-    if (isAdmin) {
-      return selectedOrgId ? [selectedOrgId] : undefined;
-    }
-    if (selectedOrgId) return [selectedOrgId];
-    return userOrgIds.length > 0 ? userOrgIds : undefined;
-  }, [isAdmin, selectedOrgId, userOrgIds]);
-
   const orgNameMap = useMemo<Record<string, string>>(() => {
     const map: Record<string, string> = {};
     orgs.forEach((o) => {
       map[o.orgId] = o.orgName;
     });
-    // 同时注册种子 org ID，方便 mock 模式下详情页也能显示
-    map["org_1"] = "前端团队";
-    map["org_2"] = "后端团队";
-    map["org_3"] = "平台团队";
     return map;
   }, [orgs]);
 
   return (
-    <RdOrgContext.Provider value={{ orgs, userOrgIds, isAdmin, loading, selectedOrgId, setSelectedOrgId, filterOrgIds, orgNameMap, maxOrgRole }}>
-      {children}
-    </RdOrgContext.Provider>
+    <RdOrgContext.Provider value={{ orgs, userOrgIds, isAdmin, loading, orgNameMap, maxOrgRole }}>{children}</RdOrgContext.Provider>
   );
 };
 

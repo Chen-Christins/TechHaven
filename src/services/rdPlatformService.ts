@@ -74,6 +74,7 @@ function mapTask(raw: any): Task {
     status: raw.status || "todo",
     priority: raw.priority || "medium",
     assignee: raw.assignee || "",
+    creator: raw.creator || "",
     organizationId: String(raw.org_id ?? ""),
     requirementId: String(raw.requirement_id ?? ""),
     deadline: raw.deadline || "",
@@ -149,8 +150,10 @@ export class RdPlatformService {
       title: params.title,
       description: params.description,
       priority: params.priority,
+      status: params.status || "new",
       org_id: Number(params.organizationId) || 0,
       assignee: params.assignee,
+      creator: params.creator,
       assignee_id: (params as any).assignee_id,
       iteration: params.iteration,
       category: params.category,
@@ -175,13 +178,13 @@ export class RdPlatformService {
     if (params.category !== undefined) body.category = params.category;
     if (params.source !== undefined) body.source = params.source;
 
-    const res = await http.put<any>(`${BASE}/requirements`, body);
+    const res = await http.post<any>(`${BASE}/requirements`, body);
     if (!res.data) return null;
     return mapRequirement(res.data);
   }
 
   static async deleteRequirement(id: string): Promise<boolean> {
-    const res = await http.delete<any>(`${BASE}/requirements?id=${id}`);
+    const res = await http.post<any>(`${BASE}/requirements/delete`, { id: Number(id) });
     return res.code === 200 || (res as any).success;
   }
 
@@ -216,8 +219,10 @@ export class RdPlatformService {
       description: params.description,
       severity: params.severity,
       priority: params.priority,
+      status: params.status || "new",
       org_id: Number(params.organizationId) || 0,
       assignee: params.assignee,
+      creator: params.creator,
       related_requirement_id: params.relatedRequirementId || "",
       module: params.module,
       steps_to_reproduce: params.stepsToReproduce,
@@ -227,10 +232,7 @@ export class RdPlatformService {
     return mapBug(res.data);
   }
 
-  static async updateBug(
-    id: string,
-    params: Partial<Omit<Bug, "id" | "createdAt" | "updatedAt">>,
-  ): Promise<Bug | null> {
+  static async updateBug(id: string, params: Partial<Omit<Bug, "id" | "createdAt" | "updatedAt">>): Promise<Bug | null> {
     const body: Record<string, any> = { id: Number(id) };
     if (params.title !== undefined) body.title = params.title;
     if (params.description !== undefined) body.description = params.description;
@@ -244,13 +246,13 @@ export class RdPlatformService {
     if (params.stepsToReproduce !== undefined) body.steps_to_reproduce = params.stepsToReproduce;
     if (params.environment !== undefined) body.environment = params.environment;
 
-    const res = await http.put<any>(`${BASE}/bugs`, body);
+    const res = await http.post<any>(`${BASE}/bugs`, body);
     if (!res.data) return null;
     return mapBug(res.data);
   }
 
   static async deleteBug(id: string): Promise<boolean> {
-    const res = await http.delete<any>(`${BASE}/bugs?id=${id}`);
+    const res = await http.post<any>(`${BASE}/bugs/delete`, { id: Number(id) });
     return res.code === 200 || (res as any).success;
   }
 
@@ -284,8 +286,10 @@ export class RdPlatformService {
       title: params.title,
       description: params.description,
       priority: params.priority,
+      status: params.status || "todo",
       org_id: Number(params.organizationId) || 0,
       assignee: params.assignee,
+      creator: params.creator,
       requirement_id: params.requirementId || "",
       deadline: params.deadline,
       estimated_hours: params.estimatedHours,
@@ -294,10 +298,7 @@ export class RdPlatformService {
     return mapTask(res.data);
   }
 
-  static async updateTask(
-    id: string,
-    params: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>,
-  ): Promise<Task | null> {
+  static async updateTask(id: string, params: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>): Promise<Task | null> {
     const body: Record<string, any> = { id: Number(id) };
     if (params.title !== undefined) body.title = params.title;
     if (params.description !== undefined) body.description = params.description;
@@ -309,13 +310,13 @@ export class RdPlatformService {
     if (params.deadline !== undefined) body.deadline = params.deadline;
     if (params.estimatedHours !== undefined) body.estimated_hours = params.estimatedHours;
 
-    const res = await http.put<any>(`${BASE}/tasks`, body);
+    const res = await http.post<any>(`${BASE}/tasks`, body);
     if (!res.data) return null;
     return mapTask(res.data);
   }
 
   static async deleteTask(id: string): Promise<boolean> {
-    const res = await http.delete<any>(`${BASE}/tasks?id=${id}`);
+    const res = await http.post<any>(`${BASE}/tasks/delete`, { id: Number(id) });
     return res.code === 200 || (res as any).success;
   }
 
@@ -334,14 +335,31 @@ export class RdPlatformService {
 
   // -- My Tickets -----------------------------------------------------------
 
-  static async getMyTickets(organizationIds?: string[]): Promise<{ requirements: Requirement[]; bugs: Bug[] }> {
-    const q = toQuery({ org_id: orgIdParam(organizationIds) });
+  static async getMyTickets(params: {
+    type: "requirement" | "bug" | "task";
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    status?: string;
+    orgId?: string;
+  }): Promise<PaginatedResponse<Requirement | Bug | Task>> {
+    const q = toQuery({
+      type: params.type,
+      page: params.page,
+      page_size: params.pageSize,
+      search: params.search,
+      status: params.status,
+      org_id: params.orgId,
+    });
     const res = await http.get<any>(`${BASE}/my-tickets${q}`);
     const d = res.data || {};
-    return {
-      requirements: (d.requirements || []).map(mapRequirement),
-      bugs: (d.bugs || []).map(mapBug),
-    };
+    const list =
+      params.type === "requirement"
+        ? (d.list || []).map(mapRequirement)
+        : params.type === "bug"
+          ? (d.list || []).map(mapBug)
+          : (d.list || []).map(mapTask);
+    return { data: list, total: d.total ?? 0 };
   }
 }
 

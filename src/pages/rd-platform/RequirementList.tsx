@@ -5,6 +5,7 @@ import {
   FaEdit,
   FaTrash,
   FaFilter,
+  FaClipboardList,
   FaAngleDoubleLeft,
   FaAngleDoubleRight,
   FaChevronLeft,
@@ -75,12 +76,12 @@ const emptyForm: FormData = {
 // ---- component ----
 const RequirementList: React.FC = () => {
   const { user } = useAuth();
-  const { isAdmin, userOrgIds, orgs, filterOrgIds, orgNameMap, maxOrgRole } = useRdOrg();
+  const { isAdmin, userOrgIds, orgs, orgNameMap, maxOrgRole } = useRdOrg();
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState({ search: "", status: "", priority: "" });
+  const [filters, setFilters] = useState({ search: "", status: "", priority: "", orgId: "" });
 
   // modal
   const [modalVisible, setModalVisible] = useState(false);
@@ -91,10 +92,12 @@ const RequirementList: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     const res = await RdAPI.getRequirements({
-      ...filters,
+      search: filters.search,
+      status: filters.status,
+      priority: filters.priority,
       page: currentPage,
       pageSize: PAGE_SIZE,
-      organizationIds: filterOrgIds,
+      organizationIds: filters.orgId ? [filters.orgId] : undefined,
     });
     setRequirements(res.data);
     setTotal(res.total);
@@ -175,15 +178,19 @@ const RequirementList: React.FC = () => {
       category: form.category,
       source: form.source,
     };
-    if (modalMode === "edit" && selectedReq) {
-      await RdAPI.updateRequirement(selectedReq.id, data);
-      message.success("需求更新成功");
-    } else {
-      await RdAPI.createRequirement({ ...data, status: "new", creator: user?.name || user?.account || "未知" });
-      message.success("需求创建成功");
+    try {
+      if (modalMode === "edit" && selectedReq) {
+        await RdAPI.updateRequirement(selectedReq.id, data);
+        message.success("需求更新成功");
+      } else {
+        await RdAPI.createRequirement({ ...data, status: "new", creator: user?.name || user?.account || "未知" });
+        message.success("需求创建成功");
+      }
+      closeModal();
+      fetchData();
+    } catch (err: any) {
+      message.error(err?.message || "操作失败，请稍后重试");
     }
-    closeModal();
-    fetchData();
   };
 
   const handleDelete = async (req: Requirement) => {
@@ -212,7 +219,7 @@ const RequirementList: React.FC = () => {
     </div>
   );
 
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const getPageNumbers = (): (number | string)[] => {
     const pages: (number | string)[] = [];
     if (totalPages <= 5) {
@@ -259,7 +266,7 @@ const RequirementList: React.FC = () => {
           <button
             className={styles.clearBtn}
             onClick={() => {
-              setFilters({ search: "", status: "", priority: "" });
+              setFilters({ search: "", status: "", priority: "", orgId: "" });
               setCurrentPage(1);
             }}
           >
@@ -294,6 +301,23 @@ const RequirementList: React.FC = () => {
               options={priorityOptions}
               value={priorityOptions.find((o) => o.id === filters.priority) || null}
               onChange={(o) => handleFilterChange("priority", (o?.id as string) || "")}
+              hideBadge
+            />
+          </div>
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>组织</label>
+            <CustomSelect
+              name="组织"
+              options={[
+                { id: "", name: "全部组织", color: "#6c757d" },
+                ...orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" })),
+              ]}
+              value={
+                orgs.find((o) => o.orgId === filters.orgId)
+                  ? { id: filters.orgId, name: orgs.find((o) => o.orgId === filters.orgId)!.orgName, color: "#6c757d" }
+                  : { id: "", name: "全部组织", color: "#6c757d" }
+              }
+              onChange={(o) => handleFilterChange("orgId", (o?.id as string) || "")}
               hideBadge
             />
           </div>
@@ -353,7 +377,10 @@ const RequirementList: React.FC = () => {
             {requirements.length === 0 && (
               <tr>
                 <td colSpan={8} className={styles.emptyCell}>
-                  暂无需求数据
+                  <div className={styles.emptyCellIcon}>
+                    <FaClipboardList />
+                  </div>
+                  <div className={styles.emptyCellText}>暂无需求数据</div>
                 </td>
               </tr>
             )}
@@ -362,7 +389,7 @@ const RequirementList: React.FC = () => {
       </div>
 
       {/* pagination */}
-      {totalPages > 1 && (
+      {
         <div className={styles.pagination}>
           <span className={styles.paginationInfo}>共 {total} 条记录</span>
           <div className={styles.paginationControls}>
@@ -395,7 +422,7 @@ const RequirementList: React.FC = () => {
             </button>
           </div>
         </div>
-      )}
+      }
 
       {/* ============ MODAL ============ */}
       <Modal
@@ -495,8 +522,16 @@ const RequirementList: React.FC = () => {
                   </label>
                   <CustomSelect
                     name="所属组织"
-                    options={orgs.map((o) => ({ id: o.orgId, name: o.orgName }))}
-                    value={orgs.find((o) => o.orgId === form.organizationId) ? { id: form.organizationId, name: orgs.find((o) => o.orgId === form.organizationId)!.orgName } : null}
+                    options={orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" }))}
+                    value={
+                      orgs.find((o) => o.orgId === form.organizationId)
+                        ? {
+                            id: form.organizationId,
+                            name: orgs.find((o) => o.orgId === form.organizationId)!.orgName,
+                            color: "#6c757d",
+                          }
+                        : null
+                    }
                     onChange={(o) => setFormField("organizationId", (o?.id as string) || "")}
                     hideBadge
                   />

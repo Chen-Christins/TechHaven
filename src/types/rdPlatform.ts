@@ -46,6 +46,7 @@ export interface Task {
   status: "todo" | "doing" | "done" | "closed";
   priority: "high" | "medium" | "low";
   assignee: string;
+  creator: string;
   organizationId: string;
   requirementId: string;
   deadline: string;

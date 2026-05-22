@@ -3,13 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { FaClipboardList, FaBug, FaTasks, FaExclamationTriangle } from "react-icons/fa";
 import styles from "./Dashboard.module.css";
 import Loading from "../../components/loading/Loading";
-import { useRdOrg } from "../../contexts/RdOrgContext";
 import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
 import type { RdStats, Requirement, Bug, Task } from "../../types/rdPlatform";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { filterOrgIds } = useRdOrg();
   const [stats, setStats] = useState<RdStats | null>(null);
   const [recentRequirements, setRecentRequirements] = useState<Requirement[]>([]);
   const [recentBugs, setRecentBugs] = useState<Bug[]>([]);
@@ -19,10 +17,10 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       const [s, reqs, bugs, tasks] = await Promise.all([
-        RdAPI.getStats(filterOrgIds),
-        RdAPI.getRequirements({ page: 1, pageSize: 5, organizationIds: filterOrgIds }),
-        RdAPI.getBugs({ page: 1, pageSize: 5, organizationIds: filterOrgIds }),
-        RdAPI.getTasks({ page: 1, pageSize: 5, organizationIds: filterOrgIds }),
+        RdAPI.getStats(),
+        RdAPI.getRequirements({ page: 1, pageSize: 5 }),
+        RdAPI.getBugs({ page: 1, pageSize: 5 }),
+        RdAPI.getTasks({ page: 1, pageSize: 5 }),
       ]);
       setStats(s);
       setRecentRequirements(reqs.data);
@@ -31,7 +29,7 @@ const Dashboard: React.FC = () => {
       setLoading(false);
     };
     fetchData();
-  }, [filterOrgIds]);
+  }, []);
 
   if (loading) return <Loading />;
 
@@ -116,39 +114,44 @@ const Dashboard: React.FC = () => {
             查看全部 →
           </button>
         </div>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>标题</th>
-              <th>优先级</th>
-              <th>状态</th>
-              <th>负责人</th>
-              <th>创建时间</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentRequirements.map((r) => (
-              <tr key={r.id} className={styles.clickableRow} onClick={() => navigate(`/rd/requirements/${r.id}`)}>
-                <td>{r.title}</td>
-                <td>
-                  <span className={`${styles.badge} ${styles[`priority_${r.priority}`]}`}>{priorityText[r.priority]}</span>
-                </td>
-                <td>
-                  <span className={`${styles.badge} ${styles[`status_${r.status}`]}`}>{statusText[r.status] || r.status}</span>
-                </td>
-                <td>{r.assignee || "-"}</td>
-                <td>{new Date(r.createdAt).toLocaleDateString("zh-CN")}</td>
-              </tr>
-            ))}
-            {recentRequirements.length === 0 && (
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
               <tr>
-                <td colSpan={5} className={styles.emptyCell}>
-                  暂无需求
-                </td>
+                <th>标题</th>
+                <th>优先级</th>
+                <th>状态</th>
+                <th>负责人</th>
+                <th>创建时间</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {recentRequirements.map((r) => (
+                <tr key={r.id} className={styles.clickableRow} onClick={() => navigate(`/rd/requirements/${r.id}`)}>
+                  <td>{r.title}</td>
+                  <td>
+                    <span className={`${styles.badge} ${styles[`priority_${r.priority}`]}`}>{priorityText[r.priority]}</span>
+                  </td>
+                  <td>
+                    <span className={`${styles.badge} ${styles[`status_${r.status}`]}`}>{statusText[r.status] || r.status}</span>
+                  </td>
+                  <td>{r.assignee || "-"}</td>
+                  <td>{new Date(r.createdAt).toLocaleDateString("zh-CN")}</td>
+                </tr>
+              ))}
+              {recentRequirements.length === 0 && (
+                <tr>
+                  <td colSpan={5} className={styles.emptyCell}>
+                    <div className={styles.emptyCellIcon}>
+                      <FaClipboardList />
+                    </div>
+                    <div className={styles.emptyCellText}>暂无需求</div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* 最近的缺陷 */}
@@ -159,41 +162,46 @@ const Dashboard: React.FC = () => {
             查看全部 →
           </button>
         </div>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>标题</th>
-              <th>严重程度</th>
-              <th>优先级</th>
-              <th>状态</th>
-              <th>负责人</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentBugs.map((b) => (
-              <tr key={b.id} className={styles.clickableRow} onClick={() => navigate(`/rd/bugs/${b.id}`)}>
-                <td>{b.title}</td>
-                <td>
-                  <span className={`${styles.badge} ${styles[`severity_${b.severity}`]}`}>{severityText[b.severity]}</span>
-                </td>
-                <td>
-                  <span className={`${styles.badge} ${styles[`priority_${b.priority}`]}`}>{priorityText[b.priority]}</span>
-                </td>
-                <td>
-                  <span className={`${styles.badge} ${styles[`status_${b.status}`]}`}>{statusText[b.status] || b.status}</span>
-                </td>
-                <td>{b.assignee || "-"}</td>
-              </tr>
-            ))}
-            {recentBugs.length === 0 && (
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
               <tr>
-                <td colSpan={5} className={styles.emptyCell}>
-                  暂无缺陷
-                </td>
+                <th>标题</th>
+                <th>严重程度</th>
+                <th>优先级</th>
+                <th>状态</th>
+                <th>负责人</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {recentBugs.map((b) => (
+                <tr key={b.id} className={styles.clickableRow} onClick={() => navigate(`/rd/bugs/${b.id}`)}>
+                  <td>{b.title}</td>
+                  <td>
+                    <span className={`${styles.badge} ${styles[`severity_${b.severity}`]}`}>{severityText[b.severity]}</span>
+                  </td>
+                  <td>
+                    <span className={`${styles.badge} ${styles[`priority_${b.priority}`]}`}>{priorityText[b.priority]}</span>
+                  </td>
+                  <td>
+                    <span className={`${styles.badge} ${styles[`status_${b.status}`]}`}>{statusText[b.status] || b.status}</span>
+                  </td>
+                  <td>{b.assignee || "-"}</td>
+                </tr>
+              ))}
+              {recentBugs.length === 0 && (
+                <tr>
+                  <td colSpan={5} className={styles.emptyCell}>
+                    <div className={styles.emptyCellIcon}>
+                      <FaBug />
+                    </div>
+                    <div className={styles.emptyCellText}>暂无缺陷</div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* 最近的任务 */}
@@ -204,39 +212,44 @@ const Dashboard: React.FC = () => {
             查看全部 →
           </button>
         </div>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>标题</th>
-              <th>状态</th>
-              <th>优先级</th>
-              <th>负责人</th>
-              <th>截止日期</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentTasks.map((t) => (
-              <tr key={t.id} className={styles.clickableRow}>
-                <td>{t.title}</td>
-                <td>
-                  <span className={`${styles.badge} ${styles[`status_${t.status}`]}`}>{statusText[t.status]}</span>
-                </td>
-                <td>
-                  <span className={`${styles.badge} ${styles[`priority_${t.priority}`]}`}>{priorityText[t.priority]}</span>
-                </td>
-                <td>{t.assignee || "-"}</td>
-                <td>{t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN") : "-"}</td>
-              </tr>
-            ))}
-            {recentTasks.length === 0 && (
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
               <tr>
-                <td colSpan={5} className={styles.emptyCell}>
-                  暂无任务
-                </td>
+                <th>标题</th>
+                <th>状态</th>
+                <th>优先级</th>
+                <th>负责人</th>
+                <th>截止日期</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {recentTasks.map((t) => (
+                <tr key={t.id} className={styles.clickableRow}>
+                  <td>{t.title}</td>
+                  <td>
+                    <span className={`${styles.badge} ${styles[`status_${t.status}`]}`}>{statusText[t.status]}</span>
+                  </td>
+                  <td>
+                    <span className={`${styles.badge} ${styles[`priority_${t.priority}`]}`}>{priorityText[t.priority]}</span>
+                  </td>
+                  <td>{t.assignee || "-"}</td>
+                  <td>{t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN") : "-"}</td>
+                </tr>
+              ))}
+              {recentTasks.length === 0 && (
+                <tr>
+                  <td colSpan={5} className={styles.emptyCell}>
+                    <div className={styles.emptyCellIcon}>
+                      <FaTasks />
+                    </div>
+                    <div className={styles.emptyCellText}>暂无任务</div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

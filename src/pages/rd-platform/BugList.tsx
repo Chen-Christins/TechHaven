@@ -5,6 +5,7 @@ import {
   FaEdit,
   FaTrash,
   FaFilter,
+  FaBug,
   FaAngleDoubleLeft,
   FaAngleDoubleRight,
   FaChevronLeft,
@@ -28,7 +29,6 @@ import { OrgPermission } from "../../types/rdPlatform";
 const statusOptions: SelectOption[] = [
   { id: "", name: "全部状态", color: "#6c757d" },
   { id: "new", name: "新建", color: "#3b82f6" },
-  { id: "accepted", name: "已受理", color: "#eab308" },
   { id: "processing", name: "处理中", color: "#a855f7" },
   { id: "verified", name: "已验证", color: "#22c55e" },
   { id: "closed", name: "已关闭", color: "#6b7280" },
@@ -57,7 +57,6 @@ const formStatusOptions = statusOptions.filter((o) => o.id !== "");
 
 const statusText: Record<string, string> = {
   new: "新建",
-  accepted: "已受理",
   processing: "处理中",
   verified: "已验证",
   closed: "已关闭",
@@ -98,12 +97,12 @@ const emptyForm: FormData = {
 // ---- component ----
 const BugList: React.FC = () => {
   const { user } = useAuth();
-  const { isAdmin, userOrgIds, orgs, filterOrgIds, orgNameMap, maxOrgRole } = useRdOrg();
+  const { isAdmin, userOrgIds, orgs, orgNameMap, maxOrgRole } = useRdOrg();
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState({ search: "", status: "", severity: "", priority: "" });
+  const [filters, setFilters] = useState({ search: "", status: "", severity: "", priority: "", orgId: "" });
 
   // modal
   const [modalVisible, setModalVisible] = useState(false);
@@ -114,10 +113,13 @@ const BugList: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     const res = await RdAPI.getBugs({
-      ...filters,
+      search: filters.search,
+      status: filters.status,
+      severity: filters.severity,
+      priority: filters.priority,
       page: currentPage,
       pageSize: PAGE_SIZE,
-      organizationIds: filterOrgIds,
+      organizationIds: filters.orgId ? [filters.orgId] : undefined,
     });
     setBugs(res.data);
     setTotal(res.total);
@@ -196,15 +198,19 @@ const BugList: React.FC = () => {
       stepsToReproduce: form.stepsToReproduce,
       environment: form.environment,
     };
-    if (modalMode === "edit" && selectedBug) {
-      await RdAPI.updateBug(selectedBug.id, data);
-      message.success("缺陷更新成功");
-    } else {
-      await RdAPI.createBug({ ...data, status: "new", creator: user?.name || user?.account || "未知" });
-      message.success("缺陷提交成功");
+    try {
+      if (modalMode === "edit" && selectedBug) {
+        await RdAPI.updateBug(selectedBug.id, data);
+        message.success("缺陷更新成功");
+      } else {
+        await RdAPI.createBug({ ...data, status: "new", creator: user?.name || user?.account || "未知" });
+        message.success("缺陷提交成功");
+      }
+      closeModal();
+      fetchData();
+    } catch (err: any) {
+      message.error(err?.message || "操作失败，请稍后重试");
     }
-    closeModal();
-    fetchData();
   };
 
   const handleDelete = async (bug: Bug) => {
@@ -232,7 +238,7 @@ const BugList: React.FC = () => {
     </div>
   );
 
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const getPageNumbers = (): (number | string)[] => {
     const pages: (number | string)[] = [];
     if (totalPages <= 5) {
@@ -277,7 +283,7 @@ const BugList: React.FC = () => {
           <button
             className={styles.clearBtn}
             onClick={() => {
-              setFilters({ search: "", status: "", severity: "", priority: "" });
+              setFilters({ search: "", status: "", severity: "", priority: "", orgId: "" });
               setCurrentPage(1);
             }}
           >
@@ -322,6 +328,23 @@ const BugList: React.FC = () => {
               options={priorityOptions}
               value={priorityOptions.find((o) => o.id === filters.priority) || null}
               onChange={(o) => handleFilterChange("priority", (o?.id as string) || "")}
+              hideBadge
+            />
+          </div>
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>组织</label>
+            <CustomSelect
+              name="组织"
+              options={[
+                { id: "", name: "全部组织", color: "#6c757d" },
+                ...orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" })),
+              ]}
+              value={
+                orgs.find((o) => o.orgId === filters.orgId)
+                  ? { id: filters.orgId, name: orgs.find((o) => o.orgId === filters.orgId)!.orgName, color: "#6c757d" }
+                  : { id: "", name: "全部组织", color: "#6c757d" }
+              }
+              onChange={(o) => handleFilterChange("orgId", (o?.id as string) || "")}
               hideBadge
             />
           </div>
@@ -382,7 +405,10 @@ const BugList: React.FC = () => {
             {bugs.length === 0 && (
               <tr>
                 <td colSpan={8} className={styles.emptyCell}>
-                  暂无缺陷数据
+                  <div className={styles.emptyCellIcon}>
+                    <FaBug />
+                  </div>
+                  <div className={styles.emptyCellText}>暂无缺陷数据</div>
                 </td>
               </tr>
             )}
@@ -390,7 +416,7 @@ const BugList: React.FC = () => {
         </table>
       </div>
 
-      {totalPages > 1 && (
+      {
         <div className={styles.pagination}>
           <span className={styles.paginationInfo}>共 {total} 条记录</span>
           <div className={styles.paginationControls}>
@@ -423,7 +449,7 @@ const BugList: React.FC = () => {
             </button>
           </div>
         </div>
-      )}
+      }
 
       {/* ============ MODAL ============ */}
       <Modal
@@ -534,8 +560,16 @@ const BugList: React.FC = () => {
                   </label>
                   <CustomSelect
                     name="所属组织"
-                    options={orgs.map((o) => ({ id: o.orgId, name: o.orgName }))}
-                    value={orgs.find((o) => o.orgId === form.organizationId) ? { id: form.organizationId, name: orgs.find((o) => o.orgId === form.organizationId)!.orgName } : null}
+                    options={orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" }))}
+                    value={
+                      orgs.find((o) => o.orgId === form.organizationId)
+                        ? {
+                            id: form.organizationId,
+                            name: orgs.find((o) => o.orgId === form.organizationId)!.orgName,
+                            color: "#6c757d",
+                          }
+                        : null
+                    }
                     onChange={(o) => setFormField("organizationId", (o?.id as string) || "")}
                     hideBadge
                   />

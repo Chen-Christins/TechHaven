@@ -807,7 +807,11 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                 <div className={styles.detailValue}>
                   <span
                     className={`${styles.roleBadge} ${
-                      selectedMember.role === "组织管理员" ? styles.admin : selectedMember.role === "研发主管" ? styles.moderator : styles.user
+                      selectedMember.role === "组织管理员"
+                        ? styles.admin
+                        : selectedMember.role === "研发主管"
+                          ? styles.moderator
+                          : styles.user
                     }`}
                   >
                     {selectedMember.role === "组织管理员" && <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />}

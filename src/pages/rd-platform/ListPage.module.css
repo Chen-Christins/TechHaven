@@ -134,8 +134,12 @@
   padding: 12px 16px;
   font-size: 14px;
   color: var(--text-primary);
-  border-bottom: 1px solid var(--border-light, rgba(226, 232, 240, 0.5));
+  border-bottom: 1px solid var(--border-primary);
   vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .table tbody tr:hover {
@@ -158,8 +162,19 @@
 
 .emptyCell {
   text-align: center;
+  padding: 48px 16px;
+}
+
+.emptyCellIcon {
+  font-size: 36px;
   color: var(--text-tertiary);
-  padding: 32px 16px;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.emptyCellText {
+  font-size: 14px;
+  color: var(--text-tertiary);
 }
 
 /* Action Buttons */
@@ -276,6 +291,10 @@
   justify-content: space-between;
   align-items: center;
   margin-top: 20px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  background: var(--card-bg);
   flex-wrap: wrap;
   gap: 12px;
 }
@@ -317,6 +336,11 @@
 
 .paginationControls button.activePage {
   background-color: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.paginationControls button.activePage:hover {
   color: #fff;
   border-color: var(--primary);
 }

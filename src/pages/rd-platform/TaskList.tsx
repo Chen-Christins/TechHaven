@@ -4,6 +4,7 @@ import {
   FaEdit,
   FaTrash,
   FaFilter,
+  FaTasks,
   FaAngleDoubleLeft,
   FaAngleDoubleRight,
   FaChevronLeft,
@@ -11,11 +12,13 @@ import {
 } from "react-icons/fa";
 import styles from "./ListPage.module.css";
 import Input from "../../components/input/Input";
+import DatePicker from "../../components/input/DatePicker";
 import CustomSelect from "../../components/customSelect/CustomSelect";
 import Modal from "../../components/modal/Modal";
 import Loading from "../../components/loading/Loading";
 import { confirm } from "../../components/confirm/Confirm";
 import message from "../../components/message/Message";
+import { useAuth } from "../../contexts/AuthContext";
 import { useRdOrg } from "../../contexts/RdOrgContext";
 import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
 import type { Task } from "../../types/rdPlatform";
@@ -55,12 +58,13 @@ const emptyTask = {
 };
 
 const TaskList: React.FC = () => {
-  const { isAdmin, userOrgIds, orgs, filterOrgIds, maxOrgRole } = useRdOrg();
+  const { user } = useAuth();
+  const { isAdmin, userOrgIds, orgs, maxOrgRole } = useRdOrg();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState({ search: "", status: "", priority: "", assignee: "" });
+  const [filters, setFilters] = useState({ search: "", status: "", priority: "", assignee: "", orgId: "" });
 
   // Modal state
   const [modalVisible, setModalVisible] = useState(false);
@@ -70,10 +74,13 @@ const TaskList: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     const res = await RdAPI.getTasks({
-      ...filters,
+      search: filters.search,
+      status: filters.status,
+      priority: filters.priority,
+      assignee: filters.assignee,
       page: currentPage,
       pageSize: PAGE_SIZE,
-      organizationIds: filterOrgIds,
+      organizationIds: filters.orgId ? [filters.orgId] : undefined,
     });
     setTasks(res.data);
     setTotal(res.total);
@@ -142,15 +149,19 @@ const TaskList: React.FC = () => {
       estimatedHours: Number(form.estimatedHours) || 0,
     };
 
-    if (editingTask) {
-      await RdAPI.updateTask(editingTask.id, data);
-      message.success("任务更新成功");
-    } else {
-      await RdAPI.createTask(data);
-      message.success("任务创建成功");
+    try {
+      if (editingTask) {
+        await RdAPI.updateTask(editingTask.id, data);
+        message.success("任务更新成功");
+      } else {
+        await RdAPI.createTask({ ...data, creator: user?.name || user?.account || "未知" });
+        message.success("任务创建成功");
+      }
+      setModalVisible(false);
+      fetchData();
+    } catch (err: any) {
+      message.error(err?.message || "操作失败，请稍后重试");
     }
-    setModalVisible(false);
-    fetchData();
   };
 
   const handleDelete = async (task: Task) => {
@@ -171,7 +182,7 @@ const TaskList: React.FC = () => {
     });
   };
 
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const getPageNumbers = (): (number | string)[] => {
     const pages: (number | string)[] = [];
@@ -217,7 +228,7 @@ const TaskList: React.FC = () => {
           <button
             className={styles.clearBtn}
             onClick={() => {
-              setFilters({ search: "", status: "", priority: "", assignee: "" });
+              setFilters({ search: "", status: "", priority: "", assignee: "", orgId: "" });
               setCurrentPage(1);
             }}
           >
@@ -231,6 +242,16 @@ const TaskList: React.FC = () => {
               placeholder="标题或描述"
               value={filters.search}
               onChange={(val) => handleFilterChange("search", val)}
+              allowClear
+              size="large"
+            />
+          </div>
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>负责人</label>
+            <Input
+              placeholder="搜索负责人"
+              value={filters.assignee}
+              onChange={(val) => handleFilterChange("assignee", val)}
               allowClear
               size="large"
             />
@@ -256,12 +277,20 @@ const TaskList: React.FC = () => {
             />
           </div>
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>负责人</label>
-            <Input
-              placeholder="搜索负责人"
-              value={filters.assignee}
-              onChange={(val) => handleFilterChange("assignee", val)}
-              allowClear
+            <label className={styles.filterLabel}>组织</label>
+            <CustomSelect
+              name="组织"
+              options={[
+                { id: "", name: "全部组织", color: "#6c757d" },
+                ...orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" })),
+              ]}
+              value={
+                orgs.find((o) => o.orgId === filters.orgId)
+                  ? { id: filters.orgId, name: orgs.find((o) => o.orgId === filters.orgId)!.orgName, color: "#6c757d" }
+                  : { id: "", name: "全部组织", color: "#6c757d" }
+              }
+              onChange={(o) => handleFilterChange("orgId", (o?.id as string) || "")}
+              hideBadge
             />
           </div>
         </div>
@@ -312,7 +341,10 @@ const TaskList: React.FC = () => {
             {tasks.length === 0 && (
               <tr>
                 <td colSpan={7} className={styles.emptyCell}>
-                  暂无任务数据
+                  <div className={styles.emptyCellIcon}>
+                    <FaTasks />
+                  </div>
+                  <div className={styles.emptyCellText}>暂无任务数据</div>
                 </td>
               </tr>
             )}
@@ -320,7 +352,7 @@ const TaskList: React.FC = () => {
         </table>
       </div>
 
-      {totalPages > 1 && (
+      {
         <div className={styles.pagination}>
           <span className={styles.paginationInfo}>共 {total} 条记录</span>
           <div className={styles.paginationControls}>
@@ -353,7 +385,7 @@ const TaskList: React.FC = () => {
             </button>
           </div>
         </div>
-      )}
+      }
 
       {/* Create/Edit Modal */}
       <Modal
@@ -413,8 +445,12 @@ const TaskList: React.FC = () => {
                 </label>
                 <CustomSelect
                   name="所属组织"
-                  options={orgs.map((o) => ({ id: o.orgId, name: o.orgName }))}
-                  value={orgs.find((o) => o.orgId === form.organizationId) ? { id: form.organizationId, name: orgs.find((o) => o.orgId === form.organizationId)!.orgName } : null}
+                  options={orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" }))}
+                  value={
+                    orgs.find((o) => o.orgId === form.organizationId)
+                      ? { id: form.organizationId, name: orgs.find((o) => o.orgId === form.organizationId)!.orgName, color: "#6c757d" }
+                      : null
+                  }
                   onChange={(o) => handleFormChange("organizationId", (o?.id as string) || "")}
                   hideBadge
                 />
@@ -474,11 +510,16 @@ const TaskList: React.FC = () => {
               >
                 截止日期
               </label>
-              <Input
-                placeholder="如 2026-05-30"
-                value={form.deadline}
-                onChange={(val) => handleFormChange("deadline", val)}
+              <DatePicker
+                placeholder="请选择截止日期"
+                value={form.deadline ? new Date(form.deadline) : undefined}
+                onChange={(date) => {
+                  const str = date ? date.toISOString().split("T")[0] : "";
+                  handleFormChange("deadline", str);
+                }}
                 size="large"
+                allowClear
+                style={{ width: "100%" }}
               />
             </div>
           </div>

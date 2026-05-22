@@ -1,15 +1,13 @@
 import React, { useState } from "react";
 import { useLocation, Outlet, useNavigate } from "react-router-dom";
-import { FaHome, FaBars, FaTimes, FaClipboardList, FaBug, FaTasks, FaTicketAlt, FaBuilding } from "react-icons/fa";
+import { FaHome, FaBars, FaTimes, FaClipboardList, FaBug, FaTasks, FaTicketAlt } from "react-icons/fa";
 import styles from "./RdLayout.module.css";
 import ThemeToggle from "../../components/themeToggle/ThemeToggle";
 import Notification from "../../components/notification/Notification";
 import UserDropdown from "../../components/userDropdown/UserDropdown";
 import Footer from "../../components/footer/Footer";
 import { useAuth } from "../../contexts/AuthContext";
-import { RdOrgProvider, useRdOrg } from "../../contexts/RdOrgContext";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import type { SelectOption } from "../../types";
+import { RdOrgProvider } from "../../contexts/RdOrgContext";
 
 interface NavItem {
   id: string;
@@ -232,63 +230,12 @@ const RdLayout: React.FC = () => {
 
           <div className={styles.rdPageContent}>
             <RdOrgProvider>
-              <RdOrgBadge />
               <Outlet />
             </RdOrgProvider>
           </div>
 
           <Footer companyName="TechBlog" startYear={2025} />
         </main>
-      </div>
-    </div>
-  );
-};
-
-const ORG_COLORS = [
-  "#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#a855f7",
-  "#06b6d4", "#ec4899", "#14b8a6", "#f97316", "#6366f1",
-];
-
-function hashColor(id: string): string {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash * 31 + id.charCodeAt(i)) | 0;
-  }
-  return ORG_COLORS[Math.abs(hash) % ORG_COLORS.length];
-}
-
-const RdOrgBadge: React.FC = () => {
-  const { orgs, isAdmin, loading, selectedOrgId, setSelectedOrgId } = useRdOrg();
-
-  if (loading) return null;
-  if (orgs.length === 0 && !isAdmin) return null;
-
-  const orgOptions: SelectOption[] = [
-    { id: "", name: isAdmin ? "全部组织（管理员）" : "全部组织", color: "#6c757d" },
-    ...orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: hashColor(o.orgId) })),
-  ];
-
-  const selectedOption = orgOptions.find((o) => o.id === selectedOrgId) || orgOptions[0];
-
-  return (
-    <div
-      style={{
-        marginBottom: "16px",
-        display: "flex",
-        alignItems: "center",
-        gap: "12px",
-      }}
-    >
-      <FaBuilding style={{ color: "var(--text-secondary)", fontSize: "14px", flexShrink: 0 }} />
-      <span style={{ fontSize: "13px", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>组织筛选</span>
-      <div style={{ width: "280px" }}>
-        <CustomSelect
-          name="组织筛选"
-          options={orgOptions}
-          value={selectedOption}
-          onChange={(o) => setSelectedOrgId((o?.id as string) || "")}
-          hideBadge
-        />
       </div>
     </div>
   );

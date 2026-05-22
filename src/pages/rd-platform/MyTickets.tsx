@@ -1,15 +1,23 @@
-import React, { useState, useEffect } from "react";
-import { FaEye, FaClipboardList, FaBug } from "react-icons/fa";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  FaEye,
+  FaClipboardList,
+  FaBug,
+  FaTasks,
+  FaAngleDoubleLeft,
+  FaAngleDoubleRight,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
 import styles from "./ListPage.module.css";
 import Input from "../../components/input/Input";
 import CustomSelect from "../../components/customSelect/CustomSelect";
 import Modal from "../../components/modal/Modal";
 import Loading from "../../components/loading/Loading";
-import { useAuth } from "../../contexts/AuthContext";
 import { useRdOrg } from "../../contexts/RdOrgContext";
 import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
 import type { SelectOption } from "../../types";
-import type { Requirement, Bug } from "../../types/rdPlatform";
+import type { Requirement, Bug, Task } from "../../types/rdPlatform";
 
 const reqStatusOptions: SelectOption[] = [
   { id: "", name: "全部状态", color: "#6c757d" },
@@ -23,11 +31,18 @@ const reqStatusOptions: SelectOption[] = [
 const bugStatusOptions: SelectOption[] = [
   { id: "", name: "全部状态", color: "#6c757d" },
   { id: "new", name: "新建", color: "#3b82f6" },
-  { id: "accepted", name: "已受理", color: "#eab308" },
   { id: "processing", name: "处理中", color: "#a855f7" },
   { id: "verified", name: "已验证", color: "#22c55e" },
   { id: "closed", name: "已关闭", color: "#6b7280" },
   { id: "reopened", name: "已重开", color: "#ef4444" },
+];
+
+const taskStatusOptions: SelectOption[] = [
+  { id: "", name: "全部状态", color: "#6c757d" },
+  { id: "todo", name: "待办", color: "#6b7280" },
+  { id: "doing", name: "进行中", color: "#3b82f6" },
+  { id: "done", name: "已完成", color: "#22c55e" },
+  { id: "closed", name: "已关闭", color: "#6b7280" },
 ];
 
 const reqStatusText: Record<string, string> = {
@@ -39,71 +54,104 @@ const reqStatusText: Record<string, string> = {
 };
 const bugStatusText: Record<string, string> = {
   new: "新建",
-  accepted: "已受理",
   processing: "处理中",
   verified: "已验证",
   closed: "已关闭",
   reopened: "已重开",
 };
+const taskStatusText: Record<string, string> = {
+  todo: "待办",
+  doing: "进行中",
+  done: "已完成",
+  closed: "已关闭",
+};
 const priorityText: Record<string, string> = { urgent: "紧急", high: "高", medium: "中", low: "低" };
 const severityText: Record<string, string> = { fatal: "致命", serious: "严重", normal: "一般", minor: "轻微" };
+const PAGE_SIZE = 10;
+
+type TabKey = "req" | "bug" | "task";
+type TabData = Requirement | Bug | Task;
 
 const MyTickets: React.FC = () => {
-  const { user } = useAuth();
-  const { filterOrgIds, orgNameMap } = useRdOrg();
-  const currentUser = user?.name || user?.account || "";
+  const { orgs, orgNameMap } = useRdOrg();
+  const [activeTab, setActiveTab] = useState<TabKey>("req");
 
-  const [requirements, setRequirements] = useState<Requirement[]>([]);
-  const [bugs, setBugs] = useState<Bug[]>([]);
+  // data
+  const [data, setData] = useState<TabData[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalMap, setTotalMap] = useState<Record<TabKey, number>>({ req: 0, bug: 0, task: 0 });
   const [loading, setLoading] = useState(true);
-  const [reqTab, setReqTab] = useState(true);
 
-  // filters
-  const [reqFilter, setReqFilter] = useState({ search: "", status: "" });
-  const [bugFilter, setBugFilter] = useState({ search: "", status: "" });
+  // filters & pagination
+  const [orgId, setOrgId] = useState("");
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [page, setPage] = useState(1);
 
   // modal
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedReq, setSelectedReq] = useState<Requirement | null>(null);
-  const [selectedBug, setSelectedBug] = useState<Bug | null>(null);
+  const [detail, setDetail] = useState<{ type: TabKey; item: TabData } | null>(null);
+
+  const typeParam = activeTab === "req" ? "requirement" : activeTab === "bug" ? "bug" : "task";
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    const res = await RdAPI.getMyTickets({
+      type: typeParam,
+      page,
+      pageSize: PAGE_SIZE,
+      search: search || undefined,
+      status: status || undefined,
+      orgId: orgId || undefined,
+    });
+    setData(res.data);
+    setTotal(res.total);
+    setTotalMap((prev) => ({ ...prev, [activeTab]: res.total }));
+    setLoading(false);
+  }, [typeParam, page, search, status, orgId]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const result = await RdAPI.getMyTickets(filterOrgIds);
-      setRequirements(result.requirements.filter((r) => r.creator === currentUser || r.assignee === currentUser));
-      setBugs(result.bugs.filter((b) => b.creator === currentUser || b.assignee === currentUser));
-      setLoading(false);
-    };
     fetchData();
-  }, [currentUser, filterOrgIds]);
+  }, [fetchData]);
 
-  // filtered data
-  const filteredReqs = requirements.filter((r) => {
-    if (reqFilter.status && r.status !== reqFilter.status) return false;
-    if (reqFilter.search) {
-      const kw = reqFilter.search.toLowerCase();
-      if (!r.title.toLowerCase().includes(kw) && !r.description.toLowerCase().includes(kw)) return false;
+  // seed totals for all tabs on mount
+  useEffect(() => {
+    (["requirement", "bug", "task"] as const).forEach((t) => {
+      RdAPI.getMyTickets({ type: t, pageSize: 1, orgId: orgId || undefined }).then((res) => {
+        setTotalMap((prev) => ({ ...prev, [t === "requirement" ? "req" : t === "bug" ? "bug" : "task"]: res.total }));
+      });
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // reset page when tab/filters change
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, search, status, orgId]);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const getPageNumbers = (): (number | string)[] => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      const s = Math.max(1, page - 2),
+        e = Math.min(totalPages, s + 4);
+      if (s > 1) {
+        pages.push(1);
+        if (s > 2) pages.push("...");
+      }
+      for (let i = s; i <= e; i++) pages.push(i);
+      if (e < totalPages) {
+        if (e < totalPages - 1) pages.push("...");
+        pages.push(totalPages);
+      }
     }
-    return true;
-  });
-
-  const filteredBugs = bugs.filter((b) => {
-    if (bugFilter.status && b.status !== bugFilter.status) return false;
-    if (bugFilter.search) {
-      const kw = bugFilter.search.toLowerCase();
-      if (!b.title.toLowerCase().includes(kw) && !b.description.toLowerCase().includes(kw)) return false;
-    }
-    return true;
-  });
-
-  const openReqView = (req: Requirement) => {
-    setSelectedBug(null);
-    setSelectedReq(req);
-    setModalVisible(true);
+    return pages;
   };
-  const openBugView = (bug: Bug) => {
-    setSelectedReq(null);
-    setSelectedBug(bug);
+
+  const openDetail = (type: TabKey, item: TabData) => {
+    setDetail({ type, item });
     setModalVisible(true);
   };
 
@@ -114,89 +162,142 @@ const MyTickets: React.FC = () => {
     </div>
   );
 
-  if (loading) return <Loading />;
+  const tabBtn = (key: TabKey, icon: React.ReactNode, label: string, count: number) => (
+    <button
+      onClick={() => setActiveTab(key)}
+      style={{
+        padding: "10px 24px",
+        fontSize: "14px",
+        fontWeight: activeTab === key ? 600 : 400,
+        color: activeTab === key ? "var(--primary)" : "var(--text-secondary)",
+        border: "none",
+        background: "transparent",
+        cursor: "pointer",
+        borderBottom: activeTab === key ? "2px solid var(--primary)" : "2px solid transparent",
+        marginBottom: "-2px",
+      }}
+    >
+      {icon}
+      {label} ({count})
+    </button>
+  );
+
+  // ---- badge render helpers ----
+  const renderPriorityBadge = (p: string) => (
+    <span className={`${styles.badge} ${styles[`priority_${p}`]}`}>{priorityText[p] || p}</span>
+  );
+  const renderStatusBadge = (s: string, map: Record<string, string>) => (
+    <span className={`${styles.badge} ${styles[`status_${s}`]}`}>{map[s] || s}</span>
+  );
+
+  const filterBar = (
+    <div className={styles.filterSection}>
+      <div className={styles.filterHeader}>
+        <h3 className={styles.filterTitle}>筛选条件</h3>
+        <button
+          className={styles.clearBtn}
+          onClick={() => {
+            setSearch("");
+            setStatus("");
+          }}
+        >
+          清除筛选
+        </button>
+      </div>
+      <div className={styles.filterForm}>
+        <div className={styles.filterGroup}>
+          <label className={styles.filterLabel}>搜索</label>
+          <Input placeholder="标题或描述" value={search} onChange={setSearch} allowClear size="large" />
+        </div>
+        <div className={styles.filterGroup}>
+          <label className={styles.filterLabel}>状态</label>
+          <CustomSelect
+            name="状态"
+            options={activeTab === "req" ? reqStatusOptions : activeTab === "bug" ? bugStatusOptions : taskStatusOptions}
+            value={
+              (activeTab === "req" ? reqStatusOptions : activeTab === "bug" ? bugStatusOptions : taskStatusOptions).find(
+                (o) => o.id === status,
+              ) || null
+            }
+            onChange={(o) => setStatus((o?.id as string) || "")}
+            hideBadge
+          />
+        </div>
+        <div className={styles.filterGroup}>
+          <label className={styles.filterLabel}>组织</label>
+          <CustomSelect
+            name="组织"
+            options={[
+              { id: "", name: "全部组织", color: "#6c757d" },
+              ...orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" })),
+            ]}
+            value={
+              orgs.find((o) => o.orgId === orgId)
+                ? { id: orgId, name: orgs.find((o) => o.orgId === orgId)!.orgName, color: "#6c757d" }
+                : { id: "", name: "全部组织", color: "#6c757d" }
+            }
+            onChange={(o) => setOrgId((o?.id as string) || "")}
+            hideBadge
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  const paginationBar = (
+    <div className={styles.pagination}>
+      <span className={styles.paginationInfo}>共 {total} 条记录</span>
+      <div className={styles.paginationControls}>
+        <button disabled={page === 1} onClick={() => setPage(1)}>
+          <FaAngleDoubleLeft />
+        </button>
+        <button disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+          <FaChevronLeft />
+        </button>
+        {getPageNumbers().map((pg, i) =>
+          pg === "..." ? (
+            <span key={`d-${i}`} className={styles.paginationEllipsis}>
+              ...
+            </span>
+          ) : (
+            <button key={pg} className={page === pg ? styles.activePage : ""} onClick={() => setPage(pg as number)}>
+              {pg}
+            </button>
+          ),
+        )}
+        <button disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+          <FaChevronRight />
+        </button>
+        <button disabled={page === totalPages} onClick={() => setPage(totalPages)}>
+          <FaAngleDoubleRight />
+        </button>
+      </div>
+    </div>
+  );
+
+  if (loading && data.length === 0) return <Loading />;
 
   return (
     <div className={styles.listPage}>
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>我的工单</h1>
-          <p className={styles.pageDescription}>我负责或创建的需求与缺陷</p>
+          <p className={styles.pageDescription}>我负责或创建的需求、缺陷与任务</p>
         </div>
       </div>
 
       {/* tab bar */}
       <div style={{ display: "flex", gap: "0", marginBottom: "20px", borderBottom: "2px solid var(--border-primary)" }}>
-        <button
-          onClick={() => setReqTab(true)}
-          style={{
-            padding: "10px 24px",
-            fontSize: "14px",
-            fontWeight: reqTab ? 600 : 400,
-            color: reqTab ? "var(--primary)" : "var(--text-secondary)",
-            border: "none",
-            background: "transparent",
-            cursor: "pointer",
-            borderBottom: reqTab ? "2px solid var(--primary)" : "2px solid transparent",
-            marginBottom: "-2px",
-          }}
-        >
-          <FaClipboardList style={{ marginRight: "6px" }} />
-          需求 ({filteredReqs.length})
-        </button>
-        <button
-          onClick={() => setReqTab(false)}
-          style={{
-            padding: "10px 24px",
-            fontSize: "14px",
-            fontWeight: !reqTab ? 600 : 400,
-            color: !reqTab ? "var(--primary)" : "var(--text-secondary)",
-            border: "none",
-            background: "transparent",
-            cursor: "pointer",
-            borderBottom: !reqTab ? "2px solid var(--primary)" : "2px solid transparent",
-            marginBottom: "-2px",
-          }}
-        >
-          <FaBug style={{ marginRight: "6px" }} />
-          缺陷 ({filteredBugs.length})
-        </button>
+        {tabBtn("req", <FaClipboardList style={{ marginRight: "6px" }} />, "需求", totalMap.req)}
+        {tabBtn("bug", <FaBug style={{ marginRight: "6px" }} />, "缺陷", totalMap.bug)}
+        {tabBtn("task", <FaTasks style={{ marginRight: "6px" }} />, "任务", totalMap.task)}
       </div>
 
-      {/* filters */}
-      {reqTab ? (
-        <>
-          <div className={styles.filterSection}>
-            <div className={styles.filterHeader}>
-              <h3 className={styles.filterTitle}>筛选条件</h3>
-              <button className={styles.clearBtn} onClick={() => setReqFilter({ search: "", status: "" })}>
-                清除筛选
-              </button>
-            </div>
-            <div className={styles.filterForm}>
-              <div className={styles.filterGroup}>
-                <label className={styles.filterLabel}>搜索</label>
-                <Input
-                  placeholder="标题或描述"
-                  value={reqFilter.search}
-                  onChange={(val) => setReqFilter((p) => ({ ...p, search: val }))}
-                  allowClear
-                  size="large"
-                />
-              </div>
-              <div className={styles.filterGroup}>
-                <label className={styles.filterLabel}>状态</label>
-                <CustomSelect
-                  name="状态"
-                  options={reqStatusOptions}
-                  value={reqStatusOptions.find((o) => o.id === reqFilter.status) || null}
-                  onChange={(o) => setReqFilter((p) => ({ ...p, status: (o?.id as string) || "" }))}
-                  hideBadge
-                />
-              </div>
-            </div>
-          </div>
+      {filterBar}
 
+      {/* ---- requirements table ---- */}
+      {activeTab === "req" && (
+        <>
           <div className={styles.tableWrapper}>
             <table className={styles.table}>
               <thead>
@@ -211,73 +312,48 @@ const MyTickets: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredReqs.map((r) => (
-                  <tr key={r.id}>
-                    <td className={styles.titleCell} onClick={() => openReqView(r)}>
-                      {r.title}
-                    </td>
-                    <td>
-                      <span className={`${styles.badge} ${styles[`priority_${r.priority}`]}`}>{priorityText[r.priority]}</span>
-                    </td>
-                    <td>
-                      <span className={`${styles.badge} ${styles[`status_${r.status}`]}`}>{reqStatusText[r.status]}</span>
-                    </td>
-                    <td>{r.assignee || "-"}</td>
-                    <td>{r.creator}</td>
-                    <td>{new Date(r.createdAt).toLocaleDateString("zh-CN")}</td>
-                    <td>
-                      <div className={styles.actionButtons}>
-                        <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openReqView(r)}>
-                          <FaEye />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {filteredReqs.length === 0 && (
+                {data.map((item) => {
+                  const r = item as Requirement;
+                  return (
+                    <tr key={r.id}>
+                      <td className={styles.titleCell} onClick={() => openDetail("req", r)}>
+                        {r.title}
+                      </td>
+                      <td>{renderPriorityBadge(r.priority)}</td>
+                      <td>{renderStatusBadge(r.status, reqStatusText)}</td>
+                      <td>{r.assignee || "-"}</td>
+                      <td>{r.creator}</td>
+                      <td>{new Date(r.createdAt).toLocaleDateString("zh-CN")}</td>
+                      <td>
+                        <div className={styles.actionButtons}>
+                          <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openDetail("req", r)}>
+                            <FaEye />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {data.length === 0 && (
                   <tr>
                     <td colSpan={7} className={styles.emptyCell}>
-                      暂无相关需求
+                      <div className={styles.emptyCellIcon}>
+                        <FaClipboardList />
+                      </div>
+                      <div className={styles.emptyCellText}>暂无相关需求</div>
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
+          {paginationBar}
         </>
-      ) : (
-        <>
-          <div className={styles.filterSection}>
-            <div className={styles.filterHeader}>
-              <h3 className={styles.filterTitle}>筛选条件</h3>
-              <button className={styles.clearBtn} onClick={() => setBugFilter({ search: "", status: "" })}>
-                清除筛选
-              </button>
-            </div>
-            <div className={styles.filterForm}>
-              <div className={styles.filterGroup}>
-                <label className={styles.filterLabel}>搜索</label>
-                <Input
-                  placeholder="标题或描述"
-                  value={bugFilter.search}
-                  onChange={(val) => setBugFilter((p) => ({ ...p, search: val }))}
-                  allowClear
-                  size="large"
-                />
-              </div>
-              <div className={styles.filterGroup}>
-                <label className={styles.filterLabel}>状态</label>
-                <CustomSelect
-                  name="状态"
-                  options={bugStatusOptions}
-                  value={bugStatusOptions.find((o) => o.id === bugFilter.status) || null}
-                  onChange={(o) => setBugFilter((p) => ({ ...p, status: (o?.id as string) || "" }))}
-                  hideBadge
-                />
-              </div>
-            </div>
-          </div>
+      )}
 
+      {/* ---- bugs table ---- */}
+      {activeTab === "bug" && (
+        <>
           <div className={styles.tableWrapper}>
             <table className={styles.table}>
               <thead>
@@ -292,137 +368,239 @@ const MyTickets: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredBugs.map((b) => (
-                  <tr key={b.id}>
-                    <td className={styles.titleCell} onClick={() => openBugView(b)}>
-                      {b.title}
-                    </td>
-                    <td>
-                      <span className={`${styles.badge} ${styles[`severity_${b.severity}`]}`}>{severityText[b.severity]}</span>
-                    </td>
-                    <td>
-                      <span className={`${styles.badge} ${styles[`priority_${b.priority}`]}`}>{priorityText[b.priority]}</span>
-                    </td>
-                    <td>
-                      <span className={`${styles.badge} ${styles[`status_${b.status}`]}`}>{bugStatusText[b.status]}</span>
-                    </td>
-                    <td>{b.assignee || "-"}</td>
-                    <td>{b.creator}</td>
-                    <td>
-                      <div className={styles.actionButtons}>
-                        <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openBugView(b)}>
-                          <FaEye />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {filteredBugs.length === 0 && (
+                {data.map((item) => {
+                  const b = item as Bug;
+                  return (
+                    <tr key={b.id}>
+                      <td className={styles.titleCell} onClick={() => openDetail("bug", b)}>
+                        {b.title}
+                      </td>
+                      <td>
+                        <span className={`${styles.badge} ${styles[`severity_${b.severity}`]}`}>{severityText[b.severity]}</span>
+                      </td>
+                      <td>{renderPriorityBadge(b.priority)}</td>
+                      <td>{renderStatusBadge(b.status, bugStatusText)}</td>
+                      <td>{b.assignee || "-"}</td>
+                      <td>{b.creator}</td>
+                      <td>
+                        <div className={styles.actionButtons}>
+                          <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openDetail("bug", b)}>
+                            <FaEye />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {data.length === 0 && (
                   <tr>
                     <td colSpan={7} className={styles.emptyCell}>
-                      暂无相关缺陷
+                      <div className={styles.emptyCellIcon}>
+                        <FaBug />
+                      </div>
+                      <div className={styles.emptyCellText}>暂无相关缺陷</div>
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
+          {paginationBar}
+        </>
+      )}
+
+      {/* ---- tasks table ---- */}
+      {activeTab === "task" && (
+        <>
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>标题</th>
+                  <th>优先级</th>
+                  <th>状态</th>
+                  <th>负责人</th>
+                  <th>创建人</th>
+                  <th>截止日期</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((item) => {
+                  const t = item as Task;
+                  return (
+                    <tr key={t.id}>
+                      <td className={styles.titleCell} onClick={() => openDetail("task", t)}>
+                        {t.title}
+                      </td>
+                      <td>{renderPriorityBadge(t.priority)}</td>
+                      <td>{renderStatusBadge(t.status, taskStatusText)}</td>
+                      <td>{t.assignee || "-"}</td>
+                      <td>{t.creator}</td>
+                      <td>{t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN") : "-"}</td>
+                      <td>
+                        <div className={styles.actionButtons}>
+                          <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openDetail("task", t)}>
+                            <FaEye />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {data.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className={styles.emptyCell}>
+                      <div className={styles.emptyCellIcon}>
+                        <FaTasks />
+                      </div>
+                      <div className={styles.emptyCellText}>暂无相关任务</div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {paginationBar}
         </>
       )}
 
       {/* ============ MODAL ============ */}
       <Modal
         visible={modalVisible}
-        title={selectedReq ? selectedReq.title : selectedBug?.title || "工单详情"}
+        title={detail ? (detail.item as any).title : "工单详情"}
         onClose={() => {
           setModalVisible(false);
-          setSelectedReq(null);
-          setSelectedBug(null);
+          setDetail(null);
         }}
         width={720}
         footer={null}
       >
-        {selectedReq && (
-          <div>
-            <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
-              <span className={`${styles.badge} ${styles[`priority_${selectedReq.priority}`]}`}>
-                {priorityText[selectedReq.priority]}
-              </span>
-              <span className={`${styles.badge} ${styles[`status_${selectedReq.status}`]}`}>{reqStatusText[selectedReq.status]}</span>
-            </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                gap: "8px",
-                marginBottom: "20px",
-                paddingBottom: "16px",
-                borderBottom: "1px solid var(--border-primary)",
-              }}
-            >
-              {renderField("负责人", selectedReq.assignee)}
-              {renderField("创建人", selectedReq.creator)}
-              {renderField("所属组织", orgNameMap[selectedReq.organizationId] || selectedReq.organizationId)}
-              {renderField("迭代", selectedReq.iteration)}
-              {renderField("分类", selectedReq.category)}
-              {renderField("来源", selectedReq.source)}
-              {renderField("创建时间", new Date(selectedReq.createdAt).toLocaleString("zh-CN"))}
-              {renderField("更新时间", new Date(selectedReq.updatedAt).toLocaleString("zh-CN"))}
-            </div>
-            <div>
-              <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
-              <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                {selectedReq.description || "暂无描述"}
-              </div>
-            </div>
-          </div>
-        )}
-        {selectedBug && (
-          <div>
-            <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
-              <span className={`${styles.badge} ${styles[`severity_${selectedBug.severity}`]}`}>
-                {severityText[selectedBug.severity]}
-              </span>
-              <span className={`${styles.badge} ${styles[`priority_${selectedBug.priority}`]}`}>
-                {priorityText[selectedBug.priority]}
-              </span>
-              <span className={`${styles.badge} ${styles[`status_${selectedBug.status}`]}`}>{bugStatusText[selectedBug.status]}</span>
-            </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                gap: "8px",
-                marginBottom: "20px",
-                paddingBottom: "16px",
-                borderBottom: "1px solid var(--border-primary)",
-              }}
-            >
-              {renderField("负责人", selectedBug.assignee)}
-              {renderField("创建人", selectedBug.creator)}
-              {renderField("所属组织", orgNameMap[selectedBug.organizationId] || selectedBug.organizationId)}
-              {renderField("所属模块", selectedBug.module)}
-              {renderField("关联需求", selectedBug.relatedRequirementId)}
-              {renderField("运行环境", selectedBug.environment)}
-              {renderField("创建时间", new Date(selectedBug.createdAt).toLocaleString("zh-CN"))}
-              {renderField("更新时间", new Date(selectedBug.updatedAt).toLocaleString("zh-CN"))}
-            </div>
-            <div style={{ marginBottom: selectedBug.stepsToReproduce ? "20px" : "0" }}>
-              <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
-              <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                {selectedBug.description || "暂无描述"}
-              </div>
-            </div>
-            {selectedBug.stepsToReproduce && (
+        {/* Requirement detail */}
+        {detail?.type === "req" &&
+          (() => {
+            const r = detail.item as Requirement;
+            return (
               <div>
-                <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>复现步骤</h4>
-                <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                  {selectedBug.stepsToReproduce}
+                <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+                  {renderPriorityBadge(r.priority)}
+                  {renderStatusBadge(r.status, reqStatusText)}
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+                    gap: "8px",
+                    marginBottom: "20px",
+                    paddingBottom: "16px",
+                    borderBottom: "1px solid var(--border-primary)",
+                  }}
+                >
+                  {renderField("负责人", r.assignee)}
+                  {renderField("创建人", r.creator)}
+                  {renderField("所属组织", orgNameMap[r.organizationId] || r.organizationId)}
+                  {renderField("迭代", r.iteration)}
+                  {renderField("分类", r.category)}
+                  {renderField("来源", r.source)}
+                  {renderField("创建时间", new Date(r.createdAt).toLocaleString("zh-CN"))}
+                  {renderField("更新时间", new Date(r.updatedAt).toLocaleString("zh-CN"))}
+                </div>
+                <div>
+                  <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
+                  <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
+                    {r.description || "暂无描述"}
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            );
+          })()}
+
+        {/* Bug detail */}
+        {detail?.type === "bug" &&
+          (() => {
+            const b = detail.item as Bug;
+            return (
+              <div>
+                <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+                  <span className={`${styles.badge} ${styles[`severity_${b.severity}`]}`}>{severityText[b.severity]}</span>
+                  {renderPriorityBadge(b.priority)}
+                  {renderStatusBadge(b.status, bugStatusText)}
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+                    gap: "8px",
+                    marginBottom: "20px",
+                    paddingBottom: "16px",
+                    borderBottom: "1px solid var(--border-primary)",
+                  }}
+                >
+                  {renderField("负责人", b.assignee)}
+                  {renderField("创建人", b.creator)}
+                  {renderField("所属组织", orgNameMap[b.organizationId] || b.organizationId)}
+                  {renderField("所属模块", b.module)}
+                  {renderField("关联需求", b.relatedRequirementId)}
+                  {renderField("运行环境", b.environment)}
+                  {renderField("创建时间", new Date(b.createdAt).toLocaleString("zh-CN"))}
+                  {renderField("更新时间", new Date(b.updatedAt).toLocaleString("zh-CN"))}
+                </div>
+                <div style={{ marginBottom: b.stepsToReproduce ? "20px" : "0" }}>
+                  <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
+                  <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
+                    {b.description || "暂无描述"}
+                  </div>
+                </div>
+                {b.stepsToReproduce && (
+                  <div>
+                    <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>复现步骤</h4>
+                    <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
+                      {b.stepsToReproduce}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+        {/* Task detail */}
+        {detail?.type === "task" &&
+          (() => {
+            const t = detail.item as Task;
+            return (
+              <div>
+                <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+                  {renderPriorityBadge(t.priority)}
+                  {renderStatusBadge(t.status, taskStatusText)}
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+                    gap: "8px",
+                    marginBottom: "20px",
+                    paddingBottom: "16px",
+                    borderBottom: "1px solid var(--border-primary)",
+                  }}
+                >
+                  {renderField("负责人", t.assignee)}
+                  {renderField("创建人", t.creator)}
+                  {renderField("所属组织", orgNameMap[t.organizationId] || t.organizationId)}
+                  {renderField("关联需求", t.requirementId)}
+                  {renderField("截止日期", t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN") : "-")}
+                  {renderField("预估工时", `${t.estimatedHours}h`)}
+                  {renderField("创建时间", new Date(t.createdAt).toLocaleString("zh-CN"))}
+                  {renderField("更新时间", new Date(t.updatedAt).toLocaleString("zh-CN"))}
+                </div>
+                <div>
+                  <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
+                  <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
+                    {t.description || "暂无描述"}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
       </Modal>
     </div>
   );
