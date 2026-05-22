@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { FaClipboardList, FaBug, FaTasks, FaExclamationTriangle } from "react-icons/fa";
 import styles from "./Dashboard.module.css";
 import Loading from "../../components/loading/Loading";
-import { RdPlatformMockService } from "../../services/rdPlatformMockService";
+import { useRdOrg } from "../../contexts/RdOrgContext";
+import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
 import type { RdStats, Requirement, Bug, Task } from "../../types/rdPlatform";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { filterOrgIds } = useRdOrg();
   const [stats, setStats] = useState<RdStats | null>(null);
   const [recentRequirements, setRecentRequirements] = useState<Requirement[]>([]);
   const [recentBugs, setRecentBugs] = useState<Bug[]>([]);
@@ -17,10 +19,10 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       const [s, reqs, bugs, tasks] = await Promise.all([
-        RdPlatformMockService.getStats(),
-        RdPlatformMockService.getRequirements({ page: 1, pageSize: 5 }),
-        RdPlatformMockService.getBugs({ page: 1, pageSize: 5 }),
-        RdPlatformMockService.getTasks({ page: 1, pageSize: 5 }),
+        RdAPI.getStats(filterOrgIds),
+        RdAPI.getRequirements({ page: 1, pageSize: 5, organizationIds: filterOrgIds }),
+        RdAPI.getBugs({ page: 1, pageSize: 5, organizationIds: filterOrgIds }),
+        RdAPI.getTasks({ page: 1, pageSize: 5, organizationIds: filterOrgIds }),
       ]);
       setStats(s);
       setRecentRequirements(reqs.data);
@@ -29,7 +31,7 @@ const Dashboard: React.FC = () => {
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [filterOrgIds]);
 
   if (loading) return <Loading />;
 

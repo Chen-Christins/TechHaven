@@ -65,9 +65,9 @@ function seedIfEmpty(): void {
   }
 }
 
-type SeedRequirement = Omit<Requirement, "id" | "createdAt" | "updatedAt">;
-type SeedBug = Omit<Bug, "id" | "createdAt" | "updatedAt">;
-type SeedTask = Omit<Task, "id" | "createdAt" | "updatedAt">;
+type SeedRequirement = Omit<Requirement, "id" | "createdAt" | "updatedAt"> & { organizationId: string };
+type SeedBug = Omit<Bug, "id" | "createdAt" | "updatedAt"> & { organizationId: string };
+type SeedTask = Omit<Task, "id" | "createdAt" | "updatedAt"> & { organizationId: string };
 
 function seedRequirements(): Requirement[] {
   const items: SeedRequirement[] = [
@@ -78,6 +78,7 @@ function seedRequirements(): Requirement[] {
       status: "developing",
       creator: "张三",
       assignee: "李四",
+      organizationId: "org_1",
       iteration: "Sprint 12",
       category: "前端",
       source: "产品需求",
@@ -89,6 +90,7 @@ function seedRequirements(): Requirement[] {
       status: "new",
       creator: "王五",
       assignee: "",
+      organizationId: "org_2",
       iteration: "Sprint 13",
       category: "后端",
       source: "用户反馈",
@@ -100,6 +102,7 @@ function seedRequirements(): Requirement[] {
       status: "new",
       creator: "赵六",
       assignee: "张三",
+      organizationId: "org_2",
       iteration: "Sprint 12",
       category: "后端",
       source: "内部需求",
@@ -111,6 +114,7 @@ function seedRequirements(): Requirement[] {
       status: "testing",
       creator: "李四",
       assignee: "王五",
+      organizationId: "org_1",
       iteration: "Sprint 11",
       category: "前端",
       source: "产品需求",
@@ -122,6 +126,7 @@ function seedRequirements(): Requirement[] {
       status: "done",
       creator: "张三",
       assignee: "赵六",
+      organizationId: "org_2",
       iteration: "Sprint 10",
       category: "后端",
       source: "技术规划",
@@ -133,6 +138,7 @@ function seedRequirements(): Requirement[] {
       status: "new",
       creator: "王五",
       assignee: "",
+      organizationId: "org_1",
       iteration: "Sprint 13",
       category: "前端",
       source: "竞品分析",
@@ -144,6 +150,7 @@ function seedRequirements(): Requirement[] {
       status: "developing",
       creator: "赵六",
       assignee: "李四",
+      organizationId: "org_3",
       iteration: "Sprint 12",
       category: "全栈",
       source: "用户反馈",
@@ -155,6 +162,7 @@ function seedRequirements(): Requirement[] {
       status: "new",
       creator: "李四",
       assignee: "",
+      organizationId: "org_2",
       iteration: "Sprint 14",
       category: "后端",
       source: "技术规划",
@@ -180,6 +188,7 @@ function seedBugs(): Bug[] {
       status: "processing",
       creator: "张三",
       assignee: "李四",
+      organizationId: "org_1",
       relatedRequirementId: "",
       module: "用户模块",
       stepsToReproduce: "1. 使用 iOS Safari 打开登录页\n2. 等待页面加载\n3. 偶现白屏",
@@ -193,6 +202,7 @@ function seedBugs(): Bug[] {
       status: "new",
       creator: "王五",
       assignee: "",
+      organizationId: "org_2",
       relatedRequirementId: "",
       module: "通知模块",
       stepsToReproduce: "1. 登录后查看通知图标\n2. 对比角标数和实际未读数",
@@ -206,6 +216,7 @@ function seedBugs(): Bug[] {
       status: "accepted",
       creator: "赵六",
       assignee: "张三",
+      organizationId: "org_2",
       relatedRequirementId: "",
       module: "数据模块",
       stepsToReproduce: "1. 筛选超过1000条数据\n2. 点击导出\n3. 等待超时",
@@ -219,6 +230,7 @@ function seedBugs(): Bug[] {
       status: "new",
       creator: "李四",
       assignee: "",
+      organizationId: "org_1",
       relatedRequirementId: "",
       module: "看板模块",
       stepsToReproduce: "1. 打开看板视图\n2. 拖拽任意卡片\n3. 观察帧率",
@@ -232,6 +244,7 @@ function seedBugs(): Bug[] {
       status: "verified",
       creator: "张三",
       assignee: "赵六",
+      organizationId: "org_2",
       relatedRequirementId: "",
       module: "权限模块",
       stepsToReproduce: "1. 管理员修改某用户角色\n2. 该用户刷新页面\n3. 权限未变化",
@@ -245,6 +258,7 @@ function seedBugs(): Bug[] {
       status: "new",
       creator: "王五",
       assignee: "李四",
+      organizationId: "org_1",
       relatedRequirementId: "",
       module: "编辑模块",
       stepsToReproduce: "1. 截图到剪贴板\n2. 在编辑器中粘贴\n3. 无任何反应",
@@ -258,6 +272,7 @@ function seedBugs(): Bug[] {
       status: "closed",
       creator: "赵六",
       assignee: "王五",
+      organizationId: "org_3",
       relatedRequirementId: "",
       module: "搜索模块",
       stepsToReproduce: "1. 搜索关键词\n2. 查看结果排序",
@@ -281,6 +296,7 @@ function seedTasks(): Task[] {
       status: "doing",
       priority: "high",
       assignee: "李四",
+      organizationId: "org_1",
       requirementId: "",
       deadline: "2026-05-30",
       estimatedHours: 8,
@@ -291,6 +307,7 @@ function seedTasks(): Task[] {
       status: "todo",
       priority: "medium",
       assignee: "张三",
+      organizationId: "org_2",
       requirementId: "",
       deadline: "2026-05-25",
       estimatedHours: 4,
@@ -301,6 +318,7 @@ function seedTasks(): Task[] {
       status: "done",
       priority: "high",
       assignee: "王五",
+      organizationId: "org_2",
       requirementId: "",
       deadline: "2026-05-20",
       estimatedHours: 2,
@@ -311,6 +329,7 @@ function seedTasks(): Task[] {
       status: "todo",
       priority: "low",
       assignee: "",
+      organizationId: "org_2",
       requirementId: "",
       deadline: "2026-06-05",
       estimatedHours: 3,
@@ -321,6 +340,7 @@ function seedTasks(): Task[] {
       status: "doing",
       priority: "high",
       assignee: "赵六",
+      organizationId: "org_2",
       requirementId: "",
       deadline: "2026-05-28",
       estimatedHours: 16,
@@ -331,6 +351,7 @@ function seedTasks(): Task[] {
       status: "todo",
       priority: "medium",
       assignee: "张三",
+      organizationId: "org_3",
       requirementId: "",
       deadline: "2026-06-01",
       estimatedHours: 6,
@@ -352,13 +373,19 @@ function seedTasks(): Task[] {
 export class RdPlatformMockService {
   // -- Stats ----------------------------------------------------------------
 
-  static async getStats(): Promise<RdStats> {
+  static async getStats(organizationIds?: string[]): Promise<RdStats> {
     seedIfEmpty();
     await delay();
-    const reqs = readData<Requirement>(STORAGE_REQUIREMENTS);
-    const bugs = readData<Bug>(STORAGE_BUGS);
-    const tasks = readData<Task>(STORAGE_TASKS);
+    let reqs = readData<Requirement>(STORAGE_REQUIREMENTS);
+    let bugs = readData<Bug>(STORAGE_BUGS);
+    let tasks = readData<Task>(STORAGE_TASKS);
     const nowStr = new Date().toISOString().slice(0, 10);
+
+    if (organizationIds && organizationIds.length > 0) {
+      reqs = reqs.filter((r) => organizationIds.includes(r.organizationId));
+      bugs = bugs.filter((b) => organizationIds.includes(b.organizationId));
+      tasks = tasks.filter((t) => organizationIds.includes(t.organizationId));
+    }
 
     return {
       totalRequirements: reqs.length,
@@ -377,8 +404,11 @@ export class RdPlatformMockService {
     await delay();
     let data = readData<Requirement>(STORAGE_REQUIREMENTS);
 
-    const { search = "", status = "", priority = "", page = 1, pageSize = PAGE_SIZE } = filters;
+    const { search = "", status = "", priority = "", page = 1, pageSize = PAGE_SIZE, organizationIds } = filters;
 
+    if (organizationIds && organizationIds.length > 0) {
+      data = data.filter((r) => organizationIds.includes(r.organizationId));
+    }
     if (search) {
       const kw = search.toLowerCase();
       data = data.filter(
@@ -442,8 +472,11 @@ export class RdPlatformMockService {
     await delay();
     let data = readData<Bug>(STORAGE_BUGS);
 
-    const { search = "", status = "", severity = "", priority = "", page = 1, pageSize = PAGE_SIZE } = filters;
+    const { search = "", status = "", severity = "", priority = "", page = 1, pageSize = PAGE_SIZE, organizationIds } = filters;
 
+    if (organizationIds && organizationIds.length > 0) {
+      data = data.filter((b) => organizationIds.includes(b.organizationId));
+    }
     if (search) {
       const kw = search.toLowerCase();
       data = data.filter(
@@ -504,8 +537,11 @@ export class RdPlatformMockService {
     await delay();
     let data = readData<Task>(STORAGE_TASKS);
 
-    const { search = "", status = "", priority = "", assignee = "", page = 1, pageSize = PAGE_SIZE } = filters;
+    const { search = "", status = "", priority = "", assignee = "", page = 1, pageSize = PAGE_SIZE, organizationIds } = filters;
 
+    if (organizationIds && organizationIds.length > 0) {
+      data = data.filter((t) => organizationIds.includes(t.organizationId));
+    }
     if (search) {
       const kw = search.toLowerCase();
       data = data.filter((t) => t.title.toLowerCase().includes(kw) || t.description.toLowerCase().includes(kw));

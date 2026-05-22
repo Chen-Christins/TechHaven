@@ -18,9 +18,11 @@ import Loading from "../../components/loading/Loading";
 import { confirm } from "../../components/confirm/Confirm";
 import message from "../../components/message/Message";
 import { useAuth } from "../../contexts/AuthContext";
-import { RdPlatformMockService } from "../../services/rdPlatformMockService";
+import { useRdOrg } from "../../contexts/RdOrgContext";
+import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
 import type { SelectOption } from "../../types";
 import type { Requirement } from "../../types/rdPlatform";
+import { OrgPermission } from "../../types/rdPlatform";
 
 // ---- constants ----
 const statusOptions: SelectOption[] = [
@@ -52,6 +54,7 @@ interface FormData {
   priority: string;
   status: string;
   assignee: string;
+  organizationId: string;
   iteration: string;
   category: string;
   source: string;
@@ -63,6 +66,7 @@ const emptyForm: FormData = {
   priority: "medium",
   status: "new",
   assignee: "",
+  organizationId: "",
   iteration: "",
   category: "",
   source: "",
@@ -71,6 +75,7 @@ const emptyForm: FormData = {
 // ---- component ----
 const RequirementList: React.FC = () => {
   const { user } = useAuth();
+  const { isAdmin, userOrgIds, orgs, filterOrgIds, orgNameMap, maxOrgRole } = useRdOrg();
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -85,7 +90,12 @@ const RequirementList: React.FC = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const res = await RdPlatformMockService.getRequirements({ ...filters, page: currentPage, pageSize: PAGE_SIZE });
+    const res = await RdAPI.getRequirements({
+      ...filters,
+      page: currentPage,
+      pageSize: PAGE_SIZE,
+      organizationIds: filterOrgIds,
+    });
     setRequirements(res.data);
     setTotal(res.total);
     setLoading(false);
@@ -101,10 +111,15 @@ const RequirementList: React.FC = () => {
   };
 
   // ---- modal handlers ----
+  const getDefaultOrgId = (): string => {
+    if (orgs.length === 1) return orgs[0].orgId;
+    return "";
+  };
+
   const openCreate = () => {
     setModalMode("create");
     setSelectedReq(null);
-    setForm({ ...emptyForm });
+    setForm({ ...emptyForm, organizationId: getDefaultOrgId() });
     setModalVisible(true);
   };
 
@@ -123,6 +138,7 @@ const RequirementList: React.FC = () => {
       priority: req.priority,
       status: req.status,
       assignee: req.assignee,
+      organizationId: req.organizationId,
       iteration: req.iteration,
       category: req.category,
       source: req.source,
@@ -144,21 +160,26 @@ const RequirementList: React.FC = () => {
       message.warn("请输入需求标题");
       return;
     }
+    if (!isAdmin && !form.organizationId) {
+      message.warn("请选择所属组织");
+      return;
+    }
     const data = {
       title: form.title.trim(),
       description: form.description,
       priority: form.priority as Requirement["priority"],
       status: form.status as Requirement["status"],
       assignee: form.assignee,
+      organizationId: form.organizationId || userOrgIds[0] || "",
       iteration: form.iteration,
       category: form.category,
       source: form.source,
     };
     if (modalMode === "edit" && selectedReq) {
-      await RdPlatformMockService.updateRequirement(selectedReq.id, data);
+      await RdAPI.updateRequirement(selectedReq.id, data);
       message.success("需求更新成功");
     } else {
-      await RdPlatformMockService.createRequirement({ ...data, status: "new", creator: user?.name || user?.account || "未知" });
+      await RdAPI.createRequirement({ ...data, status: "new", creator: user?.name || user?.account || "未知" });
       message.success("需求创建成功");
     }
     closeModal();
@@ -176,7 +197,7 @@ const RequirementList: React.FC = () => {
       confirmText: "删除",
       cancelText: "取消",
       onConfirm: async () => {
-        await RdPlatformMockService.deleteRequirement(req.id);
+        await RdAPI.deleteRequirement(req.id);
         message.success("需求已删除");
         fetchData();
       },
@@ -222,9 +243,11 @@ const RequirementList: React.FC = () => {
           <h1 className={styles.pageTitle}>需求管理</h1>
           <p className={styles.pageDescription}>管理产品需求，跟踪开发进度</p>
         </div>
-        <button className={styles.createBtn} onClick={openCreate}>
-          <FaPlus /> 新建需求
-        </button>
+        {OrgPermission.canCreate(maxOrgRole) && (
+          <button className={styles.createBtn} onClick={openCreate}>
+            <FaPlus /> 新建需求
+          </button>
+        )}
       </div>
 
       {/* filters */}
@@ -313,12 +336,16 @@ const RequirementList: React.FC = () => {
                     <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openView(r)}>
                       <FaEye />
                     </button>
-                    <button className={`${styles.actionBtn} ${styles.edit}`} title="编辑" onClick={() => openEdit(r)}>
-                      <FaEdit />
-                    </button>
-                    <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(r)}>
-                      <FaTrash />
-                    </button>
+                    {OrgPermission.canEditAll(maxOrgRole) && (
+                      <>
+                        <button className={`${styles.actionBtn} ${styles.edit}`} title="编辑" onClick={() => openEdit(r)}>
+                          <FaEdit />
+                        </button>
+                        <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(r)}>
+                          <FaTrash />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -433,6 +460,7 @@ const RequirementList: React.FC = () => {
             >
               {renderField("负责人", selectedReq.assignee)}
               {renderField("创建人", selectedReq.creator)}
+              {renderField("所属组织", orgNameMap[selectedReq.organizationId] || selectedReq.organizationId)}
               {renderField("迭代", selectedReq.iteration)}
               {renderField("分类", selectedReq.category)}
               {renderField("来源", selectedReq.source)}
@@ -457,6 +485,25 @@ const RequirementList: React.FC = () => {
               </label>
               <Input placeholder="请输入需求标题" value={form.title} onChange={(v) => setFormField("title", v)} size="large" />
             </div>
+            {(isAdmin || orgs.length > 1) && (
+              <div style={{ display: "flex", gap: "16px" }}>
+                <div style={{ flex: 1 }}>
+                  <label
+                    style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
+                  >
+                    所属组织 {!isAdmin && <span style={{ color: "#ef4444" }}>*</span>}
+                  </label>
+                  <CustomSelect
+                    name="所属组织"
+                    options={orgs.map((o) => ({ id: o.orgId, name: o.orgName }))}
+                    value={orgs.find((o) => o.orgId === form.organizationId) ? { id: form.organizationId, name: orgs.find((o) => o.orgId === form.organizationId)!.orgName } : null}
+                    onChange={(o) => setFormField("organizationId", (o?.id as string) || "")}
+                    hideBadge
+                  />
+                </div>
+                <div style={{ flex: 1 }} />
+              </div>
+            )}
             <div style={{ display: "flex", gap: "16px" }}>
               <div style={{ flex: 1 }}>
                 <label

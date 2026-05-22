@@ -18,9 +18,11 @@ import Loading from "../../components/loading/Loading";
 import { confirm } from "../../components/confirm/Confirm";
 import message from "../../components/message/Message";
 import { useAuth } from "../../contexts/AuthContext";
-import { RdPlatformMockService } from "../../services/rdPlatformMockService";
+import { useRdOrg } from "../../contexts/RdOrgContext";
+import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
 import type { SelectOption } from "../../types";
 import type { Bug } from "../../types/rdPlatform";
+import { OrgPermission } from "../../types/rdPlatform";
 
 // ---- constants ----
 const statusOptions: SelectOption[] = [
@@ -72,6 +74,7 @@ interface FormData {
   priority: string;
   status: string;
   assignee: string;
+  organizationId: string;
   relatedRequirementId: string;
   module: string;
   stepsToReproduce: string;
@@ -85,6 +88,7 @@ const emptyForm: FormData = {
   priority: "high",
   status: "new",
   assignee: "",
+  organizationId: "",
   relatedRequirementId: "",
   module: "",
   stepsToReproduce: "",
@@ -94,6 +98,7 @@ const emptyForm: FormData = {
 // ---- component ----
 const BugList: React.FC = () => {
   const { user } = useAuth();
+  const { isAdmin, userOrgIds, orgs, filterOrgIds, orgNameMap, maxOrgRole } = useRdOrg();
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -108,7 +113,12 @@ const BugList: React.FC = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const res = await RdPlatformMockService.getBugs({ ...filters, page: currentPage, pageSize: PAGE_SIZE });
+    const res = await RdAPI.getBugs({
+      ...filters,
+      page: currentPage,
+      pageSize: PAGE_SIZE,
+      organizationIds: filterOrgIds,
+    });
     setBugs(res.data);
     setTotal(res.total);
     setLoading(false);
@@ -123,11 +133,16 @@ const BugList: React.FC = () => {
     setCurrentPage(1);
   };
 
+  const getDefaultOrgId = (): string => {
+    if (orgs.length === 1) return orgs[0].orgId;
+    return "";
+  };
+
   // ---- modal handlers ----
   const openCreate = () => {
     setModalMode("create");
     setSelectedBug(null);
-    setForm({ ...emptyForm });
+    setForm({ ...emptyForm, organizationId: getDefaultOrgId() });
     setModalVisible(true);
   };
   const openView = (bug: Bug) => {
@@ -145,6 +160,7 @@ const BugList: React.FC = () => {
       priority: bug.priority,
       status: bug.status,
       assignee: bug.assignee,
+      organizationId: bug.organizationId,
       relatedRequirementId: bug.relatedRequirementId,
       module: bug.module,
       stepsToReproduce: bug.stepsToReproduce,
@@ -163,6 +179,10 @@ const BugList: React.FC = () => {
       message.warn("请输入缺陷标题");
       return;
     }
+    if (!isAdmin && !form.organizationId) {
+      message.warn("请选择所属组织");
+      return;
+    }
     const data = {
       title: form.title.trim(),
       description: form.description,
@@ -170,16 +190,17 @@ const BugList: React.FC = () => {
       priority: form.priority as Bug["priority"],
       status: form.status as Bug["status"],
       assignee: form.assignee,
+      organizationId: form.organizationId || userOrgIds[0] || "",
       relatedRequirementId: form.relatedRequirementId,
       module: form.module,
       stepsToReproduce: form.stepsToReproduce,
       environment: form.environment,
     };
     if (modalMode === "edit" && selectedBug) {
-      await RdPlatformMockService.updateBug(selectedBug.id, data);
+      await RdAPI.updateBug(selectedBug.id, data);
       message.success("缺陷更新成功");
     } else {
-      await RdPlatformMockService.createBug({ ...data, status: "new", creator: user?.name || user?.account || "未知" });
+      await RdAPI.createBug({ ...data, status: "new", creator: user?.name || user?.account || "未知" });
       message.success("缺陷提交成功");
     }
     closeModal();
@@ -197,7 +218,7 @@ const BugList: React.FC = () => {
       confirmText: "删除",
       cancelText: "取消",
       onConfirm: async () => {
-        await RdPlatformMockService.deleteBug(bug.id);
+        await RdAPI.deleteBug(bug.id);
         message.success("缺陷已删除");
         fetchData();
       },
@@ -241,9 +262,11 @@ const BugList: React.FC = () => {
           <h1 className={styles.pageTitle}>缺陷管理</h1>
           <p className={styles.pageDescription}>管理项目缺陷，跟踪修复进度</p>
         </div>
-        <button className={styles.createBtn} onClick={openCreate}>
-          <FaPlus /> 提交缺陷
-        </button>
+        {OrgPermission.canCreate(maxOrgRole) && (
+          <button className={styles.createBtn} onClick={openCreate}>
+            <FaPlus /> 提交缺陷
+          </button>
+        )}
       </div>
 
       <div className={styles.filterSection}>
@@ -342,12 +365,16 @@ const BugList: React.FC = () => {
                     <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openView(b)}>
                       <FaEye />
                     </button>
-                    <button className={`${styles.actionBtn} ${styles.edit}`} title="编辑" onClick={() => openEdit(b)}>
-                      <FaEdit />
-                    </button>
-                    <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(b)}>
-                      <FaTrash />
-                    </button>
+                    {OrgPermission.canEditAll(maxOrgRole) && (
+                      <>
+                        <button className={`${styles.actionBtn} ${styles.edit}`} title="编辑" onClick={() => openEdit(b)}>
+                          <FaEdit />
+                        </button>
+                        <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(b)}>
+                          <FaTrash />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -464,6 +491,7 @@ const BugList: React.FC = () => {
             >
               {renderField("负责人", selectedBug.assignee)}
               {renderField("创建人", selectedBug.creator)}
+              {renderField("所属组织", orgNameMap[selectedBug.organizationId] || selectedBug.organizationId)}
               {renderField("所属模块", selectedBug.module)}
               {renderField("关联需求", selectedBug.relatedRequirementId)}
               {renderField("运行环境", selectedBug.environment)}
@@ -496,6 +524,25 @@ const BugList: React.FC = () => {
               </label>
               <Input placeholder="请输入缺陷标题" value={form.title} onChange={(v) => setFormField("title", v)} size="large" />
             </div>
+            {(isAdmin || orgs.length > 1) && (
+              <div style={{ display: "flex", gap: "16px" }}>
+                <div style={{ flex: 1 }}>
+                  <label
+                    style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
+                  >
+                    所属组织 {!isAdmin && <span style={{ color: "#ef4444" }}>*</span>}
+                  </label>
+                  <CustomSelect
+                    name="所属组织"
+                    options={orgs.map((o) => ({ id: o.orgId, name: o.orgName }))}
+                    value={orgs.find((o) => o.orgId === form.organizationId) ? { id: form.organizationId, name: orgs.find((o) => o.orgId === form.organizationId)!.orgName } : null}
+                    onChange={(o) => setFormField("organizationId", (o?.id as string) || "")}
+                    hideBadge
+                  />
+                </div>
+                <div style={{ flex: 1 }} />
+              </div>
+            )}
             <div style={{ display: "flex", gap: "16px" }}>
               <div style={{ flex: 1 }}>
                 <label

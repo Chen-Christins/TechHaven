@@ -16,8 +16,10 @@ import Modal from "../../components/modal/Modal";
 import Loading from "../../components/loading/Loading";
 import { confirm } from "../../components/confirm/Confirm";
 import message from "../../components/message/Message";
-import { RdPlatformMockService } from "../../services/rdPlatformMockService";
+import { useRdOrg } from "../../contexts/RdOrgContext";
+import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
 import type { Task } from "../../types/rdPlatform";
+import { OrgPermission } from "../../types/rdPlatform";
 import type { SelectOption } from "../../types";
 
 const statusOptions: SelectOption[] = [
@@ -46,12 +48,14 @@ const emptyTask = {
   status: "todo",
   priority: "medium",
   assignee: "",
+  organizationId: "",
   requirementId: "",
   deadline: "",
   estimatedHours: 0,
 };
 
 const TaskList: React.FC = () => {
+  const { isAdmin, userOrgIds, orgs, filterOrgIds, maxOrgRole } = useRdOrg();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -65,7 +69,12 @@ const TaskList: React.FC = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const res = await RdPlatformMockService.getTasks({ ...filters, page: currentPage, pageSize: PAGE_SIZE });
+    const res = await RdAPI.getTasks({
+      ...filters,
+      page: currentPage,
+      pageSize: PAGE_SIZE,
+      organizationIds: filterOrgIds,
+    });
     setTasks(res.data);
     setTotal(res.total);
     setLoading(false);
@@ -80,9 +89,14 @@ const TaskList: React.FC = () => {
     setCurrentPage(1);
   };
 
+  const getDefaultOrgId = (): string => {
+    if (orgs.length === 1) return orgs[0].orgId;
+    return "";
+  };
+
   const openCreate = () => {
     setEditingTask(null);
-    setForm({ ...emptyTask });
+    setForm({ ...emptyTask, organizationId: getDefaultOrgId() });
     setModalVisible(true);
   };
 
@@ -94,6 +108,7 @@ const TaskList: React.FC = () => {
       status: task.status,
       priority: task.priority,
       assignee: task.assignee,
+      organizationId: task.organizationId,
       requirementId: task.requirementId,
       deadline: task.deadline,
       estimatedHours: task.estimatedHours,
@@ -110,6 +125,10 @@ const TaskList: React.FC = () => {
       message.warn("请输入任务标题");
       return;
     }
+    if (!isAdmin && !form.organizationId) {
+      message.warn("请选择所属组织");
+      return;
+    }
 
     const data = {
       title: form.title.trim(),
@@ -117,16 +136,17 @@ const TaskList: React.FC = () => {
       status: form.status as Task["status"],
       priority: form.priority as Task["priority"],
       assignee: form.assignee,
+      organizationId: form.organizationId || userOrgIds[0] || "",
       requirementId: form.requirementId,
       deadline: form.deadline,
       estimatedHours: Number(form.estimatedHours) || 0,
     };
 
     if (editingTask) {
-      await RdPlatformMockService.updateTask(editingTask.id, data);
+      await RdAPI.updateTask(editingTask.id, data);
       message.success("任务更新成功");
     } else {
-      await RdPlatformMockService.createTask(data);
+      await RdAPI.createTask(data);
       message.success("任务创建成功");
     }
     setModalVisible(false);
@@ -144,7 +164,7 @@ const TaskList: React.FC = () => {
       confirmText: "删除",
       cancelText: "取消",
       onConfirm: async () => {
-        await RdPlatformMockService.deleteTask(task.id);
+        await RdAPI.deleteTask(task.id);
         message.success("任务已删除");
         fetchData();
       },
@@ -182,9 +202,11 @@ const TaskList: React.FC = () => {
           <h1 className={styles.pageTitle}>任务管理</h1>
           <p className={styles.pageDescription}>管理开发任务，跟踪执行进度</p>
         </div>
-        <button className={styles.createBtn} onClick={openCreate}>
-          <FaPlus /> 新建任务
-        </button>
+        {OrgPermission.canCreateTask(maxOrgRole) && (
+          <button className={styles.createBtn} onClick={openCreate}>
+            <FaPlus /> 新建任务
+          </button>
+        )}
       </div>
 
       <div className={styles.filterSection}>
@@ -273,12 +295,16 @@ const TaskList: React.FC = () => {
                 <td>{t.estimatedHours ? `${t.estimatedHours}h` : "-"}</td>
                 <td>
                   <div className={styles.actionButtons}>
-                    <button className={`${styles.actionBtn} ${styles.edit}`} title="编辑" onClick={() => openEdit(t)}>
-                      <FaEdit />
-                    </button>
-                    <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(t)}>
-                      <FaTrash />
-                    </button>
+                    {OrgPermission.canEditAll(maxOrgRole) && (
+                      <>
+                        <button className={`${styles.actionBtn} ${styles.edit}`} title="编辑" onClick={() => openEdit(t)}>
+                          <FaEdit />
+                        </button>
+                        <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(t)}>
+                          <FaTrash />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -376,6 +402,26 @@ const TaskList: React.FC = () => {
             </label>
             <Input placeholder="请输入任务标题" value={form.title} onChange={(val) => handleFormChange("title", val)} size="large" />
           </div>
+
+          {(isAdmin || orgs.length > 1) && (
+            <div style={{ display: "flex", gap: "16px" }}>
+              <div style={{ flex: 1 }}>
+                <label
+                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
+                >
+                  所属组织 {!isAdmin && <span style={{ color: "#ef4444" }}>*</span>}
+                </label>
+                <CustomSelect
+                  name="所属组织"
+                  options={orgs.map((o) => ({ id: o.orgId, name: o.orgName }))}
+                  value={orgs.find((o) => o.orgId === form.organizationId) ? { id: form.organizationId, name: orgs.find((o) => o.orgId === form.organizationId)!.orgName } : null}
+                  onChange={(o) => handleFormChange("organizationId", (o?.id as string) || "")}
+                  hideBadge
+                />
+              </div>
+              <div style={{ flex: 1 }} />
+            </div>
+          )}
 
           <div style={{ display: "flex", gap: "16px" }}>
             <div style={{ flex: 1 }}>

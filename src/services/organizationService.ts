@@ -144,6 +144,7 @@ export interface organizationJoinCheckParams {
   user_id: number | string;
   org_id: number | string;
   state: number;
+  role?: number;
 }
 
 export interface organizationJoinCheckResponse {
@@ -305,6 +306,9 @@ export class OrganizationService {
     formData.append("user_id", String(params.user_id));
     formData.append("org_id", String(params.org_id));
     formData.append("state", String(params.state));
+    if (params.role !== undefined) {
+      formData.append("role", String(params.role));
+    }
 
     const response = await http.post<organizationJoinCheckResponse>("/organization/join_check", formData.toString(), {
       headers: {

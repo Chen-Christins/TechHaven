@@ -20,6 +20,7 @@ import AuthButtons from "../authButtons/AuthButtons";
 import Notification from "../notification/Notification";
 import Avatar from "../avatar/Avatar";
 import { useAuth } from "../../contexts/AuthContext";
+import OrganizationService from "../../services/organizationService";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ const Navbar: React.FC = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false); // 用户下拉菜单状态
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // 移动端菜单状态
   const [recommendMenuOpen, setRecommendMenuOpen] = useState(false); // 推荐下拉菜单状态
+  const [showRdEntry, setShowRdEntry] = useState(false); // 是否显示研发入口（报告者及以上）
   const userMenuRef = useRef<HTMLDivElement>(null); // 用户菜单DOM引用
   const recommendMenuRef = useRef<HTMLDivElement>(null); // 推荐菜单DOM引用
 
@@ -82,6 +84,24 @@ const Navbar: React.FC = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [user, isAuthenticated, token]);
+
+  // 检查用户是否有研发平台访问权限（报告者及以上 role>=2，或平台管理员）
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      setShowRdEntry(false);
+      return;
+    }
+    if (user.role === "管理员") {
+      setShowRdEntry(true);
+      return;
+    }
+    OrganizationService.userOrganizationLists()
+      .then((res) => {
+        const maxRole = Math.max(0, ...(res.list || []).map((org: any) => org.role || 0));
+        setShowRdEntry(maxRole >= 2);
+      })
+      .catch(() => setShowRdEntry(false));
+  }, [isAuthenticated, user]);
 
   // 点击外部关闭用户菜单
   useEffect(() => {
@@ -170,7 +190,7 @@ const Navbar: React.FC = () => {
     };
 
     const links = [...navLinks];
-    if (isAuthenticated) {
+    if (showRdEntry) {
       links.push({ label: "研发", icon: <FaFlask />, path: "/rd" });
     }
     if (isAuthenticated && user?.role === "管理员") {
@@ -205,7 +225,7 @@ const Navbar: React.FC = () => {
         <ul className={styles.mobileNavLinks}>
           {navLinks
             .concat(
-              isAuthenticated ? [{ label: "研发平台", icon: <FaFlask />, path: "/rd" }] : [],
+              showRdEntry ? [{ label: "研发平台", icon: <FaFlask />, path: "/rd" }] : [],
               isAuthenticated && user?.role === "管理员" ? [{ label: "GM 控制台", icon: <FaGamepad />, path: "/gm" }] : [],
             )
             .map((link, index) => (

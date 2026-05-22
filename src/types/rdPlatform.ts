@@ -11,6 +11,7 @@ export interface Requirement {
   status: "new" | "developing" | "testing" | "done" | "closed";
   creator: string;
   assignee: string;
+  organizationId: string;
   iteration: string;
   category: string;
   source: string;
@@ -28,6 +29,7 @@ export interface Bug {
   status: "new" | "accepted" | "processing" | "verified" | "closed" | "reopened";
   creator: string;
   assignee: string;
+  organizationId: string;
   relatedRequirementId: string;
   module: string;
   stepsToReproduce: string;
@@ -44,12 +46,46 @@ export interface Task {
   status: "todo" | "doing" | "done" | "closed";
   priority: "high" | "medium" | "low";
   assignee: string;
+  organizationId: string;
   requirementId: string;
   deadline: string;
   estimatedHours: number;
   createdAt: string;
   updatedAt: string;
 }
+
+/** 组织信息（研发平台用） */
+export interface RdOrgInfo {
+  orgId: string;
+  orgName: string;
+  /** 用户在该组织中的角色: 1=普通成员 2=报告者 3=开发者 4=研发主管 5=组织管理员 */
+  role: number;
+}
+
+/** 组织角色常量 */
+export const OrgRole = {
+  MEMBER: 1,
+  REPORTER: 2,
+  DEVELOPER: 3,
+  DEV_LEAD: 4,
+  ORG_ADMIN: 5,
+} as const;
+
+export type OrgRole = (typeof OrgRole)[keyof typeof OrgRole];
+
+/** 角色可执行的操作 */
+export const OrgPermission = {
+  /** 能否创建需求/缺陷 */
+  canCreate: (role: number) => role >= OrgRole.REPORTER,
+  /** 能否创建任务 */
+  canCreateTask: (role: number) => role >= OrgRole.DEV_LEAD,
+  /** 能否编辑所有工单 */
+  canEditAll: (role: number) => role >= OrgRole.DEV_LEAD,
+  /** 能否删除工单 */
+  canDelete: (role: number) => role >= OrgRole.DEV_LEAD,
+  /** 能否管理组织成员 */
+  canManageMembers: (role: number) => role >= OrgRole.ORG_ADMIN,
+};
 
 /** 研发平台统计数据 */
 export interface RdStats {
@@ -74,6 +110,7 @@ export interface RequirementFilters {
   priority: string;
   page: number;
   pageSize: number;
+  organizationIds?: string[];
 }
 
 /** 缺陷筛选参数 */
@@ -84,6 +121,7 @@ export interface BugFilters {
   priority: string;
   page: number;
   pageSize: number;
+  organizationIds?: string[];
 }
 
 /** 任务筛选参数 */
@@ -94,4 +132,5 @@ export interface TaskFilters {
   assignee: string;
   page: number;
   pageSize: number;
+  organizationIds?: string[];
 }

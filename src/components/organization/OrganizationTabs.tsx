@@ -3,6 +3,8 @@ import {
   FaCrown,
   FaUserShield,
   FaUser,
+  FaUserCheck,
+  FaCode,
   FaEye,
   FaSync,
   FaUserMinus,
@@ -207,12 +209,14 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                     </td>
                     <td>
                       <span
-                        className={`${styles.roleBadge} ${member.role === "会长" ? styles.admin : member.role === "管理员" ? styles.moderator : styles.user}`}
+                        className={`${styles.roleBadge} ${member.role === "组织管理员" ? styles.admin : member.role === "研发主管" ? styles.moderator : styles.user}`}
                       >
-                        {member.role === "会长" && <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />}
-                        {member.role === "管理员" && <FaUserShield style={{ color: "#4caf50", marginRight: 4 }} />}
-                        {member.role === "成员" && <FaUser style={{ color: "#2196f3", marginRight: 4 }} />}
-                        {member.role || "成员"}
+                        {member.role === "组织管理员" && <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />}
+                        {member.role === "研发主管" && <FaUserShield style={{ color: "#4caf50", marginRight: 4 }} />}
+                        {member.role === "开发者" && <FaCode style={{ color: "#2196f3", marginRight: 4 }} />}
+                        {member.role === "报告者" && <FaUserCheck style={{ color: "#2196f3", marginRight: 4 }} />}
+                        {member.role === "普通成员" && <FaUser style={{ color: "#2196f3", marginRight: 4 }} />}
+                        {member.role || "普通成员"}
                       </span>
                     </td>
                     <td>
@@ -803,13 +807,15 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                 <div className={styles.detailValue}>
                   <span
                     className={`${styles.roleBadge} ${
-                      selectedMember.role === "会长" ? styles.admin : selectedMember.role === "管理员" ? styles.moderator : styles.user
+                      selectedMember.role === "组织管理员" ? styles.admin : selectedMember.role === "研发主管" ? styles.moderator : styles.user
                     }`}
                   >
-                    {selectedMember.role === "会长" && <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />}
-                    {selectedMember.role === "管理员" && <FaUserShield style={{ color: "#4caf50", marginRight: 4 }} />}
-                    {selectedMember.role === "成员" && <FaUser style={{ color: "#2196f3", marginRight: 4 }} />}
-                    {selectedMember.role || "成员"}
+                    {selectedMember.role === "组织管理员" && <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />}
+                    {selectedMember.role === "研发主管" && <FaUserShield style={{ color: "#4caf50", marginRight: 4 }} />}
+                    {selectedMember.role === "开发者" && <FaCode style={{ color: "#2196f3", marginRight: 4 }} />}
+                    {selectedMember.role === "报告者" && <FaUserCheck style={{ color: "#2196f3", marginRight: 4 }} />}
+                    {selectedMember.role === "普通成员" && <FaUser style={{ color: "#2196f3", marginRight: 4 }} />}
+                    {selectedMember.role || "普通成员"}
                   </span>
                 </div>
               </div>

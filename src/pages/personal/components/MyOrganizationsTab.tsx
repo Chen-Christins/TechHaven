@@ -34,7 +34,7 @@ const MyOrganizationsTab: React.FC = () => {
           type: org.type || "未知类型",
           description: org.org_description || "暂无描述",
           memberCount: org.count ?? 0,
-          role: org.role === 3 ? "会长" : org.role === 2 ? "管理员" : "成员",
+          role: org.role === 5 ? "组织管理员" : org.role === 4 ? "研发主管" : org.role === 3 ? "开发者" : org.role === 2 ? "报告者" : "普通成员",
           createTime: org.join_time ? formatToChinaTime(org.join_time) : "未知时间",
           status: "active", // 该接口无状态字段，默认 active
           avatar: undefined, // 该接口无头像字段

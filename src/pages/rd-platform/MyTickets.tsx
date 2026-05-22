@@ -6,7 +6,8 @@ import CustomSelect from "../../components/customSelect/CustomSelect";
 import Modal from "../../components/modal/Modal";
 import Loading from "../../components/loading/Loading";
 import { useAuth } from "../../contexts/AuthContext";
-import { RdPlatformMockService } from "../../services/rdPlatformMockService";
+import { useRdOrg } from "../../contexts/RdOrgContext";
+import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
 import type { SelectOption } from "../../types";
 import type { Requirement, Bug } from "../../types/rdPlatform";
 
@@ -49,6 +50,7 @@ const severityText: Record<string, string> = { fatal: "致命", serious: "严重
 
 const MyTickets: React.FC = () => {
   const { user } = useAuth();
+  const { filterOrgIds, orgNameMap } = useRdOrg();
   const currentUser = user?.name || user?.account || "";
 
   const [requirements, setRequirements] = useState<Requirement[]>([]);
@@ -67,16 +69,13 @@ const MyTickets: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [reqRes, bugRes] = await Promise.all([
-        RdPlatformMockService.getRequirements({ page: 1, pageSize: 1000 }),
-        RdPlatformMockService.getBugs({ page: 1, pageSize: 1000 }),
-      ]);
-      setRequirements(reqRes.data.filter((r) => r.creator === currentUser || r.assignee === currentUser));
-      setBugs(bugRes.data.filter((b) => b.creator === currentUser || b.assignee === currentUser));
+      const result = await RdAPI.getMyTickets(filterOrgIds);
+      setRequirements(result.requirements.filter((r) => r.creator === currentUser || r.assignee === currentUser));
+      setBugs(result.bugs.filter((b) => b.creator === currentUser || b.assignee === currentUser));
       setLoading(false);
     };
     fetchData();
-  }, [currentUser]);
+  }, [currentUser, filterOrgIds]);
 
   // filtered data
   const filteredReqs = requirements.filter((r) => {
@@ -363,6 +362,7 @@ const MyTickets: React.FC = () => {
             >
               {renderField("负责人", selectedReq.assignee)}
               {renderField("创建人", selectedReq.creator)}
+              {renderField("所属组织", orgNameMap[selectedReq.organizationId] || selectedReq.organizationId)}
               {renderField("迭代", selectedReq.iteration)}
               {renderField("分类", selectedReq.category)}
               {renderField("来源", selectedReq.source)}
@@ -400,6 +400,7 @@ const MyTickets: React.FC = () => {
             >
               {renderField("负责人", selectedBug.assignee)}
               {renderField("创建人", selectedBug.creator)}
+              {renderField("所属组织", orgNameMap[selectedBug.organizationId] || selectedBug.organizationId)}
               {renderField("所属模块", selectedBug.module)}
               {renderField("关联需求", selectedBug.relatedRequirementId)}
               {renderField("运行环境", selectedBug.environment)}
