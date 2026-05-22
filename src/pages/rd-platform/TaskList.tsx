@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { encodeId } from "../../utils/hashId";
 import {
   FaPlus,
+  FaEye,
   FaEdit,
   FaTrash,
   FaFilter,
@@ -58,6 +61,7 @@ const emptyTask = {
 };
 
 const TaskList: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, userOrgIds, orgs, maxOrgRole } = useRdOrg();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -175,9 +179,13 @@ const TaskList: React.FC = () => {
       confirmText: "删除",
       cancelText: "取消",
       onConfirm: async () => {
-        await RdAPI.deleteTask(task.id);
-        message.success("任务已删除");
-        fetchData();
+        try {
+          await RdAPI.deleteTask(task.id, task.organizationId);
+          message.success("任务已删除");
+          fetchData();
+        } catch (err: any) {
+          message.error(err?.message || "删除失败");
+        }
       },
     });
   };
@@ -312,7 +320,7 @@ const TaskList: React.FC = () => {
           <tbody>
             {tasks.map((t) => (
               <tr key={t.id}>
-                <td className={styles.titleCell}>{t.title}</td>
+                <td className={styles.titleCell} onClick={() => navigate(`/rd/tasks/${encodeId(t.id)}`)}>{t.title}</td>
                 <td>
                   <span className={`${styles.badge} ${styles[`status_${t.status}`]}`}>{statusText[t.status]}</span>
                 </td>
@@ -324,6 +332,9 @@ const TaskList: React.FC = () => {
                 <td>{t.estimatedHours ? `${t.estimatedHours}h` : "-"}</td>
                 <td>
                   <div className={styles.actionButtons}>
+                    <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => navigate(`/rd/tasks/${encodeId(t.id)}`)}>
+                      <FaEye />
+                    </button>
                     {OrgPermission.canEditAll(maxOrgRole) && (
                       <>
                         <button className={`${styles.actionBtn} ${styles.edit}`} title="编辑" onClick={() => openEdit(t)}>

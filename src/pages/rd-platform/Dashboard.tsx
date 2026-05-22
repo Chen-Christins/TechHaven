@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaClipboardList, FaBug, FaTasks, FaExclamationTriangle } from "react-icons/fa";
 import styles from "./Dashboard.module.css";
 import Loading from "../../components/loading/Loading";
+import { encodeId } from "../../utils/hashId";
 import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
 import type { RdStats, Requirement, Bug, Task } from "../../types/rdPlatform";
 
@@ -127,7 +128,7 @@ const Dashboard: React.FC = () => {
             </thead>
             <tbody>
               {recentRequirements.map((r) => (
-                <tr key={r.id} className={styles.clickableRow} onClick={() => navigate(`/rd/requirements/${r.id}`)}>
+                <tr key={r.id} className={styles.clickableRow} onClick={() => navigate(`/rd/requirements/${encodeId(r.id)}`)}>
                   <td>{r.title}</td>
                   <td>
                     <span className={`${styles.badge} ${styles[`priority_${r.priority}`]}`}>{priorityText[r.priority]}</span>
@@ -175,7 +176,7 @@ const Dashboard: React.FC = () => {
             </thead>
             <tbody>
               {recentBugs.map((b) => (
-                <tr key={b.id} className={styles.clickableRow} onClick={() => navigate(`/rd/bugs/${b.id}`)}>
+                <tr key={b.id} className={styles.clickableRow} onClick={() => navigate(`/rd/bugs/${encodeId(b.id)}`)}>
                   <td>{b.title}</td>
                   <td>
                     <span className={`${styles.badge} ${styles[`severity_${b.severity}`]}`}>{severityText[b.severity]}</span>
@@ -225,7 +226,7 @@ const Dashboard: React.FC = () => {
             </thead>
             <tbody>
               {recentTasks.map((t) => (
-                <tr key={t.id} className={styles.clickableRow}>
+                <tr key={t.id} className={styles.clickableRow} onClick={() => navigate(`/rd/tasks/${encodeId(t.id)}`)}>
                   <td>{t.title}</td>
                   <td>
                     <span className={`${styles.badge} ${styles[`status_${t.status}`]}`}>{statusText[t.status]}</span>

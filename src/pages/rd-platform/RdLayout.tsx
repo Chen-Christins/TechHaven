@@ -7,7 +7,7 @@ import Notification from "../../components/notification/Notification";
 import UserDropdown from "../../components/userDropdown/UserDropdown";
 import Footer from "../../components/footer/Footer";
 import { useAuth } from "../../contexts/AuthContext";
-import { RdOrgProvider } from "../../contexts/RdOrgContext";
+import { RdOrgProvider, useRdOrg } from "../../contexts/RdOrgContext";
 
 interface NavItem {
   id: string;
@@ -71,6 +71,26 @@ const RdLayout: React.FC = () => {
       items: [{ id: "myTickets", label: "我的工单", icon: <FaTicketAlt />, path: "/rd/my-tickets" }],
     },
   ];
+
+  const orgRoleNames: Record<number, string> = {
+    1: "普通成员",
+    2: "报告者",
+    3: "开发者",
+    4: "研发主管",
+    5: "组织管理员",
+  };
+
+  const RdHeaderActions: React.FC = () => {
+    const { maxOrgRole } = useRdOrg();
+    const orgRoleName = orgRoleNames[maxOrgRole] || "";
+    return (
+      <div className={styles.rdTopBarActions}>
+        <ThemeToggle />
+        <Notification />
+        <UserDropdown user={user} onLogout={handleLogout} showAdminLink={false} roleOverride={orgRoleName} />
+      </div>
+    );
+  };
 
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
@@ -198,44 +218,40 @@ const RdLayout: React.FC = () => {
           </nav>
         </aside>
 
-        <main className={`${styles.rdMainContent} ${sidebarCollapsed ? styles.expanded : ""}`}>
-          <header className={styles.rdTopBar}>
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <button className={styles.mobileMenuBtn} onClick={toggleMobileMenu} aria-label="打开菜单">
-                <FaBars />
-              </button>
+        <RdOrgProvider>
+          <main className={`${styles.rdMainContent} ${sidebarCollapsed ? styles.expanded : ""}`}>
+            <header className={styles.rdTopBar}>
+              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <button className={styles.mobileMenuBtn} onClick={toggleMobileMenu} aria-label="打开菜单">
+                  <FaBars />
+                </button>
 
-              <nav className={styles.rdBreadcrumb}>
-                {breadcrumbs.map((crumb, index) => (
-                  <React.Fragment key={index}>
-                    {index > 0 && <span className={styles.breadcrumbSeparator}>/</span>}
-                    {index === breadcrumbs.length - 1 ? (
-                      <span className={styles.breadcrumbActive}>{crumb.label}</span>
-                    ) : (
-                      <div onClick={() => navigate(crumb.path)} className={styles.breadcrumbLink}>
-                        {crumb.label}
-                      </div>
-                    )}
-                  </React.Fragment>
-                ))}
-              </nav>
-            </div>
+                <nav className={styles.rdBreadcrumb}>
+                  {breadcrumbs.map((crumb, index) => (
+                    <React.Fragment key={index}>
+                      {index > 0 && <span className={styles.breadcrumbSeparator}>/</span>}
+                      {index === breadcrumbs.length - 1 ? (
+                        <span className={styles.breadcrumbActive}>{crumb.label}</span>
+                      ) : (
+                        <div onClick={() => navigate(crumb.path)} className={styles.breadcrumbLink}>
+                          {crumb.label}
+                        </div>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </nav>
+              </div>
 
-            <div className={styles.rdTopBarActions}>
-              <ThemeToggle />
-              <Notification />
-              <UserDropdown user={user} onLogout={handleLogout} showAdminLink={false} />
-            </div>
-          </header>
+              <RdHeaderActions />
+            </header>
 
-          <div className={styles.rdPageContent}>
-            <RdOrgProvider>
+            <div className={styles.rdPageContent}>
               <Outlet />
-            </RdOrgProvider>
-          </div>
+            </div>
 
-          <Footer companyName="TechBlog" startYear={2025} />
-        </main>
+            <Footer companyName="TechBlog" startYear={2025} />
+          </main>
+        </RdOrgProvider>
       </div>
     </div>
   );

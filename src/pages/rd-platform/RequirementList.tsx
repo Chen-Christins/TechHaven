@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { encodeId } from "../../utils/hashId";
 import {
   FaPlus,
   FaEye,
@@ -75,6 +77,7 @@ const emptyForm: FormData = {
 
 // ---- component ----
 const RequirementList: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, userOrgIds, orgs, orgNameMap, maxOrgRole } = useRdOrg();
   const [requirements, setRequirements] = useState<Requirement[]>([]);
@@ -204,9 +207,13 @@ const RequirementList: React.FC = () => {
       confirmText: "删除",
       cancelText: "取消",
       onConfirm: async () => {
-        await RdAPI.deleteRequirement(req.id);
-        message.success("需求已删除");
-        fetchData();
+        try {
+          await RdAPI.deleteRequirement(req.id, req.organizationId);
+          message.success("需求已删除");
+          fetchData();
+        } catch (err: any) {
+          message.error(err?.message || "删除失败");
+        }
       },
     });
   };
@@ -342,7 +349,7 @@ const RequirementList: React.FC = () => {
           <tbody>
             {requirements.map((r) => (
               <tr key={r.id}>
-                <td className={styles.titleCell} onClick={() => openView(r)}>
+                <td className={styles.titleCell} onClick={() => navigate(`/rd/requirements/${encodeId(r.id)}`)}>
                   {r.title}
                 </td>
                 <td>
@@ -357,7 +364,7 @@ const RequirementList: React.FC = () => {
                 <td>{new Date(r.createdAt).toLocaleDateString("zh-CN")}</td>
                 <td>
                   <div className={styles.actionButtons}>
-                    <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openView(r)}>
+                    <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => navigate(`/rd/requirements/${encodeId(r.id)}`)}>
                       <FaEye />
                     </button>
                     {OrgPermission.canEditAll(maxOrgRole) && (

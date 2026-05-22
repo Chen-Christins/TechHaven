@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { encodeId } from "../../utils/hashId";
 import {
   FaPlus,
   FaEye,
@@ -96,6 +98,7 @@ const emptyForm: FormData = {
 
 // ---- component ----
 const BugList: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, userOrgIds, orgs, orgNameMap, maxOrgRole } = useRdOrg();
   const [bugs, setBugs] = useState<Bug[]>([]);
@@ -224,9 +227,13 @@ const BugList: React.FC = () => {
       confirmText: "删除",
       cancelText: "取消",
       onConfirm: async () => {
-        await RdAPI.deleteBug(bug.id);
-        message.success("缺陷已删除");
-        fetchData();
+        try {
+          await RdAPI.deleteBug(bug.id, bug.organizationId);
+          message.success("缺陷已删除");
+          fetchData();
+        } catch (err: any) {
+          message.error(err?.message || "删除失败");
+        }
       },
     });
   };
@@ -368,7 +375,7 @@ const BugList: React.FC = () => {
           <tbody>
             {bugs.map((b) => (
               <tr key={b.id}>
-                <td className={styles.titleCell} onClick={() => openView(b)}>
+                <td className={styles.titleCell} onClick={() => navigate(`/rd/bugs/${encodeId(b.id)}`)}>
                   {b.title}
                 </td>
                 <td>
@@ -385,7 +392,7 @@ const BugList: React.FC = () => {
                 <td>{b.creator}</td>
                 <td>
                   <div className={styles.actionButtons}>
-                    <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openView(b)}>
+                    <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => navigate(`/rd/bugs/${encodeId(b.id)}`)}>
                       <FaEye />
                     </button>
                     {OrgPermission.canEditAll(maxOrgRole) && (

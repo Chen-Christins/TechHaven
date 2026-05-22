@@ -183,8 +183,8 @@ export class RdPlatformService {
     return mapRequirement(res.data);
   }
 
-  static async deleteRequirement(id: string): Promise<boolean> {
-    const res = await http.post<any>(`${BASE}/requirements/delete`, { id: Number(id) });
+  static async deleteRequirement(id: string, orgId?: string): Promise<boolean> {
+    const res = await http.post<any>(`${BASE}/requirements/delete`, { id: Number(id), org_id: Number(orgId) || 0 });
     return res.code === 200 || (res as any).success;
   }
 
@@ -251,8 +251,8 @@ export class RdPlatformService {
     return mapBug(res.data);
   }
 
-  static async deleteBug(id: string): Promise<boolean> {
-    const res = await http.post<any>(`${BASE}/bugs/delete`, { id: Number(id) });
+  static async deleteBug(id: string, orgId?: string): Promise<boolean> {
+    const res = await http.post<any>(`${BASE}/bugs/delete`, { id: Number(id), org_id: Number(orgId) || 0 });
     return res.code === 200 || (res as any).success;
   }
 
@@ -315,8 +315,8 @@ export class RdPlatformService {
     return mapTask(res.data);
   }
 
-  static async deleteTask(id: string): Promise<boolean> {
-    const res = await http.post<any>(`${BASE}/tasks/delete`, { id: Number(id) });
+  static async deleteTask(id: string, orgId?: string): Promise<boolean> {
+    const res = await http.post<any>(`${BASE}/tasks/delete`, { id: Number(id), org_id: Number(orgId) || 0 });
     return res.code === 200 || (res as any).success;
   }
 

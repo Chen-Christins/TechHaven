@@ -36,6 +36,7 @@ import RequirementList from "../pages/rd-platform/RequirementList";
 import BugList from "../pages/rd-platform/BugList";
 import TaskList from "../pages/rd-platform/TaskList";
 import MyTickets from "../pages/rd-platform/MyTickets";
+import TicketDetail from "../pages/rd-platform/TicketDetail";
 
 const RouterConfig: React.FC = () => {
   return (
@@ -104,8 +105,11 @@ const RouterConfig: React.FC = () => {
       <Route path="/rd" element={<RdLayout />}>
         <Route index element={<RdDashboard />} />
         <Route path="requirements" element={<RequirementList />} />
+        <Route path="requirements/:id" element={<TicketDetail />} />
         <Route path="bugs" element={<BugList />} />
+        <Route path="bugs/:id" element={<TicketDetail />} />
         <Route path="tasks" element={<TaskList />} />
+        <Route path="tasks/:id" element={<TicketDetail />} />
         <Route path="my-tickets" element={<MyTickets />} />
       </Route>
 
