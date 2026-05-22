@@ -33,12 +33,9 @@ import GMProtocol from "../pages/gm/GMProtocol";
 import RdLayout from "../pages/rd-platform/RdLayout";
 import RdDashboard from "../pages/rd-platform/Dashboard";
 import RequirementList from "../pages/rd-platform/RequirementList";
-import RequirementForm from "../pages/rd-platform/RequirementForm";
-import RequirementDetail from "../pages/rd-platform/RequirementDetail";
 import BugList from "../pages/rd-platform/BugList";
-import BugForm from "../pages/rd-platform/BugForm";
-import BugDetail from "../pages/rd-platform/BugDetail";
 import TaskList from "../pages/rd-platform/TaskList";
+import MyTickets from "../pages/rd-platform/MyTickets";
 
 const RouterConfig: React.FC = () => {
   return (
@@ -107,14 +104,9 @@ const RouterConfig: React.FC = () => {
       <Route path="/rd" element={<RdLayout />}>
         <Route index element={<RdDashboard />} />
         <Route path="requirements" element={<RequirementList />} />
-        <Route path="requirements/create" element={<RequirementForm />} />
-        <Route path="requirements/:id" element={<RequirementDetail />} />
-        <Route path="requirements/:id/edit" element={<RequirementForm />} />
         <Route path="bugs" element={<BugList />} />
-        <Route path="bugs/create" element={<BugForm />} />
-        <Route path="bugs/:id" element={<BugDetail />} />
-        <Route path="bugs/:id/edit" element={<BugForm />} />
         <Route path="tasks" element={<TaskList />} />
+        <Route path="my-tickets" element={<MyTickets />} />
       </Route>
 
       {/* 404 页面 */}

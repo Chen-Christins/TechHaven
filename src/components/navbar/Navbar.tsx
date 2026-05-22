@@ -171,7 +171,7 @@ const Navbar: React.FC = () => {
 
     const links = [...navLinks];
     if (isAuthenticated) {
-      links.push({ label: "研发平台", icon: <FaFlask />, path: "/rd" });
+      links.push({ label: "研发", icon: <FaFlask />, path: "/rd" });
     }
     if (isAuthenticated && user?.role === "管理员") {
       links.push({ label: "游戏", icon: <FaGamepad />, path: "/gm" });

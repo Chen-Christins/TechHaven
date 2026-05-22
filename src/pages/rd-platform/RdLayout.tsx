@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, Outlet, useNavigate } from "react-router-dom";
-import { FaHome, FaBars, FaTimes, FaClipboardList, FaBug, FaTasks } from "react-icons/fa";
+import { FaHome, FaBars, FaTimes, FaClipboardList, FaBug, FaTasks, FaTicketAlt } from "react-icons/fa";
 import styles from "./RdLayout.module.css";
 import ThemeToggle from "../../components/themeToggle/ThemeToggle";
 import Notification from "../../components/notification/Notification";
@@ -64,6 +64,10 @@ const RdLayout: React.FC = () => {
         { id: "bugs", label: "缺陷管理", icon: <FaBug />, path: "/rd/bugs" },
         { id: "tasks", label: "任务管理", icon: <FaTasks />, path: "/rd/tasks" },
       ],
+    },
+    {
+      title: "与我相关",
+      items: [{ id: "myTickets", label: "我的工单", icon: <FaTicketAlt />, path: "/rd/my-tickets" }],
     },
   ];
 

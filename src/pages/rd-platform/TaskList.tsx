@@ -415,7 +415,12 @@ const TaskList: React.FC = () => {
               >
                 负责人
               </label>
-              <Input placeholder="请输入负责人" value={form.assignee} onChange={(val) => handleFormChange("assignee", val)} />
+              <Input
+                placeholder="请输入负责人"
+                value={form.assignee}
+                onChange={(val) => handleFormChange("assignee", val)}
+                size="large"
+              />
             </div>
             <div style={{ flex: 1 }}>
               <label
@@ -423,7 +428,12 @@ const TaskList: React.FC = () => {
               >
                 截止日期
               </label>
-              <Input placeholder="如 2026-05-30" value={form.deadline} onChange={(val) => handleFormChange("deadline", val)} />
+              <Input
+                placeholder="如 2026-05-30"
+                value={form.deadline}
+                onChange={(val) => handleFormChange("deadline", val)}
+                size="large"
+              />
             </div>
           </div>
 
@@ -439,6 +449,7 @@ const TaskList: React.FC = () => {
                 value={String(form.estimatedHours || "")}
                 onChange={(val) => handleFormChange("estimatedHours", Number(val) || 0)}
                 type="number"
+                size="large"
               />
             </div>
             <div style={{ flex: 1 }}>
@@ -447,7 +458,12 @@ const TaskList: React.FC = () => {
               >
                 关联需求 ID
               </label>
-              <Input placeholder="选填" value={form.requirementId} onChange={(val) => handleFormChange("requirementId", val)} />
+              <Input
+                placeholder="选填"
+                value={form.requirementId}
+                onChange={(val) => handleFormChange("requirementId", val)}
+                size="large"
+              />
             </div>
           </div>
 

@@ -9,6 +9,7 @@ import message from "../../components/message/Message";
 import { useAuth } from "../../contexts/AuthContext";
 import { RdPlatformMockService } from "../../services/rdPlatformMockService";
 import type { SelectOption } from "../../types";
+import type { Requirement } from "../../types/rdPlatform";
 
 const priorityOptions: SelectOption[] = [
   { id: "high", name: "高", color: "#ef4444" },

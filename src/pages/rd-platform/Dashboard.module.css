@@ -140,6 +140,11 @@
   overflow: hidden;
 }
 
+.table th:not(:first-child),
+.table td:not(:first-child) {
+  text-align: center;
+}
+
 .table th {
   text-align: left;
   padding: 12px 16px;

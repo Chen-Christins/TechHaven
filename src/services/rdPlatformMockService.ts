@@ -65,8 +65,12 @@ function seedIfEmpty(): void {
   }
 }
 
+type SeedRequirement = Omit<Requirement, "id" | "createdAt" | "updatedAt">;
+type SeedBug = Omit<Bug, "id" | "createdAt" | "updatedAt">;
+type SeedTask = Omit<Task, "id" | "createdAt" | "updatedAt">;
+
 function seedRequirements(): Requirement[] {
-  const items: Requirement[] = [
+  const items: SeedRequirement[] = [
     {
       title: "用户登录页面优化",
       description: "优化登录页面UI，增加社交账号登录方式，支持微信扫码登录。",
@@ -167,7 +171,7 @@ function seedRequirements(): Requirement[] {
 }
 
 function seedBugs(): Bug[] {
-  const items: Bug[] = [
+  const items: SeedBug[] = [
     {
       title: "登录页面白屏",
       description: "iOS Safari 浏览器下登录页面偶现白屏，需刷新后才能正常显示。",
@@ -270,7 +274,7 @@ function seedBugs(): Bug[] {
 }
 
 function seedTasks(): Task[] {
-  const items: Task[] = [
+  const items: SeedTask[] = [
     {
       title: "编写登录模块单元测试",
       description: "为登录页面组件编写单元测试，覆盖正常登录、登录失败、表单校验等场景。",
