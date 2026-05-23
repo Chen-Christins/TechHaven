@@ -108,6 +108,7 @@ export interface CustomSelectProps {
   onChange?: (selectedOption: SelectOption | null, selectedIndex: number, oldIndex: number) => void;
   className?: string;
   hideBadge?: boolean;
+  disabled?: boolean;
 }
 
 export interface SelectChangeEventDetail {

@@ -21,6 +21,16 @@
   border-color: var(--primary);
 }
 
+.selectDisabled {
+  background-color: var(--bg-secondary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.selectDisabled:hover {
+  border-color: var(--border-primary);
+}
+
 .selectOpen {
   border-color: var(--primary);
   box-shadow: var(--focus-ring);

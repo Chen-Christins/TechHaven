@@ -561,6 +561,7 @@ const RequirementList: React.FC = () => {
                   }
                   onChange={(o) => setFormField("organizationId", (o?.id as string) || "")}
                   hideBadge
+                  disabled={modalMode === "edit"}
                 />
               </div>
             )}

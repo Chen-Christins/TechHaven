@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 import styles from "./ListPage.module.css";
 import Input from "../../components/input/Input";
+import DatePicker from "../../components/input/DatePicker";
 import CustomSelect from "../../components/customSelect/CustomSelect";
 import Modal from "../../components/modal/Modal";
 import Loading from "../../components/loading/Loading";
@@ -411,11 +412,12 @@ const MyTickets: React.FC = () => {
           <div style={{ display: "flex", gap: "16px" }}>
             <div style={{ flex: 1 }}>
               {formLabel("截止日期")}
-              <Input
-                placeholder="YYYY-MM-DD"
-                value={editForm.deadline || ""}
-                onChange={(v) => setEditForm((p) => ({ ...p, deadline: v }))}
+              <DatePicker
+                placeholder="选择截止日期"
+                value={editForm.deadline ? new Date(editForm.deadline) : null}
+                onChange={(date) => setEditForm((p) => ({ ...p, deadline: date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}` : "" }))}
                 size="large"
+                style={{ width: "100%" }}
               />
             </div>
             <div style={{ flex: 1 }}>
@@ -849,8 +851,8 @@ const MyTickets: React.FC = () => {
                       {renderField_("迭代", r.iteration)}
                       {renderField_("分类", r.category)}
                       {renderField_("来源", r.source)}
-                      {renderField_("创建时间", new Date(r.createdAt).toLocaleString("zh-CN"))}
-                      {renderField_("更新时间", new Date(r.updatedAt).toLocaleString("zh-CN"))}
+                      {renderField_("创建时间", r.createdAt ? new Date(r.createdAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
+                      {renderField_("更新时间", r.updatedAt ? new Date(r.updatedAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
                     </div>
                     <div>
                       <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
@@ -888,8 +890,8 @@ const MyTickets: React.FC = () => {
                       {renderField_("所属模块", b.module)}
                       {renderField_("关联需求", b.relatedRequirementId)}
                       {renderField_("运行环境", b.environment)}
-                      {renderField_("创建时间", new Date(b.createdAt).toLocaleString("zh-CN"))}
-                      {renderField_("更新时间", new Date(b.updatedAt).toLocaleString("zh-CN"))}
+                      {renderField_("创建时间", b.createdAt ? new Date(b.createdAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
+                      {renderField_("更新时间", b.updatedAt ? new Date(b.updatedAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
                     </div>
                     <div style={{ marginBottom: b.stepsToReproduce ? "20px" : "0" }}>
                       <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
@@ -939,8 +941,8 @@ const MyTickets: React.FC = () => {
                         t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN").replace(/\//g, "-") : "-",
                       )}
                       {renderField_("预估工时", `${t.estimatedHours}h`)}
-                      {renderField_("创建时间", new Date(t.createdAt).toLocaleString("zh-CN"))}
-                      {renderField_("更新时间", new Date(t.updatedAt).toLocaleString("zh-CN"))}
+                      {renderField_("创建时间", t.createdAt ? new Date(t.createdAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
+                      {renderField_("更新时间", t.updatedAt ? new Date(t.updatedAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
                     </div>
                     <div>
                       <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>

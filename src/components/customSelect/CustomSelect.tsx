@@ -11,6 +11,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   onChange,
   className = "",
   hideBadge = false,
+  disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [openUpwards, setOpenUpwards] = useState(false);
@@ -45,6 +46,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   }, []);
 
   const toggleDropdown = () => {
+    if (disabled) return;
     if (isOpen) {
       closeDropdown();
     } else {
@@ -118,7 +120,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   return (
     <div ref={containerRef} className={`${styles.container} ${className}`}>
       {/* 选择框 */}
-      <div className={`${styles.select} ${isOpen ? styles.selectOpen : ""}`} onClick={toggleDropdown}>
+      <div
+        className={`${styles.select} ${isOpen ? styles.selectOpen : ""} ${disabled ? styles.selectDisabled : ""}`}
+        onClick={toggleDropdown}
+      >
         <div className={`${styles.value} ${isPlaceholder ? styles.placeholder : ""}`}>{getDisplayValue()}</div>
         <div className={styles.arrow}>
           <i className="bi bi-chevron-down"></i>

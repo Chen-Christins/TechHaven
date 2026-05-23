@@ -4,6 +4,7 @@ import { FaArrowLeft, FaEdit, FaSave, FaTimes, FaClipboardList, FaBug, FaTasks }
 import styles from "./TicketDetail.module.css";
 import Loading from "../../components/loading/Loading";
 import Input from "../../components/input/Input";
+import DatePicker from "../../components/input/DatePicker";
 import CustomSelect from "../../components/customSelect/CustomSelect";
 import message from "../../components/message/Message";
 import { useRdOrg } from "../../contexts/RdOrgContext";
@@ -423,11 +424,12 @@ const TicketDetail: React.FC = () => {
               <div className={styles.formRow}>
                 <div className={styles.formField}>
                   {fieldLabel("截止日期")}
-                  <Input
-                    placeholder="YYYY-MM-DD"
-                    value={form.deadline || ""}
-                    onChange={(v) => setForm((p) => ({ ...p, deadline: v }))}
+                  <DatePicker
+                    placeholder="选择截止日期"
+                    value={form.deadline ? new Date(form.deadline) : null}
+                    onChange={(date) => setForm((p) => ({ ...p, deadline: date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}` : "" }))}
                     size="large"
+                    style={{ width: "100%" }}
                   />
                 </div>
                 <div className={styles.formField}>
@@ -534,8 +536,8 @@ const TicketDetail: React.FC = () => {
                 </>
               )}
 
-              {metaField("创建时间", item.createdAt ? new Date(item.createdAt).toLocaleString("zh-CN") : "-")}
-              {metaField("更新时间", item.updatedAt ? new Date(item.updatedAt).toLocaleString("zh-CN") : "-")}
+              {metaField("创建时间", item.createdAt ? new Date(item.createdAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
+              {metaField("更新时间", item.updatedAt ? new Date(item.updatedAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
             </div>
 
             {/* Description */}
