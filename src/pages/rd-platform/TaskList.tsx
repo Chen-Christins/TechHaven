@@ -556,7 +556,9 @@ const TaskList: React.FC = () => {
                 placeholder="请选择截止日期"
                 value={form.deadline ? new Date(form.deadline) : undefined}
                 onChange={(date) => {
-                  const str = date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}` : "";
+                  const str = date
+                    ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+                    : "";
                   handleFormChange("deadline", str);
                 }}
                 size="large"

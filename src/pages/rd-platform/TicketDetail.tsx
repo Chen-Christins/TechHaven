@@ -426,8 +426,15 @@ const TicketDetail: React.FC = () => {
                   {fieldLabel("截止日期")}
                   <DatePicker
                     placeholder="选择截止日期"
-                    value={form.deadline ? new Date(form.deadline) : null}
-                    onChange={(date) => setForm((p) => ({ ...p, deadline: date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}` : "" }))}
+                    value={form.deadline ? new Date(form.deadline) : undefined}
+                    onChange={(date) =>
+                      setForm((p) => ({
+                        ...p,
+                        deadline: date
+                          ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+                          : "",
+                      }))
+                    }
                     size="large"
                     style={{ width: "100%" }}
                   />

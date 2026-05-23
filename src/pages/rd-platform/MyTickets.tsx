@@ -414,8 +414,15 @@ const MyTickets: React.FC = () => {
               {formLabel("截止日期")}
               <DatePicker
                 placeholder="选择截止日期"
-                value={editForm.deadline ? new Date(editForm.deadline) : null}
-                onChange={(date) => setEditForm((p) => ({ ...p, deadline: date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}` : "" }))}
+                value={editForm.deadline ? new Date(editForm.deadline) : undefined}
+                onChange={(date) =>
+                  setEditForm((p) => ({
+                    ...p,
+                    deadline: date
+                      ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+                      : "",
+                  }))
+                }
                 size="large"
                 style={{ width: "100%" }}
               />
