@@ -129,12 +129,6 @@ const RequirementList: React.FC = () => {
     setModalVisible(true);
   };
 
-  const openView = (req: Requirement) => {
-    setModalMode("view");
-    setSelectedReq(req);
-    setModalVisible(true);
-  };
-
   const openEdit = (req: Requirement) => {
     setModalMode("edit");
     setSelectedReq(req);
@@ -364,7 +358,11 @@ const RequirementList: React.FC = () => {
                 <td>{new Date(r.createdAt).toLocaleDateString("zh-CN")}</td>
                 <td>
                   <div className={styles.actionButtons}>
-                    <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => navigate(`/rd/requirements/${encodeId(r.id)}`)}>
+                    <button
+                      className={`${styles.actionBtn} ${styles.view}`}
+                      title="查看"
+                      onClick={() => navigate(`/rd/requirements/${encodeId(r.id)}`)}
+                    >
                       <FaEye />
                     </button>
                     {OrgPermission.canEditAll(maxOrgRole) && (

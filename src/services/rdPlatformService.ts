@@ -159,7 +159,7 @@ export class RdPlatformService {
       category: params.category,
       source: params.source,
     };
-    const res = await http.post<any>(`${BASE}/requirements`, body);
+    const res = await http.post<any>(`${BASE}/requirements/edit`, body);
     return mapRequirement(res.data);
   }
 
@@ -178,7 +178,7 @@ export class RdPlatformService {
     if (params.category !== undefined) body.category = params.category;
     if (params.source !== undefined) body.source = params.source;
 
-    const res = await http.post<any>(`${BASE}/requirements`, body);
+    const res = await http.post<any>(`${BASE}/requirements/edit`, body);
     if (!res.data) return null;
     return mapRequirement(res.data);
   }
@@ -228,7 +228,7 @@ export class RdPlatformService {
       steps_to_reproduce: params.stepsToReproduce,
       environment: params.environment,
     };
-    const res = await http.post<any>(`${BASE}/bugs`, body);
+    const res = await http.post<any>(`${BASE}/bugs/edit`, body);
     return mapBug(res.data);
   }
 
@@ -246,7 +246,7 @@ export class RdPlatformService {
     if (params.stepsToReproduce !== undefined) body.steps_to_reproduce = params.stepsToReproduce;
     if (params.environment !== undefined) body.environment = params.environment;
 
-    const res = await http.post<any>(`${BASE}/bugs`, body);
+    const res = await http.post<any>(`${BASE}/bugs/edit`, body);
     if (!res.data) return null;
     return mapBug(res.data);
   }
@@ -294,7 +294,7 @@ export class RdPlatformService {
       deadline: params.deadline,
       estimated_hours: params.estimatedHours,
     };
-    const res = await http.post<any>(`${BASE}/tasks`, body);
+    const res = await http.post<any>(`${BASE}/tasks/edit`, body);
     return mapTask(res.data);
   }
 
@@ -310,7 +310,7 @@ export class RdPlatformService {
     if (params.deadline !== undefined) body.deadline = params.deadline;
     if (params.estimatedHours !== undefined) body.estimated_hours = params.estimatedHours;
 
-    const res = await http.post<any>(`${BASE}/tasks`, body);
+    const res = await http.post<any>(`${BASE}/tasks/edit`, body);
     if (!res.data) return null;
     return mapTask(res.data);
   }

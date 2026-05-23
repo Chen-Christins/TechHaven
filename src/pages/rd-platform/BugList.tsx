@@ -150,11 +150,6 @@ const BugList: React.FC = () => {
     setForm({ ...emptyForm, organizationId: getDefaultOrgId() });
     setModalVisible(true);
   };
-  const openView = (bug: Bug) => {
-    setModalMode("view");
-    setSelectedBug(bug);
-    setModalVisible(true);
-  };
   const openEdit = (bug: Bug) => {
     setModalMode("edit");
     setSelectedBug(bug);
@@ -392,7 +387,11 @@ const BugList: React.FC = () => {
                 <td>{b.creator}</td>
                 <td>
                   <div className={styles.actionButtons}>
-                    <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => navigate(`/rd/bugs/${encodeId(b.id)}`)}>
+                    <button
+                      className={`${styles.actionBtn} ${styles.view}`}
+                      title="查看"
+                      onClick={() => navigate(`/rd/bugs/${encodeId(b.id)}`)}
+                    >
                       <FaEye />
                     </button>
                     {OrgPermission.canEditAll(maxOrgRole) && (

@@ -320,7 +320,9 @@ const TaskList: React.FC = () => {
           <tbody>
             {tasks.map((t) => (
               <tr key={t.id}>
-                <td className={styles.titleCell} onClick={() => navigate(`/rd/tasks/${encodeId(t.id)}`)}>{t.title}</td>
+                <td className={styles.titleCell} onClick={() => navigate(`/rd/tasks/${encodeId(t.id)}`)}>
+                  {t.title}
+                </td>
                 <td>
                   <span className={`${styles.badge} ${styles[`status_${t.status}`]}`}>{statusText[t.status]}</span>
                 </td>
@@ -332,7 +334,11 @@ const TaskList: React.FC = () => {
                 <td>{t.estimatedHours ? `${t.estimatedHours}h` : "-"}</td>
                 <td>
                   <div className={styles.actionButtons}>
-                    <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => navigate(`/rd/tasks/${encodeId(t.id)}`)}>
+                    <button
+                      className={`${styles.actionBtn} ${styles.view}`}
+                      title="查看"
+                      onClick={() => navigate(`/rd/tasks/${encodeId(t.id)}`)}
+                    >
                       <FaEye />
                     </button>
                     {OrgPermission.canEditAll(maxOrgRole) && (

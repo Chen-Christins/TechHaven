@@ -67,7 +67,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout, showAdminLi
         <Avatar src={user.avatar} name={user.name} size={36} className={styles.userAvatar} />
         <div className={styles.userDetails}>
           <div className={styles.userName}>{user.name}</div>
-          {((roleOverride || user.role)) && <div className={styles.userRole}>{roleOverride || user.role}</div>}
+          {(roleOverride || user.role) && <div className={styles.userRole}>{roleOverride || user.role}</div>}
         </div>
         <div className={`${styles.dropdownArrow} ${isOpen ? styles.open : ""}`}>
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">

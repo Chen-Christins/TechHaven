@@ -112,27 +112,79 @@
 
 /* priority */
 .priority_urgent,
-.priority_high { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-.priority_medium { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
-.priority_low { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.priority_high {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+.priority_medium {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+.priority_low {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
 
 /* status */
 .status_new,
-.status_todo { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+.status_todo {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
 .status_developing,
 .status_doing,
-.status_processing { background: #fef9c3; color: #ca8a04; border: 1px solid #fef08a; }
+.status_processing {
+  background: #fef9c3;
+  color: #ca8a04;
+  border: 1px solid #fef08a;
+}
 .status_testing,
-.status_verified { background: #f3e8ff; color: #7c3aed; border: 1px solid #ddd6fe; }
-.status_done { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
-.status_closed { background: #f9fafb; color: #6b7280; border: 1px solid #e5e7eb; }
-.status_reopened { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.status_verified {
+  background: #f3e8ff;
+  color: #7c3aed;
+  border: 1px solid #ddd6fe;
+}
+.status_done {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+.status_closed {
+  background: #f9fafb;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+.status_reopened {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
 
 /* severity */
-.severity_fatal { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
-.severity_serious { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
-.severity_normal { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-.severity_minor { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.severity_fatal {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+.severity_serious {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+.severity_normal {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+.severity_minor {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
 
 /* ======== Meta Grid (field cards) ======== */
 
