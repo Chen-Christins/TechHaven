@@ -70,8 +70,8 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({ org, stats, onJoin 
           <div className={`${styles.statIcon} ${styles.warning}`}>
             <FaUser />
           </div>
-          <div className={styles.statValue}>{stats.leaderMembers}</div>
-          <div className={styles.statLabel}>负责人</div>
+          <div className={styles.statValue}>{stats.orgAdminMembers}</div>
+          <div className={styles.statLabel}>组织管理员</div>
         </div>
         <div className={styles.statCard}>
           <div className={`${styles.statIcon} ${styles.error}`}>

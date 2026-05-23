@@ -24,8 +24,8 @@ export interface OrganizationDetail {
 export interface MemberStats {
   totalMembers: number;
   activeMembers: number;
-  leaderMembers: number;
-  deputyMembers: number;
+  orgAdminMembers: number;
+  devLeadMembers: number;
   regularMembers: number;
 }
 

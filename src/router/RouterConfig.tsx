@@ -30,6 +30,13 @@ import ChunkUploadTest from "../pages/test/ChunkUploadTest";
 import GMShell from "../pages/gm/GMShell";
 import GMDashboard from "../pages/gm/GMDashboard";
 import GMProtocol from "../pages/gm/GMProtocol";
+import RdLayout from "../pages/rd-platform/RdLayout";
+import RdDashboard from "../pages/rd-platform/Dashboard";
+import RequirementList from "../pages/rd-platform/RequirementList";
+import BugList from "../pages/rd-platform/BugList";
+import TaskList from "../pages/rd-platform/TaskList";
+import MyTickets from "../pages/rd-platform/MyTickets";
+import TicketDetail from "../pages/rd-platform/TicketDetail";
 
 const RouterConfig: React.FC = () => {
   return (
@@ -92,6 +99,18 @@ const RouterConfig: React.FC = () => {
         <Route index element={<Navigate to="/gm/dashboard" replace />} />
         <Route path="dashboard" element={<GMDashboard />} />
         <Route path="protocol" element={<GMProtocol />} />
+      </Route>
+
+      {/* 研发平台 */}
+      <Route path="/rd" element={<RdLayout />}>
+        <Route index element={<RdDashboard />} />
+        <Route path="requirements" element={<RequirementList />} />
+        <Route path="requirements/:id" element={<TicketDetail />} />
+        <Route path="bugs" element={<BugList />} />
+        <Route path="bugs/:id" element={<TicketDetail />} />
+        <Route path="tasks" element={<TaskList />} />
+        <Route path="tasks/:id" element={<TicketDetail />} />
+        <Route path="my-tickets" element={<MyTickets />} />
       </Route>
 
       {/* 404 页面 */}

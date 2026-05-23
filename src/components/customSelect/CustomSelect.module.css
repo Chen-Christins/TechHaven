@@ -21,6 +21,16 @@
   border-color: var(--primary);
 }
 
+.selectDisabled {
+  background-color: var(--bg-secondary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.selectDisabled:hover {
+  border-color: var(--border-primary);
+}
+
 .selectOpen {
   border-color: var(--primary);
   box-shadow: var(--focus-ring);
@@ -213,6 +223,16 @@ div.adminCustomSelect .badge {
   height: 24px;
   border-radius: 50%;
   margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: 12px;
+  flex-shrink: 0;
+  object-fit: cover;
 }
 
 /* CSS Variables */

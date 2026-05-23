@@ -14,7 +14,7 @@ import { confirm } from "../../components/confirm/Confirm";
 import OrganizationInfo from "../../components/organization/OrganizationInfo";
 import OrganizationTabs from "../../components/organization/OrganizationTabs";
 import type { Member, OrganizationDetail as OrganizationDetailType, MemberStats, Task } from "../../components/organization/types";
-import { FaUser, FaUserShield, FaCrown } from "react-icons/fa";
+import { FaUser, FaUserShield, FaCrown, FaUserCheck, FaCode } from "react-icons/fa";
 import Input from "../../components/input/Input";
 import DatePicker from "../../components/input/DatePicker";
 import CustomSelect from "../../components/customSelect/CustomSelect";
@@ -30,9 +30,11 @@ const MAP_STATUS_TO_TEXT: Record<number, string> = {
 };
 
 const MAP_ROLE_TO_TEXT: Record<number, string> = {
-  1: "成员",
-  2: "管理员",
-  3: "会长",
+  1: "普通成员",
+  2: "报告者",
+  3: "开发者",
+  4: "研发主管",
+  5: "组织管理员",
 };
 
 // 状态映射
@@ -77,8 +79,8 @@ const OrganizationDetail: React.FC = () => {
   const [stats, setStats] = useState<MemberStats>({
     totalMembers: 0,
     activeMembers: 0,
-    leaderMembers: 0,
-    deputyMembers: 0,
+    orgAdminMembers: 0,
+    devLeadMembers: 0,
     regularMembers: 0,
   });
   const [userRole, setUserRole] = useState<"leader" | "admin" | "member" | "guest" | null>(null);
@@ -120,14 +122,14 @@ const OrganizationDetail: React.FC = () => {
   const [tasksTotal, setTasksTotal] = useState(0);
 
   // Determine if current user is admin/leader of the organization
+  // Role thresholds: 5=组织管理员→leader, 4=研发主管→admin, 1-3=member, 0/undefined=guest
   const checkUserRole = useCallback(
-    (role: string | undefined) => {
+    (role: number | undefined) => {
       if (!currentUser) return null;
-
-      if (role === "会长") return "leader";
-      if (role === "管理员") return "admin";
-      if (role === "成员") return "member";
-      return "guest";
+      if (!role || role === 0) return "guest";
+      if (role >= 5) return "leader";
+      if (role === 4) return "admin";
+      return "member";
     },
     [currentUser],
   );
@@ -154,7 +156,7 @@ const OrganizationDetail: React.FC = () => {
           user_role: typeof res.user_role !== "undefined" && res.user_role > 0 ? MAP_ROLE_TO_TEXT[res.user_role] : undefined,
         };
         setOrg(orgDetail);
-        const role = checkUserRole(orgDetail.user_role);
+        const role = checkUserRole(res.user_role);
         setUserRole(role);
       } catch (e) {
         message.error("获取组织详情失败");
@@ -196,9 +198,9 @@ const OrganizationDetail: React.FC = () => {
           setStats({
             totalMembers: res.total || 0,
             activeMembers: members.length,
-            leaderMembers: members.filter((m) => m.role === "会长").length,
-            deputyMembers: members.filter((m) => m.role === "管理员").length,
-            regularMembers: members.filter((m) => m.role === "成员").length,
+            orgAdminMembers: members.filter((m) => m.role === "组织管理员").length,
+            devLeadMembers: members.filter((m) => m.role === "研发主管").length,
+            regularMembers: members.filter((m) => m.role === "普通成员").length,
           });
 
           setOrg((prevOrg) => (prevOrg ? { ...prevOrg, members, memberCount: res.total || 0 } : prevOrg));
@@ -208,8 +210,8 @@ const OrganizationDetail: React.FC = () => {
           setStats({
             totalMembers: 0,
             activeMembers: 0,
-            leaderMembers: 0,
-            deputyMembers: 0,
+            orgAdminMembers: 0,
+            devLeadMembers: 0,
             regularMembers: 0,
           });
 
@@ -242,7 +244,7 @@ const OrganizationDetail: React.FC = () => {
   // 待处理请求
   useEffect(() => {
     if (!id || !currentUser) return;
-    if (showPendingRequests && (org?.user_role === "管理员" || org?.user_role === "会长")) {
+    if (showPendingRequests && (userRole === "leader" || userRole === "admin")) {
       fetchPendingRequests(pendingRequestsPage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -299,6 +301,7 @@ const OrganizationDetail: React.FC = () => {
         user_id: String(pending.user_id ?? ""),
         org_id: id!,
         state,
+        role: 1, // 新成员默认为普通成员
       });
       // Update local state to remove the request
       setPendingRequests((prev) => prev.filter((req) => req.id !== requestId));
@@ -363,9 +366,9 @@ const OrganizationDetail: React.FC = () => {
         ...prevStats,
         totalMembers: Math.max(0, prevStats.totalMembers - 1),
         activeMembers: Math.max(0, prevStats.activeMembers - 1),
-        leaderMembers: member.role === "会长" ? Math.max(0, prevStats.leaderMembers - 1) : prevStats.leaderMembers,
-        deputyMembers: member.role === "管理员" ? Math.max(0, prevStats.deputyMembers - 1) : prevStats.deputyMembers,
-        regularMembers: member.role === "成员" ? Math.max(0, prevStats.regularMembers - 1) : prevStats.regularMembers,
+        orgAdminMembers: member.role === "组织管理员" ? Math.max(0, prevStats.orgAdminMembers - 1) : prevStats.orgAdminMembers,
+        devLeadMembers: member.role === "研发主管" ? Math.max(0, prevStats.devLeadMembers - 1) : prevStats.devLeadMembers,
+        regularMembers: member.role === "普通成员" ? Math.max(0, prevStats.regularMembers - 1) : prevStats.regularMembers,
       }));
 
       message.success(`已将 ${member.name} 踢出组织`);
@@ -377,9 +380,11 @@ const OrganizationDetail: React.FC = () => {
   // Function to handle setting member role
   const handleSetMemberRole = (member: Member) => {
     const roleOptions = [
-      { value: 1, label: "成员" },
-      { value: 2, label: "管理员" },
-      { value: 3, label: "会长" },
+      { value: 1, label: "普通成员" },
+      { value: 2, label: "报告者" },
+      { value: 3, label: "开发者" },
+      { value: 4, label: "研发主管" },
+      { value: 5, label: "组织管理员" },
     ];
 
     const currentRole = roleOptions.find((r) => r.label === member.role)?.value || 1;
@@ -394,9 +399,11 @@ const OrganizationDetail: React.FC = () => {
     if (!selectedMember) return;
 
     const roleOptions = [
-      { value: 1, label: "成员" },
-      { value: 2, label: "管理员" },
-      { value: 3, label: "会长" },
+      { value: 1, label: "普通成员" },
+      { value: 2, label: "报告者" },
+      { value: 3, label: "开发者" },
+      { value: 4, label: "研发主管" },
+      { value: 5, label: "组织管理员" },
     ];
 
     const currentRole = roleOptions.find((r) => r.label === selectedMember.role)?.value || 1;
@@ -435,14 +442,14 @@ const OrganizationDetail: React.FC = () => {
         const newStats = { ...prevStats };
 
         // Decrease old role count
-        if (oldRoleLabel === "会长") newStats.leaderMembers = Math.max(0, newStats.leaderMembers - 1);
-        else if (oldRoleLabel === "管理员") newStats.deputyMembers = Math.max(0, newStats.deputyMembers - 1);
-        else if (oldRoleLabel === "成员") newStats.regularMembers = Math.max(0, newStats.regularMembers - 1);
+        if (oldRoleLabel === "组织管理员") newStats.orgAdminMembers = Math.max(0, newStats.orgAdminMembers - 1);
+        else if (oldRoleLabel === "研发主管") newStats.devLeadMembers = Math.max(0, newStats.devLeadMembers - 1);
+        else if (oldRoleLabel === "普通成员") newStats.regularMembers = Math.max(0, newStats.regularMembers - 1);
 
         // Increase new role count
-        if (newRoleLabel === "会长") newStats.leaderMembers += 1;
-        else if (newRoleLabel === "管理员") newStats.deputyMembers += 1;
-        else if (newRoleLabel === "成员") newStats.regularMembers += 1;
+        if (newRoleLabel === "组织管理员") newStats.orgAdminMembers += 1;
+        else if (newRoleLabel === "研发主管") newStats.devLeadMembers += 1;
+        else if (newRoleLabel === "普通成员") newStats.regularMembers += 1;
 
         return newStats;
       });
@@ -459,13 +466,13 @@ const OrganizationDetail: React.FC = () => {
   const canManageMember = (member: Member) => {
     if (!userRole || userRole === "guest" || userRole === "member") return false;
 
-    // 管理员不能管理会长和自己
+    // 研发主管不能管理组织管理员和自己
     if (userRole === "admin") {
-      if (member.role === "会长") return false;
-      if (member.role === "管理员" && member.name === currentUser?.name) return false;
+      if (member.role === "组织管理员") return false;
+      if (member.name === currentUser?.name) return false;
     }
 
-    // 会长不能管理自己
+    // 组织管理员不能管理自己
     if (userRole === "leader" && member.name === currentUser?.name) return false;
 
     return true;
@@ -475,14 +482,14 @@ const OrganizationDetail: React.FC = () => {
   const canSetRole = (member: Member) => {
     if (!userRole || userRole === "guest" || userRole === "member") return false;
 
-    // 管理员不能设置会长角色，也不能管理会长和自己
+    // 研发主管不能设置组织管理员的角色，也不能设置自己的角色
     if (userRole === "admin") {
-      if (member.role === "会长") return false;
-      if (member.name === currentUser?.name) return false; // 不能设置自己的角色
-      return true; // 管理员只能设置普通成员为管理员
+      if (member.role === "组织管理员") return false;
+      if (member.name === currentUser?.name) return false;
+      return true;
     }
 
-    // 会长可以设置任何人的角色（除了自己）
+    // 组织管理员可以设置任何人的角色（除了自己）
     if (userRole === "leader") {
       return member.name !== currentUser?.name;
     }
@@ -493,42 +500,20 @@ const OrganizationDetail: React.FC = () => {
   // Function to get available role options based on current user's role
   const getAvailableRoleOptions = () => {
     if (userRole === "admin") {
-      // 管理员只能设置成员为管理员，不能设置会长
+      // 研发主管只能设置普通成员/报告者/开发者
       return [
-        {
-          value: 1,
-          label: "成员",
-          icon: <FaUser />,
-          description: "普通组织成员",
-        },
-        {
-          value: 2,
-          label: "管理员",
-          icon: <FaUserShield />,
-          description: "拥有管理权限",
-        },
+        { value: 1, label: "普通成员", icon: <FaUser />, description: "基础成员权限" },
+        { value: 2, label: "报告者", icon: <FaUserCheck />, description: "可创建需求和缺陷" },
+        { value: 3, label: "开发者", icon: <FaCode />, description: "可参与开发工作" },
       ];
     } else if (userRole === "leader") {
-      // 会长可以设置任何角色
+      // 组织管理员可以设置任何角色
       return [
-        {
-          value: 1,
-          label: "成员",
-          icon: <FaUser />,
-          description: "普通组织成员",
-        },
-        {
-          value: 2,
-          label: "管理员",
-          icon: <FaUserShield />,
-          description: "拥有管理权限",
-        },
-        {
-          value: 3,
-          label: "会长",
-          icon: <FaCrown />,
-          description: "组织最高权限",
-        },
+        { value: 1, label: "普通成员", icon: <FaUser />, description: "基础成员权限" },
+        { value: 2, label: "报告者", icon: <FaUserCheck />, description: "可创建需求和缺陷" },
+        { value: 3, label: "开发者", icon: <FaCode />, description: "可参与开发工作" },
+        { value: 4, label: "研发主管", icon: <FaUserShield />, description: "可管理所有工单" },
+        { value: 5, label: "组织管理员", icon: <FaCrown />, description: "组织最高权限" },
       ];
     }
     return [];
@@ -830,7 +815,7 @@ const OrganizationDetail: React.FC = () => {
             user_role: typeof res.user_role !== "undefined" && res.user_role > 0 ? MAP_ROLE_TO_TEXT[res.user_role] : undefined,
           };
           setOrg(orgDetail);
-          const role = checkUserRole(orgDetail.user_role);
+          const role = checkUserRole(res.user_role);
           setUserRole(role);
         } catch (refreshError) {
           console.error("刷新组织数据失败:", refreshError);

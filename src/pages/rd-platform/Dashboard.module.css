@@ -1,0 +1,264 @@
+.dashboard {
+  max-width: 100%;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.pageDescription {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* Stats */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.statCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 20px;
+  cursor: pointer;
+}
+
+.statCard:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.statIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.statIcon.primary {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.statIcon.success {
+  background-color: var(--success-light, rgba(34, 197, 94, 0.1));
+  color: var(--success, #22c55e);
+}
+
+.statIcon.warning {
+  background-color: var(--warn-light, rgba(234, 179, 8, 0.1));
+  color: var(--warning, #eab308);
+}
+
+.statIcon.danger {
+  background-color: var(--error-light, rgba(239, 68, 68, 0.1));
+  color: var(--error, #ef4444);
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.statLabel {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.statSub {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 32px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.viewAllBtn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.viewAllBtn:hover {
+  background-color: var(--primary-light);
+}
+
+/* Table */
+.tableWrapper {
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--card-bg);
+}
+
+.table th:not(:first-child),
+.table td:not(:first-child) {
+  text-align: center;
+}
+
+.table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.clickableRow {
+  cursor: pointer;
+}
+
+.clickableRow:hover {
+  background-color: var(--bg-hover);
+}
+
+.emptyCell {
+  text-align: center;
+  padding: 48px 16px;
+}
+
+.emptyCellIcon {
+  font-size: 36px;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.emptyCellText {
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.priority_urgent {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+.priority_high {
+  background-color: #fff7ed;
+  color: #ea580c;
+}
+.priority_medium {
+  background-color: #fefce8;
+  color: #ca8a04;
+}
+.priority_low {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.severity_fatal {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+.severity_serious {
+  background-color: #fff7ed;
+  color: #ea580c;
+}
+.severity_normal {
+  background-color: #fefce8;
+  color: #ca8a04;
+}
+.severity_minor {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.status_new,
+.status_todo {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+.status_developing,
+.status_accepted,
+.status_doing {
+  background-color: #fefce8;
+  color: #ca8a04;
+}
+.status_testing,
+.status_processing {
+  background-color: #fdf2f8;
+  color: #c026d3;
+}
+.status_done,
+.status_verified,
+.status_closed {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+.status_reopened {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
