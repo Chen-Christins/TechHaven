@@ -23,6 +23,7 @@ import message from "../../components/message/Message";
 import { useAuth } from "../../contexts/AuthContext";
 import { useRdOrg } from "../../contexts/RdOrgContext";
 import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
+import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
 import type { SelectOption } from "../../types";
 import type { Requirement } from "../../types/rdPlatform";
 import { OrgPermission } from "../../types/rdPlatform";
@@ -91,6 +92,26 @@ const RequirementList: React.FC = () => {
   const [modalMode, setModalMode] = useState<"create" | "view" | "edit">("create");
   const [selectedReq, setSelectedReq] = useState<Requirement | null>(null);
   const [form, setForm] = useState<FormData>({ ...emptyForm });
+  const [memberOptions, setMemberOptions] = useState<SelectOption[]>([]);
+
+  const fetchMembers = async (orgId: string) => {
+    if (!orgId) {
+      setMemberOptions([]);
+      return;
+    }
+    try {
+      const members = await RdAPI.getOrgMembers(orgId);
+      setMemberOptions(members.map((m) => ({ id: m.userId, name: m.name, color: "#6c757d", avatar: m.avatar || "" })));
+    } catch {
+      setMemberOptions([]);
+    }
+  };
+
+  useEffect(() => {
+    if (modalVisible && form.organizationId) {
+      fetchMembers(form.organizationId);
+    }
+  }, [modalVisible, form.organizationId]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -352,7 +373,9 @@ const RequirementList: React.FC = () => {
                 <td>
                   <span className={`${styles.badge} ${styles[`status_${r.status}`]}`}>{statusText[r.status]}</span>
                 </td>
-                <td>{r.assignee || "-"}</td>
+                <td>
+                  <AssigneeDisplay name={r.assignee} avatar={r.assigneeAvatar} />
+                </td>
                 <td>{r.iteration || "-"}</td>
                 <td>{r.creator}</td>
                 <td>{new Date(r.createdAt).toLocaleDateString("zh-CN")}</td>
@@ -365,15 +388,15 @@ const RequirementList: React.FC = () => {
                     >
                       <FaEye />
                     </button>
-                    {OrgPermission.canEditAll(maxOrgRole) && (
-                      <>
-                        <button className={`${styles.actionBtn} ${styles.edit}`} title="编辑" onClick={() => openEdit(r)}>
-                          <FaEdit />
-                        </button>
-                        <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(r)}>
-                          <FaTrash />
-                        </button>
-                      </>
+                    {OrgPermission.canEdit(maxOrgRole) && (
+                      <button className={`${styles.actionBtn} ${styles.edit}`} title="编辑" onClick={() => openEdit(r)}>
+                        <FaEdit />
+                      </button>
+                    )}
+                    {OrgPermission.canDelete(maxOrgRole) && (
+                      <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(r)}>
+                        <FaTrash />
+                      </button>
                     )}
                   </div>
                 </td>
@@ -490,7 +513,7 @@ const RequirementList: React.FC = () => {
                 borderBottom: "1px solid var(--border-primary)",
               }}
             >
-              {renderField("负责人", selectedReq.assignee)}
+              {renderField("负责人", <AssigneeDisplay name={selectedReq.assignee} avatar={selectedReq.assigneeAvatar} />)}
               {renderField("创建人", selectedReq.creator)}
               {renderField("所属组织", orgNameMap[selectedReq.organizationId] || selectedReq.organizationId)}
               {renderField("迭代", selectedReq.iteration)}
@@ -518,30 +541,27 @@ const RequirementList: React.FC = () => {
               <Input placeholder="请输入需求标题" value={form.title} onChange={(v) => setFormField("title", v)} size="large" />
             </div>
             {(isAdmin || orgs.length > 1) && (
-              <div style={{ display: "flex", gap: "16px" }}>
-                <div style={{ flex: 1 }}>
-                  <label
-                    style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                  >
-                    所属组织 {!isAdmin && <span style={{ color: "#ef4444" }}>*</span>}
-                  </label>
-                  <CustomSelect
-                    name="所属组织"
-                    options={orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" }))}
-                    value={
-                      orgs.find((o) => o.orgId === form.organizationId)
-                        ? {
-                            id: form.organizationId,
-                            name: orgs.find((o) => o.orgId === form.organizationId)!.orgName,
-                            color: "#6c757d",
-                          }
-                        : null
-                    }
-                    onChange={(o) => setFormField("organizationId", (o?.id as string) || "")}
-                    hideBadge
-                  />
-                </div>
-                <div style={{ flex: 1 }} />
+              <div>
+                <label
+                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
+                >
+                  所属组织 {!isAdmin && <span style={{ color: "#ef4444" }}>*</span>}
+                </label>
+                <CustomSelect
+                  name="所属组织"
+                  options={orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" }))}
+                  value={
+                    orgs.find((o) => o.orgId === form.organizationId)
+                      ? {
+                          id: form.organizationId,
+                          name: orgs.find((o) => o.orgId === form.organizationId)!.orgName,
+                          color: "#6c757d",
+                        }
+                      : null
+                  }
+                  onChange={(o) => setFormField("organizationId", (o?.id as string) || "")}
+                  hideBadge
+                />
               </div>
             )}
             <div style={{ display: "flex", gap: "16px" }}>
@@ -581,7 +601,16 @@ const RequirementList: React.FC = () => {
                 >
                   负责人
                 </label>
-                <Input placeholder="请输入负责人" value={form.assignee} onChange={(v) => setFormField("assignee", v)} size="large" />
+                <CustomSelect
+                  name="负责人"
+                  options={memberOptions}
+                  value={
+                    memberOptions.find((o) => o.id === form.assignee) ||
+                    (form.assignee ? { id: form.assignee, name: form.assignee, color: "#6c757d" } : null)
+                  }
+                  onChange={(o) => setFormField("assignee", (o?.id as string) || "")}
+                  hideBadge
+                />
               </div>
             </div>
             <div style={{ display: "flex", gap: "16px" }}>

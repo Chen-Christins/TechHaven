@@ -23,6 +23,7 @@ import message from "../../components/message/Message";
 import { useAuth } from "../../contexts/AuthContext";
 import { useRdOrg } from "../../contexts/RdOrgContext";
 import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
+import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
 import type { SelectOption } from "../../types";
 import type { Bug } from "../../types/rdPlatform";
 import { OrgPermission } from "../../types/rdPlatform";
@@ -112,6 +113,26 @@ const BugList: React.FC = () => {
   const [modalMode, setModalMode] = useState<"create" | "view" | "edit">("create");
   const [selectedBug, setSelectedBug] = useState<Bug | null>(null);
   const [form, setForm] = useState<FormData>({ ...emptyForm });
+  const [memberOptions, setMemberOptions] = useState<SelectOption[]>([]);
+
+  const fetchMembers = async (orgId: string) => {
+    if (!orgId) {
+      setMemberOptions([]);
+      return;
+    }
+    try {
+      const members = await RdAPI.getOrgMembers(orgId);
+      setMemberOptions(members.map((m) => ({ id: m.userId, name: m.name, color: "#6c757d", avatar: m.avatar || "" })));
+    } catch {
+      setMemberOptions([]);
+    }
+  };
+
+  useEffect(() => {
+    if (modalVisible && form.organizationId) {
+      fetchMembers(form.organizationId);
+    }
+  }, [modalVisible, form.organizationId]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -382,7 +403,9 @@ const BugList: React.FC = () => {
                 <td>
                   <span className={`${styles.badge} ${styles[`status_${b.status}`]}`}>{statusText[b.status]}</span>
                 </td>
-                <td>{b.assignee || "-"}</td>
+                <td>
+                  <AssigneeDisplay name={b.assignee} avatar={b.assigneeAvatar} />
+                </td>
                 <td>{b.module || "-"}</td>
                 <td>{b.creator}</td>
                 <td>
@@ -394,15 +417,15 @@ const BugList: React.FC = () => {
                     >
                       <FaEye />
                     </button>
-                    {OrgPermission.canEditAll(maxOrgRole) && (
-                      <>
-                        <button className={`${styles.actionBtn} ${styles.edit}`} title="编辑" onClick={() => openEdit(b)}>
-                          <FaEdit />
-                        </button>
-                        <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(b)}>
-                          <FaTrash />
-                        </button>
-                      </>
+                    {OrgPermission.canEdit(maxOrgRole) && (
+                      <button className={`${styles.actionBtn} ${styles.edit}`} title="编辑" onClick={() => openEdit(b)}>
+                        <FaEdit />
+                      </button>
+                    )}
+                    {OrgPermission.canDelete(maxOrgRole) && (
+                      <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(b)}>
+                        <FaTrash />
+                      </button>
                     )}
                   </div>
                 </td>
@@ -521,7 +544,7 @@ const BugList: React.FC = () => {
                 borderBottom: "1px solid var(--border-primary)",
               }}
             >
-              {renderField("负责人", selectedBug.assignee)}
+              {renderField("负责人", <AssigneeDisplay name={selectedBug.assignee} avatar={selectedBug.assigneeAvatar} />)}
               {renderField("创建人", selectedBug.creator)}
               {renderField("所属组织", orgNameMap[selectedBug.organizationId] || selectedBug.organizationId)}
               {renderField("所属模块", selectedBug.module)}
@@ -557,30 +580,27 @@ const BugList: React.FC = () => {
               <Input placeholder="请输入缺陷标题" value={form.title} onChange={(v) => setFormField("title", v)} size="large" />
             </div>
             {(isAdmin || orgs.length > 1) && (
-              <div style={{ display: "flex", gap: "16px" }}>
-                <div style={{ flex: 1 }}>
-                  <label
-                    style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                  >
-                    所属组织 {!isAdmin && <span style={{ color: "#ef4444" }}>*</span>}
-                  </label>
-                  <CustomSelect
-                    name="所属组织"
-                    options={orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" }))}
-                    value={
-                      orgs.find((o) => o.orgId === form.organizationId)
-                        ? {
-                            id: form.organizationId,
-                            name: orgs.find((o) => o.orgId === form.organizationId)!.orgName,
-                            color: "#6c757d",
-                          }
-                        : null
-                    }
-                    onChange={(o) => setFormField("organizationId", (o?.id as string) || "")}
-                    hideBadge
-                  />
-                </div>
-                <div style={{ flex: 1 }} />
+              <div>
+                <label
+                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
+                >
+                  所属组织 {!isAdmin && <span style={{ color: "#ef4444" }}>*</span>}
+                </label>
+                <CustomSelect
+                  name="所属组织"
+                  options={orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" }))}
+                  value={
+                    orgs.find((o) => o.orgId === form.organizationId)
+                      ? {
+                          id: form.organizationId,
+                          name: orgs.find((o) => o.orgId === form.organizationId)!.orgName,
+                          color: "#6c757d",
+                        }
+                      : null
+                  }
+                  onChange={(o) => setFormField("organizationId", (o?.id as string) || "")}
+                  hideBadge
+                />
               </div>
             )}
             <div style={{ display: "flex", gap: "16px" }}>
@@ -636,7 +656,16 @@ const BugList: React.FC = () => {
                 >
                   负责人
                 </label>
-                <Input placeholder="请输入负责人" value={form.assignee} onChange={(v) => setFormField("assignee", v)} size="large" />
+                <CustomSelect
+                  name="负责人"
+                  options={memberOptions}
+                  value={
+                    memberOptions.find((o) => o.id === form.assignee) ||
+                    (form.assignee ? { id: form.assignee, name: form.assignee, color: "#6c757d" } : null)
+                  }
+                  onChange={(o) => setFormField("assignee", (o?.id as string) || "")}
+                  hideBadge
+                />
               </div>
               <div style={{ flex: 1 }}>
                 <label

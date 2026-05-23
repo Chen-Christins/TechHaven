@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { encodeId } from "../../utils/hashId";
 import {
   FaEye,
   FaEdit,
@@ -18,6 +20,7 @@ import Loading from "../../components/loading/Loading";
 import message from "../../components/message/Message";
 import { useRdOrg } from "../../contexts/RdOrgContext";
 import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
+import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
 import type { SelectOption } from "../../types";
 import type { Requirement, Bug, Task } from "../../types/rdPlatform";
 
@@ -82,6 +85,7 @@ type TabKey = "req" | "bug" | "task";
 type TabData = Requirement | Bug | Task;
 
 const MyTickets: React.FC = () => {
+  const navigate = useNavigate();
   const { orgs, orgNameMap } = useRdOrg();
   const [activeTab, setActiveTab] = useState<TabKey>("req");
   const [data, setData] = useState<TabData[]>([]);
@@ -99,6 +103,20 @@ const MyTickets: React.FC = () => {
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [memberOptions, setMemberOptions] = useState<SelectOption[]>([]);
+
+  useEffect(() => {
+    if (editMode && detail) {
+      const orgId = (detail.item as any).organizationId;
+      if (orgId) {
+        RdAPI.getOrgMembers(orgId)
+          .then((members) => {
+            setMemberOptions(members.map((m) => ({ id: m.userId, name: m.name, color: "#6c757d", avatar: m.avatar || "" })));
+          })
+          .catch(() => setMemberOptions([]));
+      }
+    }
+  }, [editMode, detail]);
 
   const typeParam = activeTab === "req" ? "requirement" : activeTab === "bug" ? "bug" : "task";
 
@@ -343,7 +361,16 @@ const MyTickets: React.FC = () => {
 
           <div style={{ flex: 1 }}>
             {formLabel("负责人")}
-            <Input value={editForm.assignee || ""} onChange={(v) => setEditForm((p) => ({ ...p, assignee: v }))} size="large" />
+            <CustomSelect
+              name="负责人"
+              options={memberOptions}
+              value={
+                memberOptions.find((o) => o.id === editForm.assignee) ||
+                (editForm.assignee ? { id: editForm.assignee, name: editForm.assignee, color: "#6c757d" } : null)
+              }
+              onChange={(o) => setEditForm((p) => ({ ...p, assignee: (o?.id as string) || "" }))}
+              hideBadge
+            />
           </div>
         </div>
 
@@ -577,14 +604,16 @@ const MyTickets: React.FC = () => {
                   const r = item as Requirement;
                   return (
                     <tr key={r.id}>
-                      <td className={styles.titleCell} onClick={() => openDetail("req", r)}>
+                      <td className={styles.titleCell} onClick={() => navigate(`/rd/requirements/${encodeId(r.id)}`)}>
                         {r.title}
                       </td>
                       <td>{renderPriorityBadge(r.priority)}</td>
                       <td>{renderStatusBadge(r.status, reqStatusText)}</td>
-                      <td>{r.assignee || "-"}</td>
+                      <td>
+                        <AssigneeDisplay name={r.assignee} avatar={r.assigneeAvatar} />
+                      </td>
                       <td>{r.creator}</td>
-                      <td>{new Date(r.createdAt).toLocaleDateString("zh-CN")}</td>
+                      <td>{new Date(r.createdAt).toLocaleDateString("zh-CN").replace(/\//g, "-")}</td>
                       <td>
                         <div className={styles.actionButtons}>
                           <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openDetail("req", r)}>
@@ -636,7 +665,7 @@ const MyTickets: React.FC = () => {
                   const b = item as Bug;
                   return (
                     <tr key={b.id}>
-                      <td className={styles.titleCell} onClick={() => openDetail("bug", b)}>
+                      <td className={styles.titleCell} onClick={() => navigate(`/rd/bugs/${encodeId(b.id)}`)}>
                         {b.title}
                       </td>
                       <td>
@@ -644,7 +673,9 @@ const MyTickets: React.FC = () => {
                       </td>
                       <td>{renderPriorityBadge(b.priority)}</td>
                       <td>{renderStatusBadge(b.status, bugStatusText)}</td>
-                      <td>{b.assignee || "-"}</td>
+                      <td>
+                        <AssigneeDisplay name={b.assignee} avatar={b.assigneeAvatar} />
+                      </td>
                       <td>{b.creator}</td>
                       <td>
                         <div className={styles.actionButtons}>
@@ -697,14 +728,16 @@ const MyTickets: React.FC = () => {
                   const t = item as Task;
                   return (
                     <tr key={t.id}>
-                      <td className={styles.titleCell} onClick={() => openDetail("task", t)}>
+                      <td className={styles.titleCell} onClick={() => navigate(`/rd/tasks/${encodeId(t.id)}`)}>
                         {t.title}
                       </td>
                       <td>{renderPriorityBadge(t.priority)}</td>
                       <td>{renderStatusBadge(t.status, taskStatusText)}</td>
-                      <td>{t.assignee || "-"}</td>
+                      <td>
+                        <AssigneeDisplay name={t.assignee} avatar={t.assigneeAvatar} />
+                      </td>
                       <td>{t.creator}</td>
-                      <td>{t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN") : "-"}</td>
+                      <td>{t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN").replace(/\//g, "-") : "-"}</td>
                       <td>
                         <div className={styles.actionButtons}>
                           <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openDetail("task", t)}>
@@ -810,7 +843,7 @@ const MyTickets: React.FC = () => {
                         borderBottom: "1px solid var(--border-primary)",
                       }}
                     >
-                      {renderField_("负责人", r.assignee)}
+                      {renderField_("负责人", <AssigneeDisplay name={r.assignee} avatar={r.assigneeAvatar} />)}
                       {renderField_("创建人", r.creator)}
                       {renderField_("所属组织", orgNameMap[r.organizationId] || r.organizationId)}
                       {renderField_("迭代", r.iteration)}
@@ -849,7 +882,7 @@ const MyTickets: React.FC = () => {
                         borderBottom: "1px solid var(--border-primary)",
                       }}
                     >
-                      {renderField_("负责人", b.assignee)}
+                      {renderField_("负责人", <AssigneeDisplay name={b.assignee} avatar={b.assigneeAvatar} />)}
                       {renderField_("创建人", b.creator)}
                       {renderField_("所属组织", orgNameMap[b.organizationId] || b.organizationId)}
                       {renderField_("所属模块", b.module)}
@@ -897,11 +930,14 @@ const MyTickets: React.FC = () => {
                         borderBottom: "1px solid var(--border-primary)",
                       }}
                     >
-                      {renderField_("负责人", t.assignee)}
+                      {renderField_("负责人", <AssigneeDisplay name={t.assignee} avatar={t.assigneeAvatar} />)}
                       {renderField_("创建人", t.creator)}
                       {renderField_("所属组织", orgNameMap[t.organizationId] || t.organizationId)}
                       {renderField_("关联需求", t.requirementId)}
-                      {renderField_("截止日期", t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN") : "-")}
+                      {renderField_(
+                        "截止日期",
+                        t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN").replace(/\//g, "-") : "-",
+                      )}
                       {renderField_("预估工时", `${t.estimatedHours}h`)}
                       {renderField_("创建时间", new Date(t.createdAt).toLocaleString("zh-CN"))}
                       {renderField_("更新时间", new Date(t.updatedAt).toLocaleString("zh-CN"))}

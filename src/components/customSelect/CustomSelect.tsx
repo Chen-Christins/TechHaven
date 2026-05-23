@@ -147,7 +147,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                 className={`${styles.option} ${selectedOption?.id === option.id ? styles.optionSelected : ""}`}
                 onClick={() => selectOption(option)}
               >
-                {option.color && <div className={styles.tagColor} style={{ backgroundColor: option.color }} />}
+                {option.avatar ? (
+                  <img className={styles.avatar} src={option.avatar} alt="" />
+                ) : (
+                  option.color && <div className={styles.tagColor} style={{ backgroundColor: option.color }} />
+                )}
                 <div className={styles.optionText}>{option.name}</div>
                 {showDate && option.date && <div className={styles.optionCount}>{option.date}</div>}
               </div>

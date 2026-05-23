@@ -8,6 +8,7 @@ import CustomSelect from "../../components/customSelect/CustomSelect";
 import message from "../../components/message/Message";
 import { useRdOrg } from "../../contexts/RdOrgContext";
 import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
+import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
 import { decodeId } from "../../utils/hashId";
 import type { SelectOption } from "../../types";
 import type { Requirement, Bug, Task } from "../../types/rdPlatform";
@@ -112,6 +113,21 @@ const TicketDetail: React.FC = () => {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
+  const [memberOptions, setMemberOptions] = useState<SelectOption[]>([]);
+
+  // fetch org members when entering edit mode
+  useEffect(() => {
+    if (editing && item) {
+      const orgId = (item as any).organizationId;
+      if (orgId) {
+        RdAPI.getOrgMembers(orgId)
+          .then((members) => {
+            setMemberOptions(members.map((m) => ({ id: m.userId, name: m.name, color: "#6c757d", avatar: m.avatar || "" })));
+          })
+          .catch(() => setMemberOptions([]));
+      }
+    }
+  }, [editing, item]);
 
   useEffect(() => {
     if (!id) return;
@@ -362,7 +378,16 @@ const TicketDetail: React.FC = () => {
 
               <div className={styles.formField}>
                 {fieldLabel("负责人")}
-                <Input value={form.assignee || ""} onChange={(v) => setForm((p) => ({ ...p, assignee: v }))} size="large" />
+                <CustomSelect
+                  name="负责人"
+                  options={memberOptions}
+                  value={
+                    memberOptions.find((o) => o.id === form.assignee) ||
+                    (form.assignee ? { id: form.assignee, name: form.assignee, color: "#6c757d" } : null)
+                  }
+                  onChange={(o) => setForm((p) => ({ ...p, assignee: (o?.id as string) || "" }))}
+                  hideBadge
+                />
               </div>
             </div>
 
@@ -480,7 +505,7 @@ const TicketDetail: React.FC = () => {
 
             {/* Meta info cards */}
             <div className={styles.metaGrid}>
-              {metaField("负责人", item.assignee)}
+              {metaField("负责人", <AssigneeDisplay name={item.assignee} avatar={(item as any).assigneeAvatar} />)}
               {metaField("创建人", (item as any).creator)}
               {metaField("所属组织", orgNameMap[(item as any).organizationId] || (item as any).organizationId)}
 
@@ -503,7 +528,7 @@ const TicketDetail: React.FC = () => {
                   {metaField("关联需求", (item as Task).requirementId)}
                   {metaField(
                     "截止日期",
-                    (item as Task).deadline ? new Date((item as Task).deadline).toLocaleDateString("zh-CN") : "-",
+                    (item as Task).deadline ? new Date((item as Task).deadline).toLocaleDateString("zh-CN").replace(/\//g, "-") : "-",
                   )}
                   {metaField("预估工时", `${(item as Task).estimatedHours}h`)}
                 </>

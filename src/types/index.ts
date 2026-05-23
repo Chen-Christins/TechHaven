@@ -96,6 +96,7 @@ export interface SelectOption {
   color: string;
   date?: string;
   count?: number;
+  avatar?: string;
 }
 
 export interface CustomSelectProps {

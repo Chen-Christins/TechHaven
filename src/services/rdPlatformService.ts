@@ -25,6 +25,12 @@ function tsToISO(ts: number): string {
   return new Date(ts * 1000).toISOString();
 }
 
+/** Date string "YYYY-MM-DD" → Unix timestamp (seconds) */
+function dateToUnix(dateStr: string): number {
+  if (!dateStr) return 0;
+  return Math.floor(new Date(dateStr + "T00:00:00").getTime() / 1000);
+}
+
 /** Backend item → frontend Requirement */
 function mapRequirement(raw: any): Requirement {
   return {
@@ -35,6 +41,7 @@ function mapRequirement(raw: any): Requirement {
     status: raw.status || "new",
     creator: raw.creator || "",
     assignee: raw.assignee || "",
+    assigneeAvatar: raw.assignee_avatar || "",
     organizationId: String(raw.org_id ?? ""),
     iteration: raw.iteration || "",
     category: raw.category || "",
@@ -55,6 +62,7 @@ function mapBug(raw: any): Bug {
     status: raw.status || "new",
     creator: raw.creator || "",
     assignee: raw.assignee || "",
+    assigneeAvatar: raw.assignee_avatar || "",
     organizationId: String(raw.org_id ?? ""),
     relatedRequirementId: String(raw.related_requirement_id ?? ""),
     module: raw.module || "",
@@ -74,10 +82,15 @@ function mapTask(raw: any): Task {
     status: raw.status || "todo",
     priority: raw.priority || "medium",
     assignee: raw.assignee || "",
+    assigneeAvatar: raw.assignee_avatar || "",
     creator: raw.creator || "",
     organizationId: String(raw.org_id ?? ""),
     requirementId: String(raw.requirement_id ?? ""),
-    deadline: raw.deadline || "",
+    deadline: raw.deadline
+      ? typeof raw.deadline === "number"
+        ? `${new Date(raw.deadline * 1000).getFullYear()}-${String(new Date(raw.deadline * 1000).getMonth() + 1).padStart(2, "0")}-${String(new Date(raw.deadline * 1000).getDate()).padStart(2, "0")}`
+        : raw.deadline
+      : "",
     estimatedHours: Number(raw.estimated_hours) || 0,
     createdAt: typeof raw.created_at === "number" ? tsToISO(raw.created_at) : raw.created_at || "",
     updatedAt: typeof raw.updated_at === "number" ? tsToISO(raw.updated_at) : raw.updated_at || "",
@@ -154,7 +167,7 @@ export class RdPlatformService {
       org_id: Number(params.organizationId) || 0,
       assignee: params.assignee,
       creator: params.creator,
-      assignee_id: (params as any).assignee_id,
+      assignee_id: params.assignee || "",
       iteration: params.iteration,
       category: params.category,
       source: params.source,
@@ -172,7 +185,10 @@ export class RdPlatformService {
     if (params.description !== undefined) body.description = params.description;
     if (params.priority !== undefined) body.priority = params.priority;
     if (params.status !== undefined) body.status = params.status;
-    if (params.assignee !== undefined) body.assignee = params.assignee;
+    if (params.assignee !== undefined) {
+      body.assignee = params.assignee;
+      body.assignee_id = params.assignee;
+    }
     if (params.organizationId !== undefined) body.org_id = Number(params.organizationId);
     if (params.iteration !== undefined) body.iteration = params.iteration;
     if (params.category !== undefined) body.category = params.category;
@@ -223,6 +239,7 @@ export class RdPlatformService {
       org_id: Number(params.organizationId) || 0,
       assignee: params.assignee,
       creator: params.creator,
+      assignee_id: params.assignee || "",
       related_requirement_id: params.relatedRequirementId || "",
       module: params.module,
       steps_to_reproduce: params.stepsToReproduce,
@@ -239,7 +256,10 @@ export class RdPlatformService {
     if (params.severity !== undefined) body.severity = params.severity;
     if (params.priority !== undefined) body.priority = params.priority;
     if (params.status !== undefined) body.status = params.status;
-    if (params.assignee !== undefined) body.assignee = params.assignee;
+    if (params.assignee !== undefined) {
+      body.assignee = params.assignee;
+      body.assignee_id = params.assignee;
+    }
     if (params.organizationId !== undefined) body.org_id = Number(params.organizationId);
     if (params.relatedRequirementId !== undefined) body.related_requirement_id = params.relatedRequirementId;
     if (params.module !== undefined) body.module = params.module;
@@ -290,8 +310,9 @@ export class RdPlatformService {
       org_id: Number(params.organizationId) || 0,
       assignee: params.assignee,
       creator: params.creator,
+      assignee_id: params.assignee || "",
       requirement_id: params.requirementId || "",
-      deadline: params.deadline,
+      deadline: dateToUnix(params.deadline || ""),
       estimated_hours: params.estimatedHours,
     };
     const res = await http.post<any>(`${BASE}/tasks/edit`, body);
@@ -304,10 +325,13 @@ export class RdPlatformService {
     if (params.description !== undefined) body.description = params.description;
     if (params.status !== undefined) body.status = params.status;
     if (params.priority !== undefined) body.priority = params.priority;
-    if (params.assignee !== undefined) body.assignee = params.assignee;
+    if (params.assignee !== undefined) {
+      body.assignee = params.assignee;
+      body.assignee_id = params.assignee;
+    }
     if (params.organizationId !== undefined) body.org_id = Number(params.organizationId);
     if (params.requirementId !== undefined) body.requirement_id = params.requirementId;
-    if (params.deadline !== undefined) body.deadline = params.deadline;
+    if (params.deadline !== undefined) body.deadline = dateToUnix(params.deadline || "");
     if (params.estimatedHours !== undefined) body.estimated_hours = params.estimatedHours;
 
     const res = await http.post<any>(`${BASE}/tasks/edit`, body);
@@ -321,6 +345,18 @@ export class RdPlatformService {
   }
 
   // -- Organizations (R&D platform) ----------------------------------------
+
+  static async getOrgMembers(orgId: string): Promise<{ userId: string; name: string; role: number; avatar?: string }[]> {
+    const res = await http.get<any>(`${BASE}/organizations/members?org_id=${orgId}`);
+    const list = res.data?.list || [];
+    if (!Array.isArray(list)) return [];
+    return list.map((item: any) => ({
+      userId: String(item.user_id ?? item.id ?? ""),
+      name: item.name || "",
+      role: Number(item.role) || 1,
+      avatar: item.avatar || "",
+    }));
+  }
 
   static async getMyOrganizations(): Promise<{ orgId: string; orgName: string; role: number }[]> {
     const res = await http.get<any>(`${BASE}/organizations`);

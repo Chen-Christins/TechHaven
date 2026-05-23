@@ -11,6 +11,7 @@ export interface Requirement {
   status: "new" | "developing" | "testing" | "done" | "closed";
   creator: string;
   assignee: string;
+  assigneeAvatar?: string;
   organizationId: string;
   iteration: string;
   category: string;
@@ -29,6 +30,7 @@ export interface Bug {
   status: "new" | "accepted" | "processing" | "verified" | "closed" | "reopened";
   creator: string;
   assignee: string;
+  assigneeAvatar?: string;
   organizationId: string;
   relatedRequirementId: string;
   module: string;
@@ -46,6 +48,7 @@ export interface Task {
   status: "todo" | "doing" | "done" | "closed";
   priority: "high" | "medium" | "low";
   assignee: string;
+  assigneeAvatar?: string;
   creator: string;
   organizationId: string;
   requirementId: string;
@@ -80,9 +83,9 @@ export const OrgPermission = {
   canCreate: (role: number) => role >= OrgRole.REPORTER,
   /** 能否创建任务 */
   canCreateTask: (role: number) => role >= OrgRole.DEV_LEAD,
-  /** 能否编辑所有工单 */
-  canEditAll: (role: number) => role >= OrgRole.DEV_LEAD,
-  /** 能否删除工单 */
+  /** 能否编辑工单（报告者及以上） */
+  canEdit: (role: number) => role >= OrgRole.REPORTER,
+  /** 能否删除工单（研发总管及以上） */
   canDelete: (role: number) => role >= OrgRole.DEV_LEAD,
   /** 能否管理组织成员 */
   canManageMembers: (role: number) => role >= OrgRole.ORG_ADMIN,

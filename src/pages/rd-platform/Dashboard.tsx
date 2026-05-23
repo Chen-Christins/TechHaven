@@ -5,6 +5,7 @@ import styles from "./Dashboard.module.css";
 import Loading from "../../components/loading/Loading";
 import { encodeId } from "../../utils/hashId";
 import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
+import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
 import type { RdStats, Requirement, Bug, Task } from "../../types/rdPlatform";
 
 const Dashboard: React.FC = () => {
@@ -136,8 +137,10 @@ const Dashboard: React.FC = () => {
                   <td>
                     <span className={`${styles.badge} ${styles[`status_${r.status}`]}`}>{statusText[r.status] || r.status}</span>
                   </td>
-                  <td>{r.assignee || "-"}</td>
-                  <td>{new Date(r.createdAt).toLocaleDateString("zh-CN")}</td>
+                  <td>
+                    <AssigneeDisplay name={r.assignee} avatar={r.assigneeAvatar} />
+                  </td>
+                  <td>{new Date(r.createdAt).toLocaleDateString("zh-CN").replace(/\//g, "-")}</td>
                 </tr>
               ))}
               {recentRequirements.length === 0 && (
@@ -187,7 +190,9 @@ const Dashboard: React.FC = () => {
                   <td>
                     <span className={`${styles.badge} ${styles[`status_${b.status}`]}`}>{statusText[b.status] || b.status}</span>
                   </td>
-                  <td>{b.assignee || "-"}</td>
+                  <td>
+                    <AssigneeDisplay name={b.assignee} avatar={b.assigneeAvatar} />
+                  </td>
                 </tr>
               ))}
               {recentBugs.length === 0 && (
@@ -234,8 +239,10 @@ const Dashboard: React.FC = () => {
                   <td>
                     <span className={`${styles.badge} ${styles[`priority_${t.priority}`]}`}>{priorityText[t.priority]}</span>
                   </td>
-                  <td>{t.assignee || "-"}</td>
-                  <td>{t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN") : "-"}</td>
+                  <td>
+                    <AssigneeDisplay name={t.assignee} avatar={t.assigneeAvatar} />
+                  </td>
+                  <td>{t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN").replace(/\//g, "-") : "-"}</td>
                 </tr>
               ))}
               {recentTasks.length === 0 && (

@@ -24,6 +24,7 @@ import message from "../../components/message/Message";
 import { useAuth } from "../../contexts/AuthContext";
 import { useRdOrg } from "../../contexts/RdOrgContext";
 import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
+import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
 import type { Task } from "../../types/rdPlatform";
 import { OrgPermission } from "../../types/rdPlatform";
 import type { SelectOption } from "../../types";
@@ -74,6 +75,26 @@ const TaskList: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [form, setForm] = useState({ ...emptyTask });
+  const [memberOptions, setMemberOptions] = useState<SelectOption[]>([]);
+
+  const fetchMembers = async (orgId: string) => {
+    if (!orgId) {
+      setMemberOptions([]);
+      return;
+    }
+    try {
+      const members = await RdAPI.getOrgMembers(orgId);
+      setMemberOptions(members.map((m) => ({ id: m.userId, name: m.name, color: "#6c757d", avatar: m.avatar || "" })));
+    } catch {
+      setMemberOptions([]);
+    }
+  };
+
+  useEffect(() => {
+    if (modalVisible && form.organizationId) {
+      fetchMembers(form.organizationId);
+    }
+  }, [modalVisible, form.organizationId]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -329,8 +350,10 @@ const TaskList: React.FC = () => {
                 <td>
                   <span className={`${styles.badge} ${styles[`priority_${t.priority}`]}`}>{priorityText[t.priority]}</span>
                 </td>
-                <td>{t.assignee || "-"}</td>
-                <td>{t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN") : "-"}</td>
+                <td>
+                  <AssigneeDisplay name={t.assignee} avatar={t.assigneeAvatar} />
+                </td>
+                <td>{t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN").replace(/\//g, "-") : "-"}</td>
                 <td>{t.estimatedHours ? `${t.estimatedHours}h` : "-"}</td>
                 <td>
                   <div className={styles.actionButtons}>
@@ -341,15 +364,15 @@ const TaskList: React.FC = () => {
                     >
                       <FaEye />
                     </button>
-                    {OrgPermission.canEditAll(maxOrgRole) && (
-                      <>
-                        <button className={`${styles.actionBtn} ${styles.edit}`} title="编辑" onClick={() => openEdit(t)}>
-                          <FaEdit />
-                        </button>
-                        <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(t)}>
-                          <FaTrash />
-                        </button>
-                      </>
+                    {OrgPermission.canEdit(maxOrgRole) && (
+                      <button className={`${styles.actionBtn} ${styles.edit}`} title="编辑" onClick={() => openEdit(t)}>
+                        <FaEdit />
+                      </button>
+                    )}
+                    {OrgPermission.canDelete(maxOrgRole) && (
+                      <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(t)}>
+                        <FaTrash />
+                      </button>
                     )}
                   </div>
                 </td>
@@ -453,26 +476,23 @@ const TaskList: React.FC = () => {
           </div>
 
           {(isAdmin || orgs.length > 1) && (
-            <div style={{ display: "flex", gap: "16px" }}>
-              <div style={{ flex: 1 }}>
-                <label
-                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                >
-                  所属组织 {!isAdmin && <span style={{ color: "#ef4444" }}>*</span>}
-                </label>
-                <CustomSelect
-                  name="所属组织"
-                  options={orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" }))}
-                  value={
-                    orgs.find((o) => o.orgId === form.organizationId)
-                      ? { id: form.organizationId, name: orgs.find((o) => o.orgId === form.organizationId)!.orgName, color: "#6c757d" }
-                      : null
-                  }
-                  onChange={(o) => handleFormChange("organizationId", (o?.id as string) || "")}
-                  hideBadge
-                />
-              </div>
-              <div style={{ flex: 1 }} />
+            <div>
+              <label
+                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
+              >
+                所属组织 {!isAdmin && <span style={{ color: "#ef4444" }}>*</span>}
+              </label>
+              <CustomSelect
+                name="所属组织"
+                options={orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" }))}
+                value={
+                  orgs.find((o) => o.orgId === form.organizationId)
+                    ? { id: form.organizationId, name: orgs.find((o) => o.orgId === form.organizationId)!.orgName, color: "#6c757d" }
+                    : null
+                }
+                onChange={(o) => handleFormChange("organizationId", (o?.id as string) || "")}
+                hideBadge
+              />
             </div>
           )}
 
@@ -514,11 +534,15 @@ const TaskList: React.FC = () => {
               >
                 负责人
               </label>
-              <Input
-                placeholder="请输入负责人"
-                value={form.assignee}
-                onChange={(val) => handleFormChange("assignee", val)}
-                size="large"
+              <CustomSelect
+                name="负责人"
+                options={memberOptions}
+                value={
+                  memberOptions.find((o) => o.id === form.assignee) ||
+                  (form.assignee ? { id: form.assignee, name: form.assignee, color: "#6c757d" } : null)
+                }
+                onChange={(o) => handleFormChange("assignee", (o?.id as string) || "")}
+                hideBadge
               />
             </div>
             <div style={{ flex: 1 }}>

@@ -1,0 +1,21 @@
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.avatarPlaceholder {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--border-secondary);
+  flex-shrink: 0;
+}
