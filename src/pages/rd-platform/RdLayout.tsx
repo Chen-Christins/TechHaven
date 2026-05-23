@@ -81,13 +81,15 @@ const RdLayout: React.FC = () => {
   };
 
   const RdHeaderActions: React.FC = () => {
-    const { maxOrgRole } = useRdOrg();
+    const { maxOrgRole, isAdmin, orgs } = useRdOrg();
     const orgRoleName = orgRoleNames[maxOrgRole] || "";
+    // 系统管理员在没有组织时，显示"系统管理员"而非"组织管理员"
+    const roleOverride = isAdmin && orgs.length === 0 ? "系统管理员" : orgRoleName;
     return (
       <div className={styles.rdTopBarActions}>
         <ThemeToggle />
         <Notification />
-        <UserDropdown user={user} onLogout={handleLogout} showAdminLink={false} roleOverride={orgRoleName} />
+        <UserDropdown user={user} onLogout={handleLogout} showAdminLink={false} roleOverride={roleOverride} />
       </div>
     );
   };
