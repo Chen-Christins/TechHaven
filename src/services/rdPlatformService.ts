@@ -397,6 +397,17 @@ export class RdPlatformService {
           : (d.list || []).map(mapTask);
     return { data: list, total: d.total ?? 0 };
   }
+
+  // -- Access Control -------------------------------------------------------
+
+  static async checkAccess(): Promise<{ canAccess: boolean; reason?: string }> {
+    const res = await http.get<any>(`${BASE}/check_access`);
+    const d = res.data;
+    return {
+      canAccess: d?.can_access === "1",
+      reason: d?.reason,
+    };
+  }
 }
 
 export default RdPlatformService;

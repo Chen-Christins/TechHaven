@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, type ReactNode }
 import { AuthService } from "../services/authService";
 import { tokenManager, getTokenFromCookie } from "../utils/http";
 import { notificationWS } from "../utils/websocket";
+import { setFaviconBadge } from "../utils/favicon";
 
 // 用户信息类型
 export interface User {
@@ -112,6 +113,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       notificationWS.connect(user.id);
     } else {
       notificationWS.disconnect();
+      setFaviconBadge(0); // 退出登录或未认证时清除 favicon 角标
     }
   }, [isAuthenticated, user]);
 

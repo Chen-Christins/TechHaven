@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, Outlet, useNavigate } from "react-router-dom";
-import { FaHome, FaBars, FaTimes, FaClipboardList, FaBug, FaTasks, FaTicketAlt } from "react-icons/fa";
+import { FaHome, FaBars, FaTimes, FaClipboardList, FaBug, FaTasks, FaTicketAlt, FaLock } from "react-icons/fa";
 import styles from "./RdLayout.module.css";
 import ThemeToggle from "../../components/themeToggle/ThemeToggle";
 import Notification from "../../components/notification/Notification";
@@ -8,6 +8,7 @@ import UserDropdown from "../../components/userDropdown/UserDropdown";
 import Footer from "../../components/footer/Footer";
 import { useAuth } from "../../contexts/AuthContext";
 import { RdOrgProvider, useRdOrg } from "../../contexts/RdOrgContext";
+import { RdPlatformService } from "../../services/rdPlatformService";
 
 interface NavItem {
   id: string;
@@ -22,6 +23,22 @@ const RdLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { user, logout, isAuthenticated, loading } = useAuth();
+
+  // 权限校验：调用后端 check_access 接口
+  const [accessChecked, setAccessChecked] = useState(false);
+  const [canAccess, setCanAccess] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    RdPlatformService.checkAccess()
+      .then((result) => {
+        setCanAccess(result.canAccess);
+      })
+      .catch(() => {
+        setCanAccess(false);
+      })
+      .finally(() => setAccessChecked(true));
+  }, [user]);
 
   if (loading) {
     return (
@@ -43,6 +60,111 @@ const RdLayout: React.FC = () => {
   if (!isAuthenticated || !user) {
     navigate("/auth");
     return null;
+  }
+
+  if (!accessChecked) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "16px",
+          color: "var(--text-secondary)",
+        }}
+      >
+        正在验证权限...
+      </div>
+    );
+  }
+
+  if (!canAccess) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          backgroundColor: "var(--bg-primary)",
+          color: "var(--text-primary)",
+          padding: "20px",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "64px",
+            color: "#dc3545",
+            marginBottom: "24px",
+            opacity: 0.9,
+          }}
+        >
+          <FaLock />
+        </div>
+        <h1
+          style={{
+            fontSize: "28px",
+            fontWeight: "bold",
+            marginBottom: "12px",
+            color: "var(--text-primary)",
+          }}
+        >
+          访问被拒绝
+        </h1>
+        <p
+          style={{
+            fontSize: "16px",
+            color: "var(--text-secondary)",
+            marginBottom: "32px",
+            textAlign: "center",
+            maxWidth: "480px",
+            lineHeight: "1.6",
+          }}
+        >
+          抱歉，您没有权限访问研发平台。需要系统管理员权限或在已批准的组织中具有报告者及以上角色。
+          <br />
+          如果您认为这是一个错误，请联系组织管理员。
+        </p>
+        <div style={{ display: "flex", gap: "16px" }}>
+          <button
+            onClick={() => navigate("/")}
+            style={{
+              padding: "10px 24px",
+              backgroundColor: "var(--primary)",
+              color: "#fff",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "15px",
+              fontWeight: "500",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <FaHome /> 返回首页
+          </button>
+          <button
+            onClick={() => logout()}
+            style={{
+              padding: "10px 24px",
+              backgroundColor: "transparent",
+              color: "var(--text-primary)",
+              border: "1px solid var(--border-primary)",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "15px",
+              fontWeight: "500",
+            }}
+          >
+            切换账号
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!user.avatar) {
