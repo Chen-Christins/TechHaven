@@ -9,12 +9,8 @@ const MaintenanceGuard: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const loggedOutRef = useRef(false);
 
-  if (loading) {
-    return null;
-  }
-
   const isAdmin = user?.role === "管理员";
-  const blocked = settings.maintenanceMode && !isAdmin;
+  const blocked = !loading && settings.maintenanceMode && !isAdmin;
 
   useEffect(() => {
     if (blocked && isAuthenticated && !loggedOutRef.current) {
@@ -25,6 +21,10 @@ const MaintenanceGuard: React.FC = () => {
       loggedOutRef.current = false;
     }
   }, [blocked, isAuthenticated, logout]);
+
+  if (loading) {
+    return null;
+  }
 
   if (blocked) {
     return <MaintenancePage />;
