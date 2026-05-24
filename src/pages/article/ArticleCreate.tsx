@@ -1,4 +1,4 @@
-import ArticleService from "../../services/articleService";
+import ArticleService, { type CreateArticleParams } from "../../services/articleService";
 import CategoryService from "../../services/categoryService";
 import LabelService from "../../services/labelService";
 import React, { useState, useRef, useEffect } from "react";
@@ -23,6 +23,42 @@ import { useAuth } from "../../contexts/AuthContext";
 import message from "../../components/message/Message";
 
 // 模拟数据（已移除）
+
+// 文章草稿持久化（sessionStorage），刷新时保留已选分类/标签
+const ARTICLE_DRAFT_KEY = "article_create_draft";
+
+interface ArticleDraft {
+  title: string;
+  articleType: "original" | "repost";
+  categoryId: string | number | null;
+  tagIds: (string | number)[];
+  content: string;
+}
+
+function saveDraftToStorage(formData: ArticleFormData, selectedTags: Tag[]): void {
+  const draft: ArticleDraft = {
+    title: formData.title,
+    articleType: formData.articleType,
+    categoryId: formData.category?.id ?? null,
+    tagIds: selectedTags.map((t) => t.id),
+    content: formData.content,
+  };
+  sessionStorage.setItem(ARTICLE_DRAFT_KEY, JSON.stringify(draft));
+}
+
+function loadDraftFromStorage(): ArticleDraft | null {
+  const raw = sessionStorage.getItem(ARTICLE_DRAFT_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function clearDraftFromStorage(): void {
+  sessionStorage.removeItem(ARTICLE_DRAFT_KEY);
+}
 
 const markdownHelpData = [
   { element: "标题", syntax: "# H1\n## H2\n### H3", example: "# 一级标题" },
@@ -173,6 +209,15 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [categories, setCategories] = useState<SelectOption[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const initialLoadDone = useRef(false);
+
+  // 自动保存草稿到 sessionStorage（仅创建模式），刷新后恢复已选分类/标签
+  useEffect(() => {
+    if (!id && initialLoadDone.current) {
+      saveDraftToStorage(formData, selectedTags);
+    }
+  }, [formData, selectedTags, id]);
+
   // 页面加载时获取分类和标签列表（async/await风格）
   useEffect(() => {
     const fetchData = async () => {
@@ -205,6 +250,32 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
           setTags(formattedTags);
         } catch (err) {
           console.error("获取标签失败:", err);
+        }
+
+        // 创建模式下，从 sessionStorage 恢复上次选择的分类/标签（匹配最新列表）
+        if (!id) {
+          const draft = loadDraftFromStorage();
+          if (draft) {
+            setFormData((prev) => ({
+              ...prev,
+              title: draft.title || prev.title,
+              articleType: draft.articleType || prev.articleType,
+              content: draft.content || prev.content,
+            }));
+            if (draft.categoryId) {
+              const savedCategory = formattedCategories.find((c) => c.id == draft.categoryId);
+              if (savedCategory) {
+                setFormData((prev) => ({ ...prev, category: savedCategory }));
+              }
+            }
+            if (draft.tagIds?.length) {
+              const restoredTags = formattedTags.filter((t) => draft.tagIds.includes(t.id));
+              if (restoredTags.length) {
+                setSelectedTags(restoredTags);
+                setFormData((prev) => ({ ...prev, tags: restoredTags }));
+              }
+            }
+          }
         }
 
         // 如果是编辑模式，获取文章详情
@@ -258,6 +329,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
           }
         }
         setLoading(false);
+        initialLoadDone.current = true;
       }
     };
     fetchData();
@@ -287,10 +359,17 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
       const reader = new FileReader();
       reader.onload = (event) => {
         const content = event.target?.result as string;
-        setFormData((prev) => ({ ...prev, content }));
+        setFormData((prev) => ({
+          ...prev,
+          content,
+          // 如果标题为空，默认使用文件名（去掉扩展名）
+          title: prev.title || file.name.replace(/\.[^/.]+$/, ""),
+        }));
       };
       reader.readAsText(file);
     }
+    // 重置 input 以便重复选择同一文件
+    e.target.value = "";
   };
 
   const handleRemoveTag = (tagId: string | number) => {
@@ -340,15 +419,17 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
         });
         message.success("文章更新成功");
       } else {
-        const data = await ArticleService.createArticle({
+        const createParams: CreateArticleParams = {
           title: formData.title,
           content: formData.content,
           type: formData.articleType === "original" ? 1 : 2,
-          label: labelIds,
-          category: categoryId,
-        });
+        };
+        if (labelIds) createParams.label = labelIds;
+        if (categoryId) createParams.category = categoryId;
+        const data = await ArticleService.createArticle(createParams);
         if (data) {
           message.success("草稿保存成功");
+          clearDraftFromStorage();
         } else {
           message.error("草稿保存失败");
         }
@@ -381,13 +462,14 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
         message.success("文章更新成功");
         navigate(`/article/${encodeId(id)}`);
       } else {
-        const createRes = await ArticleService.createArticle({
+        const createParams: CreateArticleParams = {
           title: formData.title,
           content: formData.content,
           type: formData.articleType === "original" ? 1 : 2,
-          label: labelIds,
-          category: categoryId,
-        });
+        };
+        if (labelIds) createParams.label = labelIds;
+        if (categoryId) createParams.category = categoryId;
+        const createRes = await ArticleService.createArticle(createParams);
         if (createRes.id) {
           // 当前时间戳（秒），uint64
           const timestamp = Math.floor(Date.now() / 1000);
@@ -396,6 +478,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
             publish_time: timestamp,
           });
           message.success("文章发布成功, 待审核");
+          clearDraftFromStorage();
           navigate(`/article/${encodeId(createRes.id)}`);
           // console.log('发布文章成功:', publishRes);
         } else {
