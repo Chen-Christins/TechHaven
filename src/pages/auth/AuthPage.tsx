@@ -25,9 +25,13 @@ const validateForm = (type: FormType, formData: any) => {
     }
   } else if (type === "register") {
     if (!formData.account) {
-      errors.account = "请输入账号";
-    } else if (formData.account.length < 3) {
-      errors.account = "账号长度至少3位";
+      errors.account = "请输入用户名";
+    } else if (!/^[A-Za-z]/.test(formData.account)) {
+      errors.account = "用户名必须以字母开头";
+    } else if (formData.account.length < 5 || formData.account.length > 16) {
+      errors.account = "用户名长度为 5~16 个字符";
+    } else if (!/^[A-Za-z][0-9A-Za-z\-_\.]{4,15}$/.test(formData.account)) {
+      errors.account = "用户名只能包含字母、数字、-、_、.";
     }
 
     if (!formData.email) {
@@ -44,8 +48,6 @@ const validateForm = (type: FormType, formData: any) => {
 
     if (!formData.password) {
       errors.password = "请输入密码";
-    } else if (formData.password.length < 6) {
-      errors.password = "密码长度至少6位";
     }
 
     if (!formData.confirmPassword) {
@@ -371,7 +373,7 @@ const AuthPage: React.FC = () => {
                 <>
                   <div className={styles.formGroup}>
                     <label htmlFor="account" className={styles.label}>
-                      账号
+                      用户名
                     </label>
                     <div className={styles.formControl}>
                       <User size={18} className={styles.icon} />
@@ -382,7 +384,7 @@ const AuthPage: React.FC = () => {
                         value={formData.account}
                         onChange={handleInputChange}
                         className={`${styles.input} ${errors.account ? styles.inputError : ""}`}
-                        placeholder="请输入账号"
+                        placeholder="字母开头，5~16位，可含字母、数字、-、_、."
                       />
                     </div>
                     {errors.account && (
