@@ -1046,7 +1046,7 @@ const OrganizationDetail: React.FC = () => {
         </div>
       </Modal>
 
-      <Footer companyName="TechBlog" startYear={2025} />
+      <Footer startYear={2025} />
     </div>
   );
 };

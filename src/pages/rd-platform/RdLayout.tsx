@@ -373,7 +373,7 @@ const RdLayout: React.FC = () => {
               <Outlet />
             </div>
 
-            <Footer companyName="TechBlog" startYear={2025} />
+            <Footer startYear={2025} />
           </main>
         </RdOrgProvider>
       </div>

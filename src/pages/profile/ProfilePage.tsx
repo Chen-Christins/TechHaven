@@ -603,7 +603,7 @@ const Profile: React.FC = () => {
         </main>
       </div>
 
-      <Footer companyName="TechBlog" startYear={2025} />
+      <Footer startYear={2025} />
       <BackToTop />
     </div>
   );

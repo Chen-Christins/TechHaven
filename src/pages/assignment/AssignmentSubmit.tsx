@@ -270,7 +270,7 @@ const AssignmentSubmit: React.FC = () => {
             <AssignmentSubmitSkeleton />
           </AuthRequired>
         </div>
-        <Footer companyName="TechBlog" startYear={2025} />
+        <Footer startYear={2025} />
       </div>
     );
   }
@@ -290,7 +290,7 @@ const AssignmentSubmit: React.FC = () => {
             />
           </AuthRequired>
         </div>
-        <Footer companyName="TechBlog" startYear={2025} />
+        <Footer startYear={2025} />
       </div>
     );
   }
@@ -444,7 +444,7 @@ const AssignmentSubmit: React.FC = () => {
         </AuthRequired>
       </div>
 
-      <Footer companyName="TechBlog" startYear={2025} />
+      <Footer startYear={2025} />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React from "react";
 import NotFound404 from "../pages/error/NotFound404";
 import { Routes, Route, Navigate } from "react-router-dom";
 import AuthPage from "../pages/auth/AuthPage";
+import MaintenanceGuard from "../components/maintenance/MaintenanceGuard";
 import IndexPage from "../pages/home/IndexPage";
 import ArticleCreate from "../pages/article/ArticleCreate";
 import Profile from "../pages/profile/ProfilePage";
@@ -44,40 +45,10 @@ const RouterConfig: React.FC = () => {
       {/* 默认路由重定向到主页 */}
       <Route path="/" element={<Navigate to="/index" replace />} />
 
-      {/* 主页 */}
-      <Route path="/index" element={<IndexPage />} />
-
-      {/* 登录页 */}
+      {/* 登录页不受维护模式限制（管理员需要登录后台） */}
       <Route path="/auth" element={<AuthPage />} />
 
-      {/* 文章创建页 */}
-      <Route path="/article/create" element={<ArticleCreate />} />
-      <Route path="/article/edit/:id" element={<ArticleCreate />} />
-
-      {/* 文章详情页 */}
-      <Route path="/article/:id" element={<ArticleViewPage />} />
-
-      {/* 作业列表页 */}
-      <Route path="/assignments" element={<AssignmentList />} />
-      {/* 作业提交页 */}
-      <Route path="/assignment/submit/:id" element={<AssignmentSubmit />} />
-      {/* 作业提交详情页 */}
-      <Route path="/assignment/submissions/:id" element={<AssignmentSubmissions />} />
-
-      {/* 测试页面（仅开发环境可见） */}
-      {import.meta.env.DEV && <Route path="/test/chunk-upload" element={<ChunkUploadTest />} />}
-
-      {/* 用户组织列表页 */}
-      <Route path="/organizations/list" element={<OrganizationList />} />
-      {/* 组织详情页 */}
-      <Route path="/organization/detail/:id" element={<OrganizationDetail />} />
-
-      <Route path="/profile/:id" element={<Profile />} />
-
-      {/* 个人管理中心 */}
-      <Route path="/personal" element={<PersonalCenter />} />
-
-      {/* 管理中心路由 */}
+      {/* 管理中心不受维护模式限制（管理员需要关闭维护模式） */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="users" element={<UserManagement />} />
@@ -94,27 +65,60 @@ const RouterConfig: React.FC = () => {
         <Route path="notifications" element={<NotificationManagement />} />
       </Route>
 
-      {/* GM 业务控制台（平台入口，支持后续子页） */}
-      <Route path="/gm" element={<GMShell />}>
-        <Route index element={<Navigate to="/gm/dashboard" replace />} />
-        <Route path="dashboard" element={<GMDashboard />} />
-        <Route path="protocol" element={<GMProtocol />} />
-      </Route>
+      {/* 维护模式路由守卫 */}
+      <Route element={<MaintenanceGuard />}>
+        {/* 主页 */}
+        <Route path="/index" element={<IndexPage />} />
 
-      {/* 研发平台 */}
-      <Route path="/rd" element={<RdLayout />}>
-        <Route index element={<RdDashboard />} />
-        <Route path="requirements" element={<RequirementList />} />
-        <Route path="requirements/:id" element={<TicketDetail />} />
-        <Route path="bugs" element={<BugList />} />
-        <Route path="bugs/:id" element={<TicketDetail />} />
-        <Route path="tasks" element={<TaskList />} />
-        <Route path="tasks/:id" element={<TicketDetail />} />
-        <Route path="my-tickets" element={<MyTickets />} />
-      </Route>
+        {/* 文章创建页 */}
+        <Route path="/article/create" element={<ArticleCreate />} />
+        <Route path="/article/edit/:id" element={<ArticleCreate />} />
 
-      {/* 404 页面 */}
-      <Route path="*" element={<NotFound404 />} />
+        {/* 文章详情页 */}
+        <Route path="/article/:id" element={<ArticleViewPage />} />
+
+        {/* 作业列表页 */}
+        <Route path="/assignments" element={<AssignmentList />} />
+        {/* 作业提交页 */}
+        <Route path="/assignment/submit/:id" element={<AssignmentSubmit />} />
+        {/* 作业提交详情页 */}
+        <Route path="/assignment/submissions/:id" element={<AssignmentSubmissions />} />
+
+        {/* 测试页面（仅开发环境可见） */}
+        {import.meta.env.DEV && <Route path="/test/chunk-upload" element={<ChunkUploadTest />} />}
+
+        {/* 用户组织列表页 */}
+        <Route path="/organizations/list" element={<OrganizationList />} />
+        {/* 组织详情页 */}
+        <Route path="/organization/detail/:id" element={<OrganizationDetail />} />
+
+        <Route path="/profile/:id" element={<Profile />} />
+
+        {/* 个人管理中心 */}
+        <Route path="/personal" element={<PersonalCenter />} />
+
+        {/* GM 业务控制台（平台入口，支持后续子页） */}
+        <Route path="/gm" element={<GMShell />}>
+          <Route index element={<Navigate to="/gm/dashboard" replace />} />
+          <Route path="dashboard" element={<GMDashboard />} />
+          <Route path="protocol" element={<GMProtocol />} />
+        </Route>
+
+        {/* 研发平台 */}
+        <Route path="/rd" element={<RdLayout />}>
+          <Route index element={<RdDashboard />} />
+          <Route path="requirements" element={<RequirementList />} />
+          <Route path="requirements/:id" element={<TicketDetail />} />
+          <Route path="bugs" element={<BugList />} />
+          <Route path="bugs/:id" element={<TicketDetail />} />
+          <Route path="tasks" element={<TaskList />} />
+          <Route path="tasks/:id" element={<TicketDetail />} />
+          <Route path="my-tickets" element={<MyTickets />} />
+        </Route>
+
+        {/* 404 页面 */}
+        <Route path="*" element={<NotFound404 />} />
+      </Route>
     </Routes>
   );
 };

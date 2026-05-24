@@ -4,6 +4,10 @@ const BADGE_Y = 2;
 
 let originalHref: string | null = null;
 
+export function resetOriginalFavicon(): void {
+  originalHref = null;
+}
+
 export function setFaviconBadge(unread: number): void {
   const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
   if (!link) return;

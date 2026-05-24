@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import styles from "./Footer.module.css";
+import { useSiteSettings } from "../../contexts/SiteSettingsContext";
 
 export interface FooterLink {
   text: string;
@@ -49,12 +50,14 @@ export interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({
-  companyName = "Your Company",
+  companyName: companyNameProp,
   //   authorName = 'Author',
   startYear = new Date().getFullYear(),
   copyrightText,
   className = "",
 }) => {
+  const { settings } = useSiteSettings();
+  const companyName = companyNameProp || settings.siteName || "Blog";
   const currentYear = new Date().getFullYear();
   const yearText = startYear === currentYear ? currentYear.toString() : `${startYear}-${currentYear}`;
 

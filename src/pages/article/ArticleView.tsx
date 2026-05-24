@@ -29,6 +29,7 @@ import FollowService from "../../services/followService";
 import PraiseService from "../../services/praiseService";
 import CommentService from "../../services/commentService";
 import { useAuth } from "../../contexts/AuthContext";
+import { useSiteSettings } from "../../contexts/SiteSettingsContext";
 import message from "../../components/message/Message";
 
 interface Heading {
@@ -315,6 +316,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const { settings } = useSiteSettings();
   const isOwnArticle = isAuthenticated && authorId != null && String(user?.id) === String(authorId);
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [activeId, setActiveId] = useState<string>("");
@@ -989,73 +991,82 @@ const ArticleView: React.FC<ArticleViewProps> = ({
         </article>
 
         {/* 评论区域 */}
-        <div className={styles.commentSection}>
-          <div className={styles.commentHeader}>
-            <h3 className={styles.commentTitle}>
-              <MessageSquare size={18} />
-              评论 ({commentsList.length})
-            </h3>
-            <button className={styles.writeCommentButton} onClick={() => setShowCommentInput(!showCommentInput)}>
-              {showCommentInput ? "收起" : "写评论"}
-            </button>
-          </div>
-
-          {/* 评论输入框 */}
-          {showCommentInput && (
-            <div className={styles.commentInputWrapper}>
-              <textarea
-                className={styles.commentTextarea}
-                placeholder="写下你的想法..."
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                rows={3}
-              />
-              <div className={styles.commentInputFooter}>
-                <span className={styles.commentHint}>支持 Markdown 语法</span>
-                <button className={styles.commentSubmitButton} onClick={handleCommentSubmit} disabled={!commentText.trim()}>
-                  <Send size={14} />
-                  发布
-                </button>
-              </div>
+        {settings.allowComments ? (
+          <div className={styles.commentSection}>
+            <div className={styles.commentHeader}>
+              <h3 className={styles.commentTitle}>
+                <MessageSquare size={18} />
+                评论 ({commentsList.length})
+              </h3>
+              <button className={styles.writeCommentButton} onClick={() => setShowCommentInput(!showCommentInput)}>
+                {showCommentInput ? "收起" : "写评论"}
+              </button>
             </div>
-          )}
 
-          {/* 评论列表 */}
-          <div className={styles.commentList}>
-            {commentLoading ? (
-              <div className={styles.commentEmpty}>加载评论中...</div>
-            ) : commentsList.length === 0 ? (
-              <div className={styles.commentEmpty}>暂无评论，快来抢沙发吧~</div>
-            ) : (
-              commentsList.map((comment) => (
-                <CommentNode
-                  key={comment.id}
-                  comment={comment}
-                  depth={0}
-                  likedCommentIds={likedCommentIds}
-                  editingId={editingId}
-                  editText={editText}
-                  replyToId={replyToId}
-                  replyText={replyText}
-                  currentUserId={user?.id != null ? Number(user.id) : undefined}
-                  isAuthenticated={isAuthenticated}
-                  onLike={handleCommentLike}
-                  onToggleReply={(id) => setReplyToId(replyToId === id ? null : id)}
-                  onStartEdit={handleStartEdit}
-                  onSaveEdit={handleSaveEdit}
-                  onCancelEdit={handleCancelEdit}
-                  onReplyTextChange={setReplyText}
-                  onReplySubmit={handleReplySubmit}
-                  onReplyCancel={() => {
-                    setReplyToId(null);
-                    setReplyText("");
-                  }}
-                  onEditTextChange={setEditText}
+            {/* 评论输入框 */}
+            {showCommentInput && (
+              <div className={styles.commentInputWrapper}>
+                <textarea
+                  className={styles.commentTextarea}
+                  placeholder="写下你的想法..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  rows={3}
                 />
-              ))
+                <div className={styles.commentInputFooter}>
+                  <span className={styles.commentHint}>
+                    支持 Markdown 语法
+                    {settings.moderateComments && " · 评论需审核后显示"}
+                  </span>
+                  <button className={styles.commentSubmitButton} onClick={handleCommentSubmit} disabled={!commentText.trim()}>
+                    <Send size={14} />
+                    发布
+                  </button>
+                </div>
+              </div>
             )}
+
+            {/* 评论列表 */}
+            <div className={styles.commentList}>
+              {commentLoading ? (
+                <div className={styles.commentEmpty}>加载评论中...</div>
+              ) : commentsList.length === 0 ? (
+                <div className={styles.commentEmpty}>暂无评论，快来抢沙发吧~</div>
+              ) : (
+                commentsList.map((comment) => (
+                  <CommentNode
+                    key={comment.id}
+                    comment={comment}
+                    depth={0}
+                    likedCommentIds={likedCommentIds}
+                    editingId={editingId}
+                    editText={editText}
+                    replyToId={replyToId}
+                    replyText={replyText}
+                    currentUserId={user?.id != null ? Number(user.id) : undefined}
+                    isAuthenticated={isAuthenticated}
+                    onLike={handleCommentLike}
+                    onToggleReply={(id) => setReplyToId(replyToId === id ? null : id)}
+                    onStartEdit={handleStartEdit}
+                    onSaveEdit={handleSaveEdit}
+                    onCancelEdit={handleCancelEdit}
+                    onReplyTextChange={setReplyText}
+                    onReplySubmit={handleReplySubmit}
+                    onReplyCancel={() => {
+                      setReplyToId(null);
+                      setReplyText("");
+                    }}
+                    onEditTextChange={setEditText}
+                  />
+                ))
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className={styles.commentSection}>
+            <div className={styles.commentEmpty}>评论功能已关闭</div>
+          </div>
+        )}
       </div>
     </div>
   );

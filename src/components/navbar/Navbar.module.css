@@ -55,6 +55,11 @@
   letter-spacing: 0.02em;
 }
 
+.logoImage {
+  max-height: 40px;
+  width: auto;
+}
+
 .logo:hover .logoText {
   transform: scale(1.05);
   cursor: pointer;
