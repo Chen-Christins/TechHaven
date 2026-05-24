@@ -531,7 +531,7 @@ const PersonalCenter: React.FC = () => {
           </div>
 
           {/* Footer */}
-          <Footer companyName="TechBlog" startYear={2025} />
+          <Footer startYear={2025} />
         </main>
       </div>
     </div>

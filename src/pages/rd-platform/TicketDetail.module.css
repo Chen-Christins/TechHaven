@@ -200,7 +200,6 @@
   border: 1px solid var(--border-primary);
   border-radius: 10px;
   padding: 16px;
-  transition: box-shadow 0.15s;
 }
 
 .metaCard:hover {
@@ -291,7 +290,6 @@
   resize: vertical;
   font-family: inherit;
   line-height: 1.6;
-  transition: border-color 0.15s;
 }
 
 .formTextarea:focus {
@@ -318,7 +316,6 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.15s;
 }
 
 .btnSecondary:hover {
@@ -337,7 +334,6 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: opacity 0.15s;
 }
 
 .btnPrimary:hover {

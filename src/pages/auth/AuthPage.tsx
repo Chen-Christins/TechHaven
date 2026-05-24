@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "./AuthPage.module.css"; // 导入 CSS Modules
 import Footer from "../../components/footer/Footer";
 import { useAuth } from "../../contexts/AuthContext";
+import { useSiteSettings } from "../../contexts/SiteSettingsContext";
 import { AuthService } from "../../services/authService";
 
 // 定义表单类型
@@ -84,6 +85,7 @@ const validateForm = (type: FormType, formData: any) => {
 const AuthPage: React.FC = () => {
   // 获取认证状态
   const { login } = useAuth();
+  const { settings } = useSiteSettings();
   const navigate = useNavigate();
 
   // 状态管理
@@ -110,6 +112,13 @@ const AuthPage: React.FC = () => {
     text: string;
     type: "success" | "error";
   } | null>(null);
+
+  // 当注册被禁用时强制切回登录
+  useEffect(() => {
+    if (!settings.enableRegistration && formType === "register") {
+      setFormType("login");
+    }
+  }, [settings.enableRegistration, formType]);
 
   // 处理输入变化
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -639,13 +648,17 @@ const AuthPage: React.FC = () => {
                         点击重置
                       </button>
                     </span>
-                    <div className={styles.formSwitchDivider}></div>
-                    <span className={styles.formSwitchItem}>
-                      还没有账号？
-                      <button type="button" onClick={() => switchForm("register")} className={`${styles.btn} ${styles.textBtn}`}>
-                        立即注册
-                      </button>
-                    </span>
+                    {settings.enableRegistration && (
+                      <>
+                        <div className={styles.formSwitchDivider}></div>
+                        <span className={styles.formSwitchItem}>
+                          还没有账号？
+                          <button type="button" onClick={() => switchForm("register")} className={`${styles.btn} ${styles.textBtn}`}>
+                            立即注册
+                          </button>
+                        </span>
+                      </>
+                    )}
                   </div>
                 ) : formType === "register" ? (
                   <div>
@@ -667,7 +680,7 @@ const AuthPage: React.FC = () => {
           </div>
         </div>
       </div>
-      <Footer companyName="TechBlog" startYear={2025} />
+      <Footer startYear={2025} />
     </div>
   );
 };

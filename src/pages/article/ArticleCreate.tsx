@@ -881,7 +881,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
           </div>
         )}
 
-        <Footer companyName="TechBlog" startYear={2025} />
+        <Footer startYear={2025} />
       </div>
       <BackToTop />
     </>

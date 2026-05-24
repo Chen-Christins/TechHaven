@@ -18,6 +18,7 @@ import styles from "./Navbar.module.css";
 import ThemeToggle from "../themeToggle/ThemeToggle";
 import AuthButtons from "../authButtons/AuthButtons";
 import Notification from "../notification/Notification";
+import { useSiteSettings } from "../../contexts/SiteSettingsContext";
 import Avatar from "../avatar/Avatar";
 import { useAuth } from "../../contexts/AuthContext";
 import OrganizationService from "../../services/organizationService";
@@ -27,6 +28,7 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   // 获取认证状态
   const { user, isAuthenticated, logout, token, loading } = useAuth();
+  const { settings: siteSettings } = useSiteSettings();
 
   // 状态管理
   const [isScrolled, setIsScrolled] = useState(false); // 滚动状态（控制导航栏样式变化）
@@ -308,7 +310,11 @@ const Navbar: React.FC = () => {
         <div className={styles.leftSection}>
           {/* Logo */}
           <div className={styles.logo} onClick={() => navigate("/")}>
-            <span className={styles.logoText}>TechBlog</span>
+            {siteSettings.siteLogo ? (
+              <img src={siteSettings.siteLogo} alt={siteSettings.siteName} className={styles.logoImage} />
+            ) : (
+              <span className={styles.logoText}>{siteSettings.siteName}</span>
+            )}
           </div>
 
           {/* 桌面端导航链接 */}

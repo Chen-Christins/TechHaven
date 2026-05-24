@@ -98,7 +98,7 @@ graph TD;
         update_time="2025-10-26 19:19:19"
         content={markdownContent}
       />
-      <Footer companyName="TechBlog" startYear={2025} />
+      <Footer startYear={2025} />
       <BackToTop />
     </div>
   );

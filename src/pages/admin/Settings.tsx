@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaSave,
   FaUpload,
@@ -13,80 +13,44 @@ import {
   FaDatabase,
   FaUsers,
   FaClock,
-  FaCheckCircle,
-  FaExclamationTriangle,
+  FaSpinner,
 } from "react-icons/fa";
 import styles from "./Settings.module.css";
 import CustomSelect from "../../components/customSelect/CustomSelect";
-
-// 设置接口定义
-interface SiteSettings {
-  siteName: string;
-  siteDescription: string;
-  siteKeywords: string;
-  siteIcon: string;
-  siteLogo: string;
-  favicon: string;
-  adminEmail: string;
-  timezone: string;
-  language: string;
-}
-
-interface EmailSettings {
-  smtpHost: string;
-  smtpPort: number;
-  smtpUsername: string;
-  smtpPassword: string;
-  smtpEncryption: "none" | "ssl" | "tls";
-  fromEmail: string;
-  fromName: string;
-  replyTo: string;
-}
-
-interface SystemSettings {
-  enableRegistration: boolean;
-  requireEmailVerification: boolean;
-  allowComments: boolean;
-  moderateComments: boolean;
-  maxFileSize: number;
-  allowedFileTypes: string;
-  sessionTimeout: number;
-  maintenanceMode: boolean;
-  backupSchedule: string;
-}
+import message from "../../components/message/Message";
+import SettingsService, { type SiteSettings, type EmailSettings, type SystemSettings } from "../../services/settingsService";
+import { useSiteSettings } from "../../contexts/SiteSettingsContext";
 
 const Settings: React.FC = () => {
-  // 状态管理
   const [activeTab, setActiveTab] = useState<"site" | "email" | "system">("site");
   const [saving, setSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  const { refreshSettings } = useSiteSettings();
 
-  // 站点设置状态
   const [siteSettings, setSiteSettings] = useState<SiteSettings>({
-    siteName: "TechBlog",
-    siteDescription: "一个专注于技术分享的博客平台",
-    siteKeywords: "技术,博客,编程,开发,分享",
+    siteName: "",
+    siteDescription: "",
+    siteKeywords: "",
     siteIcon: "",
     siteLogo: "",
     favicon: "",
-    adminEmail: "admin@techblog.com",
+    adminEmail: "",
     timezone: "Asia/Shanghai",
     language: "zh-CN",
   });
 
-  // 邮件设置状态
   const [emailSettings, setEmailSettings] = useState<EmailSettings>({
-    smtpHost: "smtp.gmail.com",
+    smtpHost: "",
     smtpPort: 587,
     smtpUsername: "",
     smtpPassword: "",
     smtpEncryption: "tls",
-    fromEmail: "noreply@techblog.com",
-    fromName: "TechBlog",
-    replyTo: "support@techblog.com",
+    fromEmail: "",
+    fromName: "",
+    replyTo: "",
   });
 
-  // 系统设置状态
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({
     enableRegistration: true,
     requireEmailVerification: true,
@@ -98,6 +62,52 @@ const Settings: React.FC = () => {
     maintenanceMode: false,
     backupSchedule: "daily",
   });
+
+  // 加载设置
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const data = await SettingsService.getSettings();
+        setSiteSettings({
+          siteName: data.siteName,
+          siteDescription: data.siteDescription,
+          siteKeywords: data.siteKeywords,
+          siteIcon: data.siteIcon,
+          siteLogo: data.siteLogo,
+          favicon: data.favicon,
+          adminEmail: data.adminEmail,
+          timezone: data.timezone,
+          language: data.language,
+        });
+        setEmailSettings({
+          smtpHost: data.smtpHost,
+          smtpPort: data.smtpPort,
+          smtpUsername: data.smtpUsername,
+          smtpPassword: data.smtpPassword,
+          smtpEncryption: data.smtpEncryption,
+          fromEmail: data.fromEmail,
+          fromName: data.fromName,
+          replyTo: data.replyTo,
+        });
+        setSystemSettings({
+          enableRegistration: data.enableRegistration,
+          requireEmailVerification: data.requireEmailVerification,
+          allowComments: data.allowComments,
+          moderateComments: data.moderateComments,
+          maxFileSize: data.maxFileSize,
+          allowedFileTypes: data.allowedFileTypes,
+          sessionTimeout: data.sessionTimeout,
+          maintenanceMode: data.maintenanceMode,
+          backupSchedule: data.backupSchedule,
+        });
+      } catch {
+        message.error("加载设置失败");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   // 处理输入变化
   const handleSiteSettingChange = (field: keyof SiteSettings, value: string | boolean) => {
@@ -124,38 +134,39 @@ const Settings: React.FC = () => {
   // 保存设置
   const saveSettings = async () => {
     setSaving(true);
-    setSaveStatus("idle");
 
     try {
-      // 模拟API调用
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      setSaveStatus("success");
-      setTimeout(() => setSaveStatus("idle"), 3000);
-    } catch (error) {
-      console.error("保存失败:", error);
-      setSaveStatus("error");
-      setTimeout(() => setSaveStatus("idle"), 3000);
+      await SettingsService.updateSettings({
+        ...siteSettings,
+        ...emailSettings,
+        ...systemSettings,
+      });
+      await refreshSettings();
+      message.success("设置保存成功");
+    } catch {
+      message.error("保存失败，请重试");
     } finally {
       setSaving(false);
     }
   };
 
   // 文件上传处理
-  const handleFileUpload = (type: "siteIcon" | "siteLogo" | "favicon") => {
+  const handleFileUpload = async (type: "siteIcon" | "siteLogo" | "favicon") => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        // 这里处理文件上传逻辑
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          handleSiteSettingChange(type, result);
-        };
-        reader.readAsDataURL(file);
+      if (!file) return;
+
+      setUploading((prev) => ({ ...prev, [type]: true }));
+      try {
+        const url = await SettingsService.uploadImage(file, type);
+        handleSiteSettingChange(type, url);
+      } catch {
+        console.error("图片上传失败");
+      } finally {
+        setUploading((prev) => ({ ...prev, [type]: false }));
       }
     };
     input.click();
@@ -196,25 +207,15 @@ const Settings: React.FC = () => {
     { id: "monthly", name: "每月", color: "" },
   ];
 
-  return (
+  return loading ? (
     <div className={styles.settings}>
-      {/* 保存状态提示 */}
-      {saveStatus !== "idle" && (
-        <div className={`${styles.saveAlert} ${styles[saveStatus]}`}>
-          {saveStatus === "success" ? (
-            <>
-              <FaCheckCircle />
-              设置保存成功！
-            </>
-          ) : (
-            <>
-              <FaExclamationTriangle />
-              保存失败，请重试
-            </>
-          )}
-        </div>
-      )}
-
+      <div className={styles.loadingContainer}>
+        <FaSpinner className="fa-spin" />
+        <span>加载设置中...</span>
+      </div>
+    </div>
+  ) : (
+    <div className={styles.settings}>
       {/* Tab导航 */}
       <div className={styles.tabsContainer}>
         <nav className={styles.tabsNav}>
@@ -331,8 +332,19 @@ const Settings: React.FC = () => {
                           <span>点击上传图标</span>
                         </div>
                       )}
-                      <button type="button" className={styles.uploadButton} onClick={() => handleFileUpload("siteIcon")}>
-                        选择文件
+                      <button
+                        type="button"
+                        className={styles.uploadButton}
+                        onClick={() => handleFileUpload("siteIcon")}
+                        disabled={uploading["siteIcon"]}
+                      >
+                        {uploading["siteIcon"] ? (
+                          <>
+                            <FaSpinner className="fa-spin" /> 上传中
+                          </>
+                        ) : (
+                          "选择文件"
+                        )}
                       </button>
                       {siteSettings.siteIcon && (
                         <button type="button" className={styles.deleteButton} onClick={() => handleSiteSettingChange("siteIcon", "")}>
@@ -354,8 +366,19 @@ const Settings: React.FC = () => {
                           <span>点击上传Logo</span>
                         </div>
                       )}
-                      <button type="button" className={styles.uploadButton} onClick={() => handleFileUpload("siteLogo")}>
-                        选择文件
+                      <button
+                        type="button"
+                        className={styles.uploadButton}
+                        onClick={() => handleFileUpload("siteLogo")}
+                        disabled={uploading["siteLogo"]}
+                      >
+                        {uploading["siteLogo"] ? (
+                          <>
+                            <FaSpinner className="fa-spin" /> 上传中
+                          </>
+                        ) : (
+                          "选择文件"
+                        )}
                       </button>
                       {siteSettings.siteLogo && (
                         <button type="button" className={styles.deleteButton} onClick={() => handleSiteSettingChange("siteLogo", "")}>
@@ -377,8 +400,19 @@ const Settings: React.FC = () => {
                           <span>点击上传Favicon</span>
                         </div>
                       )}
-                      <button type="button" className={styles.uploadButton} onClick={() => handleFileUpload("favicon")}>
-                        选择文件
+                      <button
+                        type="button"
+                        className={styles.uploadButton}
+                        onClick={() => handleFileUpload("favicon")}
+                        disabled={uploading["favicon"]}
+                      >
+                        {uploading["favicon"] ? (
+                          <>
+                            <FaSpinner className="fa-spin" /> 上传中
+                          </>
+                        ) : (
+                          "选择文件"
+                        )}
                       </button>
                       {siteSettings.favicon && (
                         <button type="button" className={styles.deleteButton} onClick={() => handleSiteSettingChange("favicon", "")}>
