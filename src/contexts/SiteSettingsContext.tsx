@@ -97,41 +97,26 @@ export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [loading, setLoading] = useState(true);
 
   const refreshSettings = useCallback(async () => {
-    // Fetch public status (maintenanceMode) and admin settings in parallel
-    const [statusResult, adminResult] = await Promise.allSettled([SettingsService.getSiteStatus(), SettingsService.getSettings()]);
-
-    let updated = loadFromCache();
-
-    if (statusResult.status === "fulfilled") {
-      updated.maintenanceMode = statusResult.value.maintenanceMode;
-    }
-
-    if (adminResult.status === "fulfilled") {
-      const data = adminResult.value;
-      updated = {
-        ...updated,
+    try {
+      const data = await SettingsService.getPublicSettings();
+      const updated: SiteSettingsState = {
+        ...loadFromCache(),
         siteName: data.siteName,
         siteDescription: data.siteDescription,
         siteKeywords: data.siteKeywords,
         siteIcon: data.siteIcon,
         siteLogo: data.siteLogo,
         favicon: data.favicon,
-        adminEmail: data.adminEmail,
         timezone: data.timezone,
         language: data.language,
         enableRegistration: data.enableRegistration,
-        requireEmailVerification: data.requireEmailVerification,
-        allowComments: data.allowComments,
-        moderateComments: data.moderateComments,
-        maxFileSize: data.maxFileSize,
-        allowedFileTypes: data.allowedFileTypes,
-        sessionTimeout: data.sessionTimeout,
         maintenanceMode: data.maintenanceMode,
       };
+      saveToCache(updated);
+      setSettings(updated);
+    } catch {
+      // Fallback to cache on error
     }
-
-    saveToCache(updated);
-    setSettings(updated);
   }, []);
 
   // Initial load: cache first (instant), then try API
