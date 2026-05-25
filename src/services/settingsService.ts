@@ -70,11 +70,29 @@ export interface UploadImageResponse {
   url: string;
 }
 
+export interface PublicSiteSettings {
+  siteName: string;
+  siteDescription: string;
+  siteKeywords: string;
+  siteIcon: string;
+  siteLogo: string;
+  favicon: string;
+  timezone: string;
+  language: string;
+  enableRegistration: boolean;
+  maintenanceMode: boolean;
+}
+
 export interface SiteStatus {
   maintenanceMode: boolean;
 }
 
 export class SettingsService {
+  static async getPublicSettings(): Promise<PublicSiteSettings> {
+    const response = await http.get<PublicSiteSettings>("/site/settings");
+    return response.data;
+  }
+
   static async getSiteStatus(): Promise<SiteStatus> {
     const response = await http.get<SiteStatus>("/site/status");
     return response.data;
