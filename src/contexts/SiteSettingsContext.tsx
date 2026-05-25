@@ -48,30 +48,7 @@ const DEFAULT_SETTINGS: SiteSettingsState = {
   maintenanceMode: false,
 };
 
-const CACHE_KEY = "site_settings_cache";
-
 const SiteSettingsContext = createContext<SiteSettingsContextType | undefined>(undefined);
-
-function loadFromCache(): SiteSettingsState {
-  try {
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      return { ...DEFAULT_SETTINGS, ...parsed };
-    }
-  } catch {
-    // corrupt cache, ignore
-  }
-  return { ...DEFAULT_SETTINGS };
-}
-
-function saveToCache(settings: SiteSettingsState): void {
-  try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(settings));
-  } catch {
-    // storage full or unavailable
-  }
-}
 
 function updateMetaTag(name: string, content: string): void {
   let el = document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`);
@@ -93,14 +70,14 @@ function updateFavicon(url: string): void {
 }
 
 export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [settings, setSettings] = useState<SiteSettingsState>(loadFromCache);
+  const [settings, setSettings] = useState<SiteSettingsState>({ ...DEFAULT_SETTINGS });
   const [loading, setLoading] = useState(true);
 
   const refreshSettings = useCallback(async () => {
     try {
       const data = await SettingsService.getPublicSettings();
-      const updated: SiteSettingsState = {
-        ...loadFromCache(),
+      setSettings((prev) => ({
+        ...prev,
         siteName: data.siteName,
         siteDescription: data.siteDescription,
         siteKeywords: data.siteKeywords,
@@ -110,16 +87,16 @@ export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         timezone: data.timezone,
         language: data.language,
         enableRegistration: data.enableRegistration,
+        allowComments: data.allowComments,
+        moderateComments: data.moderateComments,
         maintenanceMode: data.maintenanceMode,
-      };
-      saveToCache(updated);
-      setSettings(updated);
+      }));
     } catch {
-      // Fallback to cache on error
+      // keep current settings on error
     }
   }, []);
 
-  // Initial load: cache first (instant), then try API
+  // Initial load: show defaults while fetching from API
   useEffect(() => {
     const init = async () => {
       await refreshSettings();

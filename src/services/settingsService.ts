@@ -80,6 +80,8 @@ export interface PublicSiteSettings {
   timezone: string;
   language: string;
   enableRegistration: boolean;
+  allowComments: boolean;
+  moderateComments: boolean;
   maintenanceMode: boolean;
 }
 
