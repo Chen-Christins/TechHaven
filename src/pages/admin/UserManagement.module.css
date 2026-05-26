@@ -329,9 +329,14 @@
   color: var(--error);
 }
 
-.roleBadge.moderator {
-  background-color: var(--warning);
-  color: white;
+.roleBadge.editor {
+  background-color: var(--warn-light);
+  color: var(--warning);
+}
+
+.roleBadge.checker {
+  background-color: var(--success-light);
+  color: var(--success);
 }
 
 .roleBadge.user {
@@ -575,4 +580,41 @@
 .btnIcon {
   padding: 8px;
   border-radius: 50%;
+}
+
+/* 模态框表单样式 */
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.formInput {
+  width: 100%;
+}
+
+.formTextarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.formTextarea:focus {
+  border-color: var(--primary);
+  box-shadow: var(--focus-ring);
 }

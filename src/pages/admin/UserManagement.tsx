@@ -16,6 +16,9 @@ import Input from "../../components/input/Input";
 import Button from "../../components/button/Button";
 import Loading from "../../components/loading/Loading";
 import Avatar from "../../components/avatar/Avatar";
+import Modal from "../../components/modal/Modal";
+import { confirm } from "../../components/confirm/Confirm";
+import message from "../../components/message/Message";
 import type { SelectOption } from "../../types/index";
 import styles from "./UserManagement.module.css";
 import { AuthService } from "../../services/authService";
@@ -27,7 +30,7 @@ interface UserListItem {
   username: string;
   email: string;
   avatar: string;
-  role: string;
+  role: number;
   status: string;
   createdAt: string;
   lastLogin: string;
@@ -58,6 +61,20 @@ const MAP_STR_ROLE_NUM: Record<string, number> = {
   user: 1,
 };
 
+const MAP_NUM_ROLE_STR: Record<number, string> = {
+  2: "管理员",
+  3: "编辑",
+  4: "审核者",
+  1: "普通用户",
+};
+
+const MAP_ROLE_CSS: Record<number, string> = {
+  1: "user",
+  2: "admin",
+  3: "editor",
+  4: "checker",
+};
+
 const UserManagement: React.FC = () => {
   // 状态管理
   const [users, setUsers] = useState<UserListItem[]>([]);
@@ -76,8 +93,39 @@ const UserManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    account: "",
+    email: "",
+    passwd: "",
+    role: 1,
+    state: 1,
+  });
+  const [editingUser, setEditingUser] = useState<UserListItem | null>(null);
+  const [detailUser, setDetailUser] = useState<UserListItem | null>(null);
+  const [isDetailVisible, setIsDetailVisible] = useState(false);
 
   const usersPerPage = 15; // 每页显示15条数据
+
+  // 加载统计数据
+  const fetchStats = async () => {
+    try {
+      const statsRsp = await AuthService.getAdminUserStats();
+      setStats({
+        totalUsers: statsRsp.total_users,
+        activeUsers: statsRsp.active_users,
+        newUsers: statsRsp.new_users_30d,
+        inactiveUsers: statsRsp.inactive_users,
+      });
+    } catch (error) {
+      console.error("获取用户统计失败:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
   // 加载用户数据
   useEffect(() => {
@@ -119,12 +167,6 @@ const UserManagement: React.FC = () => {
         }
         setUsers(fetchedUsers);
         setTotalUsers(rsp.total);
-
-        // 更新统计数据 (仅更新总数，其他统计需要单独接口)
-        setStats((prev) => ({
-          ...prev,
-          totalUsers: rsp.total,
-        }));
       } catch (error) {
         console.error("获取用户列表失败:", error);
         // 可以添加错误提示
@@ -171,6 +213,18 @@ const UserManagement: React.FC = () => {
     { id: "inactive", name: "非活跃", color: "#ffc107" },
   ];
 
+  const createRoleOptions: SelectOption[] = [
+    { id: "1", name: "普通用户", color: "#007bff" },
+    { id: "2", name: "管理员", color: "#dc3545" },
+    { id: "3", name: "编辑", color: "#ffc107" },
+    { id: "4", name: "审核者", color: "#28a745" },
+  ];
+
+  const createStateOptions: SelectOption[] = [
+    { id: "1", name: "活跃", color: "#28a745" },
+    { id: "2", name: "非活跃", color: "#ffc107" },
+  ];
+
   const dateRangeOptions: SelectOption[] = [
     { id: "", name: "全部时间", color: "#6c757d" },
     { id: "7days", name: "最近7天", color: "#17a2b8" },
@@ -208,12 +262,126 @@ const UserManagement: React.FC = () => {
     setCurrentPage(1);
   };
 
+  // 打开创建用户模态框
+  const openCreateModal = () => {
+    setEditingUser(null);
+    setFormData({
+      account: "",
+      email: "",
+      passwd: "",
+      role: 1,
+      state: 1,
+    });
+    setIsModalVisible(true);
+  };
+
+  // 打开编辑用户模态框
+  const openEditModal = (user: UserListItem) => {
+    setEditingUser(user);
+    setFormData({
+      account: user.username,
+      email: user.email,
+      passwd: "",
+      role: user.role,
+      state: user.status === "active" ? 1 : 2,
+    });
+    setIsModalVisible(true);
+  };
+
+  // 打开查看详情模态框
+  const openDetailModal = (user: UserListItem) => {
+    setDetailUser(user);
+    setIsDetailVisible(true);
+  };
+
+  // 提交表单（创建/编辑）
+  const handleFormSubmit = async () => {
+    if (!formData.account.trim()) {
+      message.error("请输入用户名");
+      return;
+    }
+    if (!formData.email.trim()) {
+      message.error("请输入邮箱");
+      return;
+    }
+    if (!editingUser && (!formData.passwd || formData.passwd.length < 6)) {
+      message.error("密码至少需要6位");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      if (editingUser) {
+        // 编辑模式
+        const updateParams: any = {
+          user_id: editingUser.id,
+          account: formData.account.trim(),
+          email: formData.email.trim(),
+          role: formData.role,
+          state: formData.state,
+        };
+        if (formData.passwd) {
+          updateParams.passwd = formData.passwd;
+        }
+        await AuthService.updateUserAdmin(updateParams);
+        message.success("用户信息已更新");
+      } else {
+        // 创建模式
+        await AuthService.createUserAdmin({
+          account: formData.account.trim(),
+          email: formData.email.trim(),
+          passwd: formData.passwd,
+          role: formData.role,
+          state: formData.state,
+        });
+        message.success("用户创建成功");
+      }
+      setIsModalVisible(false);
+      // 刷新用户列表
+      const rsp = await AuthService.listUsersAdmin({ page_num: 1, page_size: usersPerPage });
+      let fetchedUsers: UserListItem[] = [];
+      if (Array.isArray(rsp.list) && rsp.list.length > 0) {
+        fetchedUsers = rsp.list.map((user) => ({
+          id: user.id,
+          username: user.name,
+          email: user.email,
+          avatar: user.avatar || `https://picsum.photos/id/${(Number(user.id) % 100) + 1}/80`,
+          role: user.role,
+          status: user.state === 1 ? "active" : "inactive",
+          createdAt: formatToChinaTime(user.create_time),
+          lastLogin: formatToChinaTime(user.login_time),
+          articleCount: 0,
+          commentCount: 0,
+        }));
+      }
+      setUsers(fetchedUsers);
+      setTotalUsers(rsp.total);
+      fetchStats();
+    } catch (error: any) {
+      message.error(error.message || (editingUser ? "更新用户失败" : "创建用户失败"));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   // 删除用户
-  const deleteUser = (userId: string | number) => {
-    if (window.confirm("确定要删除这个用户吗？此操作不可恢复。")) {
-      // TODO: 调用后端删除接口 (目前API文档未提供删除用户接口，仅有删除文章/分类等)
-      // 暂时只更新前端状态
+  const deleteUser = async (userId: string | number) => {
+    const isConfirmed = await confirm({
+      title: "确认删除",
+      content: "确定要删除这个用户吗？此操作不可恢复。",
+      confirmText: "删除",
+      cancelText: "取消",
+    });
+    if (!isConfirmed) return;
+
+    try {
+      await AuthService.deleteUserAdmin(userId);
+      message.success("用户已删除");
       setUsers((prev) => prev.filter((user) => user.id !== userId));
+      setTotalUsers((prev) => prev - 1);
+      fetchStats();
+    } catch (error: any) {
+      message.error(error.message || "删除用户失败");
     }
   };
 
@@ -275,7 +443,7 @@ const UserManagement: React.FC = () => {
           <p className={styles.pageDescription}>管理系统中的所有用户账户，包括权限设置和状态管理</p>
         </div>
         <div className={styles.headerActions}>
-          <button className={`${styles.btn} ${styles.btnPrimary}`}>
+          <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={openCreateModal}>
             <FaPlus />
             添加用户
           </button>
@@ -413,8 +581,8 @@ const UserManagement: React.FC = () => {
                     </div>
                   </td>
                   <td>
-                    <span className={`${styles.roleBadge} ${styles[user.role]}`}>
-                      {user.role === "admin" ? "管理员" : user.role === "moderator" ? "版主" : "普通用户"}
+                    <span className={`${styles.roleBadge} ${styles[MAP_ROLE_CSS[user.role] || "user"]}`}>
+                      {MAP_NUM_ROLE_STR[user.role] || user.role}
                     </span>
                   </td>
                   <td>
@@ -429,10 +597,10 @@ const UserManagement: React.FC = () => {
                   <td>{user.commentCount}</td>
                   <td>
                     <div className={styles.actionButtons}>
-                      <button className={`${styles.actionButton} ${styles.edit}`} title="编辑用户">
+                      <button className={`${styles.actionButton} ${styles.edit}`} title="编辑用户" onClick={() => openEditModal(user)}>
                         <FaEdit />
                       </button>
-                      <button className={`${styles.actionButton} ${styles.edit}`} title="查看详情">
+                      <button className={`${styles.actionButton} ${styles.edit}`} title="查看详情" onClick={() => openDetailModal(user)}>
                         <FaEye />
                       </button>
                       <Button
@@ -517,6 +685,139 @@ const UserManagement: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* 创建/编辑用户模态框 */}
+      <Modal
+        visible={isModalVisible}
+        title={editingUser ? "编辑用户" : "添加用户"}
+        onClose={() => setIsModalVisible(false)}
+        width={560}
+        footer={
+          <>
+            <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setIsModalVisible(false)} disabled={submitting}>
+              取消
+            </button>
+            <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleFormSubmit} disabled={submitting}>
+              {submitting ? "保存中..." : editingUser ? "保存修改" : "确认创建"}
+            </button>
+          </>
+        }
+      >
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>用户名 *</label>
+          <Input
+            placeholder="请输入用户名"
+            value={formData.account}
+            onChange={(value) => setFormData({ ...formData, account: value })}
+            className={styles.formInput}
+            size="large"
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>邮箱 *</label>
+          <Input
+            placeholder="请输入邮箱地址"
+            value={formData.email}
+            onChange={(value) => setFormData({ ...formData, email: value })}
+            className={styles.formInput}
+            size="large"
+            type="email"
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>密码{editingUser ? "" : " *"}</label>
+          <Input
+            placeholder={editingUser ? "留空则不修改密码" : "请输入密码（至少6位）"}
+            value={formData.passwd}
+            onChange={(value) => setFormData({ ...formData, passwd: value })}
+            className={styles.formInput}
+            size="large"
+            type="password"
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>用户角色 *</label>
+          <CustomSelect
+            name="用户角色"
+            options={createRoleOptions}
+            value={createRoleOptions.find((o) => Number(o.id) === formData.role) || null}
+            onChange={(option) => setFormData({ ...formData, role: option ? Number(option.id) : 1 })}
+            placeholder="选择角色..."
+            hideBadge={true}
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>账户状态</label>
+          <CustomSelect
+            name="账户状态"
+            options={createStateOptions}
+            value={createStateOptions.find((o) => Number(o.id) === formData.state) || null}
+            onChange={(option) => setFormData({ ...formData, state: option ? Number(option.id) : 1 })}
+            placeholder="选择状态..."
+            hideBadge={true}
+          />
+        </div>
+      </Modal>
+
+      {/* 查看用户详情模态框 */}
+      <Modal
+        visible={isDetailVisible}
+        title="用户详情"
+        onClose={() => setIsDetailVisible(false)}
+        width={520}
+        footer={
+          <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setIsDetailVisible(false)}>
+            关闭
+          </button>
+        }
+      >
+        {detailUser && (
+          <div style={{ padding: "8px 0" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
+              <Avatar src={detailUser.avatar} name={detailUser.username} size={64} />
+              <div>
+                <div style={{ fontSize: "18px", fontWeight: 600 }}>{detailUser.username}</div>
+                <div style={{ fontSize: "14px", color: "var(--text-secondary)", marginTop: "2px" }}>{detailUser.email}</div>
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div>
+                <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "4px" }}>角色</div>
+                <div style={{ fontSize: "15px", fontWeight: 500 }}>
+                  <span className={`${styles.roleBadge} ${styles[MAP_ROLE_CSS[detailUser.role] || "user"]}`}>
+                    {MAP_NUM_ROLE_STR[detailUser.role] || detailUser.role}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "4px" }}>状态</div>
+                <div style={{ fontSize: "15px" }}>
+                  <span className={`${styles.statusBadge} ${styles[detailUser.status]}`}>
+                    <span className={styles.statusIndicator}></span>
+                    {detailUser.status === "active" ? "活跃" : detailUser.status === "inactive" ? "非活跃" : "待审核"}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "4px" }}>注册时间</div>
+                <div style={{ fontSize: "15px" }}>{detailUser.createdAt}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "4px" }}>最后登录</div>
+                <div style={{ fontSize: "15px" }}>{detailUser.lastLogin}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "4px" }}>文章数</div>
+                <div style={{ fontSize: "15px" }}>{detailUser.articleCount}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "4px" }}>评论数</div>
+                <div style={{ fontSize: "15px" }}>{detailUser.commentCount}</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

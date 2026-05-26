@@ -45,11 +45,35 @@ export interface UserAdminListResponse {
     name: string;
     email: string;
     avatar?: string;
-    role: string;
+    role: number;
     state: number;
     create_time: number;
     login_time: number;
   }>;
+}
+
+export interface CreateUserAdminParams {
+  account: string;
+  email: string;
+  passwd: string;
+  role: number;
+  state: number;
+}
+
+export interface UpdateUserAdminParams {
+  user_id: number | string;
+  account?: string;
+  email?: string;
+  role?: number;
+  state?: number;
+  passwd?: string;
+}
+
+export interface AdminUserStatsResponse {
+  total_users: number;
+  active_users: number;
+  new_users_30d: number;
+  inactive_users: number;
 }
 
 /**
@@ -211,6 +235,72 @@ export class AuthService {
 
   static async listUsersAdmin(params: UserAdminListParams): Promise<UserAdminListResponse> {
     const response = await http.get<UserAdminListResponse>("/user/admin/lists", { params });
+    return response.data;
+  }
+
+  /**
+   * 管理员创建用户
+   */
+  static async createUserAdmin(params: CreateUserAdminParams) {
+    const formData = new URLSearchParams();
+    formData.append("account", params.account);
+    formData.append("email", params.email);
+    formData.append("passwd", params.passwd);
+    formData.append("role", String(params.role));
+    formData.append("state", String(params.state));
+
+    return http.post("/user/admin/create", formData.toString(), {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+  }
+
+  /**
+   * 管理员删除用户
+   */
+  static async deleteUserAdmin(userId: number | string) {
+    const formData = new URLSearchParams();
+    formData.append("user_id", String(userId));
+    return http.post("/user/admin/delete", formData.toString(), {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+  }
+
+  /**
+   * 管理员更新用户信息
+   */
+  static async updateUserAdmin(params: UpdateUserAdminParams) {
+    const formData = new URLSearchParams();
+    formData.append("user_id", String(params.user_id));
+    if (params.account) formData.append("account", params.account);
+    if (params.email) formData.append("email", params.email);
+    if (params.role !== undefined) formData.append("role", String(params.role));
+    if (params.state !== undefined) formData.append("state", String(params.state));
+    if (params.passwd) formData.append("passwd", params.passwd);
+
+    return http.put("/user/admin/update", formData.toString(), {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+  }
+
+  /**
+   * 管理员获取用户统计数据
+   */
+  static async getAdminUserStats(): Promise<AdminUserStatsResponse> {
+    const response = await http.get<AdminUserStatsResponse>("/user/admin/stats");
+    return response.data;
+  }
+
+  /**
+   * 管理员获取用户详情
+   */
+  static async getUserAdminDetail(userId: number | string) {
+    const response = await http.get(`/user/admin/detail?user_id=${userId}`);
     return response.data;
   }
 
