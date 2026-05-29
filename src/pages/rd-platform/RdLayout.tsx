@@ -5,6 +5,7 @@ import styles from "./RdLayout.module.css";
 import ThemeToggle from "../../components/themeToggle/ThemeToggle";
 import Notification from "../../components/notification/Notification";
 import UserDropdown from "../../components/userDropdown/UserDropdown";
+import NotFound404 from "../error/NotFound404";
 import Footer from "../../components/footer/Footer";
 import { useAuth } from "../../contexts/AuthContext";
 import { RdOrgProvider, useRdOrg } from "../../contexts/RdOrgContext";
@@ -58,8 +59,7 @@ const RdLayout: React.FC = () => {
   }
 
   if (!isAuthenticated || !user) {
-    navigate("/auth");
-    return null;
+    return <NotFound404 />;
   }
 
   if (!accessChecked) {
