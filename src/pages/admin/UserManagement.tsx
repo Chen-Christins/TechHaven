@@ -600,7 +600,11 @@ const UserManagement: React.FC = () => {
                       <button className={`${styles.actionButton} ${styles.edit}`} title="编辑用户" onClick={() => openEditModal(user)}>
                         <FaEdit />
                       </button>
-                      <button className={`${styles.actionButton} ${styles.edit}`} title="查看详情" onClick={() => openDetailModal(user)}>
+                      <button
+                        className={`${styles.actionButton} ${styles.edit}`}
+                        title="查看详情"
+                        onClick={() => openDetailModal(user)}
+                      >
                         <FaEye />
                       </button>
                       <Button

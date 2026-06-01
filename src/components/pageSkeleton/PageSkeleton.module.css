@@ -9,7 +9,7 @@
 /* 主内容骨架 */
 .mainSkeleton {
   flex: 1;
-  max-width: 1560px;
+  max-width: var(--page-max-width);
   margin: 2rem auto;
   padding: 0 1.8rem;
   padding-top: 48px;
