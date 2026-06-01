@@ -15,6 +15,7 @@ import {
   FaGamepad,
 } from "react-icons/fa";
 import styles from "./Navbar.module.css";
+import LayoutWidthToggle from "../layoutWidthToggle/LayoutWidthToggle";
 import ThemeToggle from "../themeToggle/ThemeToggle";
 import AuthButtons from "../authButtons/AuthButtons";
 import Notification from "../notification/Notification";
@@ -347,6 +348,7 @@ const Navbar: React.FC = () => {
               <FaFlask className={styles.testButtonIcon} />
             </button>
           )}
+          <LayoutWidthToggle />
           {/* 主题切换按钮 */}
           <ThemeToggle />
 

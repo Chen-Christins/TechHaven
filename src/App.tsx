@@ -6,6 +6,7 @@ import { MessageProvider } from "./components/message/Message";
 import { ConfirmProvider } from "./components/confirm/Confirm";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { LayoutWidthProvider } from "./contexts/LayoutWidthContext";
 import { SiteSettingsProvider } from "./contexts/SiteSettingsContext";
 import IdleTimeoutHandler from "./components/sessionTimeout/IdleTimeoutHandler";
 import RouterConfig from "./router/RouterConfig";
@@ -15,23 +16,25 @@ function App() {
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <SiteSettingsProvider>
-            <IdleTimeoutHandler />
-            <MessageProvider>
-              <ConfirmProvider>
-                <SimpleBar
-                  style={{
-                    maxHeight: "100vh",
-                    width: "100vw",
-                    overflowX: "hidden",
-                  }}
-                  autoHide={false}
-                >
-                  <RouterConfig />
-                </SimpleBar>
-              </ConfirmProvider>
-            </MessageProvider>
-          </SiteSettingsProvider>
+          <LayoutWidthProvider>
+            <SiteSettingsProvider>
+              <IdleTimeoutHandler />
+              <MessageProvider>
+                <ConfirmProvider>
+                  <SimpleBar
+                    style={{
+                      maxHeight: "100vh",
+                      width: "100vw",
+                      overflowX: "hidden",
+                    }}
+                    autoHide={false}
+                  >
+                    <RouterConfig />
+                  </SimpleBar>
+                </ConfirmProvider>
+              </MessageProvider>
+            </SiteSettingsProvider>
+          </LayoutWidthProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

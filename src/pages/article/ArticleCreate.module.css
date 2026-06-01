@@ -23,7 +23,7 @@
   padding: 36px;
   margin: 30px auto 20px auto;
   width: calc(100% - 60px);
-  max-width: 1460px;
+  max-width: var(--page-max-width);
   min-width: 0;
   position: relative;
   overflow: hidden;

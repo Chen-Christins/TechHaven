@@ -12,6 +12,8 @@
 
 /* CSS 变量定义 - 浅色主题 */
 :root {
+  --page-max-width: 1560px;
+
   /* 基础颜色 */
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
@@ -102,6 +104,18 @@
   --code-button-hover-bg: rgba(255, 255, 255, 0.2);
   --table-header-bg: #f6f8fa;
   --primary-bg: rgba(59, 130, 246, 0.05);
+}
+
+:root[data-width-mode="default"] {
+  --page-max-width: 1560px;
+}
+
+:root[data-width-mode="wide"] {
+  --page-max-width: 1840px;
+}
+
+:root[data-width-mode="full"] {
+  --page-max-width: none;
 }
 
 /* CSS 变量定义 - 暗色主题 */
