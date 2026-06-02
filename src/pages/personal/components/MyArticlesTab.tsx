@@ -24,6 +24,7 @@ const MyArticlesTab: React.FC = () => {
   const { user } = useAuth();
   const [articles, setArticles] = useState<ArticleListItem[]>([]);
   const [totalArticles, setTotalArticles] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft" | "private" | "unallowed" | "reviewing">("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -62,6 +63,7 @@ const MyArticlesTab: React.FC = () => {
   useEffect(() => {
     const fetchArticleIds = async () => {
       if (!user?.id) return;
+      setLoading(true);
       try {
         const stateValue = getStatusValue(statusFilter);
         const response = await ArticleService.listArticlesByUserIdPages({
@@ -96,6 +98,8 @@ const MyArticlesTab: React.FC = () => {
         console.error("获取文章ID列表失败:", err);
         setTotalArticles(0);
         setArticles([]);
+      } finally {
+        setLoading(false);
       }
     };
     fetchArticleIds();
@@ -250,7 +254,17 @@ const MyArticlesTab: React.FC = () => {
           <div>发布时间</div>
           <div>操作</div>
         </div>
-        {currentArticles.length === 0 ? (
+        {loading ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "40px",
+              color: "var(--text-secondary)",
+            }}
+          >
+            加载中...
+          </div>
+        ) : currentArticles.length === 0 ? (
           <div
             style={{
               textAlign: "center",

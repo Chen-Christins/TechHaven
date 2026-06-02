@@ -6,6 +6,7 @@ import styles from "./ArticleList.module.css";
 import { encodeId } from "../../utils/hashId";
 import { formatToChinaTime } from "../../utils/utils";
 import type { ArticleListItem } from "../../types/index";
+import Skeleton from "../skeleton/Skeleton";
 
 const STATE_MAP: Record<number, string> = {
   1: "reviewing",
@@ -27,6 +28,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
   const itemsPerPage = 6;
   const [totalArticles, setTotalArticles] = useState(0);
   const [articles, setArticles] = useState<ArticleListItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   // 切换页码
@@ -57,6 +59,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
     let cancelled = false;
 
     const fetchArticles = async () => {
+      setLoading(true);
       try {
         let res: {
           total: number;
@@ -122,6 +125,8 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
         if (cancelled) return;
         console.error("获取文章列表失败:", err);
         setArticles([]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     };
 
@@ -166,7 +171,24 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
     <div className={styles.articleList}>
       <h2 className={styles.title}>{labelName ? `标签：${labelName}` : categoryName ? `分类：${categoryName}` : "最新文章"}</h2>
       <div className={styles.articles}>
-        {articles.length === 0 ? (
+        {loading ? (
+          Array.from({ length: 5 }, (_, index) => (
+            <div key={index} className={styles.articleItem}>
+              <div className={styles.articleMeta}>
+                <Skeleton variant="text" width="70%" height={24} />
+                <Skeleton variant="text" width={120} height={16} />
+              </div>
+              <Skeleton variant="text" width="60%" height={28} />
+              <Skeleton variant="text" lines={3} />
+              <div className={styles.articleMeta}>
+                <Skeleton variant="circular" width={24} height={24} />
+                <Skeleton variant="text" width={80} height={16} />
+                <Skeleton variant="rectangular" width={60} height={20} />
+                <Skeleton variant="rectangular" width={60} height={20} />
+              </div>
+            </div>
+          ))
+        ) : articles.length === 0 ? (
           <></>
         ) : (
           articles.map((article, _index) => {
