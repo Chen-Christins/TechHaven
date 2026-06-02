@@ -128,7 +128,7 @@ const TaskList: React.FC = () => {
 
   const openCreate = () => {
     setEditingTask(null);
-    setForm({ ...emptyTask, organizationId: getDefaultOrgId() });
+    setForm({ ...emptyTask, organizationId: selectedOrgId || getDefaultOrgId() });
     setModalVisible(true);
   };
 
@@ -475,7 +475,7 @@ const TaskList: React.FC = () => {
                 }
                 onChange={(o) => handleFormChange("organizationId", (o?.id as string) || "")}
                 hideBadge
-                disabled={!!editingTask}
+                disabled={!!editingTask || !!selectedOrgId}
               />
             </div>
           )}

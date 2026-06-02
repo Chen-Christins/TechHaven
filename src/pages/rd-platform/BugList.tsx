@@ -168,7 +168,7 @@ const BugList: React.FC = () => {
   const openCreate = () => {
     setModalMode("create");
     setSelectedBug(null);
-    setForm({ ...emptyForm, organizationId: getDefaultOrgId() });
+    setForm({ ...emptyForm, organizationId: selectedOrgId || getDefaultOrgId() });
     setModalVisible(true);
   };
   const openEdit = (bug: Bug) => {
@@ -583,7 +583,7 @@ const BugList: React.FC = () => {
                   }
                   onChange={(o) => setFormField("organizationId", (o?.id as string) || "")}
                   hideBadge
-                  disabled={modalMode === "edit"}
+                  disabled={modalMode === "edit" || !!selectedOrgId}
                 />
               </div>
             )}
