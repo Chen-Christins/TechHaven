@@ -14,6 +14,7 @@ import {
   FaCheckCircle,
   FaTimesCircle,
   FaEye,
+  FaClipboardList,
 } from "react-icons/fa";
 import Input from "../../components/input/Input";
 import Loading from "../../components/loading/Loading";
@@ -22,7 +23,7 @@ import message from "../../components/message/Message";
 import Modal from "../../components/modal/Modal";
 import CustomSelect from "../../components/customSelect/CustomSelect";
 import styles from "./OrganizationManagement.module.css";
-import OrganizationService, { type OrganizationStatsResponse } from "../../services/organizationService";
+import OrganizationService, { type OrganizationStatsResponse, type ApplyItem } from "../../services/organizationService";
 
 interface Organization {
   id: string;
@@ -51,6 +52,15 @@ const OrganizationManagement: React.FC = () => {
   });
   const [previewOrg, setPreviewOrg] = useState<Organization | null>(null);
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+
+  // 申请审核相关状态
+  const [activeTab, setActiveTab] = useState<"orgs" | "applies">("orgs");
+  const [applies, setApplies] = useState<ApplyItem[]>([]);
+  const [appliesLoading, setAppliesLoading] = useState(false);
+  const [appliesTotal, setAppliesTotal] = useState(0);
+  const [appliesPage, setAppliesPage] = useState(1);
+  const [appliesStatusFilter, setAppliesStatusFilter] = useState<number | undefined>(0); // 默认显示待审核
+  const appliesPageSize = 10;
 
   // 统计数据
   const [stats, setStats] = useState({
@@ -113,6 +123,45 @@ const OrganizationManagement: React.FC = () => {
     }
   };
 
+  const fetchApplies = async () => {
+    setAppliesLoading(true);
+    try {
+      const res = await OrganizationService.getApplyList({
+        page_num: appliesPage,
+        page_size: appliesPageSize,
+        status: appliesStatusFilter,
+      });
+      setApplies(res.list || []);
+      setAppliesTotal(res.total);
+    } catch (e) {
+      message.error("获取申请列表失败");
+    } finally {
+      setAppliesLoading(false);
+    }
+  };
+
+  const handleReview = async (applyId: string, action: "approve" | "reject") => {
+    const actionLabel = action === "approve" ? "通过" : "拒绝";
+    const isConfirmed = await confirm({
+      title: `确认${actionLabel}`,
+      content: `确定要${actionLabel}这个组织创建申请吗？`,
+      confirmText: actionLabel,
+      cancelText: "取消",
+    });
+    if (!isConfirmed) return;
+    try {
+      await OrganizationService.reviewApply({ apply_id: applyId, action });
+      message.success(`申请已${actionLabel}`);
+      fetchApplies();
+      fetchStats();
+      if (action === "approve") {
+        fetchOrganizations();
+      }
+    } catch (e: any) {
+      message.error(e.message || "操作失败");
+    }
+  };
+
   useEffect(() => {
     fetchOrganizations();
     // eslint-disable-next-line
@@ -121,6 +170,13 @@ const OrganizationManagement: React.FC = () => {
   useEffect(() => {
     fetchStats();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === "applies") {
+      fetchApplies();
+    }
+    // eslint-disable-next-line
+  }, [appliesPage, appliesStatusFilter, activeTab]);
 
   // 打开创建模态框
   const openCreateModal = () => {
@@ -260,7 +316,30 @@ const OrganizationManagement: React.FC = () => {
     }
   };
 
-  if (loading) return <Loading />;
+  if (loading && activeTab === "orgs") return <Loading />;
+
+  const getApplyStatusBadge = (status: number) => {
+    switch (status) {
+      case 0:
+        return <span className={`${styles.statusBadge} ${styles.statusPending}`}>待审核</span>;
+      case 1:
+        return (
+          <span className={`${styles.statusBadge} ${styles.statusActive}`}>
+            <FaCheckCircle /> 已通过
+          </span>
+        );
+      case 2:
+        return (
+          <span className={`${styles.statusBadge} ${styles.statusInactive}`}>
+            <FaTimesCircle /> 已拒绝
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const appliesPages = Math.ceil(appliesTotal / appliesPageSize);
 
   return (
     <div className={styles.container}>
@@ -270,9 +349,13 @@ const OrganizationManagement: React.FC = () => {
           <p className={styles.pageDescription}>管理平台内的组织信息，包括学校、企业等</p>
         </div>
         <div className={styles.headerActions}>
-          <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={openCreateModal}>
-            <FaPlus /> 新建组织
-          </button>
+          {activeTab === "orgs" ? (
+            <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={openCreateModal}>
+              <FaPlus /> 新建组织
+            </button>
+          ) : (
+            <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>共 {appliesTotal} 条申请</span>
+          )}
         </div>
       </div>
 
@@ -300,323 +383,509 @@ const OrganizationManagement: React.FC = () => {
         </div>
       </div>
 
-      <div className={styles.filterSection}>
-        <div className={styles.filterHeader}>
-          <h3 className={styles.filterTitle}>
-            <FaFilter />
-            筛选条件
-          </h3>
-        </div>
-        <div className={styles.filterForm}>
-          <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>搜索组织</label>
-            <Input
-              placeholder="搜索组织名称..."
-              value={searchTerm}
-              onChange={(value) => setSearchTerm(value)}
-              prefix={<FaSearch />}
-              size="large"
-              style={{ minHeight: "46px", height: "50px" }}
-            />
-          </div>
-          <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>组织状态</label>
-            <CustomSelect
-              name="状态筛选"
-              options={[
-                { id: "all", name: "所有状态", color: "var(--text-secondary)" },
-                { id: "active", name: "正常", color: "var(--success)" },
-                { id: "inactive", name: "停用", color: "var(--error)" },
-              ]}
-              value={{
-                id: statusFilter,
-                name: statusFilter === "all" ? "所有状态" : statusFilter === "active" ? "正常" : "停用",
-                color: "",
-              }}
-              onChange={(option) => setStatusFilter(option ? String(option.id) : "all")}
-              placeholder="状态筛选"
-              hideBadge={true}
-            />
-          </div>
-        </div>
+      {/* Tab 切换 */}
+      <div className={styles.tabBar}>
+        <button className={`${styles.tabBtn} ${activeTab === "orgs" ? styles.tabActive : ""}`} onClick={() => setActiveTab("orgs")}>
+          <FaBuilding /> 组织列表
+        </button>
+        <button
+          className={`${styles.tabBtn} ${activeTab === "applies" ? styles.tabActive : ""}`}
+          onClick={() => setActiveTab("applies")}
+        >
+          <FaClipboardList /> 创建申请
+          {(() => {
+            // 待审核数量提示（仅 orgs 视图时检查）
+            return null;
+          })()}
+        </button>
       </div>
 
-      <div className={styles.tableContainer}>
-        <div className={styles.tableHeader}>
-          <h3 className={styles.tableTitle}>组织列表</h3>
-          <div className={styles.tableActions}>
-            <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>共 {total} 个组织</span>
-          </div>
-        </div>
-        <table className={styles.orgTable}>
-          <thead>
-            <tr>
-              <th>组织名称</th>
-              <th>类型</th>
-              <th>成员人数</th>
-              <th>状态</th>
-              <th>创建时间</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentData.length > 0 ? (
-              currentData.map((item) => (
-                <tr key={item.id}>
-                  <td>
-                    <div className={styles.userInfo}>
-                      <div
-                        className={styles.userAvatar}
-                        style={{
-                          background: "var(--primary-light)",
-                          color: "var(--primary)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <FaBuilding />
-                      </div>
-                      <div className={styles.userDetails}>
-                        <div className={styles.userName}>{item.name}</div>
-                        <div className={styles.userEmail}>
-                          {item.description && (
-                            <span
-                              style={{
-                                fontSize: "12px",
-                                color: "var(--text-secondary)",
-                                lineHeight: "1.4",
-                              }}
-                            >
-                              {item.description}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>{item.type}</td>
-                  <td>{item.memberCount}</td>
-                  <td>{getStatusBadge(item.status)}</td>
-                  <td style={{ color: "var(--text-secondary)", fontSize: "13px" }}>{item.createdAt}</td>
-                  <td>
-                    <div className={styles.actionButtons}>
-                      <button className={styles.actionBtn} title="预览" onClick={() => openPreviewModal(item)}>
-                        <FaEye />
-                      </button>
-                      <button className={styles.actionBtn} title="编辑" onClick={() => openEditModal(item)}>
-                        <FaEdit />
-                      </button>
-                      <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(item.id)}>
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={6}
-                  style={{
-                    textAlign: "center",
-                    padding: "40px",
-                    color: "var(--text-secondary)",
+      {activeTab === "orgs" ? (
+        <>
+          <div className={styles.filterSection}>
+            <div className={styles.filterHeader}>
+              <h3 className={styles.filterTitle}>
+                <FaFilter />
+                筛选条件
+              </h3>
+            </div>
+            <div className={styles.filterForm}>
+              <div className={styles.filterGroup}>
+                <label className={styles.filterLabel}>搜索组织</label>
+                <Input
+                  placeholder="搜索组织名称..."
+                  value={searchTerm}
+                  onChange={(value) => setSearchTerm(value)}
+                  prefix={<FaSearch />}
+                  size="large"
+                  style={{ minHeight: "46px", height: "50px" }}
+                />
+              </div>
+              <div className={styles.filterGroup}>
+                <label className={styles.filterLabel}>组织状态</label>
+                <CustomSelect
+                  name="状态筛选"
+                  options={[
+                    { id: "all", name: "所有状态", color: "var(--text-secondary)" },
+                    { id: "active", name: "正常", color: "var(--success)" },
+                    { id: "inactive", name: "停用", color: "var(--error)" },
+                  ]}
+                  value={{
+                    id: statusFilter,
+                    name: statusFilter === "all" ? "所有状态" : statusFilter === "active" ? "正常" : "停用",
+                    color: "",
                   }}
-                >
-                  暂无数据
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        {totalPages >= 1 && (
-          <div className={styles.pagination}>
-            <span className={styles.pageInfo}>
-              显示 {startIndex + 1} - {Math.min(startIndex + pageSize, total)} 条， 共 {total} 条记录
-            </span>
-            <div className={styles.pageButtons}>
-              <button className={styles.pageBtn} disabled={currentPage === 1} onClick={() => setCurrentPage(1)}>
-                <FaAngleDoubleLeft />
-              </button>
-              <button className={styles.pageBtn} disabled={currentPage === 1} onClick={() => setCurrentPage((prev) => prev - 1)}>
-                <FaChevronLeft />
-              </button>
-
-              {getPageNumbers().map((page, index) => (
-                <React.Fragment key={index}>
-                  {page === "..." ? (
-                    <span className={styles.paginationEllipsis}>...</span>
-                  ) : (
-                    <button
-                      className={`${styles.pageBtn} ${currentPage === page ? styles.active : ""}`}
-                      onClick={() => setCurrentPage(page as number)}
-                    >
-                      {page}
-                    </button>
-                  )}
-                </React.Fragment>
-              ))}
-
-              <button
-                className={styles.pageBtn}
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((prev) => prev + 1)}
-              >
-                <FaChevronRight />
-              </button>
-              <button className={styles.pageBtn} disabled={currentPage === totalPages} onClick={() => setCurrentPage(totalPages)}>
-                <FaAngleDoubleRight />
-              </button>
+                  onChange={(option) => setStatusFilter(option ? String(option.id) : "all")}
+                  placeholder="状态筛选"
+                  hideBadge={true}
+                />
+              </div>
             </div>
           </div>
-        )}
-      </div>
 
-      {/* 创建/编辑模态框 */}
-      <Modal
-        visible={isModalVisible}
-        title={currentOrg ? "编辑组织" : "新建组织"}
-        onClose={() => setIsModalVisible(false)}
-        width={600}
-        footer={
-          <>
-            <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setIsModalVisible(false)}>
-              取消
-            </button>
-            <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleSubmit}>
-              {currentOrg ? "保存修改" : "立即创建"}
-            </button>
-          </>
-        }
-      >
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>组织名称 *</label>
-          <Input
-            placeholder="请输入组织名称"
-            value={formData.name || ""}
-            onChange={(value) => setFormData({ ...formData, name: value })}
-            className={styles.formInput}
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>组织类型 *</label>
-          <Input
-            placeholder="请输入组织类型，如学校、企业"
-            value={formData.type || ""}
-            onChange={(value) => setFormData({ ...formData, type: value })}
-            className={styles.formInput}
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>组织状态 *</label>
-          <CustomSelect
-            name="状态选择"
-            options={[
-              { id: "active", name: "正常", color: "var(--success)" },
-              { id: "inactive", name: "停用", color: "var(--error)" },
-            ]}
-            value={{
-              id: formData.status || "active",
-              name: formData.status === "active" ? "正常" : "停用",
-              color: "",
-            }}
-            onChange={(option) => setFormData({ ...formData, status: option?.id as any })}
-            placeholder="请选择状态"
-            hideBadge={true}
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>组织描述</label>
-          <textarea
-            className={styles.formTextarea}
-            placeholder="请输入组织描述..."
-            value={formData.description || ""}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          />
-        </div>
-      </Modal>
+          <div className={styles.tableContainer}>
+            <div className={styles.tableHeader}>
+              <h3 className={styles.tableTitle}>组织列表</h3>
+              <div className={styles.tableActions}>
+                <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>共 {total} 个组织</span>
+              </div>
+            </div>
+            <table className={styles.orgTable}>
+              <thead>
+                <tr>
+                  <th>组织名称</th>
+                  <th>类型</th>
+                  <th>成员人数</th>
+                  <th>状态</th>
+                  <th>创建时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentData.length > 0 ? (
+                  currentData.map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <div className={styles.userInfo}>
+                          <div
+                            className={styles.userAvatar}
+                            style={{
+                              background: "var(--primary-light)",
+                              color: "var(--primary)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <FaBuilding />
+                          </div>
+                          <div className={styles.userDetails}>
+                            <div className={styles.userName}>{item.name}</div>
+                            <div className={styles.userEmail}>
+                              {item.description && (
+                                <span
+                                  style={{
+                                    fontSize: "12px",
+                                    color: "var(--text-secondary)",
+                                    lineHeight: "1.4",
+                                  }}
+                                >
+                                  {item.description}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{item.type}</td>
+                      <td>{item.memberCount}</td>
+                      <td>{getStatusBadge(item.status)}</td>
+                      <td style={{ color: "var(--text-secondary)", fontSize: "13px" }}>{item.createdAt}</td>
+                      <td>
+                        <div className={styles.actionButtons}>
+                          <button className={styles.actionBtn} title="预览" onClick={() => openPreviewModal(item)}>
+                            <FaEye />
+                          </button>
+                          <button className={styles.actionBtn} title="编辑" onClick={() => openEditModal(item)}>
+                            <FaEdit />
+                          </button>
+                          <button
+                            className={`${styles.actionBtn} ${styles.delete}`}
+                            title="删除"
+                            onClick={() => handleDelete(item.id)}
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      style={{
+                        textAlign: "center",
+                        padding: "40px",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      暂无数据
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+            {totalPages >= 1 && (
+              <div className={styles.pagination}>
+                <span className={styles.pageInfo}>
+                  显示 {startIndex + 1} - {Math.min(startIndex + pageSize, total)} 条， 共 {total} 条记录
+                </span>
+                <div className={styles.pageButtons}>
+                  <button className={styles.pageBtn} disabled={currentPage === 1} onClick={() => setCurrentPage(1)}>
+                    <FaAngleDoubleLeft />
+                  </button>
+                  <button className={styles.pageBtn} disabled={currentPage === 1} onClick={() => setCurrentPage((prev) => prev - 1)}>
+                    <FaChevronLeft />
+                  </button>
 
-      {/* 预览模态框（卡片样式） */}
-      <Modal
-        visible={isPreviewVisible}
-        title={previewOrg ? `组织预览` : "组织预览"}
-        onClose={() => setIsPreviewVisible(false)}
-        width={520}
-        footer={
-          <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setIsPreviewVisible(false)}>
-            关闭
-          </button>
-        }
-      >
-        {previewOrg && (
-          <div
-            className={styles.previewCard}
-            style={{
-              padding: "32px 24px",
-              borderRadius: "16px",
-              background: "var(--bg-primary)",
-              boxShadow: "0 2px 16px rgba(0,0,0,0.12)",
-            }}
+                  {getPageNumbers().map((page, index) => (
+                    <React.Fragment key={index}>
+                      {page === "..." ? (
+                        <span className={styles.paginationEllipsis}>...</span>
+                      ) : (
+                        <button
+                          className={`${styles.pageBtn} ${currentPage === page ? styles.active : ""}`}
+                          onClick={() => setCurrentPage(page as number)}
+                        >
+                          {page}
+                        </button>
+                      )}
+                    </React.Fragment>
+                  ))}
+
+                  <button
+                    className={styles.pageBtn}
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((prev) => prev + 1)}
+                  >
+                    <FaChevronRight />
+                  </button>
+                  <button className={styles.pageBtn} disabled={currentPage === totalPages} onClick={() => setCurrentPage(totalPages)}>
+                    <FaAngleDoubleRight />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 创建/编辑模态框 */}
+          <Modal
+            visible={isModalVisible}
+            title={currentOrg ? "编辑组织" : "新建组织"}
+            onClose={() => setIsModalVisible(false)}
+            width={600}
+            footer={
+              <>
+                <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setIsModalVisible(false)}>
+                  取消
+                </button>
+                <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleSubmit}>
+                  {currentOrg ? "保存修改" : "立即创建"}
+                </button>
+              </>
+            }
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "18px",
-              }}
-            >
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>组织名称 *</label>
+              <Input
+                placeholder="请输入组织名称"
+                value={formData.name || ""}
+                onChange={(value) => setFormData({ ...formData, name: value })}
+                className={styles.formInput}
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>组织类型 *</label>
+              <Input
+                placeholder="请输入组织类型，如学校、企业"
+                value={formData.type || ""}
+                onChange={(value) => setFormData({ ...formData, type: value })}
+                className={styles.formInput}
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>组织状态 *</label>
+              <CustomSelect
+                name="状态选择"
+                options={[
+                  { id: "active", name: "正常", color: "var(--success)" },
+                  { id: "inactive", name: "停用", color: "var(--error)" },
+                ]}
+                value={{
+                  id: formData.status || "active",
+                  name: formData.status === "active" ? "正常" : "停用",
+                  color: "",
+                }}
+                onChange={(option) => setFormData({ ...formData, status: option?.id as any })}
+                placeholder="请选择状态"
+                hideBadge={true}
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>组织描述</label>
+              <textarea
+                className={styles.formTextarea}
+                placeholder="请输入组织描述..."
+                value={formData.description || ""}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              />
+            </div>
+          </Modal>
+
+          {/* 预览模态框（卡片样式） */}
+          <Modal
+            visible={isPreviewVisible}
+            title={previewOrg ? `组织预览` : "组织预览"}
+            onClose={() => setIsPreviewVisible(false)}
+            width={520}
+            footer={
+              <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setIsPreviewVisible(false)}>
+                关闭
+              </button>
+            }
+          >
+            {previewOrg && (
               <div
+                className={styles.previewCard}
                 style={{
-                  fontSize: "2.2rem",
-                  color: "var(--primary)",
-                  marginRight: "18px",
+                  padding: "32px 24px",
+                  borderRadius: "16px",
+                  background: "var(--bg-primary)",
+                  boxShadow: "0 2px 16px rgba(0,0,0,0.12)",
                 }}
               >
-                <FaBuilding />
-              </div>
-              <div>
                 <div
                   style={{
-                    fontWeight: 600,
-                    fontSize: "1.3rem",
-                    marginBottom: "2px",
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "18px",
                   }}
                 >
-                  {previewOrg.name}
+                  <div
+                    style={{
+                      fontSize: "2.2rem",
+                      color: "var(--primary)",
+                      marginRight: "18px",
+                    }}
+                  >
+                    <FaBuilding />
+                  </div>
+                  <div>
+                    <div
+                      style={{
+                        fontWeight: 600,
+                        fontSize: "1.3rem",
+                        marginBottom: "2px",
+                      }}
+                    >
+                      {previewOrg.name}
+                    </div>
+                    <div style={{ fontSize: "1rem", color: "var(--text-secondary)" }}>{previewOrg.type}</div>
+                  </div>
                 </div>
-                <div style={{ fontSize: "1rem", color: "var(--text-secondary)" }}>{previewOrg.type}</div>
+                <div style={{ marginBottom: "14px" }}>
+                  <span style={{ marginRight: "16px" }}>{getStatusBadge(previewOrg.status)}</span>
+                  <span
+                    style={{
+                      color: "var(--text-secondary)",
+                      fontSize: "13px",
+                      marginRight: "16px",
+                    }}
+                  >
+                    创建时间：{previewOrg.createdAt}
+                  </span>
+                  <span style={{ color: "var(--text-secondary)", fontSize: "13px" }}>成员人数：{previewOrg.memberCount}</span>
+                </div>
+                <div style={{ marginBottom: "10px" }}>
+                  <strong style={{ fontSize: "1rem" }}>描述：</strong>
+                  <div
+                    style={{
+                      marginTop: "6px",
+                      color: "var(--text-primary)",
+                      fontSize: "1rem",
+                      lineHeight: "1.7",
+                    }}
+                  >
+                    {previewOrg.description || "暂无描述"}
+                  </div>
+                </div>
               </div>
+            )}
+          </Modal>
+        </>
+      ) : (
+        <>
+          {/* 申请审核列表 */}
+          <div className={styles.filterSection}>
+            <div className={styles.filterHeader}>
+              <h3 className={styles.filterTitle}>
+                <FaFilter />
+                筛选条件
+              </h3>
             </div>
-            <div style={{ marginBottom: "14px" }}>
-              <span style={{ marginRight: "16px" }}>{getStatusBadge(previewOrg.status)}</span>
-              <span
-                style={{
-                  color: "var(--text-secondary)",
-                  fontSize: "13px",
-                  marginRight: "16px",
-                }}
-              >
-                创建时间：{previewOrg.createdAt}
-              </span>
-              <span style={{ color: "var(--text-secondary)", fontSize: "13px" }}>成员人数：{previewOrg.memberCount}</span>
-            </div>
-            <div style={{ marginBottom: "10px" }}>
-              <strong style={{ fontSize: "1rem" }}>描述：</strong>
-              <div
-                style={{
-                  marginTop: "6px",
-                  color: "var(--text-primary)",
-                  fontSize: "1rem",
-                  lineHeight: "1.7",
-                }}
-              >
-                {previewOrg.description || "暂无描述"}
+            <div className={styles.filterForm}>
+              <div className={styles.filterGroup}>
+                <label className={styles.filterLabel}>申请状态</label>
+                <CustomSelect
+                  name="申请状态筛选"
+                  options={[
+                    { id: "0", name: "待审核", color: "#f0ad4e" },
+                    { id: "1", name: "已通过", color: "var(--success)" },
+                    { id: "2", name: "已拒绝", color: "var(--error)" },
+                  ]}
+                  value={{
+                    id: String(appliesStatusFilter ?? ""),
+                    name:
+                      appliesStatusFilter === undefined
+                        ? "全部"
+                        : appliesStatusFilter === 0
+                          ? "待审核"
+                          : appliesStatusFilter === 1
+                            ? "已通过"
+                            : "已拒绝",
+                    color: "",
+                  }}
+                  onChange={(option) => {
+                    const val = option ? Number(option.id) : undefined;
+                    setAppliesStatusFilter(val);
+                    setAppliesPage(1);
+                  }}
+                  placeholder="申请状态"
+                  hideBadge={true}
+                />
               </div>
             </div>
           </div>
-        )}
-      </Modal>
+
+          <div className={styles.tableContainer}>
+            <div className={styles.tableHeader}>
+              <h3 className={styles.tableTitle}>创建申请列表</h3>
+            </div>
+            {appliesLoading ? (
+              <Loading />
+            ) : (
+              <>
+                <table className={styles.orgTable}>
+                  <thead>
+                    <tr>
+                      <th>申请人</th>
+                      <th>组织名称</th>
+                      <th>类型</th>
+                      <th>描述</th>
+                      <th>状态</th>
+                      <th>申请时间</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {applies.length > 0 ? (
+                      applies.map((item) => (
+                        <tr key={item.id}>
+                          <td>{item.user_name || item.user_id}</td>
+                          <td>{item.org_name}</td>
+                          <td>{item.org_type}</td>
+                          <td>
+                            <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{item.org_description || "-"}</span>
+                          </td>
+                          <td>{getApplyStatusBadge(item.status)}</td>
+                          <td style={{ color: "var(--text-secondary)", fontSize: "13px" }}>
+                            {item.created_at ? dayjs.unix(item.created_at).format("YYYY-MM-DD HH:mm") : "-"}
+                          </td>
+                          <td>
+                            <div className={styles.actionButtons}>
+                              {item.status === 0 && (
+                                <>
+                                  <button
+                                    className={`${styles.actionBtn} ${styles.approveAction}`}
+                                    title="通过"
+                                    onClick={() => handleReview(item.id, "approve")}
+                                  >
+                                    <FaCheckCircle />
+                                  </button>
+                                  <button
+                                    className={`${styles.actionBtn} ${styles.rejectAction}`}
+                                    title="拒绝"
+                                    onClick={() => handleReview(item.id, "reject")}
+                                  >
+                                    <FaTimesCircle />
+                                  </button>
+                                </>
+                              )}
+                              {item.status !== 0 && (
+                                <span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+                                  {item.review_reason || "已完成审核"}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={7}
+                          style={{
+                            textAlign: "center",
+                            padding: "40px",
+                            color: "var(--text-secondary)",
+                          }}
+                        >
+                          暂无申请记录
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+                {appliesPages >= 1 && (
+                  <div className={styles.pagination}>
+                    <span className={styles.pageInfo}>
+                      显示 {(appliesPage - 1) * appliesPageSize + 1} - {Math.min(appliesPage * appliesPageSize, appliesTotal)} 条， 共{" "}
+                      {appliesTotal} 条记录
+                    </span>
+                    <div className={styles.pageButtons}>
+                      <button className={styles.pageBtn} disabled={appliesPage === 1} onClick={() => setAppliesPage(1)}>
+                        <FaAngleDoubleLeft />
+                      </button>
+                      <button
+                        className={styles.pageBtn}
+                        disabled={appliesPage === 1}
+                        onClick={() => setAppliesPage((prev) => prev - 1)}
+                      >
+                        <FaChevronLeft />
+                      </button>
+                      <button
+                        className={styles.pageBtn}
+                        disabled={appliesPage === appliesPages}
+                        onClick={() => setAppliesPage((prev) => prev + 1)}
+                      >
+                        <FaChevronRight />
+                      </button>
+                      <button
+                        className={styles.pageBtn}
+                        disabled={appliesPage === appliesPages}
+                        onClick={() => setAppliesPage(appliesPages)}
+                      >
+                        <FaAngleDoubleRight />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };
