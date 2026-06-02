@@ -3,6 +3,7 @@ import type { Category } from "../../types/index";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 import styles from "./CategoryPanel.module.css";
 import CategoryService from "../../services/categoryService";
+import Skeleton from "../skeleton/Skeleton";
 
 interface CategoryPanelProps {
   selectedCategoryId?: string | number;
@@ -11,6 +12,7 @@ interface CategoryPanelProps {
 
 const CategoryPanel: React.FC<CategoryPanelProps> = ({ selectedCategoryId, onCategoryClick }) => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -49,6 +51,8 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ selectedCategoryId, onCat
         setCategories(rootCategories);
       } catch {
         // 未登录等场景下 /category/admin/query 不可用，静默展示空列表
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -71,7 +75,16 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ selectedCategoryId, onCat
   return (
     <div className={styles.categoryPanel}>
       <h3 className={styles.panelTitle}>文章分类</h3>
-      {categories.length === 0 ? (
+      {loading ? (
+        <div className={styles.emptyPlaceholder}>
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0" }}>
+              <Skeleton variant="text" width={100} height={16} />
+              <Skeleton variant="text" width={30} height={14} />
+            </div>
+          ))}
+        </div>
+      ) : categories.length === 0 ? (
         <div className={styles.emptyPlaceholder}>暂无分类</div>
       ) : (
         <ul className={styles.categoryList}>
