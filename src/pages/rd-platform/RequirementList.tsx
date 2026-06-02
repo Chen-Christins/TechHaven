@@ -146,7 +146,7 @@ const RequirementList: React.FC = () => {
   const openCreate = () => {
     setModalMode("create");
     setSelectedReq(null);
-    setForm({ ...emptyForm, organizationId: getDefaultOrgId() });
+    setForm({ ...emptyForm, organizationId: selectedOrgId || getDefaultOrgId() });
     setModalVisible(true);
   };
 
@@ -544,7 +544,7 @@ const RequirementList: React.FC = () => {
                   }
                   onChange={(o) => setFormField("organizationId", (o?.id as string) || "")}
                   hideBadge
-                  disabled={modalMode === "edit"}
+                  disabled={modalMode === "edit" || !!selectedOrgId}
                 />
               </div>
             )}
