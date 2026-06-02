@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, Outlet, useNavigate } from "react-router-dom";
+import { useLocation, Outlet, useNavigate, useSearchParams } from "react-router-dom";
+import { encodeId, decodeId } from "../../utils/hashId";
 import { FaHome, FaBars, FaTimes, FaClipboardList, FaBug, FaTasks, FaTicketAlt, FaLock } from "react-icons/fa";
 import styles from "./RdLayout.module.css";
 import ThemeToggle from "../../components/themeToggle/ThemeToggle";
@@ -7,6 +8,7 @@ import Notification from "../../components/notification/Notification";
 import UserDropdown from "../../components/userDropdown/UserDropdown";
 import NotFound404 from "../error/NotFound404";
 import Footer from "../../components/footer/Footer";
+import CustomSelect from "../../components/customSelect/CustomSelect";
 import { useAuth } from "../../contexts/AuthContext";
 import { RdOrgProvider, useRdOrg } from "../../contexts/RdOrgContext";
 import { RdPlatformService } from "../../services/rdPlatformService";
@@ -20,6 +22,9 @@ interface NavItem {
 
 const RdLayout: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const rawOrg = searchParams.get("org");
+  const urlOrgId = rawOrg ? decodeId(rawOrg)?.toString() || "" : "";
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -216,6 +221,41 @@ const RdLayout: React.FC = () => {
     );
   };
 
+  const OrgSwitcher: React.FC = () => {
+    const { orgs, selectedOrgId, setSelectedOrgId } = useRdOrg();
+    const [, setSearchParams] = useSearchParams();
+    if (orgs.length <= 1) return null;
+    const orgOptions = [
+      { id: "", name: "全部组织", color: "#6c757d" },
+      ...orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" })),
+    ];
+    const currentOrg = orgs.find((o) => o.orgId === selectedOrgId);
+    const handleChange = (o: { id: string | number } | null) => {
+      const orgId = (o?.id as string) || "";
+      setSelectedOrgId(orgId);
+      if (orgId) {
+        setSearchParams({ org: encodeId(orgId) }, { replace: true });
+      } else {
+        setSearchParams({}, { replace: true });
+      }
+    };
+    return (
+      <div className={styles.orgSwitcher}>
+        <CustomSelect
+          name="组织"
+          options={orgOptions}
+          value={
+            currentOrg
+              ? { id: currentOrg.orgId, name: currentOrg.orgName, color: "#6c757d" }
+              : { id: "", name: "全部组织", color: "#6c757d" }
+          }
+          onChange={handleChange}
+          hideBadge
+        />
+      </div>
+    );
+  };
+
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
   const closeMobileMenu = () => setMobileMenuOpen(false);
@@ -298,51 +338,65 @@ const RdLayout: React.FC = () => {
 
   const breadcrumbs = getBreadcrumbs();
 
+  // 导航时保留 org 参数
+  const navigateWithOrg = (path: string) => {
+    const org = searchParams.get("org");
+    if (org) {
+      navigate(`${path}?org=${org}`);
+    } else {
+      navigate(path);
+    }
+  };
+
   return (
     <div className={styles.rdLayout}>
       <div className={`${styles.mobileMenuOverlay} ${mobileMenuOpen ? styles.show : ""}`} onClick={closeMobileMenu} />
 
-      <div className={styles.rdContainer}>
-        {/* 侧边栏 */}
-        <aside
-          className={`${styles.rdSidebar} ${sidebarCollapsed ? styles.collapsed : ""} ${mobileMenuOpen ? styles.mobileOpen : ""}`}
-        >
-          <div className={styles.rdSidebarHeader}>
-            <div onClick={() => navigate("/rd")} className={styles.rdLogo}>
-              <span className={styles.rdLogoIcon}>⚙</span>
-              <span className={styles.rdLogoText}>研发平台</span>
-            </div>
-            <button className={styles.toggleSidebarBtn} onClick={toggleSidebar} title={sidebarCollapsed ? "展开侧边栏" : "收起侧边栏"}>
-              {sidebarCollapsed ? <FaBars /> : <FaTimes />}
-            </button>
-          </div>
-
-          <nav className={styles.rdNavMenu}>
-            {navSections.map((section) => (
-              <div key={section.title} className={styles.rdNavSection}>
-                <h3 className={styles.rdSectionTitle}>{section.title}</h3>
-                {section.items.map((item) => (
-                  <div key={item.id} className={styles.rdNavItem}>
-                    <div
-                      onClick={() => {
-                        navigate(item.path);
-                        closeMobileMenu();
-                      }}
-                      className={`${styles.rdNavLink} ${location.pathname === item.path || (item.path !== "/rd" && location.pathname.startsWith(item.path)) ? styles.active : ""}`}
-                      onMouseEnter={(e) => showTooltip(e, item.label)}
-                      onMouseLeave={hideTooltip}
-                    >
-                      <span className={styles.rdNavIcon}>{item.icon}</span>
-                      <span className={styles.rdNavText}>{item.label}</span>
-                    </div>
-                  </div>
-                ))}
+      <RdOrgProvider initialOrgId={urlOrgId}>
+        <div className={styles.rdContainer}>
+          {/* 侧边栏 */}
+          <aside
+            className={`${styles.rdSidebar} ${sidebarCollapsed ? styles.collapsed : ""} ${mobileMenuOpen ? styles.mobileOpen : ""}`}
+          >
+            <div className={styles.rdSidebarHeader}>
+              <div onClick={() => navigateWithOrg("/rd")} className={styles.rdLogo}>
+                <span className={styles.rdLogoIcon}>⚙</span>
+                <span className={styles.rdLogoText}>研发平台</span>
               </div>
-            ))}
-          </nav>
-        </aside>
+              <button
+                className={styles.toggleSidebarBtn}
+                onClick={toggleSidebar}
+                title={sidebarCollapsed ? "展开侧边栏" : "收起侧边栏"}
+              >
+                {sidebarCollapsed ? <FaBars /> : <FaTimes />}
+              </button>
+            </div>
 
-        <RdOrgProvider>
+            <nav className={styles.rdNavMenu}>
+              {navSections.map((section) => (
+                <div key={section.title} className={styles.rdNavSection}>
+                  <h3 className={styles.rdSectionTitle}>{section.title}</h3>
+                  {section.items.map((item) => (
+                    <div key={item.id} className={styles.rdNavItem}>
+                      <div
+                        onClick={() => {
+                          navigateWithOrg(item.path);
+                          closeMobileMenu();
+                        }}
+                        className={`${styles.rdNavLink} ${location.pathname === item.path || (item.path !== "/rd" && location.pathname.startsWith(item.path)) ? styles.active : ""}`}
+                        onMouseEnter={(e) => showTooltip(e, item.label)}
+                        onMouseLeave={hideTooltip}
+                      >
+                        <span className={styles.rdNavIcon}>{item.icon}</span>
+                        <span className={styles.rdNavText}>{item.label}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </nav>
+          </aside>
+
           <main className={`${styles.rdMainContent} ${sidebarCollapsed ? styles.expanded : ""}`}>
             <header className={styles.rdTopBar}>
               <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -357,7 +411,7 @@ const RdLayout: React.FC = () => {
                       {index === breadcrumbs.length - 1 ? (
                         <span className={styles.breadcrumbActive}>{crumb.label}</span>
                       ) : (
-                        <div onClick={() => navigate(crumb.path)} className={styles.breadcrumbLink}>
+                        <div onClick={() => navigateWithOrg(crumb.path)} className={styles.breadcrumbLink}>
                           {crumb.label}
                         </div>
                       )}
@@ -366,6 +420,7 @@ const RdLayout: React.FC = () => {
                 </nav>
               </div>
 
+              <OrgSwitcher />
               <RdHeaderActions />
             </header>
 
@@ -375,8 +430,8 @@ const RdLayout: React.FC = () => {
 
             <Footer startYear={2025} />
           </main>
-        </RdOrgProvider>
-      </div>
+        </div>
+      </RdOrgProvider>
     </div>
   );
 };

@@ -80,12 +80,12 @@ const emptyForm: FormData = {
 const RequirementList: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isAdmin, userOrgIds, orgs, orgNameMap, maxOrgRole } = useRdOrg();
+  const { isAdmin, userOrgIds, orgs, orgNameMap, maxOrgRole, selectedOrgId } = useRdOrg();
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState({ search: "", status: "", priority: "", orgId: "" });
+  const [filters, setFilters] = useState({ search: "", status: "", priority: "" });
 
   // modal
   const [modalVisible, setModalVisible] = useState(false);
@@ -121,7 +121,7 @@ const RequirementList: React.FC = () => {
       priority: filters.priority,
       page: currentPage,
       pageSize: PAGE_SIZE,
-      organizationIds: filters.orgId ? [filters.orgId] : undefined,
+      organizationIds: selectedOrgId ? [selectedOrgId] : undefined,
     });
     setRequirements(res.data);
     setTotal(res.total);
@@ -130,7 +130,7 @@ const RequirementList: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, filters]);
+  }, [currentPage, filters, selectedOrgId]);
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
@@ -288,7 +288,7 @@ const RequirementList: React.FC = () => {
           <button
             className={styles.clearBtn}
             onClick={() => {
-              setFilters({ search: "", status: "", priority: "", orgId: "" });
+              setFilters({ search: "", status: "", priority: "" });
               setCurrentPage(1);
             }}
           >
@@ -323,23 +323,6 @@ const RequirementList: React.FC = () => {
               options={priorityOptions}
               value={priorityOptions.find((o) => o.id === filters.priority) || null}
               onChange={(o) => handleFilterChange("priority", (o?.id as string) || "")}
-              hideBadge
-            />
-          </div>
-          <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>组织</label>
-            <CustomSelect
-              name="组织"
-              options={[
-                { id: "", name: "全部组织", color: "#6c757d" },
-                ...orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" })),
-              ]}
-              value={
-                orgs.find((o) => o.orgId === filters.orgId)
-                  ? { id: filters.orgId, name: orgs.find((o) => o.orgId === filters.orgId)!.orgName, color: "#6c757d" }
-                  : { id: "", name: "全部组织", color: "#6c757d" }
-              }
-              onChange={(o) => handleFilterChange("orgId", (o?.id as string) || "")}
               hideBadge
             />
           </div>

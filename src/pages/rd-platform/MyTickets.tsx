@@ -87,13 +87,12 @@ type TabData = Requirement | Bug | Task;
 
 const MyTickets: React.FC = () => {
   const navigate = useNavigate();
-  const { orgs, orgNameMap } = useRdOrg();
+  const { orgNameMap, selectedOrgId } = useRdOrg();
   const [activeTab, setActiveTab] = useState<TabKey>("req");
   const [data, setData] = useState<TabData[]>([]);
   const [total, setTotal] = useState(0);
   const [totalMap, setTotalMap] = useState<Record<TabKey, number>>({ req: 0, bug: 0, task: 0 });
   const [loading, setLoading] = useState(true);
-  const [orgId, setOrgId] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
@@ -129,20 +128,20 @@ const MyTickets: React.FC = () => {
       pageSize: PAGE_SIZE,
       search: search || undefined,
       status: status || undefined,
-      orgId: orgId || undefined,
+      orgId: selectedOrgId || undefined,
     });
     setData(res.data);
     setTotal(res.total);
     setTotalMap((prev) => ({ ...prev, [activeTab]: res.total }));
     setLoading(false);
-  }, [typeParam, page, search, status, orgId]);
+  }, [typeParam, page, search, status, selectedOrgId]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
   useEffect(() => {
     (["requirement", "bug", "task"] as const).forEach((t) => {
-      RdAPI.getMyTickets({ type: t, pageSize: 1, orgId: orgId || undefined }).then((res) => {
+      RdAPI.getMyTickets({ type: t, pageSize: 1, orgId: selectedOrgId || undefined }).then((res) => {
         setTotalMap((prev) => ({ ...prev, [t === "requirement" ? "req" : t === "bug" ? "bug" : "task"]: res.total }));
       });
     });
@@ -150,7 +149,7 @@ const MyTickets: React.FC = () => {
   useEffect(() => {
     setPage(1);
     setData([]);
-  }, [activeTab, search, status, orgId]);
+  }, [activeTab, search, status, selectedOrgId]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -520,23 +519,6 @@ const MyTickets: React.FC = () => {
               ) || null
             }
             onChange={(o) => setStatus((o?.id as string) || "")}
-            hideBadge
-          />
-        </div>
-        <div className={styles.filterGroup}>
-          <label className={styles.filterLabel}>组织</label>
-          <CustomSelect
-            name="组织"
-            options={[
-              { id: "", name: "全部组织", color: "#6c757d" },
-              ...orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" })),
-            ]}
-            value={
-              orgs.find((o) => o.orgId === orgId)
-                ? { id: orgId, name: orgs.find((o) => o.orgId === orgId)!.orgName, color: "#6c757d" }
-                : { id: "", name: "全部组织", color: "#6c757d" }
-            }
-            onChange={(o) => setOrgId((o?.id as string) || "")}
             hideBadge
           />
         </div>

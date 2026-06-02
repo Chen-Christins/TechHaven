@@ -4,12 +4,14 @@ import { FaClipboardList, FaBug, FaTasks, FaExclamationTriangle } from "react-ic
 import styles from "./Dashboard.module.css";
 import Loading from "../../components/loading/Loading";
 import { encodeId } from "../../utils/hashId";
+import { useRdOrg } from "../../contexts/RdOrgContext";
 import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
 import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
 import type { RdStats, Requirement, Bug, Task } from "../../types/rdPlatform";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { selectedOrgId } = useRdOrg();
   const [stats, setStats] = useState<RdStats | null>(null);
   const [recentRequirements, setRecentRequirements] = useState<Requirement[]>([]);
   const [recentBugs, setRecentBugs] = useState<Bug[]>([]);
@@ -18,11 +20,13 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
+      const orgIds = selectedOrgId ? [selectedOrgId] : undefined;
       const [s, reqs, bugs, tasks] = await Promise.all([
-        RdAPI.getStats(),
-        RdAPI.getRequirements({ page: 1, pageSize: 5 }),
-        RdAPI.getBugs({ page: 1, pageSize: 5 }),
-        RdAPI.getTasks({ page: 1, pageSize: 5 }),
+        RdAPI.getStats(orgIds),
+        RdAPI.getRequirements({ page: 1, pageSize: 5, organizationIds: orgIds }),
+        RdAPI.getBugs({ page: 1, pageSize: 5, organizationIds: orgIds }),
+        RdAPI.getTasks({ page: 1, pageSize: 5, organizationIds: orgIds }),
       ]);
       setStats(s);
       setRecentRequirements(reqs.data);
@@ -31,7 +35,7 @@ const Dashboard: React.FC = () => {
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [selectedOrgId]);
 
   if (loading) return <Loading />;
 
