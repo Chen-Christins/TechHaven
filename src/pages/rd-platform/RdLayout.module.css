@@ -355,13 +355,6 @@
   font-weight: 500;
 }
 
-.orgSwitcher {
-  display: flex;
-  align-items: center;
-  width: 280px;
-  flex-shrink: 0;
-}
-
 .rdTopBarActions {
   display: flex;
   align-items: center;

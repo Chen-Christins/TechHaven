@@ -8,7 +8,7 @@ import Notification from "../../components/notification/Notification";
 import UserDropdown from "../../components/userDropdown/UserDropdown";
 import NotFound404 from "../error/NotFound404";
 import Footer from "../../components/footer/Footer";
-import CustomSelect from "../../components/customSelect/CustomSelect";
+import OrgSelector from "../../components/orgSelector/OrgSelector";
 import { useAuth } from "../../contexts/AuthContext";
 import { RdOrgProvider, useRdOrg } from "../../contexts/RdOrgContext";
 import { RdPlatformService } from "../../services/rdPlatformService";
@@ -221,17 +221,11 @@ const RdLayout: React.FC = () => {
     );
   };
 
-  const OrgSwitcher: React.FC = () => {
+  const SidebarOrgSelector: React.FC = () => {
     const { orgs, selectedOrgId, setSelectedOrgId } = useRdOrg();
     const [, setSearchParams] = useSearchParams();
-    if (orgs.length <= 1) return null;
-    const orgOptions = [
-      { id: "", name: "全部组织", color: "#6c757d" },
-      ...orgs.map((o) => ({ id: o.orgId, name: o.orgName, color: "#6c757d" })),
-    ];
-    const currentOrg = orgs.find((o) => o.orgId === selectedOrgId);
-    const handleChange = (o: { id: string | number } | null) => {
-      const orgId = (o?.id as string) || "";
+
+    const handleOrgChange = (orgId: string) => {
       setSelectedOrgId(orgId);
       if (orgId) {
         setSearchParams({ org: encodeId(orgId) }, { replace: true });
@@ -239,21 +233,8 @@ const RdLayout: React.FC = () => {
         setSearchParams({}, { replace: true });
       }
     };
-    return (
-      <div className={styles.orgSwitcher}>
-        <CustomSelect
-          name="组织"
-          options={orgOptions}
-          value={
-            currentOrg
-              ? { id: currentOrg.orgId, name: currentOrg.orgName, color: "#6c757d" }
-              : { id: "", name: "全部组织", color: "#6c757d" }
-          }
-          onChange={handleChange}
-          hideBadge
-        />
-      </div>
-    );
+
+    return <OrgSelector orgs={orgs} selectedOrgId={selectedOrgId} onChange={handleOrgChange} collapsed={sidebarCollapsed} />;
   };
 
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
@@ -372,6 +353,8 @@ const RdLayout: React.FC = () => {
               </button>
             </div>
 
+            <SidebarOrgSelector />
+
             <nav className={styles.rdNavMenu}>
               {navSections.map((section) => (
                 <div key={section.title} className={styles.rdNavSection}>
@@ -420,7 +403,6 @@ const RdLayout: React.FC = () => {
                 </nav>
               </div>
 
-              <OrgSwitcher />
               <RdHeaderActions />
             </header>
 
