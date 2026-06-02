@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // Assuming react-router-dom is used
 import { encodeId } from "../../utils/hashId";
-import {
-  FaBuilding,
-  FaCheckCircle,
-  FaUserFriends, // Icon for member count
-  FaLock, // For empty state if not authenticated
-  FaClipboardList, // For empty state if no orgs
-  FaArrowRight,
-} from "react-icons/fa";
+import { FaBuilding, FaCheckCircle, FaUserFriends, FaLock, FaClipboardList, FaArrowRight, FaPlus } from "react-icons/fa";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import Skeleton from "../../components/skeleton/Skeleton";
+import ApplyCreateOrg from "../../components/orgApply/ApplyCreateOrg";
 import styles from "./OrganizationList.module.css";
 import OrganizationService from "../../services/organizationService";
 import message from "../../components/message/Message";
@@ -33,6 +27,7 @@ const OrganizationList: React.FC = () => {
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
   const [loading, setLoading] = useState(true);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [applyVisible, setApplyVisible] = useState(false);
 
   useEffect(() => {
     const fetchOrgs = async () => {
@@ -95,9 +90,14 @@ const OrganizationList: React.FC = () => {
         <AuthRequired message="您需要登录后才能查看和管理组织列表。">
           <>
             <div className={styles.pageHeader}>
-              <h1 className={styles.pageTitle}>
-                <FaBuilding /> 组织列表
-              </h1>
+              <div className={styles.pageHeaderTop}>
+                <h1 className={styles.pageTitle}>
+                  <FaBuilding /> 组织列表
+                </h1>
+                <button className={styles.applyBtn} onClick={() => setApplyVisible(true)}>
+                  <FaPlus /> 申请创建组织
+                </button>
+              </div>
               <div className={styles.filterBar}>
                 <button className={`${styles.filterBtn} ${filter === "all" ? styles.active : ""}`} onClick={() => setFilter("all")}>
                   全部
@@ -181,6 +181,8 @@ const OrganizationList: React.FC = () => {
           </>
         </AuthRequired>
       </div>
+
+      <ApplyCreateOrg visible={applyVisible} onClose={() => setApplyVisible(false)} />
 
       <Footer startYear={2025} />
     </div>

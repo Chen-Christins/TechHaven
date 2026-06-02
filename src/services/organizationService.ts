@@ -179,6 +179,71 @@ export interface organizationSetRoleResponse {
   join_time: number;
 }
 
+/**
+ * 申请创建组织参数
+ */
+export interface ApplyCreateOrganizationParams {
+  name: string;
+  type: string;
+  description?: string;
+}
+
+/**
+ * 申请创建组织响应
+ */
+export interface ApplyCreateOrganizationResponse {
+  apply_id: string;
+}
+
+/**
+ * 获取申请列表参数
+ */
+export interface GetApplyListParams {
+  page_num: number;
+  page_size: number;
+  status?: number; // 0=pending, 1=approved, 2=rejected
+}
+
+/**
+ * 申请单项
+ */
+export interface ApplyItem {
+  id: string;
+  user_id: string;
+  user_name: string;
+  org_name: string;
+  org_type: string;
+  org_description: string;
+  status: number; // 0=pending, 1=approved, 2=rejected
+  review_reason: string;
+  created_at: number;
+  reviewed_at: number;
+}
+
+/**
+ * 获取申请列表响应
+ */
+export interface GetApplyListResponse {
+  total: number;
+  list: ApplyItem[];
+}
+
+/**
+ * 审核申请参数
+ */
+export interface ReviewApplyParams {
+  apply_id: string;
+  action: "approve" | "reject";
+  reason?: string;
+}
+
+/**
+ * 审核申请响应
+ */
+export interface ReviewApplyResponse {
+  org_id?: string;
+}
+
 export interface userOrganizationListsParams {}
 
 export interface userOrganizationListsResponse {
@@ -357,6 +422,67 @@ export class OrganizationService {
         "Content-Type": "application/x-www-form-urlencoded",
       },
     });
+    return response.data;
+  }
+
+  /**
+   * 申请创建组织
+   */
+  static async applyCreateOrganization(params: ApplyCreateOrganizationParams): Promise<ApplyCreateOrganizationResponse> {
+    const formData = new URLSearchParams();
+    formData.append("name", params.name);
+    formData.append("type", params.type);
+    if (params.description) {
+      formData.append("desc", params.description);
+    }
+
+    const response = await http.post<ApplyCreateOrganizationResponse>("/organization/apply-create", formData.toString(), {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+    return response.data;
+  }
+
+  /**
+   * 获取组织申请列表 (Admin)
+   */
+  static async getApplyList(params: GetApplyListParams): Promise<GetApplyListResponse> {
+    let url = `/organization/apply-list?page_num=${params.page_num}&page_size=${params.page_size}`;
+    if (params.status !== undefined && params.status !== null) {
+      url += `&status=${params.status}`;
+    }
+
+    const response = await http.get<GetApplyListResponse>(url);
+    return response.data;
+  }
+
+  /**
+   * 审核组织申请 (Admin)
+   */
+  static async reviewApply(params: ReviewApplyParams): Promise<ReviewApplyResponse> {
+    const formData = new URLSearchParams();
+    formData.append("apply_id", params.apply_id);
+    formData.append("action", params.action);
+    if (params.reason) {
+      formData.append("reason", params.reason);
+    }
+
+    const response = await http.post<ReviewApplyResponse>("/organization/apply-review", formData.toString(), {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+    return response.data;
+  }
+
+  /**
+   * 获取我的组织申请列表
+   */
+  static async getMyApplies(params: { page_num: number; page_size: number }): Promise<GetApplyListResponse> {
+    const url = `/organization/my-applies?page_num=${params.page_num}&page_size=${params.page_size}`;
+
+    const response = await http.get<GetApplyListResponse>(url);
     return response.data;
   }
 }
