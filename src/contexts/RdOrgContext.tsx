@@ -12,6 +12,9 @@ interface RdOrgContextType {
   orgNameMap: Record<string, string>;
   /** 用户在所有组织中的最高角色（1-5），用于前端权限判断 */
   maxOrgRole: number;
+  /** 当前选中的组织 ID，空字符串 = 全部组织 */
+  selectedOrgId: string;
+  setSelectedOrgId: (orgId: string) => void;
 }
 
 const RdOrgContext = createContext<RdOrgContextType>({
@@ -21,6 +24,8 @@ const RdOrgContext = createContext<RdOrgContextType>({
   loading: true,
   orgNameMap: {},
   maxOrgRole: 1,
+  selectedOrgId: "",
+  setSelectedOrgId: () => {},
 });
 
 export const useRdOrg = (): RdOrgContextType => {
@@ -28,16 +33,18 @@ export const useRdOrg = (): RdOrgContextType => {
   return context;
 };
 
-export const RdOrgProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const RdOrgProvider: React.FC<{ children: ReactNode; initialOrgId?: string }> = ({ children, initialOrgId = "" }) => {
   const { user } = useAuth();
   const [orgs, setOrgs] = useState<RdOrgInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedOrgId, setSelectedOrgId] = useState(initialOrgId);
 
   const isAdmin = user?.role === "管理员";
 
   useEffect(() => {
     if (!user) {
       setOrgs([]);
+      setSelectedOrgId("");
       setLoading(false);
       return;
     }
@@ -45,7 +52,14 @@ export const RdOrgProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const fetchOrgs = async () => {
       try {
         const list = await RdPlatformService.getMyOrganizations();
-        setOrgs(list.map((item) => ({ orgId: item.orgId, orgName: item.orgName, role: item.role })));
+        const mapped = list.map((item) => ({ orgId: item.orgId, orgName: item.orgName, role: item.role }));
+        setOrgs(mapped);
+        // 单组织自动选中；多组织时校验 URL 传入的 orgId 是否有效
+        if (mapped.length === 1) {
+          setSelectedOrgId(mapped[0].orgId);
+        } else if (initialOrgId && !mapped.some((o) => o.orgId === initialOrgId)) {
+          setSelectedOrgId("");
+        }
       } catch {
         setOrgs([]);
       } finally {
@@ -54,7 +68,7 @@ export const RdOrgProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
 
     fetchOrgs();
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const userOrgIds = useMemo(() => orgs.map((o) => o.orgId), [orgs]);
 
@@ -73,7 +87,9 @@ export const RdOrgProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, [orgs]);
 
   return (
-    <RdOrgContext.Provider value={{ orgs, userOrgIds, isAdmin, loading, orgNameMap, maxOrgRole }}>{children}</RdOrgContext.Provider>
+    <RdOrgContext.Provider value={{ orgs, userOrgIds, isAdmin, loading, orgNameMap, maxOrgRole, selectedOrgId, setSelectedOrgId }}>
+      {children}
+    </RdOrgContext.Provider>
   );
 };
 

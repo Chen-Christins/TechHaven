@@ -1,6 +1,6 @@
 import Hashids from "hashids";
 
-const hashids = new Hashids("front-template-salt", 8);
+const hashids = new Hashids("kX9mP2vR7wQ4nL8jF5hT3yB6dA1cE0gU", 52);
 
 export function encodeId(id: number | string): string {
   return hashids.encode(Number(id));
