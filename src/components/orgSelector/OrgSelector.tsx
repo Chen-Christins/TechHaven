@@ -12,6 +12,7 @@ interface OrgSelectorProps {
 
 const OrgSelector: React.FC<OrgSelectorProps> = ({ orgs, selectedOrgId, onChange, collapsed }) => {
   const [open, setOpen] = useState(false);
+  const isSingle = orgs.length === 1;
 
   useEffect(() => {
     if (open) {
@@ -24,21 +25,31 @@ const OrgSelector: React.FC<OrgSelectorProps> = ({ orgs, selectedOrgId, onChange
     };
   }, [open]);
 
-  if (orgs.length <= 1) return null;
+  if (orgs.length === 0) return null;
 
   const currentOrg = orgs.find((o) => o.orgId === selectedOrgId);
   const displayName = currentOrg ? currentOrg.orgName : "全部组织";
 
-  const options = [{ orgId: "", orgName: "全部组织", role: 0 }, ...orgs];
+  const options = isSingle ? orgs : [{ orgId: "", orgName: "全部组织", role: 0 }, ...orgs];
 
   const handleSelect = (orgId: string) => {
     onChange(orgId);
     setOpen(false);
   };
 
+  const handleTriggerClick = () => {
+    if (isSingle) return;
+    setOpen(true);
+  };
+
   return (
-    <div className={`${styles.container} ${collapsed ? styles.collapsed : ""}`}>
-      <button className={styles.trigger} onClick={() => setOpen(true)} title={collapsed ? displayName : undefined}>
+    <div className={`${styles.container} ${collapsed ? styles.collapsed : ""} ${isSingle ? styles.single : ""}`}>
+      <button
+        className={styles.trigger}
+        onClick={handleTriggerClick}
+        title={collapsed ? displayName : undefined}
+        disabled={isSingle}
+      >
         <FaBuilding className={styles.icon} />
         {!collapsed && <span className={styles.label}>{displayName}</span>}
       </button>
