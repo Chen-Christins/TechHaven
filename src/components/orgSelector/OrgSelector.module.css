@@ -41,6 +41,17 @@
   text-overflow: ellipsis;
 }
 
+/* Single org — read-only display */
+.single .trigger {
+  cursor: default;
+}
+
+.single .trigger:hover {
+  border-color: var(--border-primary);
+  box-shadow: none;
+  background: var(--bg-primary);
+}
+
 /* Collapsed */
 .collapsed .trigger {
   justify-content: center;
