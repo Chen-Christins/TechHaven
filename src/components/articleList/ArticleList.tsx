@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaChevronLeft, FaChevronRight, FaAngleDoubleLeft, FaAngleDoubleRight, FaCalendarAlt, FaUser, FaEye } from "react-icons/fa";
 import ArticleService from "../../services/articleService";
+import SearchService from "../../services/searchService";
 import styles from "./ArticleList.module.css";
 import { encodeId } from "../../utils/hashId";
 import { formatToChinaTime } from "../../utils/utils";
@@ -20,9 +21,10 @@ interface ArticleListProps {
   labelName?: string;
   categoryId?: string | number;
   categoryName?: string;
+  searchQuery?: string;
 }
 
-const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryId, categoryName }) => {
+const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryId, categoryName, searchQuery }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const itemsPerPage = 6;
@@ -33,27 +35,33 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
 
   // 切换页码
   const handlePageChange = (page: number) => {
-    setSearchParams({ page: String(page) });
+    const params = new URLSearchParams(searchParams);
+    params.set("page", String(page));
+    setSearchParams(params);
     // 滚动到顶部
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const prevLabelId = useRef<string | number | undefined>(labelId);
   const prevCategoryId = useRef<string | number | undefined>(categoryId);
+  const prevSearchQuery = useRef<string | undefined>(searchQuery);
 
   useEffect(() => {
-    // 当 labelId 或 categoryId 变化时，重置到第 1 页再请求
+    // 当 labelId / categoryId / searchQuery 变化时，重置到第 1 页再请求
     const labelChanged = prevLabelId.current !== labelId;
     const categoryChanged = prevCategoryId.current !== categoryId;
+    const searchChanged = prevSearchQuery.current !== searchQuery;
 
-    if (labelChanged || categoryChanged) {
+    if (labelChanged || categoryChanged || searchChanged) {
       prevLabelId.current = labelId;
       prevCategoryId.current = categoryId;
+      prevSearchQuery.current = searchQuery;
       if (currentPage !== 1) {
-        setSearchParams({ page: "1" });
-        return; // 触发 re-render 后 currentPage=1 再 fetch
+        const params = new URLSearchParams(searchParams);
+        params.set("page", "1");
+        setSearchParams(params);
+        return;
       }
-      // 已经在第 1 页，直接走下面的 fetch 逻辑
     }
 
     let cancelled = false;
@@ -61,6 +69,44 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
     const fetchArticles = async () => {
       setLoading(true);
       try {
+        // 搜索模式
+        if (searchQuery) {
+          const res = await SearchService.search({
+            q: searchQuery,
+            page: currentPage,
+            per_page: itemsPerPage,
+            state: 2,
+            ...(labelId ? { label_id: labelId } : {}),
+            ...(categoryId ? { category_id: categoryId } : {}),
+          });
+
+          if (cancelled) return;
+
+          setTotalArticles(res.total);
+          setArticles(
+            res.list.map(
+              (item) =>
+                ({
+                  id: item.id,
+                  title: item.title,
+                  author: item.author,
+                  summary: item.summary,
+                  state: STATE_MAP[item.state] || "unknown",
+                  type: item.type === 1 ? "原创" : "转载",
+                  publish_time: item.publish_time ? formatToChinaTime(item.publish_time) : "暂未发布",
+                  views: item.views ?? 0,
+                  praise: item.praise ?? 0,
+                  favorites: item.favorites ?? 0,
+                  category: item.categories?.map((c) => c.name).join("、") || "未分类",
+                  tags: [],
+                  categories: item.categories || [],
+                }) as ArticleListItem,
+            ),
+          );
+          return;
+        }
+
+        // 常规列表模式
         let res: {
           total: number;
           list: Array<{
@@ -135,7 +181,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
     return () => {
       cancelled = true;
     };
-  }, [currentPage, labelId, categoryId]);
+  }, [currentPage, labelId, categoryId, searchQuery, setSearchParams, searchParams]);
 
   const totalPages = Math.ceil(totalArticles / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -169,7 +215,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
 
   return (
     <div className={styles.articleList}>
-      <h2 className={styles.title}>{labelName ? `标签：${labelName}` : categoryName ? `分类：${categoryName}` : "最新文章"}</h2>
+      <h2 className={styles.title}>{searchQuery ? `搜索：${searchQuery}` : labelName ? `标签：${labelName}` : categoryName ? `分类：${categoryName}` : "最新文章"}</h2>
       <div className={styles.articles}>
         {loading ? (
           Array.from({ length: 5 }, (_, index) => (

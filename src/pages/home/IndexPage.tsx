@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import styles from "./IndexPage.module.css";
 import ArticleList from "../../components/articleList/ArticleList";
 import StatsPanel from "../../components/StatsPanel/StatsPanel";
@@ -16,6 +17,9 @@ import { useAuth } from "../../contexts/AuthContext";
 
 const IndexPage: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const searchQuery = searchParams.get("q") || undefined;
 
   const [tags, setTags] = useState<{ id: string | number; color: string; name: string }[]>([]);
   const [tagsLoading, setTagsLoading] = useState(false);
@@ -25,6 +29,26 @@ const IndexPage: React.FC = () => {
   const [selectedLabelName, setSelectedLabelName] = useState<string | undefined>(undefined);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | number | undefined>(undefined);
   const [selectedCategoryName, setSelectedCategoryName] = useState<string | undefined>(undefined);
+
+  const handleSearch = useCallback(
+    (query: string) => {
+      const trimmed = query.trim();
+      if (trimmed) {
+        setSearchParams({ q: trimmed, page: "1" });
+        setSelectedLabelId(undefined);
+        setSelectedLabelName(undefined);
+        setSelectedCategoryId(undefined);
+        setSelectedCategoryName(undefined);
+      } else {
+        // 清空搜索时回到默认列表
+        const params = new URLSearchParams(searchParams);
+        params.delete("q");
+        params.delete("page");
+        setSearchParams(params);
+      }
+    },
+    [searchParams, setSearchParams],
+  );
 
   // 获取标签（使用 LabelService），仅在已登录时请求
   useEffect(() => {
@@ -88,13 +112,14 @@ const IndexPage: React.FC = () => {
               labelName={selectedLabelName}
               categoryId={selectedCategoryId}
               categoryName={selectedCategoryName}
+              searchQuery={searchQuery}
             />
           </div>
 
           {/* 右侧：侧边栏 */}
           <div className={styles.rightColumn}>
             {/* 标签面板可能仍在加载，显示局部加载状态 */}
-            <SearchPanel />
+            <SearchPanel defaultValue={searchQuery} onSearch={handleSearch} />
             <TagPanel
               tags={tags}
               loading={tagsLoading}
