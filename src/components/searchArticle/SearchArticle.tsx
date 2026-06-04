@@ -2,20 +2,23 @@ import React from "react";
 import styles from "./SearchArticle.module.css";
 import SearchBox from "../searchBox/SearchBox";
 
-const SearchPanel: React.FC = () => {
-  const handleSearch = (_value: string) => {
-    // console.log('搜索:', value);
-    // 模拟搜索逻辑
-  };
+interface SearchPanelProps {
+  defaultValue?: string;
+  onSearch?: (query: string) => void;
+}
 
-  const handleChange = (_value: string) => {
-    // console.log('输入变化:', value);
-  };
-
+const SearchPanel: React.FC<SearchPanelProps> = ({ defaultValue, onSearch }) => {
   return (
     <div className={styles.SearchArticlePanel}>
       <h3 className={styles.panelTitle}>搜索文章</h3>
-      <SearchBox placeholder="搜索文章..." onSearch={handleSearch} onChange={handleChange} />
+      <SearchBox
+        placeholder="搜索文章..."
+        value={defaultValue ?? ""}
+        onChange={(value) => {
+          if (value.trim() === "") onSearch?.("");
+        }}
+        onSearch={(value) => onSearch?.(value)}
+      />
     </div>
   );
 };
