@@ -45,7 +45,6 @@ export class SearchService {
     const response = await http.get<SearchResponse>(`/search?${query.toString()}`);
     return response.data;
   }
-  }
 }
 
 export default SearchService;
