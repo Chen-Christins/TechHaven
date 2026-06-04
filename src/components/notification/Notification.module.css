@@ -227,6 +227,21 @@
   color: var(--error);
 }
 
+.iconRequirementAssigned {
+  background-color: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.iconBugAssigned {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.iconTaskAssigned {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
 .itemBody {
   flex: 1;
   min-width: 0;

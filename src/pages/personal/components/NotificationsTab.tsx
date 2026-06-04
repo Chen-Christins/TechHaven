@@ -17,6 +17,9 @@ import {
   FaBan,
   FaCheckDouble,
   FaCog,
+  FaClipboardList,
+  FaBug,
+  FaTasks,
 } from "react-icons/fa";
 import NotificationService from "../../../services/NotificationService";
 import { isRead, markRead, markAllRead, subscribe } from "../../../utils/notificationState";
@@ -50,6 +53,9 @@ const TYPE_ICON_MAP: Record<string, { icon: React.ReactNode; className: string }
   article_review_request: { icon: <FaFileUpload />, className: styles.notifIconArticleReviewRequest },
   article_review_approved: { icon: <FaClipboardCheck />, className: styles.notifIconArticleReviewApproved },
   article_review_rejected: { icon: <FaBan />, className: styles.notifIconArticleReviewRejected },
+  requirement_assigned: { icon: <FaClipboardList />, className: styles.notifIconRequirementAssigned },
+  bug_assigned: { icon: <FaBug />, className: styles.notifIconBugAssigned },
+  task_assigned: { icon: <FaTasks />, className: styles.notifIconTaskAssigned },
 };
 
 const TYPE_OPTIONS: SelectOption[] = [
@@ -67,6 +73,9 @@ const TYPE_OPTIONS: SelectOption[] = [
   { id: "article_review_request", name: "待审核", color: "#f59e0b" },
   { id: "article_review_approved", name: "审核通过", color: "#10b981" },
   { id: "article_review_rejected", name: "审核拒绝", color: "#ef4444" },
+  { id: "requirement_assigned", name: "需求分配", color: "#6366f1" },
+  { id: "bug_assigned", name: "缺陷分配", color: "#ef4444" },
+  { id: "task_assigned", name: "任务分配", color: "#10b981" },
 ];
 
 function formatTime(timestamp: number): string {
@@ -226,6 +235,9 @@ const NotificationsTab: React.FC = () => {
     { key: "article_review_request", label: "文章待审核通知" },
     { key: "article_review_approved", label: "文章审核通过通知" },
     { key: "article_review_rejected", label: "文章审核拒绝通知" },
+    { key: "requirement_assigned", label: "需求分配通知" },
+    { key: "bug_assigned", label: "缺陷分配通知" },
+    { key: "task_assigned", label: "任务分配通知" },
   ];
 
   return (
