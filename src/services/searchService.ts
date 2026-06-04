@@ -32,17 +32,19 @@ export interface SearchResponse {
 
 export class SearchService {
   static async search(params: SearchParams): Promise<SearchResponse> {
-    const parts: string[] = [];
-    parts.push(`q=${encodeURIComponent(params.q)}`);
-    parts.push(`page=${params.page ?? 1}`);
-    parts.push(`per_page=${params.per_page ?? 20}`);
-    if (params.user_id) parts.push(`user_id=${params.user_id}`);
-    if (params.category_id) parts.push(`category_id=${params.category_id}`);
-    if (params.label_id) parts.push(`label_id=${params.label_id}`);
-    if (params.state !== undefined) parts.push(`state=${params.state}`);
+    const query = new URLSearchParams();
 
-    const response = await http.get<SearchResponse>(`/search?${parts.join("&")}`);
+    query.set("q", params.q);
+    query.set("page", String(params.page ?? 1));
+    query.set("per_page", String(params.per_page ?? 20));
+    if (params.user_id !== undefined && params.user_id !== null) query.set("user_id", String(params.user_id));
+    if (params.category_id !== undefined && params.category_id !== null) query.set("category_id", String(params.category_id));
+    if (params.label_id !== undefined && params.label_id !== null) query.set("label_id", String(params.label_id));
+    if (params.state !== undefined && params.state !== null) query.set("state", String(params.state));
+
+    const response = await http.get<SearchResponse>(`/search?${query.toString()}`);
     return response.data;
+  }
   }
 }
 
