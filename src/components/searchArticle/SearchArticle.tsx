@@ -13,7 +13,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ defaultValue, onSearch }) => 
       <h3 className={styles.panelTitle}>搜索文章</h3>
       <SearchBox
         placeholder="搜索文章..."
-        defaultValue={defaultValue}
+        value={defaultValue ?? ""}
+        onChange={(value) => {
+          if (value.trim() === "") onSearch?.("");
+        }}
         onSearch={(value) => onSearch?.(value)}
       />
     </div>
