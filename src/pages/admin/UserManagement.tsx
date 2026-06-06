@@ -161,8 +161,8 @@ const UserManagement: React.FC = () => {
             status: user.state === 1 ? "active" : "inactive",
             createdAt: formatToChinaTime(user.create_time),
             lastLogin: formatToChinaTime(user.login_time),
-            articleCount: 0, // 随机文章数，实际应从接口获取
-            commentCount: 0, // 随机评论数，实际应从接口获取
+            articleCount: (user as any).article_count ?? 0,
+            commentCount: (user as any).comment_count ?? 0,
           }));
         }
         setUsers(fetchedUsers);
@@ -350,8 +350,8 @@ const UserManagement: React.FC = () => {
           status: user.state === 1 ? "active" : "inactive",
           createdAt: formatToChinaTime(user.create_time),
           lastLogin: formatToChinaTime(user.login_time),
-          articleCount: 0,
-          commentCount: 0,
+          articleCount: (user as any).article_count ?? 0,
+          commentCount: (user as any).comment_count ?? 0,
         }));
       }
       setUsers(fetchedUsers);
