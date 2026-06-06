@@ -1,47 +1,71 @@
 import React, { useState, useEffect } from "react";
-import type { StatsData } from "../../types/index";
 import { FaUsers, FaEye, FaChartLine, FaUserCheck } from "react-icons/fa";
 import StatsService from "../../services/statsService";
+import { useOnlineCount } from "../../hooks/useOnlineCount";
 import styles from "./StatsPanel.module.css";
 
-const defaults: StatsData = {
-  onlineUsers: 0,
-  totalVisits: 0,
-  todayVisits: 0,
-  totalVisitors: 0,
-};
+const POLL_INTERVAL = 30_000; // 30 秒轮询一次 HTTP 统计
 
 const StatsPanel: React.FC = () => {
-  const [stats, setStats] = useState<StatsData>(defaults);
+  const [httpStats, setHttpStats] = useState<{
+    todayVisits: number;
+    totalVisits: number;
+    totalVisitors: number;
+  }>({
+    todayVisits: 0,
+    totalVisits: 0,
+    totalVisitors: 0,
+  });
+  const onlineUsers = useOnlineCount(); // 实时 WebSocket 推送
 
   useEffect(() => {
-    StatsService.getStats()
-      .then(setStats)
-      .catch(() => {});
+    let cancelled = false;
+
+    const fetchStats = () => {
+      StatsService.getStats()
+        .then((data) => {
+          if (cancelled) return;
+          setHttpStats({
+            todayVisits: data.todayVisits,
+            totalVisits: data.totalVisits,
+            totalVisitors: data.totalVisitors,
+          });
+        })
+        .catch((err: any) => {
+          console.error("获取站点统计失败:", err?.message || err);
+        });
+    };
+
+    fetchStats();
+    const timer = setInterval(fetchStats, POLL_INTERVAL);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, []);
 
   const statsItems = [
     {
       title: "在线用户",
-      value: stats.onlineUsers,
+      value: onlineUsers,
       icon: <FaUsers className={styles.statIcon} />,
       color: styles.online,
     },
     {
       title: "今日访问",
-      value: stats.todayVisits,
+      value: httpStats.todayVisits,
       icon: <FaChartLine className={styles.statIcon} />,
       color: styles.today,
     },
     {
       title: "累计访问",
-      value: stats.totalVisits.toLocaleString(),
+      value: httpStats.totalVisits.toLocaleString(),
       icon: <FaEye className={styles.statIcon} />,
       color: styles.total,
     },
     {
       title: "累计访客",
-      value: stats.totalVisitors.toLocaleString(),
+      value: httpStats.totalVisitors.toLocaleString(),
       icon: <FaUserCheck className={styles.statIcon} />,
       color: styles.visitors,
     },

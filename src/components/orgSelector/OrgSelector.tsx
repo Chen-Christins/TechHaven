@@ -44,12 +44,7 @@ const OrgSelector: React.FC<OrgSelectorProps> = ({ orgs, selectedOrgId, onChange
 
   return (
     <div className={`${styles.container} ${collapsed ? styles.collapsed : ""} ${isSingle ? styles.single : ""}`}>
-      <button
-        className={styles.trigger}
-        onClick={handleTriggerClick}
-        title={collapsed ? displayName : undefined}
-        disabled={isSingle}
-      >
+      <button className={styles.trigger} onClick={handleTriggerClick} title={collapsed ? displayName : undefined} disabled={isSingle}>
         <FaBuilding className={styles.icon} />
         {!collapsed && <span className={styles.label}>{displayName}</span>}
       </button>

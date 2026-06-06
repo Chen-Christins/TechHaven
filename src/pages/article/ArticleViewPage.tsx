@@ -47,7 +47,9 @@ const ArticleViewPage: React.FC = () => {
             .then((viewRes) => {
               setArticle((prev: any) => (prev ? { ...prev, views: viewRes.views } : prev));
             })
-            .catch(() => {});
+            .catch((err: any) => {
+              console.error("阅读计数上报失败:", err?.message || err);
+            });
           // 成功获取数据后，不立即隐藏骨架屏
           // 让渲染逻辑处理从骨架屏到内容的过渡
         } catch (err: any) {

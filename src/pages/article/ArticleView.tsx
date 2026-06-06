@@ -348,12 +348,16 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     if (authorId) {
       FollowService.isFollowing(authorId)
         .then(setIsFollowing)
-        .catch(() => {});
+        .catch((err: any) => {
+          console.error("检查关注状态失败:", err?.message || err);
+        });
     }
     if (articleId) {
       PraiseService.isPraising(articleId)
         .then(setIsLiked)
-        .catch(() => {});
+        .catch((err: any) => {
+          console.error("检查点赞状态失败:", err?.message || err);
+        });
     }
   }, [isAuthenticated, authorId, articleId]);
 
