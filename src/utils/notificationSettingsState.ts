@@ -5,6 +5,7 @@
 export type NotifType =
   | "system"
   | "comment"
+  | "reply"
   | "praise"
   | "follow"
   | "article"
@@ -16,13 +17,29 @@ export type NotifType =
   | "article_review_request"
   | "article_review_approved"
   | "article_review_rejected"
+  | "comment_approved"
+  | "comment_rejected"
+  | "comment_spam"
+  | "comment_admin_deleted"
   | "requirement_assigned"
   | "bug_assigned"
-  | "task_assigned";
+  | "task_assigned"
+  | "org_apply_request"
+  | "org_apply_approved"
+  | "org_apply_rejected"
+  | "org_deleted"
+  | "account_deleted"
+  | "account_recovered"
+  | "password_reset"
+  | "article_state_changed"
+  | "assignment_submitted"
+  | "assignment_created"
+  | "assignment_deleted";
 
 const defaults: Record<NotifType, boolean> = {
   system: true,
   comment: true,
+  reply: true,
   praise: true,
   follow: true,
   article: true,
@@ -34,9 +51,24 @@ const defaults: Record<NotifType, boolean> = {
   article_review_request: true,
   article_review_approved: true,
   article_review_rejected: true,
+  comment_approved: true,
+  comment_rejected: true,
+  comment_spam: true,
+  comment_admin_deleted: true,
   requirement_assigned: true,
   bug_assigned: true,
   task_assigned: true,
+  org_apply_request: true,
+  org_apply_approved: true,
+  org_apply_rejected: true,
+  org_deleted: true,
+  account_deleted: true,
+  account_recovered: true,
+  password_reset: true,
+  article_state_changed: true,
+  assignment_submitted: true,
+  assignment_created: true,
+  assignment_deleted: true,
 };
 
 const settings: Record<NotifType, boolean> = { ...defaults };
@@ -60,7 +92,6 @@ export function getEnabledTypes(): NotifType[] {
 }
 
 export function setTypeEnabled(type: NotifType, enabled: boolean): void {
-  // noop if value hasn't changed
   if (settings[type] === enabled) return;
   settings[type] = enabled;
   notify();

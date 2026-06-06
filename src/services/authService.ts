@@ -49,6 +49,8 @@ export interface UserAdminListResponse {
     state: number;
     create_time: number;
     login_time: number;
+    article_count?: number;
+    comment_count?: number;
   }>;
 }
 

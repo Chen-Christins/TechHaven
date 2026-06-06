@@ -38,6 +38,7 @@ import type { Notification as NotificationItem } from "../../types/notification"
 const TYPE_ICON_MAP: Record<string, { icon: React.ReactNode; className: string }> = {
   system: { icon: <FaBullhorn />, className: styles.iconSystem },
   comment: { icon: <FaComment />, className: styles.iconComment },
+  reply: { icon: <FaComment />, className: styles.iconComment },
   praise: { icon: <FaHeart />, className: styles.iconLike },
   follow: { icon: <FaUserPlus />, className: styles.iconFollow },
   article: { icon: <FaNewspaper />, className: styles.iconArticle },
@@ -49,9 +50,24 @@ const TYPE_ICON_MAP: Record<string, { icon: React.ReactNode; className: string }
   article_review_request: { icon: <FaFileUpload />, className: styles.iconArticleReviewRequest },
   article_review_approved: { icon: <FaClipboardCheck />, className: styles.iconArticleReviewApproved },
   article_review_rejected: { icon: <FaBan />, className: styles.iconArticleReviewRejected },
+  comment_approved: { icon: <FaClipboardCheck />, className: styles.iconArticleReviewApproved },
+  comment_rejected: { icon: <FaBan />, className: styles.iconArticleReviewRejected },
+  comment_spam: { icon: <FaBan />, className: styles.iconArticleReviewRejected },
+  comment_admin_deleted: { icon: <FaUserMinus />, className: styles.iconOrgMemberKicked },
   requirement_assigned: { icon: <FaClipboardList />, className: styles.iconRequirementAssigned },
   bug_assigned: { icon: <FaBug />, className: styles.iconBugAssigned },
   task_assigned: { icon: <FaTasks />, className: styles.iconTaskAssigned },
+  org_apply_request: { icon: <FaFileUpload />, className: styles.iconOrgJoinRequest },
+  org_apply_approved: { icon: <FaClipboardCheck />, className: styles.iconOrgJoinApproved },
+  org_apply_rejected: { icon: <FaBan />, className: styles.iconOrgJoinRejected },
+  org_deleted: { icon: <FaUserMinus />, className: styles.iconOrgMemberKicked },
+  account_deleted: { icon: <FaUserTimes />, className: styles.iconOrgJoinRejected },
+  account_recovered: { icon: <FaUserCheck />, className: styles.iconOrgJoinApproved },
+  password_reset: { icon: <FaCog />, className: styles.iconSystem },
+  article_state_changed: { icon: <FaNewspaper />, className: styles.iconArticle },
+  assignment_submitted: { icon: <FaFileUpload />, className: styles.iconArticleReviewRequest },
+  assignment_created: { icon: <FaBullhorn />, className: styles.iconSystem },
+  assignment_deleted: { icon: <FaUserMinus />, className: styles.iconOrgMemberKicked },
 };
 
 function formatTime(timestamp: number): string {
@@ -141,6 +157,12 @@ const Notification: React.FC = () => {
         link: data.link,
         article_id: data.article_id,
         comment_id: data.comment_id,
+        bug_id: data.bug_id,
+        requirement_id: data.requirement_id,
+        task_id: data.task_id,
+        apply_id: data.apply_id,
+        org_id: data.org_id,
+        assignment_id: data.assignment_id,
       };
       // 播放提示音
       playNotificationSound();
@@ -250,11 +272,46 @@ const Notification: React.FC = () => {
       selfUpdating.current = false;
       NotificationService.markAsRead(item.id).catch(() => {});
     }
+    setOpen(false);
+
+    // RD 平台通知 → 跳转到对应工单详情
+    if (item.type === "bug_assigned" && item.bug_id) {
+      navigate(`/rd/bugs/${encodeId(item.bug_id)}`);
+      return;
+    }
+    if (item.type === "requirement_assigned" && item.requirement_id) {
+      navigate(`/rd/requirements/${encodeId(item.requirement_id)}`);
+      return;
+    }
+    if (item.type === "task_assigned" && item.task_id) {
+      navigate(`/rd/tasks/${encodeId(item.task_id)}`);
+      return;
+    }
+
+    // 组织创建申请通过 → 跳转到组织详情
+    if (item.type === "org_apply_approved" && item.org_id) {
+      navigate(`/organization/detail/${encodeId(item.org_id)}`);
+      return;
+    }
+
+    // 作业相关通知
+    if (item.type === "assignment_submitted" && item.assignment_id) {
+      navigate(`/assignment/submissions/${encodeId(item.assignment_id)}`);
+      return;
+    }
+    if (item.type === "assignment_created" && item.assignment_id) {
+      navigate(`/assignment/submit/${encodeId(item.assignment_id)}`);
+      return;
+    }
+
+    // 文章相关通知 → 跳转到文章详情
     if (item.article_id) {
-      setOpen(false);
       navigate(`/article/${encodeId(item.article_id)}`);
-    } else if (item.link) {
-      setOpen(false);
+      return;
+    }
+
+    // link 作为兜底
+    if (item.link) {
       navigate(item.link);
     }
   };
@@ -272,20 +329,36 @@ const Notification: React.FC = () => {
   const settingTypes: { key: NotifType; label: string }[] = [
     { key: "system", label: "系统通知" },
     { key: "comment", label: "评论通知" },
+    { key: "reply", label: "评论回复通知" },
     { key: "praise", label: "文章点赞通知" },
     { key: "follow", label: "关注通知" },
     { key: "article", label: "文章通知" },
+    { key: "article_state_changed", label: "文章状态变更通知" },
+    { key: "article_review_request", label: "文章待审核通知" },
+    { key: "article_review_approved", label: "文章审核通过通知" },
+    { key: "article_review_rejected", label: "文章审核拒绝通知" },
+    { key: "comment_approved", label: "评论审核通过通知" },
+    { key: "comment_rejected", label: "评论未通过通知" },
+    { key: "comment_spam", label: "评论垃圾标记通知" },
+    { key: "comment_admin_deleted", label: "评论被删通知" },
     { key: "org_role_change", label: "角色变更通知" },
     { key: "org_join_request", label: "加入申请通知" },
     { key: "org_join_approved", label: "申请通过通知" },
     { key: "org_join_rejected", label: "申请拒绝通知" },
     { key: "org_member_kicked", label: "成员移出通知" },
-    { key: "article_review_request", label: "文章待审核通知" },
-    { key: "article_review_approved", label: "文章审核通过通知" },
-    { key: "article_review_rejected", label: "文章审核拒绝通知" },
+    { key: "org_apply_request", label: "组织创建申请通知" },
+    { key: "org_apply_approved", label: "组织创建通过通知" },
+    { key: "org_apply_rejected", label: "组织创建拒绝通知" },
+    { key: "org_deleted", label: "组织删除通知" },
     { key: "requirement_assigned", label: "需求分配通知" },
     { key: "bug_assigned", label: "缺陷分配通知" },
     { key: "task_assigned", label: "任务分配通知" },
+    { key: "assignment_created", label: "新作业发布通知" },
+    { key: "assignment_submitted", label: "作业提交通知" },
+    { key: "assignment_deleted", label: "作业删除通知" },
+    { key: "account_deleted", label: "账户禁用通知" },
+    { key: "account_recovered", label: "账户恢复通知" },
+    { key: "password_reset", label: "密码重置通知" },
   ];
 
   const typeMeta = (type: string) => TYPE_ICON_MAP[type] || TYPE_ICON_MAP.system;

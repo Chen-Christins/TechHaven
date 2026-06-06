@@ -458,23 +458,35 @@ const ArticleManagement: React.FC = () => {
   };
 
   // 删除文章
-  const deleteArticle = async (articleId: string) => {
-    if (window.confirm("确定要删除这篇文章吗？此操作不可恢复。")) {
-      try {
-        await ArticleService.deleteArticle({ ids: articleId });
-        setArticles((prev) => prev.filter((article) => article.id !== articleId));
-        setTotalArticles((prev) => Math.max(0, prev - 1));
-        fetchStats();
+  const deleteArticle = async (articleId: string, articleTitle: string) => {
+    await confirm({
+      title: "删除文章",
+      content: (
+        <div>
+          <p>
+            确定要删除文章 "<strong>{articleTitle}</strong>" 吗？
+          </p>
+          <p style={{ color: "var(--error)" }}>此操作不可恢复。</p>
+        </div>
+      ),
+      confirmText: "确认删除",
+      cancelText: "取消",
+      onConfirm: async () => {
+        try {
+          await ArticleService.deleteArticle({ ids: articleId });
+          setArticles((prev) => prev.filter((article) => article.id !== articleId));
+          setTotalArticles((prev) => Math.max(0, prev - 1));
+          fetchStats();
 
-        // 如果当前页为空且不是第一页，则跳转到上一页
-        if (articles.length === 1 && currentPage > 1) {
-          setCurrentPage((prev) => prev - 1);
+          if (articles.length === 1 && currentPage > 1) {
+            setCurrentPage((prev) => prev - 1);
+          }
+        } catch (error) {
+          console.error("删除失败:", error);
+          message.error("删除失败，请重试");
         }
-      } catch (error) {
-        console.error("删除失败:", error);
-        alert("删除失败，请重试");
-      }
-    }
+      },
+    });
   };
 
   // 格式化日期
@@ -850,7 +862,7 @@ const ArticleManagement: React.FC = () => {
                       <button
                         className={`${styles.actionButton} ${styles.delete}`}
                         title="删除文章"
-                        onClick={() => deleteArticle(article.id)}
+                        onClick={() => deleteArticle(article.id, article.title)}
                       >
                         <FaTrash />
                       </button>
