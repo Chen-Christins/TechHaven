@@ -10,6 +10,30 @@ import { LayoutWidthProvider } from "./contexts/LayoutWidthContext";
 import { SiteSettingsProvider } from "./contexts/SiteSettingsContext";
 import IdleTimeoutHandler from "./components/sessionTimeout/IdleTimeoutHandler";
 import RouterConfig from "./router/RouterConfig";
+import { usePresenceConnection } from "./hooks/useOnlineCount";
+
+function AppContent() {
+  usePresenceConnection();
+  return (
+    <>
+      <IdleTimeoutHandler />
+      <MessageProvider>
+        <ConfirmProvider>
+          <SimpleBar
+            style={{
+              maxHeight: "100vh",
+              width: "100vw",
+              overflowX: "hidden",
+            }}
+            autoHide={false}
+          >
+            <RouterConfig />
+          </SimpleBar>
+        </ConfirmProvider>
+      </MessageProvider>
+    </>
+  );
+}
 
 function App() {
   return (
@@ -18,21 +42,7 @@ function App() {
         <AuthProvider>
           <LayoutWidthProvider>
             <SiteSettingsProvider>
-              <IdleTimeoutHandler />
-              <MessageProvider>
-                <ConfirmProvider>
-                  <SimpleBar
-                    style={{
-                      maxHeight: "100vh",
-                      width: "100vw",
-                      overflowX: "hidden",
-                    }}
-                    autoHide={false}
-                  >
-                    <RouterConfig />
-                  </SimpleBar>
-                </ConfirmProvider>
-              </MessageProvider>
+              <AppContent />
             </SiteSettingsProvider>
           </LayoutWidthProvider>
         </AuthProvider>
