@@ -18,6 +18,9 @@ import {
   FaFileUpload,
   FaClipboardCheck,
   FaBan,
+  FaClipboardList,
+  FaBug,
+  FaTasks,
 } from "react-icons/fa";
 import styles from "./Notification.module.css";
 import NotificationService from "../../services/NotificationService";
@@ -46,6 +49,9 @@ const TYPE_ICON_MAP: Record<string, { icon: React.ReactNode; className: string }
   article_review_request: { icon: <FaFileUpload />, className: styles.iconArticleReviewRequest },
   article_review_approved: { icon: <FaClipboardCheck />, className: styles.iconArticleReviewApproved },
   article_review_rejected: { icon: <FaBan />, className: styles.iconArticleReviewRejected },
+  requirement_assigned: { icon: <FaClipboardList />, className: styles.iconRequirementAssigned },
+  bug_assigned: { icon: <FaBug />, className: styles.iconBugAssigned },
+  task_assigned: { icon: <FaTasks />, className: styles.iconTaskAssigned },
 };
 
 function formatTime(timestamp: number): string {
@@ -277,6 +283,9 @@ const Notification: React.FC = () => {
     { key: "article_review_request", label: "文章待审核通知" },
     { key: "article_review_approved", label: "文章审核通过通知" },
     { key: "article_review_rejected", label: "文章审核拒绝通知" },
+    { key: "requirement_assigned", label: "需求分配通知" },
+    { key: "bug_assigned", label: "缺陷分配通知" },
+    { key: "task_assigned", label: "任务分配通知" },
   ];
 
   const typeMeta = (type: string) => TYPE_ICON_MAP[type] || TYPE_ICON_MAP.system;

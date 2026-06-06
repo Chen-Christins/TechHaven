@@ -2044,6 +2044,21 @@
   color: var(--error);
 }
 
+.notifIconRequirementAssigned {
+  background-color: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.notifIconBugAssigned {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.notifIconTaskAssigned {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
 .notifItemBody {
   flex: 1;
   min-width: 0;

@@ -15,7 +15,10 @@ export type NotifType =
   | "org_member_kicked"
   | "article_review_request"
   | "article_review_approved"
-  | "article_review_rejected";
+  | "article_review_rejected"
+  | "requirement_assigned"
+  | "bug_assigned"
+  | "task_assigned";
 
 const defaults: Record<NotifType, boolean> = {
   system: true,
@@ -31,6 +34,9 @@ const defaults: Record<NotifType, boolean> = {
   article_review_request: true,
   article_review_approved: true,
   article_review_rejected: true,
+  requirement_assigned: true,
+  bug_assigned: true,
+  task_assigned: true,
 };
 
 const settings: Record<NotifType, boolean> = { ...defaults };
