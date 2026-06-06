@@ -55,19 +55,11 @@ const IndexPage: React.FC = () => {
     fetchTags();
   }, [user]);
 
-  // 控制初始加载和内容显示
+  // 数据加载完成后立即移除骨架屏
   useEffect(() => {
     if (!authLoading && !tagsLoading) {
-      // 延迟显示内容以创建平滑过渡
-      const timer = setTimeout(() => {
-        setShowContent(true);
-        // 稍后延迟移除骨架屏，确保过渡动画完成
-        setTimeout(() => {
-          setIsInitialLoad(false);
-        }, 100);
-      }, 100);
-
-      return () => clearTimeout(timer);
+      setShowContent(true);
+      setIsInitialLoad(false);
     }
   }, [authLoading, tagsLoading]);
 
