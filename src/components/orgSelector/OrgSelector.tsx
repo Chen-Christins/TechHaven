@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { FaBuilding, FaTimes, FaCheck } from "react-icons/fa";
 import styles from "./OrgSelector.module.css";
 import type { RdOrgInfo } from "../../types/rdPlatform";
@@ -49,46 +50,51 @@ const OrgSelector: React.FC<OrgSelectorProps> = ({ orgs, selectedOrgId, onChange
         {!collapsed && <span className={styles.label}>{displayName}</span>}
       </button>
 
-      {/* 遮罩层 */}
-      <div className={`${styles.overlay} ${open ? styles.overlayVisible : ""}`} onClick={() => setOpen(false)} />
+      {createPortal(
+        <>
+          {/* 遮罩层 */}
+          <div className={`${styles.overlay} ${open ? styles.overlayVisible : ""}`} onClick={() => setOpen(false)} />
 
-      {/* 右侧滑出面板 */}
-      <div className={`${styles.panel} ${open ? styles.panelOpen : ""}`}>
-        <div className={styles.panelHeader}>
-          <h3 className={styles.panelTitle}>选择组织</h3>
-          <button className={styles.closeBtn} onClick={() => setOpen(false)}>
-            <FaTimes />
-          </button>
-        </div>
+          {/* 右侧滑出面板 */}
+          <div className={`${styles.panel} ${open ? styles.panelOpen : ""}`}>
+            <div className={styles.panelHeader}>
+              <h3 className={styles.panelTitle}>选择组织</h3>
+              <button className={styles.closeBtn} onClick={() => setOpen(false)}>
+                <FaTimes />
+              </button>
+            </div>
 
-        <div className={styles.panelBody}>
-          {options.map((org) => {
-            const isSelected = org.orgId === selectedOrgId;
-            return (
-              <div
-                key={org.orgId}
-                className={`${styles.optionCard} ${isSelected ? styles.optionCardSelected : ""}`}
-                onClick={() => handleSelect(org.orgId)}
-              >
-                <div className={styles.optionCardLeft}>
-                  <div className={`${styles.optionAvatar} ${isSelected ? styles.optionAvatarActive : ""}`}>
-                    <FaBuilding />
+            <div className={styles.panelBody}>
+              {options.map((org) => {
+                const isSelected = org.orgId === selectedOrgId;
+                return (
+                  <div
+                    key={org.orgId}
+                    className={`${styles.optionCard} ${isSelected ? styles.optionCardSelected : ""}`}
+                    onClick={() => handleSelect(org.orgId)}
+                  >
+                    <div className={styles.optionCardLeft}>
+                      <div className={`${styles.optionAvatar} ${isSelected ? styles.optionAvatarActive : ""}`}>
+                        <FaBuilding />
+                      </div>
+                      <div className={styles.optionInfo}>
+                        <span className={styles.optionName}>{org.orgName}</span>
+                        {org.orgId === "" && <span className={styles.optionHint}>查看所有组织的数据</span>}
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <span className={styles.checkIcon}>
+                        <FaCheck />
+                      </span>
+                    )}
                   </div>
-                  <div className={styles.optionInfo}>
-                    <span className={styles.optionName}>{org.orgName}</span>
-                    {org.orgId === "" && <span className={styles.optionHint}>查看所有组织的数据</span>}
-                  </div>
-                </div>
-                {isSelected && (
-                  <span className={styles.checkIcon}>
-                    <FaCheck />
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
+                );
+              })}
+            </div>
+          </div>
+        </>,
+        document.body,
+      )}
     </div>
   );
 };
