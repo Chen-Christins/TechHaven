@@ -5,6 +5,7 @@ import { AuthService } from "../../../services/authService";
 import { FileService } from "../../../services/fileService";
 import { message } from "../../../components/message/Message";
 import Avatar from "../../../components/avatar/Avatar";
+import ApiConfigCard from "./ApiConfigCard";
 import styles from "../PersonalCenter.module.css";
 
 const EditProfileTab: React.FC = () => {
@@ -279,6 +280,9 @@ const EditProfileTab: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* AI 接口配置 */}
+        <ApiConfigCard />
       </div>
     </div>
   );

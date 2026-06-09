@@ -537,10 +537,7 @@ const TicketDetail: React.FC = () => {
               {entityType === "task" && (
                 <>
                   {metaField("关联需求", (item as Task).requirementId)}
-                  {metaField(
-                    "截止日期",
-                    (item as Task).deadline ? formatDateTime((item as Task).deadline) : "-",
-                  )}
+                  {metaField("截止日期", (item as Task).deadline ? formatDateTime((item as Task).deadline) : "-")}
                   {metaField("预估工时", `${(item as Task).estimatedHours}h`)}
                 </>
               )}
