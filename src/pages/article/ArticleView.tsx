@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import styles from "./ArticleView.module.css";
 import Avatar from "../../components/avatar/Avatar";
+import AiSummary from "../../components/articleView/AiSummary";
 import FollowService from "../../services/followService";
 import PraiseService from "../../services/praiseService";
 import CommentService from "../../services/commentService";
@@ -914,6 +915,8 @@ const ArticleView: React.FC<ArticleViewProps> = ({
               )}
             </div>
           </header>
+
+          <AiSummary articleId={articleId} />
 
           <div className={`${styles.markdownBody} ${!isContentReady ? styles.contentLoading : styles.contentReady}`}>
             {!isContentReady && (
