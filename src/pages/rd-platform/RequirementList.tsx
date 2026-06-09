@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRdNavigate } from "../../hooks/useRdNavigate";
+import { formatDateTime } from "../../utils/utils";
 import { encodeId } from "../../utils/hashId";
 import {
   FaPlus,
@@ -361,7 +362,7 @@ const RequirementList: React.FC = () => {
                 </td>
                 <td>{r.iteration || "-"}</td>
                 <td>{r.creator}</td>
-                <td>{new Date(r.createdAt).toLocaleDateString("zh-CN")}</td>
+                <td>{formatDateTime(r.createdAt)}</td>
                 <td>
                   <div className={styles.actionButtons}>
                     <button
@@ -502,8 +503,8 @@ const RequirementList: React.FC = () => {
               {renderField("迭代", selectedReq.iteration)}
               {renderField("分类", selectedReq.category)}
               {renderField("来源", selectedReq.source)}
-              {renderField("创建时间", new Date(selectedReq.createdAt).toLocaleString("zh-CN"))}
-              {renderField("更新时间", new Date(selectedReq.updatedAt).toLocaleString("zh-CN"))}
+              {renderField("创建时间", formatDateTime(selectedReq.createdAt))}
+              {renderField("更新时间", formatDateTime(selectedReq.updatedAt))}
             </div>
             <div>
               <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>

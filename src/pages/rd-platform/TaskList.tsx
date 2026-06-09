@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRdNavigate } from "../../hooks/useRdNavigate";
+import { formatDateTime } from "../../utils/utils";
 import { encodeId } from "../../utils/hashId";
 import {
   FaPlus,
@@ -336,7 +337,7 @@ const TaskList: React.FC = () => {
                 <td>
                   <AssigneeDisplay name={t.assignee} avatar={t.assigneeAvatar} />
                 </td>
-                <td>{t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN").replace(/\//g, "-") : "-"}</td>
+                <td>{t.deadline ? formatDateTime(t.deadline) : "-"}</td>
                 <td>{t.estimatedHours ? `${t.estimatedHours}h` : "-"}</td>
                 <td>
                   <div className={styles.actionButtons}>

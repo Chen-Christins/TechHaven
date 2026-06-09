@@ -1,3 +1,14 @@
+/**
+ * 格式化日期时间为 YYYY-MM-DD HH:mm:ss（本地时间，自动补零）。
+ * 接受 ISO 字符串、时间戳（毫秒/秒）或 Date 对象。
+ */
+export function formatDateTime(input: string | number | Date): string {
+  const d = input instanceof Date ? input : new Date(typeof input === "number" && input < 1e12 ? input * 1000 : input);
+  if (isNaN(d.getTime())) return "-";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
 export function formatToChinaTime(timestamp: number) {
   // 1. 秒级转毫秒级 + 补偿8小时时差（关键）
   const date = new Date(timestamp * 1000 + 8 * 3600000);
