@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
+import { useRdNavigate } from "../../hooks/useRdNavigate";
 import { FaArrowLeft, FaEdit, FaSave, FaTimes, FaClipboardList, FaBug, FaTasks } from "react-icons/fa";
 import styles from "./TicketDetail.module.css";
 import Loading from "../../components/loading/Loading";
@@ -103,7 +104,7 @@ type DetailItem = Requirement | Bug | Task;
 const TicketDetail: React.FC = () => {
   const { id: encodedId } = useParams<{ id: string }>();
   const id = encodedId ? String(decodeId(encodedId) ?? "") : "";
-  const navigate = useNavigate();
+  const navigate = useRdNavigate();
   const location = useLocation();
   const { orgNameMap } = useRdOrg();
 

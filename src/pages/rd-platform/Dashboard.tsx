@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRdNavigate } from "../../hooks/useRdNavigate";
 import { FaClipboardList, FaBug, FaTasks, FaExclamationTriangle } from "react-icons/fa";
 import styles from "./Dashboard.module.css";
 import Loading from "../../components/loading/Loading";
@@ -10,7 +10,7 @@ import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
 import type { RdStats, Requirement, Bug, Task } from "../../types/rdPlatform";
 
 const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useRdNavigate();
   const { selectedOrgId } = useRdOrg();
   const [stats, setStats] = useState<RdStats | null>(null);
   const [recentRequirements, setRecentRequirements] = useState<Requirement[]>([]);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRdNavigate } from "../../hooks/useRdNavigate";
 import { encodeId } from "../../utils/hashId";
 import {
   FaEye,
@@ -86,7 +86,7 @@ type TabKey = "req" | "bug" | "task";
 type TabData = Requirement | Bug | Task;
 
 const MyTickets: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useRdNavigate();
   const { orgNameMap, selectedOrgId } = useRdOrg();
   const [activeTab, setActiveTab] = useState<TabKey>("req");
   const [data, setData] = useState<TabData[]>([]);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRdNavigate } from "../../hooks/useRdNavigate";
 import { encodeId } from "../../utils/hashId";
 import {
   FaPlus,
@@ -62,7 +62,7 @@ const emptyTask = {
 };
 
 const TaskList: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useRdNavigate();
   const { user } = useAuth();
   const { isAdmin, userOrgIds, orgs, maxOrgRole, selectedOrgId } = useRdOrg();
   const [tasks, setTasks] = useState<Task[]>([]);
