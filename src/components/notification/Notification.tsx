@@ -24,7 +24,17 @@ import {
 } from "react-icons/fa";
 import styles from "./Notification.module.css";
 import NotificationService from "../../services/NotificationService";
-import { markRead, markAllRead, subscribe } from "../../utils/notificationState";
+import {
+  markRead,
+  markAllRead,
+  subscribe,
+  setUnreadCount,
+  getUnreadCount,
+  isUnreadCountInitialized,
+  subscribeUnreadCount,
+  incrementUnreadCount,
+  decrementUnreadCount,
+} from "../../utils/notificationState";
 import { getSettings, setTypeEnabled, subscribe as subscribeSettings, type NotifType } from "../../utils/notificationSettingsState";
 import { notificationWS } from "../../utils/websocket";
 import { playNotificationSound } from "../../utils/notificationSound";
@@ -89,7 +99,7 @@ const Notification: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setLocalUnreadCount] = useState(() => (isUnreadCountInitialized() ? getUnreadCount() : 0));
   const [loading, setLoading] = useState(false);
   const [wsConnected, setWsConnected] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -122,23 +132,23 @@ const Notification: React.FC = () => {
   const fetchUnreadCount = useCallback(async () => {
     try {
       const data = await NotificationService.getUnreadCount();
-      // 用 Math.max 防止覆盖 WebSocket 已递增的计数
-      setUnreadCount((prev) => Math.max(prev, data.count ?? 0));
+      setUnreadCount(data.count ?? 0);
     } catch {
       // 静默处理
     }
   }, []);
 
-  // Subscribe to shared state changes so badge updates when NotificationsTab marks read.
-  // Uses a ref guard to avoid double-update: when this component itself triggers
-  // markRead/markAllRead, the synchronous subscriber would fire but we already
-  // optimistically update unreadCount locally — skip the delta in that case.
-  const selfUpdating = useRef(false);
+  // Sync local display state with global unread count
+  useEffect(() => {
+    return subscribeUnreadCount((count) => {
+      setLocalUnreadCount(count);
+    });
+  }, []);
 
+  // Listen for mark-read actions from other components (e.g. NotificationsTab)
   useEffect(() => {
     return subscribe((delta) => {
-      if (selfUpdating.current) return;
-      setUnreadCount((prev) => Math.max(0, prev - delta));
+      decrementUnreadCount(delta);
     });
   }, []);
 
@@ -170,7 +180,7 @@ const Notification: React.FC = () => {
       // flushSync 确保 React 立即提交渲染，不等下一次事件循环
       flushSync(() => {
         setNotifications((prev) => [newNotification, ...prev]);
-        setUnreadCount((prev) => prev + 1);
+        incrementUnreadCount();
       });
     };
 
@@ -194,13 +204,15 @@ const Notification: React.FC = () => {
     };
   }, [isAuthenticated]);
 
-  // 认证完成后拉取初始未读数
+  // 认证完成后拉取初始未读数（仅在硬刷新时拉取 API，SPA 导航复用全局计数）
   useEffect(() => {
     if (!isAuthenticated) return;
-    fetchUnreadCount();
+    if (!isUnreadCountInitialized()) {
+      fetchUnreadCount();
+    }
   }, [isAuthenticated, fetchUnreadCount]);
 
-  // WebSocket 重连后刷新，补拉断线期间错过的通知
+  // WebSocket 重连后刷新通知列表（全局计数已本地维护，无需再拉 API）
   const wsFirstOpen = useRef(true);
   useEffect(() => {
     const unsub = notificationWS.onOpen(() => {
@@ -208,11 +220,10 @@ const Notification: React.FC = () => {
         wsFirstOpen.current = false;
         return;
       }
-      fetchUnreadCount();
       fetchNotifications();
     });
     return unsub;
-  }, [fetchNotifications, fetchUnreadCount]);
+  }, [fetchNotifications]);
 
   // Update browser tab favicon badge when unread count changes
   useEffect(() => {
@@ -254,22 +265,16 @@ const Notification: React.FC = () => {
 
   const handleMarkAllRead = (e: React.MouseEvent) => {
     e.stopPropagation();
-    selfUpdating.current = true;
     markAllRead(notifications.map((n) => n.id));
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-    setUnreadCount(0);
-    selfUpdating.current = false;
     // Fire-and-forget API call (don't block UI)
     NotificationService.markAllAsRead().catch(() => {});
   };
 
   const handleItemClick = (item: NotificationItem) => {
     if (!item.is_read) {
-      selfUpdating.current = true;
       markRead(item.id);
       setNotifications((prev) => prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n)));
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-      selfUpdating.current = false;
       NotificationService.markAsRead(item.id).catch(() => {});
     }
     setOpen(false);

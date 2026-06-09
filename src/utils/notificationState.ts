@@ -29,3 +29,40 @@ export function subscribe(fn: (delta: number) => void): () => void {
     listeners.delete(fn);
   };
 }
+
+// Global unread count that persists across component mounts (SPA navigation).
+// Only fetched from API on hard page load; then maintained via WS increment
+// and mark-read decrement, preventing stale API responses from re-inflating the badge.
+
+let globalUnreadCount = 0;
+let countInitialized = false;
+const countListeners = new Set<(count: number) => void>();
+
+export function getUnreadCount(): number {
+  return globalUnreadCount;
+}
+
+export function setUnreadCount(count: number): void {
+  globalUnreadCount = count;
+  countInitialized = true;
+  countListeners.forEach((fn) => fn(count));
+}
+
+export function decrementUnreadCount(delta: number): void {
+  globalUnreadCount = Math.max(0, globalUnreadCount - delta);
+  countListeners.forEach((fn) => fn(globalUnreadCount));
+}
+
+export function incrementUnreadCount(): void {
+  globalUnreadCount += 1;
+  countListeners.forEach((fn) => fn(globalUnreadCount));
+}
+
+export function subscribeUnreadCount(fn: (count: number) => void): () => void {
+  countListeners.add(fn);
+  return () => countListeners.delete(fn);
+}
+
+export function isUnreadCountInitialized(): boolean {
+  return countInitialized;
+}

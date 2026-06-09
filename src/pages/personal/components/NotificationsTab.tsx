@@ -22,7 +22,7 @@ import {
   FaTasks,
 } from "react-icons/fa";
 import NotificationService from "../../../services/NotificationService";
-import { isRead, markRead, markAllRead, subscribe } from "../../../utils/notificationState";
+import { isRead, markRead, markAllRead, subscribe, setUnreadCount } from "../../../utils/notificationState";
 import {
   getSettings,
   getEnabledTypes,
@@ -230,6 +230,7 @@ const NotificationsTab: React.FC = () => {
     NotificationService.markAllAsRead().catch(() => {});
     markAllRead(notifications.map((n) => n.id));
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    setUnreadCount(0);
   };
 
   const handleItemClick = (item: NotificationItem) => {
