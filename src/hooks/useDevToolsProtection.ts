@@ -67,14 +67,12 @@ export function useDevToolsProtection() {
     document.head.appendChild(style);
     cleanups.push(() => style.remove());
 
-    // 2. 阻止键盘快捷键（DevTools + 复制/剪切/全选）
+    // 2. 阻止键盘快捷键打开开发者工具（不拦截复制粘贴，由 CSS + 事件层处理）
     const handleKeyDown = (e: KeyboardEvent) => {
-      const ctrlOrCmd = e.ctrlKey || e.metaKey;
       if (
         e.key === "F12" ||
         (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key.toUpperCase())) ||
-        (e.ctrlKey && e.key.toUpperCase() === "U") ||
-        (ctrlOrCmd && ["c", "x", "a", "v"].includes(e.key.toLowerCase()))
+        (e.ctrlKey && e.key.toUpperCase() === "U")
       ) {
         e.preventDefault();
         e.stopPropagation();
