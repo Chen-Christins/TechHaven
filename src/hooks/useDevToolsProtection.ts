@@ -61,12 +61,20 @@ export function useDevToolsProtection() {
       }
     };
 
-    // 1. 阻止键盘快捷键打开开发者工具
+    // 1. 全局禁用文本选择（CSS 层面）
+    const style = document.createElement("style");
+    style.textContent = `body { -webkit-user-select: none !important; user-select: none !important; }`;
+    document.head.appendChild(style);
+    cleanups.push(() => style.remove());
+
+    // 2. 阻止键盘快捷键（DevTools + 复制/剪切/全选）
     const handleKeyDown = (e: KeyboardEvent) => {
+      const ctrlOrCmd = e.ctrlKey || e.metaKey;
       if (
         e.key === "F12" ||
         (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key.toUpperCase())) ||
-        (e.ctrlKey && e.key.toUpperCase() === "U")
+        (e.ctrlKey && e.key.toUpperCase() === "U") ||
+        (ctrlOrCmd && ["c", "x", "a", "v"].includes(e.key.toLowerCase()))
       ) {
         e.preventDefault();
         e.stopPropagation();
@@ -75,7 +83,7 @@ export function useDevToolsProtection() {
     document.addEventListener("keydown", handleKeyDown, true);
     cleanups.push(() => document.removeEventListener("keydown", handleKeyDown, true));
 
-    // 2. 阻止右键菜单（屏蔽"检查"入口）
+    // 3. 阻止右键菜单（屏蔽"检查"和"复制"入口）
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
@@ -83,7 +91,27 @@ export function useDevToolsProtection() {
     document.addEventListener("contextmenu", handleContextMenu, true);
     cleanups.push(() => document.removeEventListener("contextmenu", handleContextMenu, true));
 
-    // 3. 窗口尺寸差异检测（针对 docked 模式的开发者工具）
+    // 4. 阻止文本选择（JS 层面兜底）
+    const handleSelectStart = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    document.addEventListener("selectstart", handleSelectStart, true);
+    cleanups.push(() => document.removeEventListener("selectstart", handleSelectStart, true));
+
+    // 5. 阻止复制/剪切事件
+    const handleCopyCut = (e: ClipboardEvent) => {
+      e.preventDefault();
+      e.clipboardData?.clearData();
+    };
+    document.addEventListener("copy", handleCopyCut, true);
+    document.addEventListener("cut", handleCopyCut, true);
+    cleanups.push(() => {
+      document.removeEventListener("copy", handleCopyCut, true);
+      document.removeEventListener("cut", handleCopyCut, true);
+    });
+
+    // 6. 窗口尺寸差异检测（针对 docked 模式的开发者工具）
     const checkSize = () => {
       const threshold = 160;
       const widthDiff = window.outerWidth - window.innerWidth;
@@ -95,7 +123,7 @@ export function useDevToolsProtection() {
     const sizeTimer = setInterval(checkSize, 1000);
     cleanups.push(() => clearInterval(sizeTimer));
 
-    // 4. debugger 时序检测（开发者工具打开时调试语句会暂停执行）
+    // 7. debugger 时序检测（开发者工具打开时调试语句会暂停执行）
     const checkDebugger = () => {
       const start = performance.now();
       // eslint-disable-next-line no-debugger
