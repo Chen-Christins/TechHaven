@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useRdNavigate } from "../../hooks/useRdNavigate";
+import { formatDateTime } from "../../utils/utils";
 import { encodeId } from "../../utils/hashId";
 import {
   FaEye,
@@ -604,7 +605,7 @@ const MyTickets: React.FC = () => {
                         <AssigneeDisplay name={r.assignee} avatar={r.assigneeAvatar} />
                       </td>
                       <td>{r.creator}</td>
-                      <td>{new Date(r.createdAt).toLocaleDateString("zh-CN").replace(/\//g, "-")}</td>
+                      <td>{formatDateTime(r.createdAt)}</td>
                       <td>
                         <div className={styles.actionButtons}>
                           <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openDetail("req", r)}>
@@ -648,6 +649,7 @@ const MyTickets: React.FC = () => {
                   <th>状态</th>
                   <th>负责人</th>
                   <th>创建人</th>
+                  <th>创建时间</th>
                   <th>操作</th>
                 </tr>
               </thead>
@@ -668,6 +670,7 @@ const MyTickets: React.FC = () => {
                         <AssigneeDisplay name={b.assignee} avatar={b.assigneeAvatar} />
                       </td>
                       <td>{b.creator}</td>
+                      <td>{formatDateTime(b.createdAt)}</td>
                       <td>
                         <div className={styles.actionButtons}>
                           <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openDetail("bug", b)}>
@@ -683,7 +686,7 @@ const MyTickets: React.FC = () => {
                 })}
                 {data.length === 0 && (
                   <tr>
-                    <td colSpan={7} className={styles.emptyCell}>
+                    <td colSpan={8} className={styles.emptyCell}>
                       <div className={styles.emptyCellIcon}>
                         <FaBug />
                       </div>
@@ -728,7 +731,7 @@ const MyTickets: React.FC = () => {
                         <AssigneeDisplay name={t.assignee} avatar={t.assigneeAvatar} />
                       </td>
                       <td>{t.creator}</td>
-                      <td>{t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN").replace(/\//g, "-") : "-"}</td>
+                      <td>{t.deadline ? formatDateTime(t.deadline) : "-"}</td>
                       <td>
                         <div className={styles.actionButtons}>
                           <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openDetail("task", t)}>
@@ -840,8 +843,8 @@ const MyTickets: React.FC = () => {
                       {renderField_("迭代", r.iteration)}
                       {renderField_("分类", r.category)}
                       {renderField_("来源", r.source)}
-                      {renderField_("创建时间", r.createdAt ? new Date(r.createdAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
-                      {renderField_("更新时间", r.updatedAt ? new Date(r.updatedAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
+                      {renderField_("创建时间", r.createdAt ? formatDateTime(r.createdAt) : "-")}
+                      {renderField_("更新时间", r.updatedAt ? formatDateTime(r.updatedAt) : "-")}
                     </div>
                     <div>
                       <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
@@ -879,8 +882,8 @@ const MyTickets: React.FC = () => {
                       {renderField_("所属模块", b.module)}
                       {renderField_("关联需求", b.relatedRequirementId)}
                       {renderField_("运行环境", b.environment)}
-                      {renderField_("创建时间", b.createdAt ? new Date(b.createdAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
-                      {renderField_("更新时间", b.updatedAt ? new Date(b.updatedAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
+                      {renderField_("创建时间", b.createdAt ? formatDateTime(b.createdAt) : "-")}
+                      {renderField_("更新时间", b.updatedAt ? formatDateTime(b.updatedAt) : "-")}
                     </div>
                     <div style={{ marginBottom: b.stepsToReproduce ? "20px" : "0" }}>
                       <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
@@ -927,11 +930,11 @@ const MyTickets: React.FC = () => {
                       {renderField_("关联需求", t.requirementId)}
                       {renderField_(
                         "截止日期",
-                        t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN").replace(/\//g, "-") : "-",
+                        t.deadline ? formatDateTime(t.deadline) : "-",
                       )}
                       {renderField_("预估工时", `${t.estimatedHours}h`)}
-                      {renderField_("创建时间", t.createdAt ? new Date(t.createdAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
-                      {renderField_("更新时间", t.updatedAt ? new Date(t.updatedAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
+                      {renderField_("创建时间", t.createdAt ? formatDateTime(t.createdAt) : "-")}
+                      {renderField_("更新时间", t.updatedAt ? formatDateTime(t.updatedAt) : "-")}
                     </div>
                     <div>
                       <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>

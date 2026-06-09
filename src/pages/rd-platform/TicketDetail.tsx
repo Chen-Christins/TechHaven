@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { useRdNavigate } from "../../hooks/useRdNavigate";
+import { formatDateTime } from "../../utils/utils";
 import { FaArrowLeft, FaEdit, FaSave, FaTimes, FaClipboardList, FaBug, FaTasks } from "react-icons/fa";
 import styles from "./TicketDetail.module.css";
 import Loading from "../../components/loading/Loading";
@@ -538,14 +539,14 @@ const TicketDetail: React.FC = () => {
                   {metaField("关联需求", (item as Task).requirementId)}
                   {metaField(
                     "截止日期",
-                    (item as Task).deadline ? new Date((item as Task).deadline).toLocaleDateString("zh-CN").replace(/\//g, "-") : "-",
+                    (item as Task).deadline ? formatDateTime((item as Task).deadline) : "-",
                   )}
                   {metaField("预估工时", `${(item as Task).estimatedHours}h`)}
                 </>
               )}
 
-              {metaField("创建时间", item.createdAt ? new Date(item.createdAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
-              {metaField("更新时间", item.updatedAt ? new Date(item.updatedAt).toLocaleString("zh-CN").replace(/\//g, "-") : "-")}
+              {metaField("创建时间", item.createdAt ? formatDateTime(item.createdAt) : "-")}
+              {metaField("更新时间", item.updatedAt ? formatDateTime(item.updatedAt) : "-")}
             </div>
 
             {/* Description */}

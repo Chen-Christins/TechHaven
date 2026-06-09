@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRdNavigate } from "../../hooks/useRdNavigate";
+import { formatDateTime } from "../../utils/utils";
 import { FaClipboardList, FaBug, FaTasks, FaExclamationTriangle } from "react-icons/fa";
 import styles from "./Dashboard.module.css";
 import Loading from "../../components/loading/Loading";
@@ -144,7 +145,7 @@ const Dashboard: React.FC = () => {
                   <td>
                     <AssigneeDisplay name={r.assignee} avatar={r.assigneeAvatar} />
                   </td>
-                  <td>{new Date(r.createdAt).toLocaleDateString("zh-CN").replace(/\//g, "-")}</td>
+                  <td>{formatDateTime(r.createdAt)}</td>
                 </tr>
               ))}
               {recentRequirements.length === 0 && (
@@ -179,6 +180,7 @@ const Dashboard: React.FC = () => {
                 <th>优先级</th>
                 <th>状态</th>
                 <th>负责人</th>
+                <th>创建时间</th>
               </tr>
             </thead>
             <tbody>
@@ -197,11 +199,12 @@ const Dashboard: React.FC = () => {
                   <td>
                     <AssigneeDisplay name={b.assignee} avatar={b.assigneeAvatar} />
                   </td>
+                  <td>{formatDateTime(b.createdAt)}</td>
                 </tr>
               ))}
               {recentBugs.length === 0 && (
                 <tr>
-                  <td colSpan={5} className={styles.emptyCell}>
+                  <td colSpan={6} className={styles.emptyCell}>
                     <div className={styles.emptyCellIcon}>
                       <FaBug />
                     </div>
@@ -246,7 +249,7 @@ const Dashboard: React.FC = () => {
                   <td>
                     <AssigneeDisplay name={t.assignee} avatar={t.assigneeAvatar} />
                   </td>
-                  <td>{t.deadline ? new Date(t.deadline).toLocaleDateString("zh-CN").replace(/\//g, "-") : "-"}</td>
+                  <td>{t.deadline ? formatDateTime(t.deadline) : "-"}</td>
                 </tr>
               ))}
               {recentTasks.length === 0 && (

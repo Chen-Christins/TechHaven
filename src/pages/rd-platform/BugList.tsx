@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRdNavigate } from "../../hooks/useRdNavigate";
+import { formatDateTime } from "../../utils/utils";
 import { encodeId } from "../../utils/hashId";
 import {
   FaPlus,
@@ -368,6 +369,7 @@ const BugList: React.FC = () => {
               <th>负责人</th>
               <th>模块</th>
               <th>创建人</th>
+              <th>创建时间</th>
               <th>操作</th>
             </tr>
           </thead>
@@ -391,6 +393,7 @@ const BugList: React.FC = () => {
                 </td>
                 <td>{b.module || "-"}</td>
                 <td>{b.creator}</td>
+                <td>{formatDateTime(b.createdAt)}</td>
                 <td>
                   <div className={styles.actionButtons}>
                     <button
@@ -416,7 +419,7 @@ const BugList: React.FC = () => {
             ))}
             {bugs.length === 0 && (
               <tr>
-                <td colSpan={8} className={styles.emptyCell}>
+                <td colSpan={9} className={styles.emptyCell}>
                   <div className={styles.emptyCellIcon}>
                     <FaBug />
                   </div>
@@ -533,8 +536,8 @@ const BugList: React.FC = () => {
               {renderField("所属模块", selectedBug.module)}
               {renderField("关联需求", selectedBug.relatedRequirementId)}
               {renderField("运行环境", selectedBug.environment)}
-              {renderField("创建时间", new Date(selectedBug.createdAt).toLocaleString("zh-CN"))}
-              {renderField("更新时间", new Date(selectedBug.updatedAt).toLocaleString("zh-CN"))}
+              {renderField("创建时间", formatDateTime(selectedBug.createdAt))}
+              {renderField("更新时间", formatDateTime(selectedBug.updatedAt))}
             </div>
             <div style={{ marginBottom: selectedBug.stepsToReproduce ? "20px" : "0" }}>
               <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
