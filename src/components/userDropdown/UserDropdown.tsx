@@ -20,9 +20,18 @@ interface UserDropdownProps {
   className?: string;
   /** 覆盖 user.role 展示，用于显示组织内角色 */
   roleOverride?: string;
+  /** 角色悬浮提示（如提示最高角色） */
+  roleTitle?: string;
 }
 
-const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout, showAdminLink = false, className = "", roleOverride }) => {
+const UserDropdown: React.FC<UserDropdownProps> = ({
+  user,
+  onLogout,
+  showAdminLink = false,
+  className = "",
+  roleOverride,
+  roleTitle,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -67,7 +76,11 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout, showAdminLi
         <Avatar src={user.avatar} name={user.name} size={36} className={styles.userAvatar} />
         <div className={styles.userDetails}>
           <div className={styles.userName}>{user.name}</div>
-          {(roleOverride || user.role) && <div className={styles.userRole}>{roleOverride || user.role}</div>}
+          {(roleOverride || user.role) && (
+            <div className={styles.userRole} title={roleTitle}>
+              {roleOverride || user.role}
+            </div>
+          )}
         </div>
         <div className={`${styles.dropdownArrow} ${isOpen ? styles.open : ""}`}>
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">

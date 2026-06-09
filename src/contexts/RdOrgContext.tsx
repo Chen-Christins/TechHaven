@@ -12,6 +12,8 @@ interface RdOrgContextType {
   orgNameMap: Record<string, string>;
   /** 用户在所有组织中的最高角色（1-5），用于前端权限判断 */
   maxOrgRole: number;
+  /** 当前选中组织的角色（选中具体组织时返回该组织角色，全部组织时返回最高角色） */
+  currentOrgRole: number;
   /** 当前选中的组织 ID，空字符串 = 全部组织 */
   selectedOrgId: string;
   setSelectedOrgId: (orgId: string) => void;
@@ -24,6 +26,7 @@ const RdOrgContext = createContext<RdOrgContextType>({
   loading: true,
   orgNameMap: {},
   maxOrgRole: 1,
+  currentOrgRole: 1,
   selectedOrgId: "",
   setSelectedOrgId: () => {},
 });
@@ -78,6 +81,15 @@ export const RdOrgProvider: React.FC<{ children: ReactNode; initialOrgId?: strin
     return Math.max(...orgs.map((o) => o.role));
   }, [orgs, isAdmin]);
 
+  const currentOrgRole = useMemo(() => {
+    if (isAdmin) return 5;
+    // 全部组织 → 返回最高角色
+    if (!selectedOrgId) return maxOrgRole;
+    // 选中具体组织 → 返回该组织下的角色
+    const org = orgs.find((o) => o.orgId === selectedOrgId);
+    return org ? org.role : maxOrgRole;
+  }, [isAdmin, selectedOrgId, orgs, maxOrgRole]);
+
   const orgNameMap = useMemo<Record<string, string>>(() => {
     const map: Record<string, string> = {};
     orgs.forEach((o) => {
@@ -87,7 +99,9 @@ export const RdOrgProvider: React.FC<{ children: ReactNode; initialOrgId?: strin
   }, [orgs]);
 
   return (
-    <RdOrgContext.Provider value={{ orgs, userOrgIds, isAdmin, loading, orgNameMap, maxOrgRole, selectedOrgId, setSelectedOrgId }}>
+    <RdOrgContext.Provider
+      value={{ orgs, userOrgIds, isAdmin, loading, orgNameMap, maxOrgRole, currentOrgRole, selectedOrgId, setSelectedOrgId }}
+    >
       {children}
     </RdOrgContext.Provider>
   );
