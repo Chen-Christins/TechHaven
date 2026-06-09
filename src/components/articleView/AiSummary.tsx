@@ -63,25 +63,23 @@ const AiSummary: React.FC<AiSummaryProps> = ({ articleId }) => {
           <AlertCircle size={14} className={styles.errorIcon} />
           <span>{error}</span>
         </div>
-      ) : isStreaming || isCompleted ? (
+      ) : text ? (
         <div className={styles.content}>
           {text}
           {isStreaming && <span className={styles.cursor} />}
         </div>
+      ) : isStreaming ? (
+        <div className={styles.contentPlaceholder}>AI 正在生成总结...</div>
       ) : (
         <div className={styles.contentPlaceholder}>
           {articleId == null ? "文章数据加载中，请稍候..." : "点击上方按钮，让 AI 帮你总结这篇文章的核心内容"}
         </div>
       )}
 
-      {/* 完成后的底部操作栏 */}
+      {/* 完成后的底部免责声明 */}
       {isCompleted && !error && (
         <div className={styles.footer}>
           <span className={styles.disclaimer}>内容由 AI 生成，仅供参考</span>
-          <button className={styles.regenerateBtn} onClick={handleRegenerate}>
-            <RotateCw size={12} />
-            重新生成
-          </button>
         </div>
       )}
     </div>

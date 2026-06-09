@@ -42,25 +42,18 @@ function useAiSummary(articleId?: string | number) {
     const formData = new URLSearchParams();
     formData.append("article_id", String(articleId));
 
-    console.log("[AI] 请求参数:", { article_id: articleId });
-
     http
       .post<{ summary: string }>("/article/ai-summary", formData.toString(), {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
       })
       .then((res) => {
-        console.log("[AI] 完整响应:", res);
-
         const summary = res.data?.summary || "";
 
         if (!summary) {
-          console.log("[AI] data.summary 为空，data 内容:", res.data);
           setError("AI 未返回总结内容");
           setIsStreaming(false);
           return;
         }
-
-        console.log("[AI] 总结文本:", summary);
 
         fullTextRef.current = summary;
         indexRef.current = 0;
@@ -81,8 +74,6 @@ function useAiSummary(articleId?: string | number) {
         }, 30 + Math.random() * 50);
       })
       .catch((err: any) => {
-        console.log("[AI] 错误:", err);
-        console.log("[AI] 错误详情 — code:", err?.code, "msg:", err?.msg, "message:", err?.message);
         setError(err?.msg || err?.message || "网络错误，请稍后重试");
         setIsStreaming(false);
       });
