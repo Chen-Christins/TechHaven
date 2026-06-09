@@ -389,6 +389,37 @@ export class AuthService {
     const response = await http.get<UserStats>(url);
     return response.data;
   }
+
+  /**
+   * 获取 AI 接口配置
+   */
+  static async getAiConfig(): Promise<AiConfig | null> {
+    const response = await http.get<AiConfig | null>("/user/ai-config");
+    return response.data ?? null;
+  }
+
+  /**
+   * 保存 AI 接口配置
+   */
+  static async saveAiConfig(config: AiConfigParams): Promise<void> {
+    await http.put("/user/ai-config", config);
+  }
+}
+
+export interface AiConfigParams {
+  type: "openai" | "claude";
+  url: string;
+  api_key: string;
+  model?: string;
+  max_tokens?: number;
+}
+
+export interface AiConfig {
+  type: "openai" | "claude";
+  url: string;
+  api_key: string;
+  model: string;
+  max_tokens: number;
 }
 
 export interface UserStats {

@@ -928,10 +928,7 @@ const MyTickets: React.FC = () => {
                       {renderField_("创建人", t.creator)}
                       {renderField_("所属组织", orgNameMap[t.organizationId] || t.organizationId)}
                       {renderField_("关联需求", t.requirementId)}
-                      {renderField_(
-                        "截止日期",
-                        t.deadline ? formatDateTime(t.deadline) : "-",
-                      )}
+                      {renderField_("截止日期", t.deadline ? formatDateTime(t.deadline) : "-")}
                       {renderField_("预估工时", `${t.estimatedHours}h`)}
                       {renderField_("创建时间", t.createdAt ? formatDateTime(t.createdAt) : "-")}
                       {renderField_("更新时间", t.updatedAt ? formatDateTime(t.updatedAt) : "-")}
