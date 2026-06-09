@@ -208,15 +208,18 @@ const RdLayout: React.FC = () => {
   };
 
   const RdHeaderActions: React.FC = () => {
-    const { maxOrgRole, isAdmin, orgs } = useRdOrg();
-    const orgRoleName = orgRoleNames[maxOrgRole] || "";
+    const { orgs, selectedOrgId, currentOrgRole, maxOrgRole, isAdmin } = useRdOrg();
+    const orgRoleName = orgRoleNames[currentOrgRole] || "";
+    const maxRoleName = orgRoleNames[maxOrgRole] || "";
     // 系统管理员在没有组织时，显示"系统管理员"而非"组织管理员"
     const roleOverride = isAdmin && orgs.length === 0 ? "系统管理员" : orgRoleName;
+    // 选中具体组织且非最高角色时，提示用户的最高角色
+    const roleTitle = selectedOrgId && maxOrgRole !== currentOrgRole ? `最高角色: ${maxRoleName}` : undefined;
     return (
       <div className={styles.rdTopBarActions}>
         <ThemeToggle />
         <Notification />
-        <UserDropdown user={user} onLogout={handleLogout} showAdminLink={false} roleOverride={roleOverride} />
+        <UserDropdown user={user} onLogout={handleLogout} showAdminLink={false} roleOverride={roleOverride} roleTitle={roleTitle} />
       </div>
     );
   };
