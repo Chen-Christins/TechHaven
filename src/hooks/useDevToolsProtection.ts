@@ -61,9 +61,19 @@ export function useDevToolsProtection() {
       }
     };
 
-    // 1. 全局禁用文本选择（CSS 层面）
+    // 判断事件目标是否为输入类元素（输入框内允许正常选择/复制）
+    const isInputElement = (target: EventTarget | null): boolean => {
+      if (!target || !(target instanceof HTMLElement)) return false;
+      const tag = target.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || target.isContentEditable;
+    };
+
+    // 1. 全局禁用文本选择（CSS 层面，输入框除外）
     const style = document.createElement("style");
-    style.textContent = `body { -webkit-user-select: none !important; user-select: none !important; }`;
+    style.textContent = `
+      body { -webkit-user-select: none !important; user-select: none !important; }
+      input, textarea, [contenteditable] { -webkit-user-select: text !important; user-select: text !important; }
+    `;
     document.head.appendChild(style);
     cleanups.push(() => style.remove());
 
@@ -81,24 +91,27 @@ export function useDevToolsProtection() {
     document.addEventListener("keydown", handleKeyDown, true);
     cleanups.push(() => document.removeEventListener("keydown", handleKeyDown, true));
 
-    // 3. 阻止右键菜单（屏蔽"检查"和"复制"入口）
+    // 3. 阻止右键菜单（输入框除外）
     const handleContextMenu = (e: MouseEvent) => {
+      if (isInputElement(e.target)) return;
       e.preventDefault();
       e.stopPropagation();
     };
     document.addEventListener("contextmenu", handleContextMenu, true);
     cleanups.push(() => document.removeEventListener("contextmenu", handleContextMenu, true));
 
-    // 4. 阻止文本选择（JS 层面兜底）
+    // 4. 阻止文本选择（输入框除外）
     const handleSelectStart = (e: Event) => {
+      if (isInputElement(e.target)) return;
       e.preventDefault();
       e.stopPropagation();
     };
     document.addEventListener("selectstart", handleSelectStart, true);
     cleanups.push(() => document.removeEventListener("selectstart", handleSelectStart, true));
 
-    // 5. 阻止复制/剪切事件
+    // 5. 阻止复制/剪切事件（输入框除外）
     const handleCopyCut = (e: ClipboardEvent) => {
+      if (isInputElement(e.target)) return;
       e.preventDefault();
       e.clipboardData?.clearData();
     };
