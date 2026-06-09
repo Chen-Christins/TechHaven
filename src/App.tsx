@@ -11,9 +11,11 @@ import { SiteSettingsProvider } from "./contexts/SiteSettingsContext";
 import IdleTimeoutHandler from "./components/sessionTimeout/IdleTimeoutHandler";
 import RouterConfig from "./router/RouterConfig";
 import { usePresenceConnection } from "./hooks/useOnlineCount";
+import { useDevToolsProtection } from "./hooks/useDevToolsProtection";
 
 function AppContent() {
   usePresenceConnection();
+  useDevToolsProtection();
   return (
     <>
       <IdleTimeoutHandler />

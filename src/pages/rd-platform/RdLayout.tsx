@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, Outlet, useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, Outlet, useSearchParams } from "react-router-dom";
+import { useRdNavigate } from "../../hooks/useRdNavigate";
 import { encodeId, decodeId } from "../../utils/hashId";
 import { FaHome, FaBars, FaTimes, FaClipboardList, FaBug, FaTasks, FaTicketAlt, FaLock } from "react-icons/fa";
 import styles from "./RdLayout.module.css";
@@ -21,7 +22,7 @@ interface NavItem {
 }
 
 const RdLayout: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useRdNavigate();
   const [searchParams] = useSearchParams();
   const rawOrg = searchParams.get("org");
   const urlOrgId = rawOrg ? decodeId(rawOrg)?.toString() || "" : "";
@@ -322,15 +323,7 @@ const RdLayout: React.FC = () => {
 
   const breadcrumbs = getBreadcrumbs();
 
-  // 导航时保留 org 参数
-  const navigateWithOrg = (path: string) => {
-    const org = searchParams.get("org");
-    if (org) {
-      navigate(`${path}?org=${org}`);
-    } else {
-      navigate(path);
-    }
-  };
+  // 导航时自动保留 org 参数（由 useRdNavigate hook 处理）
 
   return (
     <div className={styles.rdLayout}>
@@ -343,7 +336,7 @@ const RdLayout: React.FC = () => {
             className={`${styles.rdSidebar} ${sidebarCollapsed ? styles.collapsed : ""} ${mobileMenuOpen ? styles.mobileOpen : ""}`}
           >
             <div className={styles.rdSidebarHeader}>
-              <div onClick={() => navigateWithOrg("/rd")} className={styles.rdLogo}>
+              <div onClick={() => navigate("/rd")} className={styles.rdLogo}>
                 <span className={styles.rdLogoIcon}>⚙</span>
                 <span className={styles.rdLogoText}>研发平台</span>
               </div>
@@ -366,7 +359,7 @@ const RdLayout: React.FC = () => {
                     <div key={item.id} className={styles.rdNavItem}>
                       <div
                         onClick={() => {
-                          navigateWithOrg(item.path);
+                          navigate(item.path);
                           closeMobileMenu();
                         }}
                         className={`${styles.rdNavLink} ${location.pathname === item.path || (item.path !== "/rd" && location.pathname.startsWith(item.path)) ? styles.active : ""}`}
@@ -397,7 +390,7 @@ const RdLayout: React.FC = () => {
                       {index === breadcrumbs.length - 1 ? (
                         <span className={styles.breadcrumbActive}>{crumb.label}</span>
                       ) : (
-                        <div onClick={() => navigateWithOrg(crumb.path)} className={styles.breadcrumbLink}>
+                        <div onClick={() => navigate(crumb.path)} className={styles.breadcrumbLink}>
                           {crumb.label}
                         </div>
                       )}

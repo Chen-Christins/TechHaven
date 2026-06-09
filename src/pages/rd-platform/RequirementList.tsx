@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRdNavigate } from "../../hooks/useRdNavigate";
 import { encodeId } from "../../utils/hashId";
 import {
   FaPlus,
@@ -78,7 +78,7 @@ const emptyForm: FormData = {
 
 // ---- component ----
 const RequirementList: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useRdNavigate();
   const { user } = useAuth();
   const { isAdmin, userOrgIds, orgs, orgNameMap, maxOrgRole, selectedOrgId } = useRdOrg();
   const [requirements, setRequirements] = useState<Requirement[]>([]);
