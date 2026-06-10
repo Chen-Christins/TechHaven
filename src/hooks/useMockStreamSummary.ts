@@ -38,20 +38,23 @@ function useMockStreamSummary() {
     setIsStreaming(true);
     setIsCompleted(false);
 
-    timerRef.current = setInterval(() => {
-      // 随机每次吐出 1~3 个字符
-      const chunkSize = Math.floor(Math.random() * 3) + 1;
-      const nextIndex = Math.min(indexRef.current + chunkSize, MOCK_SUMMARY.length);
+    timerRef.current = setInterval(
+      () => {
+        // 随机每次吐出 1~3 个字符
+        const chunkSize = Math.floor(Math.random() * 3) + 1;
+        const nextIndex = Math.min(indexRef.current + chunkSize, MOCK_SUMMARY.length);
 
-      setText(MOCK_SUMMARY.slice(0, nextIndex));
-      indexRef.current = nextIndex;
+        setText(MOCK_SUMMARY.slice(0, nextIndex));
+        indexRef.current = nextIndex;
 
-      if (nextIndex >= MOCK_SUMMARY.length) {
-        clearTimer();
-        setIsStreaming(false);
-        setIsCompleted(true);
-      }
-    }, 30 + Math.random() * 50); // 30~80ms 随机间隔
+        if (nextIndex >= MOCK_SUMMARY.length) {
+          clearTimer();
+          setIsStreaming(false);
+          setIsCompleted(true);
+        }
+      },
+      30 + Math.random() * 50,
+    ); // 30~80ms 随机间隔
   }, [clearTimer]);
 
   const reset = useCallback(() => {
