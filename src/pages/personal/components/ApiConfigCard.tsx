@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaRobot, FaKey, FaGlobe, FaCogs } from "react-icons/fa";
 import Input from "../../../components/input/Input";
+import CustomSelect from "../../../components/customSelect/CustomSelect";
+import type { SelectOption } from "../../../types/index";
 import { message } from "../../../components/message/Message";
 import { AuthService } from "../../../services/authService";
 import styles from "../PersonalCenter.module.css";
 
 type ApiType = "openai" | "claude";
+
+const PROTOCOL_OPTIONS: SelectOption[] = [
+  { id: "openai", name: "OpenAI 兼容协议", color: "#10a37f" },
+  { id: "claude", name: "Anthropic 兼容协议", color: "#d97706" },
+];
 
 const DEFAULTS: Record<ApiType, { url: string; keyPlaceholder: string; defaultModel: string }> = {
   openai: {
@@ -68,21 +75,13 @@ const ApiConfigCard: React.FC = () => {
   }, []);
 
   const handleTypeChange = (type: ApiType) => {
-    const saved = savedConfigRef.current;
-    // 切回已保存的类型 → 恢复原配置
-    if (saved && saved.type === type) {
-      applyConfig(saved);
-      keyTouchedRef.current = false;
-      return;
-    }
-    // 切到不同类型 → 用默认值
+    const prevDefault = DEFAULTS[apiType].url;
     setApiType(type);
-    setUrl(DEFAULTS[type].url);
-    setModel("");
-    setMaxTokens("");
-    setApiKey("");
-    maskedKeyRef.current = "";
-    keyTouchedRef.current = false;
+    // 如果 URL 还是旧协议的默认地址，自动切到新协议默认地址
+    if (url === prevDefault || url.trim() === "") {
+      setUrl(DEFAULTS[type].url);
+    }
+    // key / model / max_tokens 保持不变，因为用户只有一个配置
   };
 
   const handleSave = async () => {
@@ -109,6 +108,14 @@ const ApiConfigCard: React.FC = () => {
         model: model.trim() || undefined,
         max_tokens: maxTokens.trim() ? Number(maxTokens) : undefined,
       });
+      // 更新本地缓存，防止切走再切回来时丢失刚保存的配置
+      savedConfigRef.current = {
+        type: apiType,
+        url: url.trim(),
+        api_key: keyToSend,
+        model: model.trim(),
+        max_tokens: maxTokens.trim(),
+      };
       if (keyTouchedRef.current) {
         maskedKeyRef.current = apiKey.trim();
       }
@@ -130,40 +137,22 @@ const ApiConfigCard: React.FC = () => {
         <span>AI 接口配置</span>
       </div>
       <div className={styles.editCardBody}>
-        {/* 第一步：接口类型 */}
+        {/* 协议类型 */}
         <div className={styles.editFormGroup}>
-          <label className={styles.editLabel}>接口类型</label>
-          <div style={{ display: "flex", gap: 12 }}>
-            {(["openai", "claude"] as ApiType[]).map((type) => {
-              const active = apiType === type;
-              return (
-                <label
-                  key={type}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "10px 20px",
-                    border: `1px solid ${active ? "var(--primary)" : "var(--border-primary)"}`,
-                    borderRadius: 10,
-                    cursor: "pointer",
-                    backgroundColor: active ? "rgba(59,130,246,0.06)" : "var(--bg-primary)",
-                    fontSize: 14,
-                    fontWeight: active ? 600 : 400,
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="apiType"
-                    checked={active}
-                    onChange={() => handleTypeChange(type)}
-                    style={{ accentColor: "var(--primary)" }}
-                  />
-                  {type === "openai" ? "OpenAI 系列" : "Claude 系列"}
-                </label>
-              );
-            })}
-          </div>
+          <label className={styles.editLabel}>协议类型</label>
+          <CustomSelect
+            name="协议类型"
+            options={PROTOCOL_OPTIONS}
+            value={PROTOCOL_OPTIONS.find((o) => o.id === apiType) || null}
+            onChange={(option) => {
+              if (option) handleTypeChange(option.id as ApiType);
+            }}
+            hideBadge
+            placeholder="请选择协议类型..."
+          />
+          <span className={styles.editHint}>
+            每个用户仅支持配置一套接口，切换协议类型不会清空已填写的内容
+          </span>
         </div>
 
         {/* 第二步：通用配置 */}
