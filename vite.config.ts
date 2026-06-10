@@ -20,6 +20,27 @@ export default defineConfig(({ mode }) => {
         server: {
             host: true,
             proxy: {
+                // SSE 流式端点 — 必须放在通用 /api/v1 规则之前
+                "^/api/v1/article/ai-summary": {
+                    target: apiTarget,
+                    changeOrigin: true,
+                    secure: false,
+                    timeout: 120000,
+                    configure: (proxy) => {
+                        proxy.on("error", (err, _req, _res) => {
+                            console.log(timeStamp(), "SSE代理错误:", err.message);
+                        });
+                        proxy.on("proxyReq", (_proxyReq, req) => {
+                            console.log(timeStamp(), "SSE代理请求:", req.method, req.url);
+                        });
+                        proxy.on("proxyRes", (proxyRes, req) => {
+                            console.log(timeStamp(), "SSE代理响应:", proxyRes.statusCode, req.url,
+                                "| CT:", proxyRes.headers["content-type"],
+                                "| TE:", proxyRes.headers["transfer-encoding"]);
+                            // 不改动 socket/stream，让 http-proxy 自动 pipe
+                        });
+                    },
+                },
                 "^/api/v1": {
                     target: apiTarget,
                     changeOrigin: true,
