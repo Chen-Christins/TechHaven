@@ -77,13 +77,10 @@ jobs:
             RELEASES_DIR="${{ steps.deploy.outputs.releases_dir }}"
             VERSION="${{ steps.deploy.outputs.version }}"
 
-            # 首次部署迁移：如果 DEPLOY_PATH 是真实目录而非软链接，先迁移
+            # 首次部署：如果 DEPLOY_PATH 是真实目录（非软链接），清掉腾位置
             if [ -d "$DEPLOY_PATH" ] && [ ! -L "$DEPLOY_PATH" ]; then
-              echo "⚠️  First deployment detected — migrating real directory to symlink..."
-              BACKUP="$RELEASES_DIR/backup-$(date +%Y%m%d-%H%M%S)"
-              mkdir -p "$(dirname "$BACKUP")"
-              mv "$DEPLOY_PATH" "$BACKUP"
-              echo "   Backed up to $BACKUP"
+              echo "⚠️  First deployment — removing real directory to create symlink..."
+              rm -rf "$DEPLOY_PATH"
             fi
 
             # 原子切换软链接（Unix 上 ln -sfn 是原子操作，毫秒级完成，零 404）
