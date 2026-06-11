@@ -112,6 +112,7 @@ const Notification: React.FC = () => {
     });
   }, []);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const wsNotified = useRef(false); // 仅实时 WS 通知时显示浏览器 tab 角标
 
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
@@ -182,6 +183,9 @@ const Notification: React.FC = () => {
         setNotifications((prev) => [newNotification, ...prev]);
         incrementUnreadCount();
       });
+      // 实时 WS 通知 → 浏览器 tab 角标 + 铃铛角标
+      wsNotified.current = true;
+      setFaviconBadge(getUnreadCount());
     };
 
     // 注册指定 type="notification" 的处理器
@@ -225,13 +229,23 @@ const Notification: React.FC = () => {
     return unsub;
   }, [fetchNotifications]);
 
-  // Update browser tab favicon badge when unread count changes
+  // 浏览器 tab 角标：仅实时 WS 推送时显示，初始加载/API 拉取不显示
   useEffect(() => {
-    setFaviconBadge(unreadCount);
-    return () => {
-      setFaviconBadge(0); // restore original favicon on unmount
-    };
+    if (wsNotified.current && unreadCount > 0) {
+      setFaviconBadge(unreadCount);
+    }
+    if (unreadCount <= 0) {
+      wsNotified.current = false;
+      setFaviconBadge(0);
+    }
   }, [unreadCount]);
+
+  // 组件卸载时清除 favicon 角标
+  useEffect(() => {
+    return () => {
+      setFaviconBadge(0);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
