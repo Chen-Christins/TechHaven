@@ -2,7 +2,7 @@ name: Build and Deploy Plathform
 
 on:
   push:
-    branches: ["master", "feature/ci"]
+    branches: ["master"]
   workflow_dispatch:
 
 jobs:
