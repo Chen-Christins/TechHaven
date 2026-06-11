@@ -29,7 +29,17 @@ jobs:
           test -d ./dist
           test "$(ls -A ./dist)"
 
-      - name: Prepare remote directory
+      - name: Generate version tag and compute paths
+        id: deploy
+        run: |
+          VERSION="dist-$(date +%Y%m%d-%H%M%S)"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          DEPLOY_PATH="${{ secrets.DEPLOY_PATH }}"
+          RELEASES_DIR="$(dirname "$DEPLOY_PATH")/releases"
+          echo "releases_dir=$RELEASES_DIR" >> $GITHUB_OUTPUT
+          echo "target=$RELEASES_DIR/$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Prepare versioned directory on remote
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -37,15 +47,14 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           port: ${{ secrets.DEPLOY_PORT || 22 }}
           script: |
-            DEPLOY_PATH=${{ secrets.DEPLOY_PATH }}
-            if [ -z "$DEPLOY_PATH" ] || [ "$DEPLOY_PATH" = "/" ]; then
-              echo "DEPLOY_PATH is empty or root; aborting" >&2
+            TARGET="${{ steps.deploy.outputs.target }}"
+            if [ -z "$TARGET" ] || [ "$TARGET" = "/" ]; then
+              echo "Target path is empty or root; aborting" >&2
               exit 1
             fi
-            mkdir -p "$DEPLOY_PATH"
-            find "$DEPLOY_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+            mkdir -p "$TARGET"
 
-      - name: Deploy over SCP
+      - name: Deploy to versioned directory over SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -54,4 +63,40 @@ jobs:
           port: ${{ secrets.DEPLOY_PORT || 22 }}
           source: "./dist/*"
           strip_components: 1
-          target: ${{ secrets.DEPLOY_PATH }}
+          target: ${{ steps.deploy.outputs.target }}
+
+      - name: Switch symlink, reload, and cleanup
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            DEPLOY_PATH="${{ secrets.DEPLOY_PATH }}"
+            RELEASES_DIR="${{ steps.deploy.outputs.releases_dir }}"
+            VERSION="${{ steps.deploy.outputs.version }}"
+
+            # 首次部署：如果 DEPLOY_PATH 是真实目录（非软链接），清掉腾位置
+            if [ -d "$DEPLOY_PATH" ] && [ ! -L "$DEPLOY_PATH" ]; then
+              echo "⚠️  First deployment — removing real directory to create symlink..."
+              rm -rf "$DEPLOY_PATH"
+            fi
+
+            # 原子切换软链接（Unix 上 ln -sfn 是原子操作，毫秒级完成，零 404）
+            ln -sfn "$RELEASES_DIR/$VERSION" "$DEPLOY_PATH"
+            echo "🔗 Symlink switched → $VERSION"
+
+            # 只保留最近 5 个版本，删除旧版本
+            cd "$RELEASES_DIR" 2>/dev/null || exit 0
+            REMOVED=$(ls -1d dist-* 2>/dev/null | sort | head -n -5)
+            if [ -n "$REMOVED" ]; then
+              echo "$REMOVED" | xargs rm -rf
+              echo "🧹 Cleaned old versions:"
+              echo "$REMOVED" | sed 's/^/      /'
+            fi
+
+            echo "✅ Deployed: $VERSION"
+            echo "📁 Active: $(readlink -f "$DEPLOY_PATH")"
+            echo "📦 Kept versions:"
+            ls -1d dist-* 2>/dev/null | sed 's/^/   /' || echo "   (none)"
