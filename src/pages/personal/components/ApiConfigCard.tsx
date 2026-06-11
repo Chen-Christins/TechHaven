@@ -150,9 +150,7 @@ const ApiConfigCard: React.FC = () => {
             hideBadge
             placeholder="请选择协议类型..."
           />
-          <span className={styles.editHint}>
-            每个用户仅支持配置一套接口，切换协议类型不会清空已填写的内容
-          </span>
+          <span className={styles.editHint}>每个用户仅支持配置一套接口，切换协议类型不会清空已填写的内容</span>
         </div>
 
         {/* 第二步：通用配置 */}

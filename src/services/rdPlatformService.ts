@@ -201,7 +201,7 @@ export class RdPlatformService {
 
   static async deleteRequirement(id: string, orgId?: string): Promise<boolean> {
     const res = await http.post<any>(`${BASE}/requirements/delete`, { id: Number(id), org_id: Number(orgId) || 0 });
-    return res.code === 200 || (res as any).success;
+    return res.errno === 0 || (res as any).success;
   }
 
   // -- Bugs -----------------------------------------------------------------
@@ -273,7 +273,7 @@ export class RdPlatformService {
 
   static async deleteBug(id: string, orgId?: string): Promise<boolean> {
     const res = await http.post<any>(`${BASE}/bugs/delete`, { id: Number(id), org_id: Number(orgId) || 0 });
-    return res.code === 200 || (res as any).success;
+    return res.errno === 0 || (res as any).success;
   }
 
   // -- Tasks ----------------------------------------------------------------
@@ -341,7 +341,7 @@ export class RdPlatformService {
 
   static async deleteTask(id: string, orgId?: string): Promise<boolean> {
     const res = await http.post<any>(`${BASE}/tasks/delete`, { id: Number(id), org_id: Number(orgId) || 0 });
-    return res.code === 200 || (res as any).success;
+    return res.errno === 0 || (res as any).success;
   }
 
   // -- Organizations (R&D platform) ----------------------------------------

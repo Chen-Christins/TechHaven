@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
           const userResponse = await AuthService.getUserInfo();
 
-          if (userResponse.data && userResponse.code === "200") {
+          if (userResponse.data && userResponse.errno === 0) {
             const userData = userResponse.data;
             userData.role = ROLE_MAP[userData.role] || "用户";
             setUser(userData);
@@ -125,7 +125,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       const response = await AuthService.login(authId, password);
 
-      if (response.code === "200") {
+      if (response.errno === 0) {
         let userToken = extractToken(response);
 
         if (!userToken) userToken = getTokenFromCookie();
@@ -143,7 +143,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
           const userResponse = await AuthService.getUserInfo();
 
-          if (userResponse.data && userResponse.code === "200") {
+          if (userResponse.data && userResponse.errno === 0) {
             const updatedUser = userResponse.data;
             updatedUser.role = ROLE_MAP[updatedUser.role] || "用户";
             setUser(updatedUser);
