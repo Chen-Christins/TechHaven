@@ -1,10 +1,12 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse, AxiosError } from "axios";
+import { getErrorMsg } from "./errorCodes";
 
 /**
  * HTTP请求响应接口
  */
 export interface HttpResponse<T = any> {
   code: number | string;
+  errno?: number;
   message?: string;
   msg?: string;
   data: T;
@@ -161,13 +163,15 @@ export interface HttpRequestConfig extends AxiosRequestConfig {
  */
 export class HttpError extends Error {
   code: number;
+  errno?: number;
   config: HttpRequestConfig;
   msg: string;
 
-  constructor(message: string, code: number, config: HttpRequestConfig) {
+  constructor(message: string, code: number, config: HttpRequestConfig, errno?: number) {
     super(message);
     this.name = "HttpError";
     this.code = code;
+    this.errno = errno;
     this.config = config;
     this.msg = message; // 添加 msg 属性，与 message 保持一致
   }
@@ -284,121 +288,26 @@ class HttpClient {
         const { data } = response;
         // 检查HTTP状态码
         if (response.status === 200) {
-          // HTTP 200 成功，进一步检查业务状态码
-          if (data && typeof data === "object" && "code" in data) {
-            // 处理字符串和数字类型的成功状态码
-            if (data.code === 200 || data.code === "200" || data.success || data.code === 1 || data.code === "1") {
+          // HTTP 200 成功，进一步检查业务 errno
+          if (data && typeof data === "object" && "errno" in data) {
+            if (data.errno === 0 || data.success) {
               return response;
             } else {
-              // 业务错误，需要根据业务状态码进行错误映射
-              const businessCode = Number(data.code);
-              const errorMsg = (data as any)?.msg || (data as any)?.message || "请求失败";
-              let mappedMessage = errorMsg;
-              // // console.log('⚠️ 业务错误响应:', {
-              //     businessCode,
-              //     errorMsg,
-              //     url: response.config.url,
-              //     data: response.data
-              // });
-              // 根据业务状态码映射错误信息
-              switch (businessCode) {
-                case 400:
-                  if (errorMsg.includes("param account passwd empty")) {
-                    mappedMessage = "账号和密码不能为空";
-                  } else if (errorMsg.includes("no param")) {
-                    mappedMessage = "缺少必要参数";
-                  }
-                  break;
-                case 401:
-                  if (errorMsg.includes("email exists")) {
-                    mappedMessage = "邮箱已被注册";
-                  } else if (errorMsg.includes("account exists")) {
-                    mappedMessage = "账号已被注册";
-                  } else {
-                    mappedMessage = "未授权，请重新登录";
-                    this.handleUnauthorized();
-                  }
-                  break;
-                case 402:
-                  if (errorMsg.includes("invalid auth_id")) {
-                    mappedMessage = "账号或邮箱格式不正确";
-                  } else {
-                    mappedMessage = "账号或邮箱格式不正确";
-                  }
-                  break;
-                case 403:
-                  if (errorMsg.includes("invalid auth_id")) {
-                    mappedMessage = "账号或邮箱不存在";
-                  } else if (errorMsg.includes("invalid auth_code")) {
-                    mappedMessage = "验证码无效或已过期";
-                  } else if (errorMsg.includes("invalid old password")) {
-                    mappedMessage = "当前密码错误，请重新输入";
-                  } else if (errorMsg.includes("Access Denied")) {
-                    mappedMessage = "权限不足，拒绝访问";
-                  } else {
-                    mappedMessage = "账号状态异常";
-                  }
-                  break;
-                case 404:
-                  if (errorMsg.includes("not found")) {
-                    mappedMessage = "请求资源不存在";
-                  } else if (errorMsg.includes("auth_id not exists")) {
-                    mappedMessage = "账号或邮箱不存在";
-                  } else if (errorMsg.includes("user not found")) {
-                    mappedMessage = "用户不存在";
-                  } else if (errorMsg.includes("file not found")) {
-                    mappedMessage = "请求资源不存在";
-                  } else if (errorMsg.includes("resource not found")) {
-                    mappedMessage = "请求资源不存在";
-                  } else if (errorMsg.includes("invalid id")) {
-                    mappedMessage = "请求资源不存在";
-                  }
-                  break;
-                case 405:
-                  if (errorMsg.includes("invalid passwd")) {
-                    mappedMessage = "密码错误，请重新输入";
-                  }
-                  break;
-                case 406:
-                  if (errorMsg.includes("invalid state")) {
-                    mappedMessage = "账号状态异常，请联系管理员";
-                  }
-                  break;
-                case 410:
-                  if (errorMsg.includes("not login")) {
-                    mappedMessage = "未登录，请重新登录";
-                    this.handleUnauthorized();
-                  } else if (errorMsg.includes("account invalid state")) {
-                    mappedMessage = "账号状态异常，请联系管理员";
-                  } else if (errorMsg.includes("already login")) {
-                    mappedMessage = "账号已在其他设备登录";
-                  } else if (errorMsg.includes("invalid passwd")) {
-                    mappedMessage = "密码错误，请重新输入";
-                  } else if (errorMsg.includes("invalid state")) {
-                    mappedMessage = "账号状态异常，请联系管理员";
-                  } else {
-                    mappedMessage = "账号状态异常";
-                  }
-                  break;
-                case 500:
-                  if (errorMsg.includes("not login")) {
-                    mappedMessage = "未登录，请重新登录";
-                  } else {
-                    mappedMessage = "服务器内部错误，请联系管理员";
-                  }
-                  break;
-                case 501:
-                  mappedMessage = "服务器内部错误，请联系管理员";
-                  break;
-                default:
-                  // 保持原始错误信息
-                  break;
+              // 业务错误，使用后端返回的 msg 作为后备，优先查错误码表
+              const errno = data.errno as number;
+              const fallbackMsg = (data as any)?.msg || (data as any)?.message || "请求失败";
+              const mappedMessage = getErrorMsg(errno, fallbackMsg);
+
+              // 特殊 errno 处理
+              if (errno === 1101) {
+                // 未登录
+                this.handleUnauthorized();
               }
 
-              throw new HttpError(mappedMessage, businessCode, response.config as HttpRequestConfig);
+              throw new HttpError(mappedMessage, 200, response.config as HttpRequestConfig, errno);
             }
           } else {
-            // 没有标准业务状态码，但HTTP状态码是200，认为成功
+            // 没有 errno 字段的旧格式响应，认为成功
             return response;
           }
         }
@@ -426,11 +335,13 @@ class HttpClient {
         // 对响应错误做点什么
         let message = "网络错误";
         let code = 500;
+        let responseErrno: number | undefined;
 
         if (error.response) {
           // 服务器返回了响应，但状态码不在 2xx 范围内
           const { status, data } = error.response;
           code = status;
+          responseErrno = (data as any)?.errno;
 
           switch (status) {
             case 400:
@@ -535,7 +446,7 @@ class HttpClient {
           message = error.message || "请求配置错误";
         }
 
-        const httpError = new HttpError(message, code, error.config as HttpRequestConfig);
+        const httpError = new HttpError(message, code, error.config as HttpRequestConfig, responseErrno);
         return Promise.reject(httpError);
       },
     );

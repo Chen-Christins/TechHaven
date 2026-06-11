@@ -74,7 +74,7 @@ export interface PublishArticleParams {
  * 文章发布响应类型
  */
 export interface PublishArticleResponse {
-  code: number | string;
+  errno: number;
   msg: string;
 }
 
@@ -276,7 +276,7 @@ export class ArticleService {
       },
     });
     return {
-      code: response.code,
+      errno: response.errno ?? -1,
       msg: response.message ?? response.msg ?? "",
     };
   }

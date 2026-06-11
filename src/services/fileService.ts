@@ -352,7 +352,7 @@ export class FileService {
       headers,
       timeout: 30000, // 30秒超时
     });
-    if (result.code !== 200 && result.code !== "200") {
+    if (result.errno !== 0) {
       throw new Error(result.message || "分块上传失败");
     }
   }
