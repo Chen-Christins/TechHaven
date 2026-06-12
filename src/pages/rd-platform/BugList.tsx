@@ -510,7 +510,7 @@ const BugList: React.FC = () => {
       >
         {modalMode === "view" && selectedBug ? (
           /* ---- detail view ---- */
-          <div>
+          <div data-allow-copy="true">
             <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
               <span className={`${styles.badge} ${styles[`severity_${selectedBug.severity}`]}`}>
                 {severityText[selectedBug.severity]}
