@@ -816,7 +816,7 @@ const MyTickets: React.FC = () => {
         }
       >
         {detail && !editMode && (
-          <>
+          <div data-allow-copy="true">
             {/* Requirement detail */}
             {detail.type === "req" &&
               (() => {
@@ -942,7 +942,7 @@ const MyTickets: React.FC = () => {
                   </div>
                 );
               })()}
-          </>
+          </div>
         )}
         {detail && editMode && renderEditForm()}
       </Modal>

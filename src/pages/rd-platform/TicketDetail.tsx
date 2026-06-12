@@ -476,7 +476,7 @@ const TicketDetail: React.FC = () => {
           </div>
         ) : (
           /* ======== View Mode ======== */
-          <>
+          <div data-allow-copy="true">
             {/* Status / Priority / Severity badges */}
             <div className={styles.badgeStrip}>
               {entityType === "requirement" && (
@@ -559,7 +559,7 @@ const TicketDetail: React.FC = () => {
                 <div className={styles.sectionBody}>{(item as Bug).stepsToReproduce}</div>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>

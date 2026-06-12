@@ -480,7 +480,7 @@ const RequirementList: React.FC = () => {
       >
         {modalMode === "view" && selectedReq ? (
           /* ---- detail view ---- */
-          <div>
+          <div data-allow-copy="true">
             <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
               <span className={`${styles.badge} ${styles[`priority_${selectedReq.priority}`]}`}>
                 {priorityText[selectedReq.priority]}
