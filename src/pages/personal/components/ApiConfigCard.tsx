@@ -7,11 +7,12 @@ import { message } from "../../../components/message/Message";
 import { AuthService } from "../../../services/authService";
 import styles from "../PersonalCenter.module.css";
 
-type ApiType = "openai" | "claude";
+type ApiType = "openai" | "claude" | "glm";
 
 const PROTOCOL_OPTIONS: SelectOption[] = [
   { id: "openai", name: "OpenAI 兼容协议", color: "#10a37f" },
   { id: "claude", name: "Anthropic 兼容协议", color: "#d97706" },
+  { id: "glm", name: "智谱 GLM 兼容协议", color: "#4a6cf7" },
 ];
 
 const DEFAULTS: Record<ApiType, { url: string; keyPlaceholder: string; defaultModel: string }> = {
@@ -24,6 +25,11 @@ const DEFAULTS: Record<ApiType, { url: string; keyPlaceholder: string; defaultMo
     url: "https://api.anthropic.com/v1/messages",
     keyPlaceholder: "sk-ant-...",
     defaultModel: "claude-sonnet-4-6",
+  },
+  glm: {
+    url: "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+    keyPlaceholder: "xxx.xxxxxxxxxxxxxxxx",
+    defaultModel: "glm-4.7-flash",
   },
 };
 
@@ -56,7 +62,7 @@ const ApiConfigCard: React.FC = () => {
     AuthService.getAiConfig()
       .then((config) => {
         if (config) {
-          const t: ApiType = config.type === "claude" ? "claude" : "openai";
+          const t: ApiType = config.type === "claude" || config.type === "glm" ? config.type : "openai";
           const saved = {
             type: t,
             url: config.url || DEFAULTS[t].url,
@@ -161,7 +167,11 @@ const ApiConfigCard: React.FC = () => {
           </label>
           <Input value={url} onChange={(v) => setUrl(v)} placeholder={current.url} size="large" />
           <span className={styles.editHint}>
-            {apiType === "openai" ? "支持 OpenAI 兼容接口，可填写中转/代理地址" : "支持 Anthropic 兼容接口，可填写中转/代理地址"}
+            {apiType === "openai"
+              ? "支持 OpenAI 兼容接口，可填写中转/代理地址"
+              : apiType === "claude"
+                ? "支持 Anthropic 兼容接口，可填写中转/代理地址"
+                : "支持智谱 GLM 兼容接口，可填写中转/代理地址"}
           </span>
         </div>
 
@@ -199,7 +209,9 @@ const ApiConfigCard: React.FC = () => {
           <label className={styles.editLabel}>
             最大生成长度 (max_tokens)
             {apiType === "claude" && <span style={{ color: "#ef4444", marginLeft: 4 }}>*必填</span>}
-            {apiType === "openai" && <span style={{ color: "var(--text-tertiary)", marginLeft: 4 }}>(选填)</span>}
+            {(apiType === "openai" || apiType === "glm") && (
+              <span style={{ color: "var(--text-tertiary)", marginLeft: 4 }}>(选填)</span>
+            )}
           </label>
           <Input
             type="number"
@@ -209,7 +221,7 @@ const ApiConfigCard: React.FC = () => {
             size="large"
           />
           <span className={styles.editHint}>
-            {apiType === "claude" ? "Claude API 要求必须指定 max_tokens，建议不超过 4096" : "OpenAI 可选，留空使用模型默认值"}
+            {apiType === "claude" ? "Claude API 要求必须指定 max_tokens，建议不超过 4096" : "可选，留空使用模型默认值"}
           </span>
         </div>
 
