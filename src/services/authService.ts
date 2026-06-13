@@ -407,7 +407,7 @@ export class AuthService {
 }
 
 export interface AiConfigParams {
-  type: "openai" | "claude";
+  type: "openai" | "claude" | "glm";
   url: string;
   api_key: string;
   model?: string;
@@ -415,7 +415,7 @@ export interface AiConfigParams {
 }
 
 export interface AiConfig {
-  type: "openai" | "claude";
+  type: "openai" | "claude" | "glm";
   url: string;
   api_key: string;
   model: string;
