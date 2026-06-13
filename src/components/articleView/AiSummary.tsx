@@ -1,4 +1,5 @@
 import React from "react";
+import ReactMarkdown from "react-markdown";
 import { Sparkles, RotateCw, AlertCircle } from "lucide-react";
 import styles from "./AiSummary.module.css";
 import useAiSummary from "../../hooks/useAiSummary";
@@ -65,7 +66,7 @@ const AiSummary: React.FC<AiSummaryProps> = ({ articleId }) => {
         </div>
       ) : text ? (
         <div className={styles.content}>
-          {text}
+          <ReactMarkdown>{text}</ReactMarkdown>
           {isStreaming && <span className={styles.cursor} />}
         </div>
       ) : isStreaming ? (
