@@ -5,7 +5,7 @@ import styles from "./Button.module.css"; // 导入 CSS Module 样式
 interface ButtonProps {
   children: ReactNode;
   color?: "primary" | "secondary" | "success" | "warning" | "error" | "info";
-  variant?: "solid" | "outline" | "ghost";
+  variant?: "solid" | "outline" | "ghost" | "text" | "light";
   size?: "small" | "medium" | "large";
   disabled?: boolean;
   loading?: boolean;
