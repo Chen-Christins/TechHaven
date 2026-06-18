@@ -706,11 +706,14 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   // 复制代码功能
   const handleCopyCode = useCallback((code: string) => {
     if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(code).then(() => {
-        message.success("代码已复制");
-      }).catch(() => {
-        message.error("复制失败");
-      });
+      navigator.clipboard
+        .writeText(code)
+        .then(() => {
+          message.success("代码已复制");
+        })
+        .catch(() => {
+          message.error("复制失败");
+        });
     } else {
       // 降级方案：非 HTTPS / 旧浏览器
       const textarea = document.createElement("textarea");
