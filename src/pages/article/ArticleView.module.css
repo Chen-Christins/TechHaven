@@ -64,7 +64,7 @@
 }
 
 .sidebar {
-  width: 260px;
+  width: 280px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -73,6 +73,7 @@
   top: 80px;
   align-self: flex-start;
   max-height: calc(100vh - 96px);
+  overflow: hidden;
 }
 
 /* 作者卡片（侧边栏） */
@@ -182,6 +183,10 @@
 }
 
 .toc {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   background: var(--card-bg);
   border-radius: 12px;
   padding: 18px;
@@ -199,6 +204,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .tocTitle::before {
@@ -210,11 +216,30 @@
 }
 
 .tocList {
+  flex: 1;
+  overflow-y: auto;
   list-style: none;
   padding: 0;
   margin: 0;
-  max-height: calc(100vh - 200px);
-  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-primary) transparent;
+}
+
+.tocList::-webkit-scrollbar {
+  width: 5px;
+}
+
+.tocList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tocList::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 6px;
+}
+
+.tocList::-webkit-scrollbar-thumb:hover {
+  background: var(--border-secondary);
 }
 
 .tocItem {
@@ -483,11 +508,12 @@
 }
 
 .codeHeader {
-  background: #1e293b;
-  color: #94a3b8;
+  background: #e2e8f0;
+  color: #475569;
   padding: 8px 16px;
   font-size: 12px;
   border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid #cbd5e1;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -501,9 +527,9 @@
 }
 
 .copyButton {
-  background: rgba(255, 255, 255, 0.1);
+  background: #e2e8f0;
   border: none;
-  color: #94a3b8;
+  color: #475569;
   padding: 4px 10px;
   border-radius: 4px;
   cursor: pointer;
@@ -511,6 +537,22 @@
 }
 
 .copyButton:hover {
+  background: #cbd5e1;
+  color: #334155;
+}
+
+[data-theme="dark"] .codeHeader {
+  background: #0f172a;
+  color: #94a3b8;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .copyButton {
+  background: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .copyButton:hover {
   background: rgba(255, 255, 255, 0.2);
   color: #e2e8f0;
 }
@@ -1024,14 +1066,18 @@
     width: 100%;
     position: static;
     max-height: none;
+    overflow: visible;
   }
 
   .toc {
-    max-height: none;
+    flex: none;
+    min-height: auto;
   }
 
   .tocList {
+    flex: none;
     max-height: 300px;
+    overflow-y: auto;
   }
 
   .article {
