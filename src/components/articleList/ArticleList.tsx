@@ -7,6 +7,7 @@ import { encodeId } from "../../utils/hashId";
 import { formatToChinaTime } from "../../utils/utils";
 import type { ArticleListItem } from "../../types/index";
 import Skeleton from "../skeleton/Skeleton";
+import Button from "../button/Button";
 
 const STATE_MAP: Record<number, string> = {
   1: "reviewing",
@@ -209,15 +210,17 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
                   </span>
                 </div>
                 <h3 className={styles.articleTitle}>{article.title || "无标题"}</h3>
-                <p className={styles.articleSummary}>{article.summary + "..." || "无摘要"}</p>
-                <div
-                  className={styles.readMoreBtn}
+                <p className={styles.articleSummary}>{article.summary ? article.summary.replace(/�/g, "") + "..." : "无摘要"}</p>
+                <Button
+                  variant="light"
+                  color="secondary"
+                  size="small"
                   onClick={() => {
                     navigate(`/article/${encodeId(article.id)}`);
                   }}
                 >
                   阅读全文 →
-                </div>
+                </Button>
               </div>
             );
           })

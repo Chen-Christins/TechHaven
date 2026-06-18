@@ -24,56 +24,88 @@
 }
 
 .articleItem {
-  padding: 1.5rem;
+  padding: 1.75rem 2rem;
   background-color: var(--card-bg);
-  border-radius: 8px;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  position: relative;
 }
 
 .articleItem:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);
+  border-color: var(--border-primary);
+}
+
+.articleItem::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--border-light);
+}
+
+.articleItem:hover::before {
+  background: linear-gradient(180deg, var(--primary), var(--accent, #8b5cf6));
+  top: 12%;
+  bottom: 12%;
 }
 
 .articleTitle {
-  font-size: 1.4rem;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 0.8rem;
+  margin: 0 0 0.6rem 0;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.articleTitle:hover {
+  color: var(--primary);
 }
 
 .articleMeta {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem 1.5rem;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  color: var(--text-tertiary);
+  font-size: 0.82rem;
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .articleMeta span {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   white-space: nowrap;
+}
+
+.articleMeta svg {
+  opacity: 0.5;
 }
 
 .articleSummary {
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.75;
   margin-bottom: 1rem;
+  font-size: 0.92rem;
+}
+
+.articleActions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .readMoreBtn {
-  display: inline-block;
-  color: var(--link-primary);
-  text-decoration: none;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.readMoreBtn:hover {
-  color: var(--link-hover);
+  padding: 8px 14px;
+  font-size: 0.88rem;
 }
 
 /* 分页样式 */
@@ -139,12 +171,14 @@
 }
 
 .typeBadge {
-  display: inline-block;
-  background: rgba(37, 99, 235, 0.1);
-  color: var(--primary-color);
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  background: rgba(59, 130, 246, 0.08);
+  color: var(--primary);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -167,11 +201,11 @@
 /* 响应式分页 */
 @media (max-width: 768px) {
   .articleItem {
-    padding: 1rem;
+    padding: 1.25rem;
   }
 
   .articleTitle {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
   }
 
   .articleMeta {
@@ -217,11 +251,15 @@
 
 @media (max-width: 480px) {
   .articleItem {
-    padding: 0.8rem;
+    padding: 1rem;
+  }
+
+  .articleItem::before {
+    display: none;
   }
 
   .articleTitle {
-    font-size: 1.05rem;
+    font-size: 1rem;
   }
 
   .articleMeta {

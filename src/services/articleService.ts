@@ -403,7 +403,7 @@ export class ArticleService {
     const response = await http.get<{ year: number; month: number; articleDays: number[] }>(
       `/article/calendar?year=${year}&month=${month}`,
     );
-	console.log("Calendar response:", response);
+    console.log("Calendar response:", response);
     return response.data.articleDays ?? [];
   }
 

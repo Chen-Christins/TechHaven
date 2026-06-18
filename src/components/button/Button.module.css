@@ -230,6 +230,141 @@
   background-color: var(--info-bg-hover);
 }
 
+/* ========== 文本变体 (Text) — 无背景无边框，适合卡片内轻量操作 ========== */
+.btn__text {
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.btn__text.btn__primary {
+  color: var(--primary);
+}
+
+.btn__text.btn__primary:hover:not(.btn--disabled):not(.btn--loading) {
+  color: var(--primary-hover);
+}
+
+.btn__text.btn__secondary {
+  color: var(--text-secondary);
+}
+
+.btn__text.btn__secondary:hover:not(.btn--disabled):not(.btn--loading) {
+  color: var(--primary);
+}
+
+.btn__text.btn__success {
+  color: var(--success);
+}
+
+.btn__text.btn__success:hover:not(.btn--disabled):not(.btn--loading) {
+  color: var(--success-hover);
+}
+
+.btn__text.btn__warning {
+  color: var(--warning);
+}
+
+.btn__text.btn__warning:hover:not(.btn--disabled):not(.btn--loading) {
+  color: var(--warning-hover);
+}
+
+.btn__text.btn__error {
+  color: var(--error);
+}
+
+.btn__text.btn__error:hover:not(.btn--disabled):not(.btn--loading) {
+  color: var(--error-hover);
+}
+
+.btn__text.btn__info {
+  color: var(--info);
+}
+
+.btn__text.btn__info:hover:not(.btn--disabled):not(.btn--loading) {
+  color: var(--info-hover);
+}
+
+.btn--disabled.btn__text {
+  color: var(--disabled);
+  background-color: transparent;
+}
+
+/* ========== 轻量描边变体 (Light) — 细边框，适合卡片内操作 ========== */
+.btn__light {
+  background-color: transparent;
+  border: 1px solid;
+}
+
+.btn__light.btn__primary {
+  color: var(--primary);
+  border-color: var(--border-primary);
+}
+
+.btn__light.btn__primary:hover:not(.btn--disabled):not(.btn--loading) {
+  color: var(--primary);
+  border-color: var(--primary);
+  background-color: rgba(59, 130, 246, 0.04);
+}
+
+.btn__light.btn__secondary {
+  color: var(--text-secondary);
+  border-color: var(--border-light);
+}
+
+.btn__light.btn__secondary:hover:not(.btn--disabled):not(.btn--loading) {
+  color: var(--primary);
+  border-color: var(--primary);
+  background-color: rgba(59, 130, 246, 0.04);
+}
+
+.btn__light.btn__success {
+  color: var(--success);
+  border-color: var(--border-primary);
+}
+
+.btn__light.btn__success:hover:not(.btn--disabled):not(.btn--loading) {
+  border-color: var(--success);
+  background-color: var(--success-bg-hover, rgba(34, 197, 94, 0.06));
+}
+
+.btn__light.btn__warning {
+  color: var(--warning);
+  border-color: var(--border-primary);
+}
+
+.btn__light.btn__warning:hover:not(.btn--disabled):not(.btn--loading) {
+  border-color: var(--warning);
+  background-color: var(--warning-bg-hover, rgba(234, 179, 8, 0.06));
+}
+
+.btn__light.btn__error {
+  color: var(--error);
+  border-color: var(--border-primary);
+}
+
+.btn__light.btn__error:hover:not(.btn--disabled):not(.btn--loading) {
+  border-color: var(--error);
+  background-color: var(--error-bg-hover, rgba(239, 68, 68, 0.06));
+}
+
+.btn__light.btn__info {
+  color: var(--info);
+  border-color: var(--border-primary);
+}
+
+.btn__light.btn__info:hover:not(.btn--disabled):not(.btn--loading) {
+  border-color: var(--info);
+  background-color: var(--info-bg-hover, rgba(6, 182, 212, 0.06));
+}
+
+.btn--disabled.btn__light {
+  color: var(--disabled);
+  border-color: var(--border-light);
+  background-color: transparent;
+}
+
 /* ========== 状态样式 ========== */
 /* 禁用状态 */
 .btn--disabled {
