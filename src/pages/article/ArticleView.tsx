@@ -929,6 +929,8 @@ const ArticleView: React.FC<ArticleViewProps> = ({
               remarkPlugins={[remarkGfm, remarkMath]}
               rehypePlugins={[rehypeKatex]}
               components={{
+                // 去掉 react-markdown 自动包裹的 <pre>，避免与自定义 codeBlockWrapper 产生双层背景色
+                pre: ({ children }) => <>{children}</>,
                 // 暂时移除自定义 code 组件，使用默认处理
                 // code: CodeBlock,
                 p: ParagraphComponent,
