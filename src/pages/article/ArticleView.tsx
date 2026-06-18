@@ -705,9 +705,28 @@ const ArticleView: React.FC<ArticleViewProps> = ({
 
   // 复制代码功能
   const handleCopyCode = useCallback((code: string) => {
-    navigator.clipboard.writeText(code).then(() => {
-      // console.log('代码已复制到剪贴板');
-    });
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(code).then(() => {
+        message.success("代码已复制");
+      }).catch(() => {
+        message.error("复制失败");
+      });
+    } else {
+      // 降级方案：非 HTTPS / 旧浏览器
+      const textarea = document.createElement("textarea");
+      textarea.value = code;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand("copy");
+        message.success("代码已复制");
+      } catch {
+        message.error("复制失败");
+      }
+      document.body.removeChild(textarea);
+    }
   }, []);
 
   // 创建标题组件
