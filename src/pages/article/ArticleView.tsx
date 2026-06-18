@@ -942,7 +942,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
                 h6: createHeadingComponent(6),
                 // 只对代码块进行自定义处理
                 code: ({ className, children }) => {
-                  const codeContent = String(children || "");
+                  const codeContent = String(children || "").replace(/\n$/, "");
                   const language = className?.replace("language-", "") || "";
 
                   // 如果没有语言标识，认为是行内代码
