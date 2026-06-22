@@ -29,8 +29,8 @@ import Modal from "../modal/Modal";
 // import DatePicker from '../datePicker/DatePicker';
 // import dayjs from 'dayjs';
 import "dayjs/locale/zh-cn";
-// import locale from 'antd/es/date-picker/locale/zh_CN';
-// import CustomSelect from '../../components/customSelect/CustomSelect';
+import OrganizationRepos from "./OrganizationRepos";
+import Loading from "../loading/Loading";
 
 interface OrganizationTabsProps {
   org: OrganizationDetail | null;
@@ -38,6 +38,7 @@ interface OrganizationTabsProps {
   currentUser?: any;
   showPendingRequests: boolean;
   showTasks: boolean;
+  showRepos: boolean;
   members: Member[];
   membersTotal: number;
   page: number;
@@ -57,7 +58,7 @@ interface OrganizationTabsProps {
   selectedMember: Member | null;
   selectedRole: number;
   getAvailableRoleOptions: () => any[];
-  onTabChange: (showPending: boolean, showTasks: boolean) => void;
+  onTabChange: (showPending: boolean, showTasks: boolean, showRepos?: boolean) => void;
   onRefreshMembers: () => void;
   onRefreshPending: () => void;
   onPageChange: (newPage: number) => void;
@@ -93,9 +94,11 @@ const statusClassMap = {
 };
 
 const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
+  org,
   userRole,
   showPendingRequests,
   showTasks,
+  showRepos,
   members,
   membersTotal,
   page,
@@ -142,30 +145,31 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
   return (
     <div className={styles.tableContainer}>
       {/* Tab切换按钮 */}
-      {userRole === "leader" || userRole === "admin" ? (
-        <div className={styles.tabsHeader}>
-          <button
-            className={`${styles.tabButton} ${!showPendingRequests && !showTasks ? styles.activeTab : ""}`}
-            onClick={() => onTabChange(false, false)}
-          >
-            成员列表
-          </button>
+      <div className={styles.tabsHeader}>
+        <button
+          className={`${styles.tabButton} ${!showPendingRequests && !showTasks && !showRepos ? styles.activeTab : ""}`}
+          onClick={() => onTabChange(false, false, false)}
+        >
+          成员列表
+        </button>
+        {(userRole === "leader" || userRole === "admin") && (
           <button
             className={`${styles.tabButton} ${showPendingRequests ? styles.activeTab : ""}`}
             onClick={() => onTabChange(true, false)}
           >
             待处理请求
           </button>
-          <button className={`${styles.tabButton} ${showTasks ? styles.activeTab : ""}`} onClick={() => onTabChange(false, true)}>
-            任务列表
-          </button>
-        </div>
-      ) : (
-        <></>
-      )}
+        )}
+        <button className={`${styles.tabButton} ${showTasks ? styles.activeTab : ""}`} onClick={() => onTabChange(false, true)}>
+          任务列表
+        </button>
+        <button className={`${styles.tabButton} ${showRepos ? styles.activeTab : ""}`} onClick={() => onTabChange(false, false, true)}>
+          仓库列表
+        </button>
+      </div>
 
       {/* 成员列表视图 */}
-      {!showPendingRequests && !showTasks && (
+      {!showPendingRequests && !showTasks && !showRepos && (
         <>
           {!(userRole === "leader" || userRole === "admin") ? (
             <div className={styles.tableHeader}>
@@ -326,8 +330,8 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
             </div>
           </div>
           {pendingRequestsLoading ? (
-            <div style={{ padding: "20px", textAlign: "center" }}>
-              <p>正在加载待处理请求...</p>
+            <div style={{ padding: "40px 0" }}>
+              <Loading />
             </div>
           ) : (
             <table className={styles.usersTable}>
@@ -444,7 +448,9 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
           </div>
 
           {tasksLoading ? (
-            <p>正在加载任务列表...</p>
+            <div style={{ padding: "40px 0" }}>
+              <Loading />
+            </div>
           ) : tasks.length === 0 ? (
             <div className={styles.emptyState}>
               <FaTasks className={styles.emptyIcon} />
@@ -633,6 +639,9 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
           )}
         </>
       )}
+
+      {/* 仓库列表视图 */}
+      {showRepos && <OrganizationRepos orgId={org?.id || ""} canManage={userRole === "leader" || userRole === "admin"} />}
 
       {/* Role Selection Modal */}
       <Modal

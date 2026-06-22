@@ -285,6 +285,24 @@
   color: #dc2626;
 }
 
+/* 代码审查状态 */
+.status_pending {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+.status_reviewing {
+  background-color: #fdf2f8;
+  color: #c026d3;
+}
+.status_approved {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+.status_rejected {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
 /* Pagination */
 .pagination {
   display: flex;

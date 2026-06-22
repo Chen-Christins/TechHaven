@@ -91,6 +91,38 @@ export const OrgPermission = {
   canManageMembers: (role: number) => role >= OrgRole.ORG_ADMIN,
 };
 
+/** 代码审查 - CodeReview */
+export interface CodeReview {
+  id: string;
+  title: string;
+  description: string;
+  status: "pending" | "reviewing" | "approved" | "rejected" | "closed";
+  priority: "high" | "medium" | "low";
+  author: string;
+  authorAvatar?: string;
+  reviewer: string;
+  reviewerAvatar?: string;
+  organizationId: string;
+  repository: string;
+  branch: string;
+  commitHash: string;
+  filesChanged: number;
+  linesAdded: number;
+  linesDeleted: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** 代码审查筛选参数 */
+export interface CodeReviewFilters {
+  search: string;
+  status: string;
+  priority: string;
+  page: number;
+  pageSize: number;
+  organizationIds?: string[];
+}
+
 /** 研发平台统计数据 */
 export interface RdStats {
   totalRequirements: number;
@@ -99,6 +131,8 @@ export interface RdStats {
   unresolvedBugs: number;
   totalTasks: number;
   overdueTasks: number;
+  totalReviews: number;
+  pendingReviews: number;
 }
 
 /** 通用分页响应 */

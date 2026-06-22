@@ -326,8 +326,17 @@ export class AuthService {
    * @param bio 座右铭 (可选)
    * @param website 个人网站 (可选)
    * @param oldPasswd 当前密码 (改密码时必传)
+   * @param github GitHub 主页 (可选)
    */
-  static async updateUserProfile(name?: string, passwd?: string, bio?: string, website?: string, oldPasswd?: string, avatar?: string) {
+  static async updateUserProfile(
+    name?: string,
+    passwd?: string,
+    bio?: string,
+    website?: string,
+    oldPasswd?: string,
+    avatar?: string,
+    github?: string,
+  ) {
     const formData = new URLSearchParams();
     if (name) formData.append("name", name);
     if (passwd) formData.append("passwd", passwd);
@@ -335,6 +344,7 @@ export class AuthService {
     if (website !== undefined) formData.append("website", website);
     if (oldPasswd) formData.append("old_passwd", oldPasswd);
     if (avatar) formData.append("avatar", avatar);
+    if (github !== undefined) formData.append("github", github);
 
     return http.post("/user/update", formData.toString(), {
       headers: {

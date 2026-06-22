@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { FaCamera, FaUser, FaLock, FaSave, FaQuoteRight, FaGlobe, FaLink } from "react-icons/fa";
+import { FaCamera, FaUser, FaLock, FaSave, FaQuoteRight, FaGlobe, FaLink, FaGithub } from "react-icons/fa";
 import { useAuth } from "../../../contexts/AuthContext";
 import { AuthService } from "../../../services/authService";
 import { FileService } from "../../../services/fileService";
@@ -15,6 +15,7 @@ const EditProfileTab: React.FC = () => {
   const [name, setName] = useState(user?.name || "");
   const [motto, setMotto] = useState(user?.bio || "");
   const [website, setWebsite] = useState(user?.website || "");
+  const [github, setGithub] = useState(user?.github || "");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -94,7 +95,7 @@ const EditProfileTab: React.FC = () => {
 
     setSaving(true);
     try {
-      await AuthService.updateUserProfile(name.trim(), undefined, motto.trim(), website.trim(), undefined, avatarUrl);
+      await AuthService.updateUserProfile(name.trim(), undefined, motto.trim(), website.trim(), undefined, avatarUrl, github.trim());
       message.success("个人资料已更新");
     } catch (err: any) {
       message.error(err?.message || "保存失败");
@@ -227,6 +228,19 @@ const EditProfileTab: React.FC = () => {
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder={user?.website || "https://example.com"}
+                />
+              </div>
+              <div className={styles.editFormGroup}>
+                <label className={styles.editLabel}>
+                  <FaGithub size={12} style={{ marginRight: 4 }} />
+                  GitHub 主页
+                </label>
+                <input
+                  type="url"
+                  className={styles.editInput}
+                  value={github}
+                  onChange={(e) => setGithub(e.target.value)}
+                  placeholder={user?.github || "https://github.com/yourname"}
                 />
               </div>
             </div>

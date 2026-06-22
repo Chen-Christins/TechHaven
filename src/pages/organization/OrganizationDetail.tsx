@@ -13,6 +13,7 @@ import message from "../../components/message/Message";
 import { confirm } from "../../components/confirm/Confirm";
 import OrganizationInfo from "../../components/organization/OrganizationInfo";
 import OrganizationTabs from "../../components/organization/OrganizationTabs";
+import { mockRepos } from "../../components/organization/OrganizationRepos";
 import type { Member, OrganizationDetail as OrganizationDetailType, MemberStats, Task } from "../../components/organization/types";
 import { FaUser, FaUserShield, FaCrown, FaUserCheck, FaCode } from "react-icons/fa";
 import Input from "../../components/input/Input";
@@ -116,10 +117,20 @@ const OrganizationDetail: React.FC = () => {
   const [allowedTypes, setAllowedTypes] = useState<string[]>([]);
   // 任务相关状态
   const [showTasks, setShowTasks] = useState(false);
+  const [showRepos, setShowRepos] = useState(false);
+  const [repoCount, setRepoCount] = useState(0);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [tasksLoading, setTasksLoading] = useState(false);
   const [tasksPage, setTasksPage] = useState(1);
   const [tasksTotal, setTasksTotal] = useState(0);
+
+  // Mock: 获取仓库总数（后端就绪后替换为 API）
+  useEffect(() => {
+    // TODO: 替换为 OrganizationService.getRepoCount(id)
+    setTimeout(() => {
+      setRepoCount(mockRepos.length);
+    }, 400);
+  }, [id]);
 
   // Determine if current user is admin/leader of the organization
   // Role thresholds: 5=组织管理员→leader, 4=研发主管→admin, 1-3=member, 0/undefined=guest
@@ -235,11 +246,11 @@ const OrganizationDetail: React.FC = () => {
   // 成员列表
   useEffect(() => {
     if (!id || !currentUser) return;
-    // 只有在成员列表标签页（非待处理请求）才加载成员
-    if (!showPendingRequests && !showTasks) {
+    // 只有在成员列表标签页才加载成员
+    if (!showPendingRequests && !showTasks && !showRepos) {
       fetchMembersList(page);
     }
-  }, [id, currentUser, org?.id, page, refreshTrigger, showPendingRequests, showTasks, fetchMembersList]);
+  }, [id, currentUser, org?.id, page, refreshTrigger, showPendingRequests, showTasks, showRepos, fetchMembersList]);
 
   // 待处理请求
   useEffect(() => {
@@ -835,7 +846,7 @@ const OrganizationDetail: React.FC = () => {
             <div className={styles.detailCard}>
               {org && (
                 <>
-                  <OrganizationInfo org={org} stats={stats} onJoin={handleJoin} />
+                  <OrganizationInfo org={org} stats={stats} repoCount={repoCount} onJoin={handleJoin} />
 
                   <OrganizationTabs
                     org={org}
@@ -843,6 +854,7 @@ const OrganizationDetail: React.FC = () => {
                     currentUser={currentUser}
                     showPendingRequests={showPendingRequests}
                     showTasks={showTasks}
+                    showRepos={showRepos}
                     members={org?.members || []}
                     membersTotal={membersTotal}
                     page={page}
@@ -861,9 +873,10 @@ const OrganizationDetail: React.FC = () => {
                     selectedMember={selectedMember}
                     selectedRole={selectedRole}
                     getAvailableRoleOptions={getAvailableRoleOptions}
-                    onTabChange={(showPending, showTasks) => {
+                    onTabChange={(showPending, showTasks, showRepo) => {
                       setShowPendingRequests(showPending);
                       setShowTasks(showTasks);
+                      setShowRepos(showRepo ?? false);
                     }}
                     onRefreshMembers={() => setRefreshTrigger((prev) => prev + 1)}
                     onRefreshPending={() => setPendingRequestsRefreshTrigger((prev) => prev + 1)}
