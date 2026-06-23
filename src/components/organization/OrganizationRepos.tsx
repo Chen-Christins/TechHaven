@@ -5,6 +5,7 @@ import Input from "../input/Input";
 import CustomSelect from "../customSelect/CustomSelect";
 import message from "../message/Message";
 import { confirm } from "../confirm/Confirm";
+import OrganizationService from "../../services/organizationService";
 import styles from "../../pages/organization/OrganizationDetail.module.css";
 
 // ---- types ----
@@ -43,95 +44,44 @@ const languageOptions = Object.entries(languageColors).map(([name, color]) => ({
   color,
 }));
 
-// ---- mock 数据（后端就绪后替换为 API 调用） ----
-export const mockRepos: Repo[] = [
-  {
-    id: "1",
-    name: "frontend-web",
-    description: "前端主站项目，基于 React + TypeScript + Vite 构建，包含文章系统、研发平台、个人中心等模块。",
-    url: "https://github.com/org/frontend-web",
-    language: "TypeScript",
-    languageColor: languageColors["TypeScript"] || "#6c757d",
-    stars: 128,
-    updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-    organizationId: "1",
-  },
-  {
-    id: "2",
-    name: "backend-api",
-    description: "核心 API 服务，基于 Go + Gin 框架，提供 RESTful 接口、认证鉴权、限流、日志等基础能力。",
-    url: "https://github.com/org/backend-api",
-    language: "Go",
-    languageColor: languageColors["Go"] || "#6c757d",
-    stars: 96,
-    updatedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
-    organizationId: "1",
-  },
-  {
-    id: "3",
-    name: "admin-dashboard",
-    description: "管理后台面板，基于 React + Ant Design，提供用户管理、内容审核、数据统计等功能。",
-    url: "https://github.com/org/admin-dashboard",
-    language: "TypeScript",
-    languageColor: languageColors["TypeScript"] || "#6c757d",
-    stars: 54,
-    updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-    organizationId: "1",
-  },
-  {
-    id: "4",
-    name: "shared-utils",
-    description: "公共工具库，包含日期处理、加密解密、数据校验、HTTP 客户端封装等通用模块。",
-    url: "https://github.com/org/shared-utils",
-    language: "TypeScript",
-    languageColor: languageColors["TypeScript"] || "#6c757d",
-    stars: 32,
-    updatedAt: new Date(Date.now() - 15 * 86400000).toISOString(),
-    organizationId: "1",
-  },
-  {
-    id: "5",
-    name: "deploy-scripts",
-    description: "CI/CD 部署脚本与 Docker 编排，支持多环境（dev/staging/prod）一键部署与回滚。",
-    url: "https://github.com/org/deploy-scripts",
-    language: "Shell",
-    languageColor: languageColors["Shell"] || "#6c757d",
-    stars: 18,
-    updatedAt: new Date(Date.now() - 20 * 86400000).toISOString(),
-    organizationId: "1",
-  },
-  {
-    id: "6",
-    name: "mobile-app",
-    description: "移动端跨平台应用，基于 React Native，支持 iOS 和 Android，提供文章浏览与消息推送。",
-    url: "https://github.com/org/mobile-app",
-    language: "TypeScript",
-    languageColor: languageColors["TypeScript"] || "#6c757d",
-    stars: 45,
-    updatedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-    organizationId: "1",
-  },
-];
-
 // ---- component ----
 interface Props {
   orgId: string;
   canManage: boolean;
+  onChange?: (delta: number) => void;
 }
 
-const OrganizationRepos: React.FC<Props> = ({ orgId, canManage }) => {
+const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
   const [repos, setRepos] = useState<Repo[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [form, setForm] = useState({ name: "", description: "", url: "", language: "TypeScript" });
 
   useEffect(() => {
-    // TODO: 后端就绪后替换为真实 API 调用
-    setLoading(true);
-    setTimeout(() => {
-      setRepos(mockRepos);
-      setLoading(false);
-    }, 400);
+    const fetchRepos = async () => {
+      setLoading(true);
+      try {
+        const res = await OrganizationService.getRepos({ org_id: orgId });
+        setRepos(
+          (res.list || []).map((item: any) => ({
+            id: String(item.id),
+            name: item.name || "",
+            description: item.description || "",
+            url: item.url || "",
+            language: item.language || "",
+            languageColor: languageColors[item.language] || "#6c757d",
+            stars: item.stars_count ?? 0,
+            updatedAt: item.updated_at || "",
+            organizationId: String(item.org_id ?? ""),
+          })),
+        );
+      } catch (err: any) {
+        message.error(err?.message || "获取仓库列表失败");
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (orgId) fetchRepos();
   }, [orgId]);
 
   const formatTimeAgo = (isoStr: string): string => {
@@ -144,7 +94,7 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage }) => {
     return `${Math.floor(months / 12)} 年前`;
   };
 
-  const handleAddRepo = () => {
+  const handleAddRepo = async () => {
     if (!form.name.trim()) {
       message.warn("请输入仓库名称");
       return;
@@ -153,21 +103,33 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage }) => {
       message.warn("请输入仓库地址");
       return;
     }
-    const newRepo: Repo = {
-      id: String(Date.now()),
-      name: form.name.trim(),
-      description: form.description.trim(),
-      url: form.url.trim(),
-      language: form.language,
-      languageColor: languageColors[form.language] || "#6c757d",
-      stars: 0,
-      updatedAt: new Date().toISOString(),
-      organizationId: orgId,
-    };
-    setRepos((prev) => [newRepo, ...prev]);
-    setForm({ name: "", description: "", url: "", language: "TypeScript" });
-    setModalVisible(false);
-    message.success("仓库添加成功");
+    try {
+      const res = await OrganizationService.addRepo({
+        org_id: orgId,
+        name: form.name.trim(),
+        url: form.url.trim(),
+        language: form.language,
+        description: form.description.trim(),
+      });
+      const newRepo: Repo = {
+        id: String(res.id),
+        name: form.name.trim(),
+        description: form.description.trim(),
+        url: form.url.trim(),
+        language: form.language,
+        languageColor: languageColors[form.language] || "#6c757d",
+        stars: 0,
+        updatedAt: new Date().toISOString(),
+        organizationId: orgId,
+      };
+      setRepos((prev) => [newRepo, ...prev]);
+      setForm({ name: "", description: "", url: "", language: "TypeScript" });
+      setModalVisible(false);
+      message.success("仓库添加成功");
+      onChange?.(1);
+    } catch {
+      message.error("添加仓库失败");
+    }
   };
 
   const handleDeleteRepo = async (e: React.MouseEvent, repo: Repo) => {
@@ -183,8 +145,14 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage }) => {
       confirmText: "删除",
       cancelText: "取消",
       onConfirm: async () => {
-        setRepos((prev) => prev.filter((r) => r.id !== repo.id));
-        message.success("仓库已删除");
+        try {
+          await OrganizationService.deleteRepo({ id: repo.id, org_id: orgId });
+          setRepos((prev) => prev.filter((r) => r.id !== repo.id));
+          message.success("仓库已删除");
+          onChange?.(-1);
+        } catch {
+          message.error("删除仓库失败");
+        }
       },
     });
   };
@@ -198,8 +166,12 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage }) => {
         <div className={styles.repoGrid}>
           {[1, 2, 3].map((i) => (
             <div key={i} className={styles.repoCard} style={{ opacity: 0.6 }}>
-              <div style={{ height: "20px", width: "60%", background: "var(--bg-secondary)", borderRadius: "4px", marginBottom: "12px" }} />
-              <div style={{ height: "14px", width: "90%", background: "var(--bg-secondary)", borderRadius: "4px", marginBottom: "8px" }} />
+              <div
+                style={{ height: "20px", width: "60%", background: "var(--bg-secondary)", borderRadius: "4px", marginBottom: "12px" }}
+              />
+              <div
+                style={{ height: "14px", width: "90%", background: "var(--bg-secondary)", borderRadius: "4px", marginBottom: "8px" }}
+              />
               <div style={{ height: "14px", width: "70%", background: "var(--bg-secondary)", borderRadius: "4px" }} />
             </div>
           ))}
@@ -226,21 +198,13 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage }) => {
       ) : (
         <div className={styles.repoGrid}>
           {repos.map((repo) => (
-            <div
-              key={repo.id}
-              className={styles.repoCard}
-              onClick={() => window.open(repo.url, "_blank", "noopener,noreferrer")}
-            >
+            <div key={repo.id} className={styles.repoCard} onClick={() => window.open(repo.url, "_blank", "noopener,noreferrer")}>
               <div className={styles.repoCardHeader}>
                 <FaGithub className={styles.repoIcon} />
                 <span className={styles.repoName}>{repo.name}</span>
                 <FaExternalLinkAlt className={styles.repoExternalIcon} />
                 {canManage && (
-                  <button
-                    className={styles.repoDeleteBtn}
-                    title="删除仓库"
-                    onClick={(e) => handleDeleteRepo(e, repo)}
-                  >
+                  <button className={styles.repoDeleteBtn} title="删除仓库" onClick={(e) => handleDeleteRepo(e, repo)}>
                     <FaTrash size={12} />
                   </button>
                 )}

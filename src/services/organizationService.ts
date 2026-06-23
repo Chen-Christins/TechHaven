@@ -485,6 +485,90 @@ export class OrganizationService {
     const response = await http.get<GetApplyListResponse>(url);
     return response.data;
   }
+
+  // ---------------------------------------------------------------------------
+  // 组织仓库
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 获取组织仓库列表
+   */
+  static async getRepos(params: { org_id: string; page?: number; page_size?: number }): Promise<{
+    list: Array<{
+      id: number | string;
+      org_id: number | string;
+      name: string;
+      description: string;
+      url: string;
+      language: string;
+      stars_count: number;
+      updated_at: string;
+      created_at: string;
+    }>;
+    total: number;
+  }> {
+    const { org_id, page = 1, page_size = 20 } = params;
+    const url = `/organization/repos?org_id=${org_id}&page=${page}&page_size=${page_size}`;
+    const response = await http.get<any>(url);
+    return response.data;
+  }
+
+  /**
+   * 添加仓库
+   */
+  static async addRepo(params: {
+    org_id: string;
+    name: string;
+    url: string;
+    language?: string;
+    description?: string;
+  }): Promise<{ id: number | string }> {
+    const formData = new URLSearchParams();
+    formData.append("org_id", params.org_id);
+    formData.append("name", params.name);
+    formData.append("url", params.url);
+    if (params.language) formData.append("language", params.language);
+    if (params.description) formData.append("description", params.description);
+
+    const response = await http.post<{ id: number | string }>("/organization/repos/add", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+    return response.data;
+  }
+
+  /**
+   * 删除仓库
+   */
+  static async deleteRepo(params: { id: string; org_id: string }): Promise<void> {
+    const formData = new URLSearchParams();
+    formData.append("id", params.id);
+    formData.append("org_id", params.org_id);
+
+    await http.post("/organization/repos/delete", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  }
+
+  /**
+   * 获取仓库统计
+   */
+  static async getRepoStats(orgId: string): Promise<{ total_repos: number }> {
+    const response = await http.get<{ total_repos: number }>(`/organization/repos/stats?org_id=${orgId}`);
+    return response.data;
+  }
+
+  /**
+   * 获取组织成员统计
+   */
+  static async getStats(orgId: string): Promise<{
+    total_members: number;
+    active_members: number;
+    org_admin_count: number;
+    regular_count: number;
+  }> {
+    const response = await http.get<any>(`/organization/stats?id=${orgId}`);
+    return response.data;
+  }
 }
 
 export default OrganizationService;

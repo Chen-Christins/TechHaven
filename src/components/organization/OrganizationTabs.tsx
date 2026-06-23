@@ -81,6 +81,7 @@ interface OrganizationTabsProps {
   canManageMember: (member: Member) => boolean;
   canSetRole: (member: Member) => boolean;
   canManageTask: () => boolean;
+  onReposChange?: (delta: number) => void;
 }
 
 const PAGE_SIZE = 15;
@@ -95,6 +96,7 @@ const statusClassMap = {
 
 const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
   org,
+  currentUser,
   userRole,
   showPendingRequests,
   showTasks,
@@ -141,6 +143,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
   canManageMember,
   canSetRole,
   canManageTask,
+  onReposChange,
 }) => {
   return (
     <div className={styles.tableContainer}>
@@ -152,7 +155,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
         >
           成员列表
         </button>
-        {(userRole === "leader" || userRole === "admin") && (
+        {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
           <button
             className={`${styles.tabButton} ${showPendingRequests ? styles.activeTab : ""}`}
             onClick={() => onTabChange(true, false)}
@@ -160,18 +163,22 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
             待处理请求
           </button>
         )}
-        <button className={`${styles.tabButton} ${showTasks ? styles.activeTab : ""}`} onClick={() => onTabChange(false, true)}>
-          任务列表
-        </button>
-        <button className={`${styles.tabButton} ${showRepos ? styles.activeTab : ""}`} onClick={() => onTabChange(false, false, true)}>
-          仓库列表
-        </button>
+        {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+          <button className={`${styles.tabButton} ${showTasks ? styles.activeTab : ""}`} onClick={() => onTabChange(false, true)}>
+            任务列表
+          </button>
+        )}
+        {userRole !== "guest" && (
+          <button className={`${styles.tabButton} ${showRepos ? styles.activeTab : ""}`} onClick={() => onTabChange(false, false, true)}>
+            仓库列表
+          </button>
+        )}
       </div>
 
       {/* 成员列表视图 */}
       {!showPendingRequests && !showTasks && !showRepos && (
         <>
-          {!(userRole === "leader" || userRole === "admin") ? (
+          {!(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") ? (
             <div className={styles.tableHeader}>
               <h3 className={styles.tableTitle}>成员列表</h3>
               <div className={styles.tableActions}>
@@ -188,6 +195,11 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
               </div>
             </div>
           ) : null}
+          {isRefreshing && (!members || members.length === 0) ? (
+            <div style={{ padding: "40px 0" }}>
+              <Loading />
+            </div>
+          ) : (
           <table className={styles.usersTable}>
             <thead>
               <tr>
@@ -265,20 +277,18 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan={5}
-                    style={{
-                      textAlign: "center",
-                      padding: "40px",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    暂无成员
+                  <td colSpan={5} style={{ padding: 0 }}>
+                    <div className={styles.emptyState}>
+                      <FaUser className={styles.emptyIcon} />
+                      <h3 className={styles.emptyTitle}>暂无成员</h3>
+                      <p className={styles.emptySubtext}>该组织还没有成员加入</p>
+                    </div>
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+          )}
           {/* 分页区块 */}
           {membersTotal > 0 && (
             <div className={styles.pagination}>
@@ -312,7 +322,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
       )}
 
       {/* 待处理请求视图 */}
-      {showPendingRequests && (userRole === "leader" || userRole === "admin") && (
+      {showPendingRequests && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
         <>
           <div className={styles.tableHeader}>
             <h3 className={styles.tableTitle}>待处理请求</h3>
@@ -378,15 +388,12 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                   ))
                 ) : (
                   <tr>
-                    <td
-                      colSpan={3}
-                      style={{
-                        textAlign: "center",
-                        padding: "40px",
-                        color: "var(--text-secondary)",
-                      }}
-                    >
-                      暂无待处理请求
+                    <td colSpan={3} style={{ padding: 0 }}>
+                      <div className={styles.emptyState}>
+                        <FaHourglassHalf className={styles.emptyIcon} />
+                        <h3 className={styles.emptyTitle}>暂无待处理请求</h3>
+                        <p className={styles.emptySubtext}>所有申请已处理完毕</p>
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -431,7 +438,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
       )}
 
       {/* 任务列表视图 */}
-      {showTasks && (
+      {showTasks && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
         <>
           <div className={styles.tableHeader}>
             <h3 className={styles.tableTitle}>任务列表</h3>
@@ -439,7 +446,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
               <button className={styles.refreshButton} onClick={() => onRefreshTasks()} title="刷新任务列表">
                 <FaSync />
               </button>
-              {(userRole === "leader" || userRole === "admin") && (
+              {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
                 <button className={styles.createButton} onClick={onCreateTask}>
                   <FaPlus /> 创建任务
                 </button>
@@ -456,7 +463,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
               <FaTasks className={styles.emptyIcon} />
               <h3 className={styles.emptyTitle}>暂无任务</h3>
               <p className={styles.emptySubtext}>
-                {userRole === "leader" || userRole === "admin" ? '点击"创建任务"按钮来创建第一个任务' : "当前组织还没有发布任何任务"}
+                {userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员" ? '点击"创建任务"按钮来创建第一个任务' : "当前组织还没有发布任何任务"}
               </p>
             </div>
           ) : (
@@ -588,15 +595,11 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                   ))
                 ) : (
                   <tr>
-                    <td
-                      colSpan={5}
-                      style={{
-                        textAlign: "center",
-                        padding: "40px",
-                        color: "var(--text-secondary)",
-                      }}
-                    >
-                      暂无任务
+                    <td colSpan={5} style={{ padding: 0 }}>
+                      <div className={styles.emptyState}>
+                        <FaTasks className={styles.emptyIcon} />
+                        <h3 className={styles.emptyTitle}>暂无任务</h3>
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -641,7 +644,13 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
       )}
 
       {/* 仓库列表视图 */}
-      {showRepos && <OrganizationRepos orgId={org?.id || ""} canManage={userRole === "leader" || userRole === "admin"} />}
+      {showRepos && userRole !== "guest" && (
+        <OrganizationRepos
+          orgId={org?.id || ""}
+          canManage={userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员"}
+          onChange={onReposChange}
+        />
+      )}
 
       {/* Role Selection Modal */}
       <Modal

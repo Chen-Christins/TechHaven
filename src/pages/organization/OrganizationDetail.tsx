@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { decodeId } from "../../utils/hashId";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
@@ -13,7 +13,6 @@ import message from "../../components/message/Message";
 import { confirm } from "../../components/confirm/Confirm";
 import OrganizationInfo from "../../components/organization/OrganizationInfo";
 import OrganizationTabs from "../../components/organization/OrganizationTabs";
-import { mockRepos } from "../../components/organization/OrganizationRepos";
 import type { Member, OrganizationDetail as OrganizationDetailType, MemberStats, Task } from "../../components/organization/types";
 import { FaUser, FaUserShield, FaCrown, FaUserCheck, FaCode } from "react-icons/fa";
 import Input from "../../components/input/Input";
@@ -72,6 +71,8 @@ const TASKS_PAGE_SIZE = 15; // 任务列表每页显示的条数
 const OrganizationDetail: React.FC = () => {
   const { id: encodedId } = useParams<{ id: string }>();
   const id = encodedId ? decodeId(encodedId) : null;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "members";
   const { user: currentUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [org, setOrg] = useState<OrganizationDetailType | null>(null);
@@ -85,7 +86,7 @@ const OrganizationDetail: React.FC = () => {
     regularMembers: 0,
   });
   const [userRole, setUserRole] = useState<"leader" | "admin" | "member" | "guest" | null>(null);
-  const [showPendingRequests, setShowPendingRequests] = useState(false);
+  const [showPendingRequests, setShowPendingRequests] = useState(activeTab === "pending");
   const [pendingRequests, setPendingRequests] = useState<Member[]>([]);
   const [pendingRequestsLoading, setPendingRequestsLoading] = useState(false);
   const [pendingRequestsPage, setPendingRequestsPage] = useState(1);
@@ -116,21 +117,28 @@ const OrganizationDetail: React.FC = () => {
   const [allowedTypesInput, setAllowedTypesInput] = useState("");
   const [allowedTypes, setAllowedTypes] = useState<string[]>([]);
   // 任务相关状态
-  const [showTasks, setShowTasks] = useState(false);
-  const [showRepos, setShowRepos] = useState(false);
+  const [showTasks, setShowTasks] = useState(activeTab === "tasks");
+  const [showRepos, setShowRepos] = useState(activeTab === "repos");
   const [repoCount, setRepoCount] = useState(0);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [tasksLoading, setTasksLoading] = useState(false);
   const [tasksPage, setTasksPage] = useState(1);
   const [tasksTotal, setTasksTotal] = useState(0);
 
-  // Mock: 获取仓库总数（后端就绪后替换为 API）
-  useEffect(() => {
-    // TODO: 替换为 OrganizationService.getRepoCount(id)
-    setTimeout(() => {
-      setRepoCount(mockRepos.length);
-    }, 400);
+  // 获取仓库总数
+  const fetchRepoStats = useCallback(async () => {
+    if (!id) return;
+    try {
+      const res = await OrganizationService.getRepoStats(String(id));
+      setRepoCount(res.total_repos ?? 0);
+    } catch {
+      // 失败保留旧值，不重置为 0
+    }
   }, [id]);
+
+  useEffect(() => {
+    fetchRepoStats();
+  }, [fetchRepoStats]);
 
   // Determine if current user is admin/leader of the organization
   // Role thresholds: 5=组织管理员→leader, 4=研发主管→admin, 1-3=member, 0/undefined=guest
@@ -178,6 +186,27 @@ const OrganizationDetail: React.FC = () => {
     fetchDetail();
   }, [id, currentUser, checkUserRole]);
 
+  // 获取组织成员统计（独立接口，不依赖当前 Tab）
+  const fetchStats = useCallback(async () => {
+    if (!id) return;
+    try {
+      const res = await OrganizationService.getStats(String(id));
+      setStats({
+        totalMembers: res.total_members ?? 0,
+        activeMembers: res.active_members ?? 0,
+        orgAdminMembers: res.org_admin_count ?? 0,
+        devLeadMembers: 0, // 接口暂不返回此字段
+        regularMembers: res.regular_count ?? 0,
+      });
+    } catch {
+      // 静默处理
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
   // Function to fetch organization members using the new API (真正分页)
   const fetchMembersList = useCallback(
     async (pageNum: number = 1) => {
@@ -206,25 +235,11 @@ const OrganizationDetail: React.FC = () => {
           }));
 
           setMembersTotal(res.total || 0);
-          setStats({
-            totalMembers: res.total || 0,
-            activeMembers: members.length,
-            orgAdminMembers: members.filter((m) => m.role === "组织管理员").length,
-            devLeadMembers: members.filter((m) => m.role === "研发主管").length,
-            regularMembers: members.filter((m) => m.role === "普通成员").length,
-          });
 
           setOrg((prevOrg) => (prevOrg ? { ...prevOrg, members, memberCount: res.total || 0 } : prevOrg));
         } else if (res && res.list && res.list.length === 0) {
           // 如果有响应但列表为空，更新为空状态
           setMembersTotal(0);
-          setStats({
-            totalMembers: 0,
-            activeMembers: 0,
-            orgAdminMembers: 0,
-            devLeadMembers: 0,
-            regularMembers: 0,
-          });
 
           setOrg((prevOrg) => (prevOrg ? { ...prevOrg, members: [], memberCount: 0 } : prevOrg));
         }
@@ -243,10 +258,9 @@ const OrganizationDetail: React.FC = () => {
     [id, currentUser],
   );
 
-  // 成员列表
+  // 成员列表（成员列表 Tab 激活时翻页）
   useEffect(() => {
     if (!id || !currentUser) return;
-    // 只有在成员列表标签页才加载成员
     if (!showPendingRequests && !showTasks && !showRepos) {
       fetchMembersList(page);
     }
@@ -877,6 +891,8 @@ const OrganizationDetail: React.FC = () => {
                       setShowPendingRequests(showPending);
                       setShowTasks(showTasks);
                       setShowRepos(showRepo ?? false);
+                      const tab = showRepo ? "repos" : showTasks ? "tasks" : showPending ? "pending" : "members";
+                      setSearchParams({ tab }, { replace: true });
                     }}
                     onRefreshMembers={() => setRefreshTrigger((prev) => prev + 1)}
                     onRefreshPending={() => setPendingRequestsRefreshTrigger((prev) => prev + 1)}
@@ -900,6 +916,7 @@ const OrganizationDetail: React.FC = () => {
                     canManageMember={canManageMember}
                     canSetRole={canSetRole}
                     canManageTask={canManageTask}
+                    onReposChange={(delta) => setRepoCount((prev) => Math.max(0, prev + delta))}
                     selectedTask={selectedTask}
                   />
                   {/* 申请加入按钮已移至header最右侧 */}

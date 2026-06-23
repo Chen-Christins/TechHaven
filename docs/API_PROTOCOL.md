@@ -465,17 +465,23 @@ Req: apply_id=<string>&action=<string>&reason?=<string> → { org_id? }
 ### 10.6 组织仓库列表 ⚠️
 
 ```
-⚠️ 待后端定义
+⚠️ Mock 阶段，后端待实现（当前使用 OrganizationRepos.tsx 内 mockRepos 数组）
+⚠️ 注意：框架按路径注册 servlet，不支持同路径多方法分发，因此 add/delete 使用独立路径
 
-GET    /organization/repos?org_id=<string>
-       → { list: [Repo{ id, name, description, url, language, stars, updated_at }] }
+GET  /organization/repos?org_id=<string>&page?=<int>&page_size?=<int>
+     → { list: [Repo{ id, name, description, url, language, stars_count, updated_at }], total }
 
-POST   /organization/repos
-       Req: org_id=<string>&name=<string>&url=<string>&language?=<string>&description?=<string>
-       → { id }
+POST /organization/repos/add
+     Req: org_id=<string>&name=<string>&url=<string>&language?=<string>&description?=<string>
+     → { id }
+     权限：研发主管及以上
 
-DELETE /organization/repos
-       Req: id=<string>&org_id=<string>
+POST /organization/repos/delete
+     Req: id=<string>&org_id=<string>
+     权限：研发主管及以上
+
+GET  /organization/repos/stats?org_id=<string>
+     → { total_repos }
 ```
 
 ---
@@ -733,7 +739,7 @@ GET /stats
 | 优先级 | 模块 | 接口 | 当前状态 |
 |--------|------|------|----------|
 | 高 | 代码审查 | `GET/POST/DELETE /rd/reviews` 全套 CRUD | Mock 内存数据（`rdPlatformMock.ts`） |
-| 高 | 组织仓库 | `GET/POST/DELETE /organization/repos` | Mock 内存数据（`OrganizationRepos.tsx`） |
+| 高 | 组织仓库 | `GET /organization/repos`、`POST /repos/add`、`POST /repos/delete`、`GET /repos/stats` | Mock 内存数据（`OrganizationRepos.tsx`） |
 | 中 | RD 统计 | `total_reviews` / `pending_reviews` 字段 | 前端类型已定义，后端 `GET /rd/stats` 待新增字段 |
 
 ## 附录 B：切换 Mock → 真实 API
