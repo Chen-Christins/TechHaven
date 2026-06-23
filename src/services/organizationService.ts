@@ -520,15 +520,15 @@ export class OrganizationService {
     org_id: string;
     name: string;
     url: string;
-    language?: string;
     description?: string;
+    token?: string;
   }): Promise<{ id: number | string }> {
     const formData = new URLSearchParams();
     formData.append("org_id", params.org_id);
     formData.append("name", params.name);
     formData.append("url", params.url);
-    if (params.language) formData.append("language", params.language);
     if (params.description) formData.append("description", params.description);
+    if (params.token) formData.append("token", params.token);
 
     const response = await http.post<{ id: number | string }>("/organization/repos/add", formData.toString(), {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -568,6 +568,22 @@ export class OrganizationService {
   }> {
     const response = await http.get<any>(`/organization/stats?id=${orgId}`);
     return response.data;
+  }
+
+  // ---------------------------------------------------------------------------
+  // 仓库 Token
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 为单个仓库保存/更新 GitHub Token
+   */
+  static async saveRepoToken(params: { repo_id: string; token: string }): Promise<void> {
+    const formData = new URLSearchParams();
+    formData.append("repo_id", params.repo_id);
+    formData.append("token", params.token);
+    await http.post("/organization/repos/token", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
   }
 }
 

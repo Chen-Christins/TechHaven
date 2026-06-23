@@ -1356,6 +1356,45 @@
   margin-bottom: 16px;
 }
 
+/* 仓库 Token 徽章 */
+.repoTokenBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.repoTokenBadge:hover {
+  background: #16a34a;
+  color: #fff;
+}
+
+.repoTokenBadgeNone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.repoTokenBadgeNone:hover {
+  background: var(--text-tertiary);
+  color: #fff;
+}
+
 .sectionTitle {
   font-size: 18px;
   font-weight: 600;
@@ -1383,6 +1422,7 @@
   border-radius: 10px;
   text-decoration: none;
   cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
 }
 
 .repoCard:hover {
@@ -1418,11 +1458,6 @@
   font-size: 12px;
   color: var(--text-tertiary);
   flex-shrink: 0;
-  opacity: 0;
-}
-
-.repoCard:hover .repoExternalIcon {
-  opacity: 1;
 }
 
 .repoDeleteBtn {
@@ -1438,11 +1473,6 @@
   color: var(--text-tertiary);
   flex-shrink: 0;
   margin-left: auto;
-  opacity: 0;
-}
-
-.repoCard:hover .repoDeleteBtn {
-  opacity: 1;
 }
 
 .repoDeleteBtn:hover {

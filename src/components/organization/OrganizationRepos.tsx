@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { FaGithub, FaStar, FaExternalLinkAlt, FaPlus, FaTrash } from "react-icons/fa";
+import { FaGithub, FaStar, FaExternalLinkAlt, FaPlus, FaTrash, FaKey } from "react-icons/fa";
 import Modal from "../modal/Modal";
 import Input from "../input/Input";
-import CustomSelect from "../customSelect/CustomSelect";
 import message from "../message/Message";
 import { confirm } from "../confirm/Confirm";
 import OrganizationService from "../../services/organizationService";
@@ -19,6 +18,7 @@ export interface Repo {
   stars: number;
   updatedAt: string;
   organizationId: string;
+  hasToken: boolean;
 }
 
 // ---- 语言选项 ----
@@ -38,12 +38,6 @@ const languageColors: Record<string, string> = {
   Swift: "#f05138",
 };
 
-const languageOptions = Object.entries(languageColors).map(([name, color]) => ({
-  id: name,
-  name,
-  color,
-}));
-
 // ---- component ----
 interface Props {
   orgId: string;
@@ -54,8 +48,16 @@ interface Props {
 const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
   const [repos, setRepos] = useState<Repo[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // 添加仓库 modal
   const [modalVisible, setModalVisible] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "", url: "", language: "TypeScript" });
+  const [form, setForm] = useState({ name: "", description: "", url: "", token: "" });
+
+  // 配置 Token modal
+  const [tokenModalVisible, setTokenModalVisible] = useState(false);
+  const [tokenRepo, setTokenRepo] = useState<Repo | null>(null);
+  const [tokenValue, setTokenValue] = useState("");
+  const [tokenSaving, setTokenSaving] = useState(false);
 
   useEffect(() => {
     const fetchRepos = async () => {
@@ -73,6 +75,7 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
             stars: item.stars_count ?? 0,
             updatedAt: item.updated_at || "",
             organizationId: String(item.org_id ?? ""),
+            hasToken: item.has_token ?? false,
           })),
         );
       } catch (err: any) {
@@ -94,6 +97,7 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
     return `${Math.floor(months / 12)} 年前`;
   };
 
+  // ---- 添加仓库 ----
   const handleAddRepo = async () => {
     if (!form.name.trim()) {
       message.warn("请输入仓库名称");
@@ -108,22 +112,23 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
         org_id: orgId,
         name: form.name.trim(),
         url: form.url.trim(),
-        language: form.language,
         description: form.description.trim(),
+        token: form.token.trim() || undefined,
       });
       const newRepo: Repo = {
         id: String(res.id),
         name: form.name.trim(),
         description: form.description.trim(),
         url: form.url.trim(),
-        language: form.language,
-        languageColor: languageColors[form.language] || "#6c757d",
+        language: "",
+        languageColor: "#6c757d",
         stars: 0,
         updatedAt: new Date().toISOString(),
         organizationId: orgId,
+        hasToken: !!form.token.trim(),
       };
       setRepos((prev) => [newRepo, ...prev]);
-      setForm({ name: "", description: "", url: "", language: "TypeScript" });
+      setForm({ name: "", description: "", url: "", token: "" });
       setModalVisible(false);
       message.success("仓库添加成功");
       onChange?.(1);
@@ -132,6 +137,7 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
     }
   };
 
+  // ---- 删除仓库 ----
   const handleDeleteRepo = async (e: React.MouseEvent, repo: Repo) => {
     e.preventDefault();
     e.stopPropagation();
@@ -157,6 +163,35 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
     });
   };
 
+  // ---- 配置 Token ----
+  const openTokenModal = (e: React.MouseEvent, repo: Repo) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setTokenRepo(repo);
+    setTokenValue("");
+    setTokenModalVisible(true);
+  };
+
+  const handleSaveToken = async () => {
+    if (!tokenValue.trim()) {
+      message.warn("请输入 GitHub Token");
+      return;
+    }
+    if (!tokenRepo) return;
+    setTokenSaving(true);
+    try {
+      await OrganizationService.saveRepoToken({ repo_id: tokenRepo.id, token: tokenValue.trim() });
+      setRepos((prev) => prev.map((r) => (r.id === tokenRepo.id ? { ...r, hasToken: true } : r)));
+      setTokenValue("");
+      setTokenModalVisible(false);
+      message.success("Token 已保存");
+    } catch {
+      message.error("保存失败");
+    } finally {
+      setTokenSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.repoSection}>
@@ -166,12 +201,8 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
         <div className={styles.repoGrid}>
           {[1, 2, 3].map((i) => (
             <div key={i} className={styles.repoCard} style={{ opacity: 0.6 }}>
-              <div
-                style={{ height: "20px", width: "60%", background: "var(--bg-secondary)", borderRadius: "4px", marginBottom: "12px" }}
-              />
-              <div
-                style={{ height: "14px", width: "90%", background: "var(--bg-secondary)", borderRadius: "4px", marginBottom: "8px" }}
-              />
+              <div style={{ height: "20px", width: "60%", background: "var(--bg-secondary)", borderRadius: "4px", marginBottom: "12px" }} />
+              <div style={{ height: "14px", width: "90%", background: "var(--bg-secondary)", borderRadius: "4px", marginBottom: "8px" }} />
               <div style={{ height: "14px", width: "70%", background: "var(--bg-secondary)", borderRadius: "4px" }} />
             </div>
           ))}
@@ -190,6 +221,7 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
           </button>
         )}
       </div>
+
       {repos.length === 0 ? (
         <div className={styles.emptyState}>
           <FaGithub size={40} style={{ opacity: 0.3, marginBottom: "12px" }} />
@@ -202,6 +234,15 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
               <div className={styles.repoCardHeader}>
                 <FaGithub className={styles.repoIcon} />
                 <span className={styles.repoName}>{repo.name}</span>
+                {canManage && (
+                  <span
+                    className={repo.hasToken ? styles.repoTokenBadge : styles.repoTokenBadgeNone}
+                    title={repo.hasToken ? "已配置 Token" : "未配置 Token，点击配置"}
+                    onClick={(e) => openTokenModal(e, repo)}
+                  >
+                    <FaKey size={10} />
+                  </span>
+                )}
                 <FaExternalLinkAlt className={styles.repoExternalIcon} />
                 {canManage && (
                   <button className={styles.repoDeleteBtn} title="删除仓库" onClick={(e) => handleDeleteRepo(e, repo)}>
@@ -245,31 +286,11 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <div>
             <label className={styles.formLabel}>仓库名称 *</label>
-            <Input
-              placeholder="如 frontend-web"
-              value={form.name}
-              onChange={(v) => setForm((prev) => ({ ...prev, name: v }))}
-              size="large"
-            />
+            <Input placeholder="如 frontend-web" value={form.name} onChange={(v) => setForm((prev) => ({ ...prev, name: v }))} size="large" />
           </div>
           <div>
             <label className={styles.formLabel}>仓库地址 *</label>
-            <Input
-              placeholder="https://github.com/org/repo"
-              value={form.url}
-              onChange={(v) => setForm((prev) => ({ ...prev, url: v }))}
-              size="large"
-            />
-          </div>
-          <div>
-            <label className={styles.formLabel}>语言</label>
-            <CustomSelect
-              name="语言"
-              options={languageOptions}
-              value={languageOptions.find((o) => o.id === form.language) || null}
-              onChange={(o) => setForm((prev) => ({ ...prev, language: (o?.id as string) || "TypeScript" }))}
-              hideBadge
-            />
+            <Input placeholder="https://github.com/org/repo" value={form.url} onChange={(v) => setForm((prev) => ({ ...prev, url: v }))} size="large" />
           </div>
           <div>
             <label className={styles.formLabel}>描述</label>
@@ -290,6 +311,52 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
                 fontFamily: "inherit",
                 lineHeight: 1.6,
               }}
+            />
+          </div>
+          <div>
+            <label className={styles.formLabel}>GitHub Token（选填）</label>
+            <Input
+              type="password"
+              placeholder="Personal Access Token，用于拉取仓库信息"
+              value={form.token}
+              onChange={(v) => setForm((prev) => ({ ...prev, token: v }))}
+              size="large"
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* 配置 Token Modal */}
+      <Modal
+        visible={tokenModalVisible}
+        title={tokenRepo ? `配置 Token - ${tokenRepo.name}` : "配置 Token"}
+        onClose={() => setTokenModalVisible(false)}
+        width={480}
+        footer={
+          <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+            <button className={styles.cancelButton} onClick={() => setTokenModalVisible(false)}>
+              取消
+            </button>
+            <button className={styles.confirmButton} onClick={handleSaveToken} disabled={tokenSaving}>
+              {tokenSaving ? "保存中..." : "保存"}
+            </button>
+          </div>
+        }
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>
+            {tokenRepo?.hasToken
+              ? "该仓库已配置 Token，输入新值将覆盖旧值。"
+              : "为该仓库配置 GitHub Personal Access Token，用于拉取仓库元数据（Star 数、描述、语言等）。"}
+          </p>
+          <div>
+            <label className={styles.formLabel}>GitHub Token</label>
+            <Input
+              type="password"
+              value={tokenValue}
+              onChange={(v) => setTokenValue(v)}
+              placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+              size="large"
             />
           </div>
         </div>
