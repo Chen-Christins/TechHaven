@@ -48,7 +48,7 @@ interface PR {
 interface RepoItem {
   id: string;
   name: string;
-  syncStatus: string;
+  prSyncStatus: string;
 }
 
 const stateOptions: SelectOption[] = [
@@ -89,7 +89,7 @@ const CodeReviewList: React.FC = () => {
       return (res.list || []).map((r: any) => ({
         id: String(r.id),
         name: r.name || "",
-        syncStatus: r.sync_status || "idle",
+        prSyncStatus: r.pr_sync_status || "idle",
       }));
     } catch {
       return [];
@@ -143,34 +143,34 @@ const CodeReviewList: React.FC = () => {
     fetchAll();
   }, [currentPage, filters, selectedOrgId, selectedRepoId]);
 
-  // ---- 轮询仓库同步状态 ----
-  useEffect(() => {
-    if (!selectedOrgId) return;
-    const timer = setInterval(async () => {
-      const repoList = await fetchRepos();
-      const stillSyncing = repoList.some((r: any) => r.syncStatus === "syncing");
-      setRepos(repoList);
-      if (stillSyncing) {
-        fetchPrs();
-      }
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [selectedOrgId]);
-
   const handleFilterChange = (field: string, value: string) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
     setCurrentPage(1);
   };
 
+  // ---- 轮询 PR 同步状态 ----
+  useEffect(() => {
+    const hasSyncing = repos.some((r) => r.prSyncStatus === "syncing");
+    if (!hasSyncing || !selectedOrgId) return;
+    const timer = setInterval(async () => {
+      const repoList = await fetchRepos();
+      const stillSyncing = repoList.some((r) => r.prSyncStatus === "syncing");
+      setRepos(repoList);
+      fetchPrs();
+      if (!stillSyncing) clearInterval(timer);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [selectedOrgId, repos]);
+
   // ---- 同步单个仓库 PR ----
   const handleSyncRepo = async (repo: RepoItem) => {
+    setRepos((prev) => prev.map((r) => (r.id === repo.id ? { ...r, prSyncStatus: "syncing" } : r)));
     setSyncingRepos((prev) => new Set(prev).add(repo.id));
-    setRepos((prev) => prev.map((r) => (r.id === repo.id ? { ...r, syncStatus: "syncing" } : r)));
     try {
       await OrganizationService.syncPrs({ repo_id: repo.id });
     } catch (err: any) {
+      setRepos((prev) => prev.map((r) => (r.id === repo.id ? { ...r, prSyncStatus: "failed" } : r)));
       message.error(`同步 ${repo.name} 失败`);
-      setRepos((prev) => prev.map((r) => (r.id === repo.id ? { ...r, syncStatus: "failed" } : r)));
     } finally {
       setSyncingRepos((prev) => {
         const next = new Set(prev);
@@ -265,20 +265,20 @@ const CodeReviewList: React.FC = () => {
                 <span className={styles.repoBarName}>{repo.name}</span>
                 <span
                   className={`${styles.repoBarStatus} ${
-                    repo.syncStatus === "success"
+                    repo.prSyncStatus === "success"
                       ? styles.repoBarSuccess
-                      : repo.syncStatus === "failed"
+                      : repo.prSyncStatus === "failed"
                         ? styles.repoBarFailed
-                        : repo.syncStatus === "syncing"
+                        : repo.prSyncStatus === "syncing"
                           ? styles.repoBarSyncing
                           : ""
                   }`}
                 >
-                  {repo.syncStatus === "success"
+                  {repo.prSyncStatus === "success"
                     ? "已同步"
-                    : repo.syncStatus === "failed"
+                    : repo.prSyncStatus === "failed"
                       ? "失败"
-                      : repo.syncStatus === "syncing"
+                      : repo.prSyncStatus === "syncing"
                         ? "同步中"
                         : "未同步"}
                 </span>
