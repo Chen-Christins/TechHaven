@@ -1524,6 +1524,69 @@
   color: var(--text-tertiary);
 }
 
+/* Sync 按钮 */
+.repoSyncBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.repoSyncBtn:hover {
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.repoSyncSpinning svg {
+  animation: repoSpin 1s linear infinite;
+}
+
+@keyframes repoSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.repoSyncStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.syncStatusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.syncStatusIdle {
+  background-color: var(--text-tertiary);
+}
+
+.syncStatusSyncing {
+  background-color: #a855f7;
+  animation: repoPulse 0.8s ease-in-out infinite;
+}
+
+.syncStatusDone {
+  background-color: #16a34a;
+}
+
+.syncStatusFailed {
+  background-color: #ef4444;
+}
+
+@keyframes repoPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 @media (max-width: 768px) {
   .repoGrid {
     grid-template-columns: 1fr;

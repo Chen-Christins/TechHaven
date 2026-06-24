@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { FaGithub, FaStar, FaExternalLinkAlt, FaPlus, FaTrash, FaKey } from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react";
+import { FaGithub, FaStar, FaExternalLinkAlt, FaPlus, FaTrash, FaKey, FaSync } from "react-icons/fa";
 import Modal from "../modal/Modal";
 import Input from "../input/Input";
 import message from "../message/Message";
 import { confirm } from "../confirm/Confirm";
+import { formatRelativeTime } from "../../utils/utils";
 import OrganizationService from "../../services/organizationService";
 import styles from "../../pages/organization/OrganizationDetail.module.css";
 
@@ -16,12 +17,13 @@ export interface Repo {
   language: string;
   languageColor: string;
   stars: number;
-  updatedAt: string;
+  updatedAt: string | number;
   organizationId: string;
   hasToken: boolean;
+  syncStatus: "idle" | "syncing" | "success" | "failed";
 }
 
-// ---- 语言选项 ----
+// ---- 语言颜色映射 ----
 const languageColors: Record<string, string> = {
   TypeScript: "#3178c6",
   JavaScript: "#f7df1e",
@@ -38,6 +40,14 @@ const languageColors: Record<string, string> = {
   Swift: "#f05138",
 };
 
+// ---- 同步状态文案 ----
+const syncStatusText: Record<string, string> = {
+  idle: "未同步",
+  syncing: "同步中...",
+  success: "已同步",
+  failed: "同步失败",
+};
+
 // ---- component ----
 interface Props {
   orgId: string;
@@ -51,7 +61,7 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
 
   // 添加仓库 modal
   const [modalVisible, setModalVisible] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "", url: "", token: "" });
+  const [form, setForm] = useState({ name: "", url: "", token: "" });
 
   // 配置 Token modal
   const [tokenModalVisible, setTokenModalVisible] = useState(false);
@@ -59,43 +69,61 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
   const [tokenValue, setTokenValue] = useState("");
   const [tokenSaving, setTokenSaving] = useState(false);
 
+  // polling ref
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ---- 获取仓库列表 ----
+  const fetchRepos = async () => {
+    try {
+      const res = await OrganizationService.getRepos({ org_id: orgId });
+      setRepos(
+        (res.list || []).map((item: any) => ({
+          id: String(item.id),
+          name: item.name || "",
+          description: item.description || "",
+          url: item.url || "",
+          language: item.language?.replace(/[\x00-\x1f]/g, "").trim() || "",
+          languageColor: languageColors[item.language?.replace(/[\x00-\x1f]/g, "").trim()] || "#6c757d",
+          stars: item.stars_count ?? 0,
+          updatedAt: item.updated_at == null || (typeof item.updated_at === "number" && item.updated_at > 9999999999999) ? "" : item.updated_at,
+          organizationId: String(item.org_id ?? ""),
+          hasToken: item.has_token ?? false,
+          syncStatus: item.sync_status || "idle",
+        })),
+      );
+    } catch (err: any) {
+      message.error(err?.message || "获取仓库列表失败");
+    }
+  };
+
   useEffect(() => {
-    const fetchRepos = async () => {
-      setLoading(true);
-      try {
-        const res = await OrganizationService.getRepos({ org_id: orgId });
-        setRepos(
-          (res.list || []).map((item: any) => ({
-            id: String(item.id),
-            name: item.name || "",
-            description: item.description || "",
-            url: item.url || "",
-            language: item.language || "",
-            languageColor: languageColors[item.language] || "#6c757d",
-            stars: item.stars_count ?? 0,
-            updatedAt: item.updated_at || "",
-            organizationId: String(item.org_id ?? ""),
-            hasToken: item.has_token ?? false,
-          })),
-        );
-      } catch (err: any) {
-        message.error(err?.message || "获取仓库列表失败");
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (orgId) fetchRepos();
+    if (!orgId) return;
+    setLoading(true);
+    fetchRepos().finally(() => setLoading(false));
   }, [orgId]);
 
-  const formatTimeAgo = (isoStr: string): string => {
-    const diff = Date.now() - new Date(isoStr).getTime();
-    const days = Math.floor(diff / 86400000);
-    if (days < 1) return "今天";
-    if (days < 30) return `${days} 天前`;
-    const months = Math.floor(days / 30);
-    if (months < 12) return `${months} 个月前`;
-    return `${Math.floor(months / 12)} 年前`;
-  };
+  // ---- 轮询同步状态 ----
+  useEffect(() => {
+    const hasSyncing = repos.some((r) => r.syncStatus === "syncing");
+    if (hasSyncing) {
+      if (!pollingRef.current) {
+        pollingRef.current = setInterval(() => {
+          fetchRepos();
+        }, 3000);
+      }
+    } else {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    }
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+  }, [repos]);
 
   // ---- 添加仓库 ----
   const handleAddRepo = async () => {
@@ -107,28 +135,32 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
       message.warn("请输入仓库地址");
       return;
     }
+    if (!form.url.trim().startsWith("https://github.com/")) {
+      message.warn("暂仅支持 GitHub 仓库（https://github.com/...）");
+      return;
+    }
     try {
       const res = await OrganizationService.addRepo({
         org_id: orgId,
         name: form.name.trim(),
         url: form.url.trim(),
-        description: form.description.trim(),
         token: form.token.trim() || undefined,
       });
       const newRepo: Repo = {
         id: String(res.id),
         name: form.name.trim(),
-        description: form.description.trim(),
+        description: "",
         url: form.url.trim(),
         language: "",
         languageColor: "#6c757d",
         stars: 0,
-        updatedAt: new Date().toISOString(),
+        updatedAt: Date.now(),
         organizationId: orgId,
         hasToken: !!form.token.trim(),
+        syncStatus: "idle",
       };
       setRepos((prev) => [newRepo, ...prev]);
-      setForm({ name: "", description: "", url: "", token: "" });
+      setForm({ name: "", url: "", token: "" });
       setModalVisible(false);
       message.success("仓库添加成功");
       onChange?.(1);
@@ -192,6 +224,20 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
     }
   };
 
+  // ---- 同步仓库 ----
+  const handleSyncRepo = async (e: React.MouseEvent, repo: Repo) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (repo.syncStatus === "syncing") return;
+    setRepos((prev) => prev.map((r) => (r.id === repo.id ? { ...r, syncStatus: "syncing" as const } : r)));
+    try {
+      await OrganizationService.syncRepo({ repo_id: repo.id });
+    } catch {
+      setRepos((prev) => prev.map((r) => (r.id === repo.id ? { ...r, syncStatus: "failed" as const } : r)));
+      message.error("同步失败");
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.repoSection}>
@@ -234,32 +280,53 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
               <div className={styles.repoCardHeader}>
                 <FaGithub className={styles.repoIcon} />
                 <span className={styles.repoName}>{repo.name}</span>
-                {canManage && (
-                  <span
-                    className={repo.hasToken ? styles.repoTokenBadge : styles.repoTokenBadgeNone}
-                    title={repo.hasToken ? "已配置 Token" : "未配置 Token，点击配置"}
-                    onClick={(e) => openTokenModal(e, repo)}
-                  >
-                    <FaKey size={10} />
-                  </span>
-                )}
                 <FaExternalLinkAlt className={styles.repoExternalIcon} />
                 {canManage && (
-                  <button className={styles.repoDeleteBtn} title="删除仓库" onClick={(e) => handleDeleteRepo(e, repo)}>
-                    <FaTrash size={12} />
-                  </button>
+                  <>
+                    <span
+                      className={repo.hasToken ? styles.repoTokenBadge : styles.repoTokenBadgeNone}
+                      title={repo.hasToken ? "已配置 Token" : "未配置 Token，点击配置"}
+                      onClick={(e) => openTokenModal(e, repo)}
+                    >
+                      <FaKey size={10} />
+                    </span>
+                    <span
+                      className={`${styles.repoSyncBtn} ${repo.syncStatus === "syncing" ? styles.repoSyncSpinning : ""}`}
+                      title={syncStatusText[repo.syncStatus]}
+                      onClick={(e) => handleSyncRepo(e, repo)}
+                    >
+                      <FaSync size={10} />
+                    </span>
+                    <button className={styles.repoDeleteBtn} title="删除仓库" onClick={(e) => handleDeleteRepo(e, repo)}>
+                      <FaTrash size={12} />
+                    </button>
+                  </>
                 )}
               </div>
               <p className={styles.repoDescription}>{repo.description}</p>
               <div className={styles.repoMeta}>
                 <span className={styles.repoLanguage}>
                   <span className={styles.repoLanguageDot} style={{ backgroundColor: repo.languageColor }} />
-                  {repo.language}
+                  {repo.language || "N/A"}
                 </span>
                 <span className={styles.repoStars}>
                   <FaStar /> {repo.stars}
                 </span>
-                <span className={styles.repoUpdated}>{formatTimeAgo(repo.updatedAt)} 更新</span>
+                <span className={styles.repoSyncStatus}>
+                  <span
+                    className={`${styles.syncStatusDot} ${
+                      repo.syncStatus === "success"
+                        ? styles.syncStatusDone
+                        : repo.syncStatus === "failed"
+                          ? styles.syncStatusFailed
+                          : repo.syncStatus === "syncing"
+                            ? styles.syncStatusSyncing
+                            : styles.syncStatusIdle
+                    }`}
+                  />
+                  {syncStatusText[repo.syncStatus]}
+                </span>
+                <span className={styles.repoUpdated}>{formatRelativeTime(repo.updatedAt)}</span>
               </div>
             </div>
           ))}
@@ -290,28 +357,7 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
           </div>
           <div>
             <label className={styles.formLabel}>仓库地址 *</label>
-            <Input placeholder="https://github.com/org/repo" value={form.url} onChange={(v) => setForm((prev) => ({ ...prev, url: v }))} size="large" />
-          </div>
-          <div>
-            <label className={styles.formLabel}>描述</label>
-            <textarea
-              placeholder="请输入仓库描述..."
-              value={form.description}
-              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-              rows={3}
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                border: "1px solid var(--border-primary)",
-                borderRadius: "8px",
-                fontSize: "14px",
-                color: "var(--text-primary)",
-                backgroundColor: "var(--bg-primary)",
-                resize: "vertical",
-                fontFamily: "inherit",
-                lineHeight: 1.6,
-              }}
-            />
+            <Input placeholder="仅支持 GitHub：https://github.com/org/repo" value={form.url} onChange={(v) => setForm((prev) => ({ ...prev, url: v }))} size="large" />
           </div>
           <div>
             <label className={styles.formLabel}>GitHub Token（选填）</label>

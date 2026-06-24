@@ -585,6 +585,17 @@ export class OrganizationService {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
   }
+
+  /**
+   * 触发仓库同步（后端调 GitHub API 拉取仓库元数据）
+   */
+  static async syncRepo(params: { repo_id: string }): Promise<void> {
+    const formData = new URLSearchParams();
+    formData.append("repo_id", params.repo_id);
+    await http.post("/organization/repos/sync", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  }
 }
 
 export default OrganizationService;
