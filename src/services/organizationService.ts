@@ -596,6 +596,53 @@ export class OrganizationService {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
   }
+
+  // ---------------------------------------------------------------------------
+  // PR 同步与列表
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 获取 PR 列表
+   */
+  static async getPrs(params: {
+    org_id?: string;
+    repo_id?: string;
+    state?: string;
+    page?: number;
+    page_size?: number;
+  }): Promise<{ total: number; page: number; page_size: number; list: any[] }> {
+    const q: string[] = [];
+    if (params.org_id) q.push(`org_id=${params.org_id}`);
+    if (params.repo_id) q.push(`repo_id=${params.repo_id}`);
+    if (params.state) q.push(`state=${params.state}`);
+    if (params.page) q.push(`page=${params.page}`);
+    if (params.page_size) q.push(`page_size=${params.page_size}`);
+    const url = `/organization/repos/prs${q.length > 0 ? "?" + q.join("&") : ""}`;
+    const response = await http.get<any>(url);
+    return response.data;
+  }
+
+  /**
+   * 触发仓库 PR 同步
+   */
+  static async syncPrs(params: { repo_id: string }): Promise<void> {
+    const formData = new URLSearchParams();
+    formData.append("repo_id", params.repo_id);
+    await http.post("/organization/repos/prs/sync", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  }
+
+  /**
+   * 删除 PR（仅删除本地记录，不影响 GitHub）
+   */
+  static async deletePr(params: { id: string }): Promise<void> {
+    const formData = new URLSearchParams();
+    formData.append("id", params.id);
+    await http.post("/organization/repos/prs/delete", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  }
 }
 
 export default OrganizationService;

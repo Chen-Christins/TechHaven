@@ -310,7 +310,106 @@ created_at   → createdAt
 
 ---
 
-## 7. 后续扩展建议
+---
+
+## 7. PR 同步与列表
+
+### 7.1 全量同步 PR
+
+```
+POST /organization/repos/prs/sync
+
+Content-Type: application/x-www-form-urlencoded
+
+Req:
+  repo_id  int64  必填  仓库 ID
+
+权限: 研发主管及以上
+
+Response 200:
+{
+  "errno": 0,
+  "msg": "success",
+  "data": {}
+}
+
+错误:
+  errno=1102  "仅研发主管及以上角色可同步 PR"
+  errno=5001  "仓库不存在"
+
+后端执行逻辑:
+  1. 设 sync_status = "syncing"
+  2. 调 GitHub API: GET /repos/{owner}/{repo}/pulls?state=all&per_page=100
+  3. 逐条 upsert 到 organization_repo_prs 表
+  4. 完成后设 sync_status = "success"
+  5. 失败设 sync_status = "failed"
+```
+
+### 7.2 PR 列表查询
+
+```
+GET /organization/repos/prs
+
+三种模式（相互互斥，repo_id 优先级最高）:
+  1. 按仓库查: ?repo_id=10&state=open&page=1&page_size=20
+  2. 按组织查: ?org_id=8&state=open&page=1&page_size=20
+  3. 用户全部: ?state=open&page=1&page_size=20
+
+Query:
+  repo_id   int64    选填  仓库 ID
+  org_id    int64    选填  组织 ID
+  state     string   选填  open / closed / merged，不传返回全部
+  page      uint64   选填  默认 1
+  page_size uint64   选填  默认 20，最大 50
+
+权限:
+  - repo_id 模式 → 仓库所属组织成员
+  - org_id 模式 → 该组织成员
+  - 用户全部模式 → 自动过滤已加入组织
+
+Response 200:
+{
+  "errno": 0,
+  "msg": "success",
+  "data": {
+    "total": 6,
+    "page": 1,
+    "page_size": 20,
+    "list": [
+      {
+        "id": 1,
+        "repo_id": 10,
+        "github_pr_id": 42,
+        "title": "feat: 重构认证模块",
+        "description": "本次重构将原有的 Session-based 认证迁移至 JWT...",
+        "state": "open",                          // open / closed / merged
+        "priority": "high",                        // low / medium / high / critical
+        "author": "zhangming",
+        "head_branch": "feature/jwt-refactor",
+        "base_branch": "main",
+        "commit_sha": "a1b2c3d",
+        "changed_files": 12,
+        "additions": 450,
+        "deletions": 320,
+        "reviewers": "[{\"reviewer\":\"李强\",\"status\":\"approved\"}]",
+        "review_status": "pending",                // pending / approved / changes_requested
+        "closed_at": 0,
+        "merged_at": 0,
+        "created_at": 1750687879,
+        "updated_at": 1750687879
+      }
+    ]
+  }
+}
+
+错误:
+  errno=1102  "无权访问该组织"
+  errno=5001  "仓库不存在"
+```
+
+---
+
+## 8. 后续扩展建议
 
 | 事项 | 说明 |
 |------|------|

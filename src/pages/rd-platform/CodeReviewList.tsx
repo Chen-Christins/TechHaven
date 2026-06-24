@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { formatDateTime } from "../../utils/utils";
+import { formatDateTime, formatRelativeTime } from "../../utils/utils";
 import {
+  FaSync,
   FaEye,
   FaTrash,
   FaFilter,
-  FaCode,
+  FaGithub,
   FaAngleDoubleLeft,
   FaAngleDoubleRight,
   FaChevronLeft,
@@ -18,109 +19,201 @@ import Loading from "../../components/loading/Loading";
 import message from "../../components/message/Message";
 import { confirm } from "../../components/confirm/Confirm";
 import { useRdOrg } from "../../contexts/RdOrgContext";
-import { RdMockService as RdAPI } from "../../services/rdPlatformMock";
-import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
+import OrganizationService from "../../services/organizationService";
 import type { SelectOption } from "../../types";
-import type { CodeReview } from "../../types/rdPlatform";
-import { OrgPermission } from "../../types/rdPlatform";
 
-// ---- constants ----
-const statusOptions: SelectOption[] = [
+// ---- PR 数据映射 ----
+interface PR {
+  id: string;
+  repoId: string;
+  title: string;
+  description: string;
+  state: "open" | "closed" | "merged";
+  priority: string;
+  author: string;
+  headBranch: string;
+  baseBranch: string;
+  commitSha: string;
+  changedFiles: number | null;
+  additions: number | null;
+  deletions: number | null;
+  reviewers: string;
+  reviewStatus: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface RepoItem {
+  id: string;
+  name: string;
+  syncStatus: string;
+}
+
+const stateOptions: SelectOption[] = [
   { id: "", name: "全部状态", color: "#6c757d" },
-  { id: "pending", name: "待审核", color: "#3b82f6" },
-  { id: "reviewing", name: "审核中", color: "#a855f7" },
-  { id: "approved", name: "已通过", color: "#22c55e" },
-  { id: "rejected", name: "已拒绝", color: "#ef4444" },
+  { id: "open", name: "开启中", color: "#22c55e" },
   { id: "closed", name: "已关闭", color: "#6b7280" },
+  { id: "merged", name: "已合并", color: "#a855f7" },
 ];
 
-const priorityOptions: SelectOption[] = [
-  { id: "", name: "全部优先级", color: "#6c757d" },
-  { id: "high", name: "高", color: "#ef4444" },
-  { id: "medium", name: "中", color: "#f59e0b" },
-  { id: "low", name: "低", color: "#22c55e" },
-];
-
-const statusText: Record<string, string> = {
+const stateText: Record<string, string> = { open: "开启中", closed: "已关闭", merged: "已合并" };
+const reviewStatusText: Record<string, string> = {
   pending: "待审核",
-  reviewing: "审核中",
   approved: "已通过",
-  rejected: "已拒绝",
-  closed: "已关闭",
+  changes_requested: "需修改",
 };
-const priorityText: Record<string, string> = { high: "高", medium: "中", low: "低" };
+
 const PAGE_SIZE = 10;
 
 // ---- component ----
 const CodeReviewList: React.FC = () => {
-  const { orgNameMap, maxOrgRole, selectedOrgId } = useRdOrg();
-  const [reviews, setReviews] = useState<CodeReview[]>([]);
+  const { selectedOrgId } = useRdOrg();
+  const [prs, setPrs] = useState<PR[]>([]);
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState({ search: "", status: "", priority: "" });
+  const [filters, setFilters] = useState({ search: "", state: "" });
+
+  // 仓库列表
+  const [repos, setRepos] = useState<RepoItem[]>([]);
+  const [syncingRepos, setSyncingRepos] = useState<Set<string>>(new Set());
+
+  // 当前选中的仓库
+  const [selectedRepoId, setSelectedRepoId] = useState<string | null>(null);
 
   // view modal
   const [viewModalVisible, setViewModalVisible] = useState(false);
-  const [selectedReview, setSelectedReview] = useState<CodeReview | null>(null);
+  const [selectedPR, setSelectedPR] = useState<PR | null>(null);
 
-  const fetchData = async () => {
-    setLoading(true);
+  // ---- 获取仓库列表 ----
+  const fetchRepos = async () => {
+    if (!selectedOrgId) return [];
     try {
-      const res = await RdAPI.getCodeReviews({
-        search: filters.search,
-        status: filters.status,
-        priority: filters.priority,
-        page: currentPage,
-        pageSize: PAGE_SIZE,
-        organizationIds: selectedOrgId ? [selectedOrgId] : undefined,
-      });
-      setReviews(res.data);
-      setTotal(res.total);
+      const res = await OrganizationService.getRepos({ org_id: selectedOrgId });
+      return (res.list || []).map((r: any) => ({
+        id: String(r.id),
+        name: r.name || "",
+        syncStatus: r.sync_status || "idle",
+      }));
+    } catch {
+      return [];
+    }
+  };
+
+  // ---- 获取 PR 列表 ----
+  const fetchPrs = async () => {
+    const params: any = { page: currentPage, page_size: PAGE_SIZE };
+    if (selectedOrgId) params.org_id = selectedOrgId;
+    if (selectedRepoId) params.repo_id = selectedRepoId;
+    if (filters.state) params.state = filters.state;
+    const res = await OrganizationService.getPrs(params);
+    setPrs(
+      (res.list || []).map((item: any) => ({
+        id: String(item.id),
+        repoId: String(item.repo_id),
+        title: item.title || "",
+        description: item.description || "",
+        state: item.state || "open",
+        priority: item.priority || "",
+        author: item.author || "",
+        headBranch: item.head_branch || "",
+        baseBranch: item.base_branch || "",
+        commitSha: item.commit_sha || "",
+        changedFiles: item.changed_files,
+        additions: item.additions,
+        deletions: item.deletions,
+        reviewers: item.reviewers || "[]",
+        reviewStatus: item.review_status || "pending",
+        createdAt: item.created_at ?? "",
+        updatedAt: item.updated_at ?? "",
+      })),
+    );
+    setTotal(res.total ?? 0);
+  };
+
+  // ---- 合并加载 ----
+  const fetchAll = async () => {
+    try {
+      const repoList = selectedOrgId ? await fetchRepos() : [];
+      setRepos(repoList);
+      await fetchPrs();
     } catch {
       message.error("获取数据失败");
     }
-    setLoading(false);
+    setInitialLoading(false);
   };
 
   useEffect(() => {
-    fetchData();
-  }, [currentPage, filters, selectedOrgId]);
+    fetchAll();
+  }, [currentPage, filters, selectedOrgId, selectedRepoId]);
+
+  // ---- 轮询仓库同步状态 ----
+  useEffect(() => {
+    if (!selectedOrgId) return;
+    const timer = setInterval(async () => {
+      const repoList = await fetchRepos();
+      const stillSyncing = repoList.some((r: any) => r.syncStatus === "syncing");
+      setRepos(repoList);
+      if (stillSyncing) {
+        fetchPrs();
+      }
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [selectedOrgId]);
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
     setCurrentPage(1);
   };
 
-  const openView = (review: CodeReview) => {
-    setSelectedReview(review);
-    setViewModalVisible(true);
-  };
-  const closeView = () => {
-    setViewModalVisible(false);
-    setSelectedReview(null);
+  // ---- 同步单个仓库 PR ----
+  const handleSyncRepo = async (repo: RepoItem) => {
+    setSyncingRepos((prev) => new Set(prev).add(repo.id));
+    setRepos((prev) => prev.map((r) => (r.id === repo.id ? { ...r, syncStatus: "syncing" } : r)));
+    try {
+      await OrganizationService.syncPrs({ repo_id: repo.id });
+    } catch (err: any) {
+      message.error(`同步 ${repo.name} 失败`);
+      setRepos((prev) => prev.map((r) => (r.id === repo.id ? { ...r, syncStatus: "failed" } : r)));
+    } finally {
+      setSyncingRepos((prev) => {
+        const next = new Set(prev);
+        next.delete(repo.id);
+        return next;
+      });
+    }
   };
 
-  const handleDelete = async (review: CodeReview) => {
+  // ---- 删除 PR ----
+  const handleDeletePr = async (pr: PR) => {
     await confirm({
       title: "确认删除",
       content: (
         <div>
-          确定要删除代码审查 "<strong>{review.title}</strong>" 吗？删除后无法恢复。
+          确定要删除 PR "<strong>{pr.title}</strong>" 吗？仅删除本地记录，不影响 GitHub。
         </div>
       ),
       confirmText: "删除",
       cancelText: "取消",
       onConfirm: async () => {
         try {
-          await RdAPI.deleteCodeReview(review.id);
-          message.success("代码审查已删除");
-          fetchData();
+          await OrganizationService.deletePr({ id: pr.id });
+          message.success("PR 已删除");
+          fetchPrs();
         } catch (err: any) {
           message.error(err?.message || "删除失败");
         }
       },
     });
+  };
+
+  const openView = (pr: PR) => {
+    setSelectedPR(pr);
+    setViewModalVisible(true);
+  };
+  const closeView = () => {
+    setViewModalVisible(false);
+    setSelectedPR(null);
   };
 
   const renderField = (label: string, value: React.ReactNode) => (
@@ -151,16 +244,60 @@ const CodeReviewList: React.FC = () => {
     return pages;
   };
 
-  if (loading && reviews.length === 0) return <Loading />;
+  if (initialLoading) return <Loading />;
 
   return (
     <div className={styles.listPage}>
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>代码审查</h1>
-          <p className={styles.pageDescription}>查看平台推送的代码审查数据，把控代码质量</p>
+          <p className={styles.pageDescription}>查看从 GitHub 同步的 Pull Request 数据</p>
         </div>
       </div>
+
+      {/* 仓库列表 + 同步按钮 */}
+      {repos.length > 0 && (
+        <div className={styles.repoBar}>
+          <div className={styles.repoBarList}>
+            {repos.map((repo) => (
+              <div
+                key={repo.id}
+                className={`${styles.repoBarItem} ${styles.repoBarClickable} ${selectedRepoId === repo.id ? styles.repoBarActive : ""}`}
+                onClick={() => setSelectedRepoId(repo.id)}
+              >
+                <FaGithub size={14} style={{ flexShrink: 0 }} />
+                <span className={styles.repoBarName}>{repo.name}</span>
+                <span
+                  className={`${styles.repoBarStatus} ${
+                    repo.syncStatus === "success"
+                      ? styles.repoBarSuccess
+                      : repo.syncStatus === "failed"
+                        ? styles.repoBarFailed
+                        : repo.syncStatus === "syncing"
+                          ? styles.repoBarSyncing
+                          : ""
+                  }`}
+                >
+                  {repo.syncStatus === "success"
+                    ? "已同步"
+                    : repo.syncStatus === "failed"
+                      ? "失败"
+                      : repo.syncStatus === "syncing"
+                        ? "同步中"
+                        : "未同步"}
+                </span>
+                <button
+                  className={styles.repoBarSyncBtn}
+                  onClick={(e) => { e.stopPropagation(); handleSyncRepo(repo); }}
+                  disabled={syncingRepos.has(repo.id)}
+                >
+                  <FaSync className={syncingRepos.has(repo.id) ? styles.repoSpin : ""} size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className={styles.filterSection}>
         <div className={styles.filterHeader}>
@@ -170,7 +307,7 @@ const CodeReviewList: React.FC = () => {
           <button
             className={styles.clearBtn}
             onClick={() => {
-              setFilters({ search: "", status: "", priority: "" });
+              setFilters({ search: "", state: "" });
               setCurrentPage(1);
             }}
           >
@@ -181,7 +318,7 @@ const CodeReviewList: React.FC = () => {
           <div className={styles.filterGroup}>
             <label className={styles.filterLabel}>搜索</label>
             <Input
-              placeholder="标题、描述、作者或仓库"
+              placeholder="标题、作者或分支名"
               value={filters.search}
               onChange={(val) => handleFilterChange("search", val)}
               allowClear
@@ -192,19 +329,9 @@ const CodeReviewList: React.FC = () => {
             <label className={styles.filterLabel}>状态</label>
             <CustomSelect
               name="状态"
-              options={statusOptions}
-              value={statusOptions.find((o) => o.id === filters.status) || null}
-              onChange={(o) => handleFilterChange("status", (o?.id as string) || "")}
-              hideBadge
-            />
-          </div>
-          <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>优先级</label>
-            <CustomSelect
-              name="优先级"
-              options={priorityOptions}
-              value={priorityOptions.find((o) => o.id === filters.priority) || null}
-              onChange={(o) => handleFilterChange("priority", (o?.id as string) || "")}
+              options={stateOptions}
+              value={stateOptions.find((o) => o.id === filters.state) || null}
+              onChange={(o) => handleFilterChange("state", (o?.id as string) || "")}
               hideBadge
             />
           </div>
@@ -217,67 +344,83 @@ const CodeReviewList: React.FC = () => {
             <tr>
               <th>标题</th>
               <th>状态</th>
-              <th>优先级</th>
               <th>作者</th>
-              <th>审核人</th>
-              <th>仓库/分支</th>
-              <th>变更文件</th>
+              <th>审查状态</th>
+              <th>分支</th>
+              <th>变更</th>
               <th>创建时间</th>
               <th>操作</th>
             </tr>
           </thead>
           <tbody>
-            {reviews.map((r) => (
-              <tr key={r.id}>
-                <td className={styles.titleCell} onClick={() => openView(r)}>
-                  {r.title}
-                </td>
-                <td>
-                  <span className={`${styles.badge} ${styles[`status_${r.status}`]}`}>{statusText[r.status] || r.status}</span>
-                </td>
-                <td>
-                  <span className={`${styles.badge} ${styles[`priority_${r.priority}`]}`}>{priorityText[r.priority]}</span>
-                </td>
-                <td style={{ textAlign: "center" }}>
-                  <AssigneeDisplay name={r.author} avatar={r.authorAvatar} />
-                </td>
-                <td style={{ textAlign: "center" }}>
-                  <AssigneeDisplay name={r.reviewer} avatar={r.reviewerAvatar} />
-                </td>
-                <td style={{ textAlign: "center" }}>
-                  <span style={{ fontSize: "13px", fontWeight: 500 }}>{r.repository}</span>
-                  <br />
-                  <span style={{ color: "var(--text-tertiary)", fontSize: "12px" }}>{r.branch}</span>
-                </td>
-                <td>
-                  <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-                    {r.filesChanged} 文件
-                    <span style={{ color: "#22c55e", marginLeft: "6px" }}>+{r.linesAdded}</span>
-                    <span style={{ color: "#ef4444", marginLeft: "4px" }}>-{r.linesDeleted}</span>
-                  </span>
-                </td>
-                <td>{formatDateTime(r.createdAt)}</td>
-                <td>
-                  <div className={styles.actionButtons}>
-                    <button className={`${styles.actionBtn} ${styles.view}`} title="查看详情" onClick={() => openView(r)}>
-                      <FaEye />
-                    </button>
-                    {OrgPermission.canDelete(maxOrgRole) && (
-                      <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDelete(r)}>
+            {prs.map((pr) => {
+              let reviewers: { reviewer: string; status: string }[] = [];
+              try {
+                reviewers = JSON.parse(pr.reviewers);
+              } catch { /* empty: use default empty array */ }
+              return (
+                <tr key={pr.id}>
+                  <td className={styles.titleCell} onClick={() => openView(pr)}>
+                    {pr.title}
+                  </td>
+                  <td>
+                    <span className={`${styles.badge} ${pr.state === "closed" ? styles.pr_closed : styles[`status_${pr.state}`]}`}>
+                      {stateText[pr.state]}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: "center" }}>{pr.author}</td>
+                  <td style={{ textAlign: "center" }}>
+                    {reviewers.length > 0 ? (
+                      reviewers.map((r, i) => (
+                        <span
+                          key={i}
+                          className={`${styles.badge} ${r.status === "approved" ? styles.status_approved : r.status === "changes_requested" ? styles.status_rejected : styles.status_pending}`}
+                          style={{ margin: "2px 4px", display: "inline-block" }}
+                        >
+                          {r.reviewer}: {r.status === "approved" ? "已通过" : r.status === "changes_requested" ? "需修改" : "待审核"}
+                        </span>
+                      ))
+                    ) : (
+                      <span className={`${styles.badge} ${styles.status_pending}`}>待审核</span>
+                    )}
+                  </td>
+                  <td style={{ textAlign: "center", fontSize: "13px" }}>
+                    <span style={{ fontWeight: 500 }}>{pr.headBranch}</span>
+                    <span style={{ color: "var(--text-tertiary)", margin: "0 4px" }}>→</span>
+                    <span style={{ color: "var(--text-tertiary)" }}>{pr.baseBranch}</span>
+                  </td>
+                  <td style={{ textAlign: "center" }}>
+                    {pr.changedFiles != null ? (
+                      <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                        {pr.changedFiles} 文件
+                        {pr.additions != null && pr.additions > 0 && <span style={{ color: "#22c55e", marginLeft: "6px" }}>+{pr.additions}</span>}
+                        {pr.deletions != null && pr.deletions > 0 && <span style={{ color: "#ef4444", marginLeft: "4px" }}>-{pr.deletions}</span>}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>-</span>
+                    )}
+                  </td>
+                  <td>{formatRelativeTime(pr.createdAt)}</td>
+                  <td>
+                    <div className={styles.actionButtons}>
+                      <button className={`${styles.actionBtn} ${styles.view}`} title="查看详情" onClick={() => openView(pr)}>
+                        <FaEye />
+                      </button>
+                      <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDeletePr(pr)}>
                         <FaTrash />
                       </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {reviews.length === 0 && (
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+            {prs.length === 0 && (
               <tr>
-                <td colSpan={9} className={styles.emptyCell}>
+                <td colSpan={8} className={styles.emptyCell}>
                   <div className={styles.emptyCellIcon}>
-                    <FaCode />
+                    <FaGithub />
                   </div>
-                  <div className={styles.emptyCellText}>暂无代码审查数据</div>
+                  <div className={styles.emptyCellText}>{selectedRepoId ? "暂无 PR 数据" : "请点击上方仓库查看 PR"}</div>
                 </td>
               </tr>
             )}
@@ -285,7 +428,7 @@ const CodeReviewList: React.FC = () => {
         </table>
       </div>
 
-      {
+      {total > 0 && (
         <div className={styles.pagination}>
           <span className={styles.paginationInfo}>共 {total} 条记录</span>
           <div className={styles.paginationControls}>
@@ -318,18 +461,23 @@ const CodeReviewList: React.FC = () => {
             </button>
           </div>
         </div>
-      }
+      )}
 
       {/* ============ VIEW MODAL ============ */}
-      <Modal visible={viewModalVisible} title={selectedReview?.title || "代码审查详情"} onClose={closeView} width={800} footer={null}>
-        {selectedReview && (
+      <Modal visible={viewModalVisible} title={selectedPR?.title || "PR 详情"} onClose={closeView} width={800} footer={null}>
+        {selectedPR && (
           <div data-allow-copy="true">
             <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
-              <span className={`${styles.badge} ${styles[`status_${selectedReview.status}`]}`}>
-                {statusText[selectedReview.status]}
+              <span className={`${styles.badge} ${selectedPR.state === "closed" ? styles.pr_closed : styles[`status_${selectedPR.state}`]}`}>
+                {stateText[selectedPR.state]}
               </span>
-              <span className={`${styles.badge} ${styles[`priority_${selectedReview.priority}`]}`}>
-                {priorityText[selectedReview.priority]}
+              {selectedPR.priority && (
+                <span className={`${styles.badge} ${styles[`priority_${selectedPR.priority}`]}`}>
+                  {selectedPR.priority === "high" ? "高" : selectedPR.priority === "medium" ? "中" : selectedPR.priority === "low" ? "低" : selectedPR.priority === "critical" ? "紧急" : selectedPR.priority}
+                </span>
+              )}
+              <span className={`${styles.badge} ${styles[`status_${selectedPR.reviewStatus}`]}`}>
+                {reviewStatusText[selectedPR.reviewStatus] || selectedPR.reviewStatus}
               </span>
             </div>
             <div
@@ -342,27 +490,29 @@ const CodeReviewList: React.FC = () => {
                 borderBottom: "1px solid var(--border-primary)",
               }}
             >
-              {renderField("作者", <AssigneeDisplay name={selectedReview.author} avatar={selectedReview.authorAvatar} />)}
-              {renderField("审核人", <AssigneeDisplay name={selectedReview.reviewer} avatar={selectedReview.reviewerAvatar} />)}
-              {renderField("所属组织", orgNameMap[selectedReview.organizationId] || selectedReview.organizationId)}
-              {renderField("仓库", selectedReview.repository)}
-              {renderField("分支", selectedReview.branch)}
-              {renderField("Commit", selectedReview.commitHash)}
+              {renderField("作者", selectedPR.author)}
+              {renderField("源分支", selectedPR.headBranch)}
+              {renderField("目标分支", selectedPR.baseBranch)}
+              {renderField("Commit", selectedPR.commitSha)}
               {renderField(
                 "变更统计",
-                <span>
-                  {selectedReview.filesChanged} 文件
-                  <span style={{ color: "#22c55e", marginLeft: "8px" }}>+{selectedReview.linesAdded}</span>
-                  <span style={{ color: "#ef4444", marginLeft: "4px" }}>-{selectedReview.linesDeleted}</span>
-                </span>,
+                selectedPR.changedFiles != null ? (
+                  <span>
+                    {selectedPR.changedFiles} 文件
+                    {selectedPR.additions != null && selectedPR.additions > 0 && <span style={{ color: "#22c55e", marginLeft: "8px" }}>+{selectedPR.additions}</span>}
+                    {selectedPR.deletions != null && selectedPR.deletions > 0 && <span style={{ color: "#ef4444", marginLeft: "4px" }}>-{selectedPR.deletions}</span>}
+                  </span>
+                ) : (
+                  "-"
+                ),
               )}
-              {renderField("创建时间", formatDateTime(selectedReview.createdAt))}
-              {renderField("更新时间", formatDateTime(selectedReview.updatedAt))}
+              {renderField("创建时间", formatDateTime(selectedPR.createdAt))}
+              {renderField("更新时间", formatDateTime(selectedPR.updatedAt))}
             </div>
             <div>
               <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
               <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                {selectedReview.description || "暂无描述"}
+                {selectedPR.description || "暂无描述"}
               </div>
             </div>
           </div>

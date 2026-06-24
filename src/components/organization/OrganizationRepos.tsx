@@ -8,6 +8,17 @@ import { formatRelativeTime } from "../../utils/utils";
 import OrganizationService from "../../services/organizationService";
 import styles from "../../pages/organization/OrganizationDetail.module.css";
 
+/** 过滤语言字段中的控制字符 */
+function cleanLang(lang: any): string {
+  if (typeof lang !== "string") return "";
+  let out = "";
+  for (let i = 0; i < lang.length; i++) {
+    const c = lang.charCodeAt(i);
+    if (c >= 32) out += lang[i];
+  }
+  return out.trim();
+}
+
 // ---- types ----
 export interface Repo {
   id: string;
@@ -82,8 +93,8 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
           name: item.name || "",
           description: item.description || "",
           url: item.url || "",
-          language: item.language?.replace(/[\x00-\x1f]/g, "").trim() || "",
-          languageColor: languageColors[item.language?.replace(/[\x00-\x1f]/g, "").trim()] || "#6c757d",
+          language: cleanLang(item.language),
+          languageColor: languageColors[cleanLang(item.language)] || "#6c757d",
           stars: item.stars_count ?? 0,
           updatedAt: item.updated_at == null || (typeof item.updated_at === "number" && item.updated_at > 9999999999999) ? "" : item.updated_at,
           organizationId: String(item.org_id ?? ""),
