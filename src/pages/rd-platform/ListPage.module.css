@@ -489,6 +489,68 @@
   to { transform: rotate(360deg); }
 }
 
+/* Markdown 预览 */
+.markdownPreview {
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.markdownPreview p {
+  margin: 0 0 8px;
+}
+
+.markdownPreview ul,
+.markdownPreview ol {
+  padding-left: 20px;
+  margin: 4px 0;
+}
+
+.markdownPreview li {
+  margin-bottom: 2px;
+}
+
+.markdownPreview code {
+  background: var(--bg-secondary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.markdownPreview pre {
+  background: var(--bg-secondary);
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.markdownPreview pre code {
+  background: none;
+  padding: 0;
+}
+
+.markdownPreview table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.markdownPreview th,
+.markdownPreview td {
+  border: 1px solid var(--border-primary);
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.markdownPreview th {
+  background: var(--bg-secondary);
+  font-weight: 600;
+}
+
+.markdownPreview tr:nth-child(even) {
+  background: var(--bg-secondary);
+}
+
 @media (max-width: 768px) {
   .filterForm {
     grid-template-columns: 1fr;

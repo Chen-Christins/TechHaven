@@ -11,6 +11,8 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import styles from "./ListPage.module.css";
 import Input from "../../components/input/Input";
 import CustomSelect from "../../components/customSelect/CustomSelect";
@@ -57,12 +59,6 @@ const stateOptions: SelectOption[] = [
 ];
 
 const stateText: Record<string, string> = { open: "开启中", closed: "已关闭", merged: "已合并" };
-const reviewStatusText: Record<string, string> = {
-  pending: "待审核",
-  approved: "已通过",
-  changes_requested: "需修改",
-};
-
 const PAGE_SIZE = 10;
 
 // ---- component ----
@@ -345,7 +341,6 @@ const CodeReviewList: React.FC = () => {
               <th>标题</th>
               <th>状态</th>
               <th>作者</th>
-              <th>审查状态</th>
               <th>分支</th>
               <th>变更</th>
               <th>创建时间</th>
@@ -354,10 +349,6 @@ const CodeReviewList: React.FC = () => {
           </thead>
           <tbody>
             {prs.map((pr) => {
-              let reviewers: { reviewer: string; status: string }[] = [];
-              try {
-                reviewers = JSON.parse(pr.reviewers);
-              } catch { /* empty: use default empty array */ }
               return (
                 <tr key={pr.id}>
                   <td className={styles.titleCell} onClick={() => openView(pr)}>
@@ -369,21 +360,6 @@ const CodeReviewList: React.FC = () => {
                     </span>
                   </td>
                   <td style={{ textAlign: "center" }}>{pr.author}</td>
-                  <td style={{ textAlign: "center" }}>
-                    {reviewers.length > 0 ? (
-                      reviewers.map((r, i) => (
-                        <span
-                          key={i}
-                          className={`${styles.badge} ${r.status === "approved" ? styles.status_approved : r.status === "changes_requested" ? styles.status_rejected : styles.status_pending}`}
-                          style={{ margin: "2px 4px", display: "inline-block" }}
-                        >
-                          {r.reviewer}: {r.status === "approved" ? "已通过" : r.status === "changes_requested" ? "需修改" : "待审核"}
-                        </span>
-                      ))
-                    ) : (
-                      <span className={`${styles.badge} ${styles.status_pending}`}>待审核</span>
-                    )}
-                  </td>
                   <td style={{ textAlign: "center", fontSize: "13px" }}>
                     <span style={{ fontWeight: 500 }}>{pr.headBranch}</span>
                     <span style={{ color: "var(--text-tertiary)", margin: "0 4px" }}>→</span>
@@ -416,7 +392,7 @@ const CodeReviewList: React.FC = () => {
             })}
             {prs.length === 0 && (
               <tr>
-                <td colSpan={8} className={styles.emptyCell}>
+                <td colSpan={7} className={styles.emptyCell}>
                   <div className={styles.emptyCellIcon}>
                     <FaGithub />
                   </div>
@@ -476,9 +452,6 @@ const CodeReviewList: React.FC = () => {
                   {selectedPR.priority === "high" ? "高" : selectedPR.priority === "medium" ? "中" : selectedPR.priority === "low" ? "低" : selectedPR.priority === "critical" ? "紧急" : selectedPR.priority}
                 </span>
               )}
-              <span className={`${styles.badge} ${styles[`status_${selectedPR.reviewStatus}`]}`}>
-                {reviewStatusText[selectedPR.reviewStatus] || selectedPR.reviewStatus}
-              </span>
             </div>
             <div
               style={{
@@ -511,8 +484,8 @@ const CodeReviewList: React.FC = () => {
             </div>
             <div>
               <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
-              <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                {selectedPR.description || "暂无描述"}
+              <div className={styles.markdownPreview}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedPR.description || "暂无描述"}</ReactMarkdown>
               </div>
             </div>
           </div>

@@ -7,7 +7,6 @@ import Loading from "../../components/loading/Loading";
 import { encodeId } from "../../utils/hashId";
 import { useRdOrg } from "../../contexts/RdOrgContext";
 import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
-import { RdMockService } from "../../services/rdPlatformMock";
 import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
 import type { RdStats, Requirement, Bug, Task } from "../../types/rdPlatform";
 
@@ -25,22 +24,17 @@ const Dashboard: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       const orgIds = selectedOrgId ? [selectedOrgId] : undefined;
-      const [s, reqs, bugs, tasks, rStats] = await Promise.all([
+      const [s, reqs, bugs, tasks] = await Promise.all([
         RdAPI.getStats(orgIds),
         RdAPI.getRequirements({ page: 1, pageSize: 5, organizationIds: orgIds }),
         RdAPI.getBugs({ page: 1, pageSize: 5, organizationIds: orgIds }),
         RdAPI.getTasks({ page: 1, pageSize: 5, organizationIds: orgIds }),
-        RdMockService.getReviewStats(orgIds),
       ]);
       setStats(s);
       setRecentRequirements(reqs.data);
       setRecentBugs(bugs.data);
       setRecentTasks(tasks.data);
-      // 后端就绪后改用 RdAPI.getStats 返回的字段：s.totalReviews / s.pendingReviews
-      setReviewStats({
-        totalReviews: s.totalReviews || rStats.totalReviews,
-        pendingReviews: s.pendingReviews || rStats.pendingReviews,
-      });
+      setReviewStats({ totalReviews: s.totalReviews ?? 0, pendingReviews: s.pendingReviews ?? 0 });
       setLoading(false);
     };
     fetchData();
