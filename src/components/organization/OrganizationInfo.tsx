@@ -1,16 +1,17 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaBuilding, FaCheckCircle, FaLock, FaUserFriends, FaArrowLeft, FaPlus, FaUser, FaUserAlt } from "react-icons/fa";
+import { FaBuilding, FaCheckCircle, FaLock, FaUserFriends, FaArrowLeft, FaPlus, FaUser, FaUserAlt, FaGithub } from "react-icons/fa";
 import type { OrganizationDetail, MemberStats } from "./types";
 import styles from "../../pages/organization/OrganizationDetail.module.css";
 
 interface OrganizationInfoProps {
   org: OrganizationDetail | null;
   stats: MemberStats;
+  repoCount: number;
   onJoin: () => void;
 }
 
-const OrganizationInfo: React.FC<OrganizationInfoProps> = ({ org, stats, onJoin }) => {
+const OrganizationInfo: React.FC<OrganizationInfoProps> = ({ org, stats, repoCount, onJoin }) => {
   const navigate = useNavigate();
 
   if (!org) return null;
@@ -79,6 +80,13 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({ org, stats, onJoin 
           </div>
           <div className={styles.statValue}>{stats.regularMembers}</div>
           <div className={styles.statLabel}>普通成员</div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={`${styles.statIcon} ${styles.info}`}>
+            <FaGithub />
+          </div>
+          <div className={styles.statValue}>{repoCount}</div>
+          <div className={styles.statLabel}>代码仓库</div>
         </div>
       </div>
     </>

@@ -13,6 +13,7 @@ export interface User {
   avatar?: string;
   bio?: string;
   website?: string;
+  github?: string;
   role: string;
   login_time: number | string;
   status: number | string;

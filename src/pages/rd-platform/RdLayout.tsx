@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, Outlet, useSearchParams } from "react-router-dom";
 import { useRdNavigate } from "../../hooks/useRdNavigate";
 import { encodeId, decodeId } from "../../utils/hashId";
-import { FaHome, FaBars, FaTimes, FaClipboardList, FaBug, FaTasks, FaTicketAlt, FaLock } from "react-icons/fa";
+import { FaHome, FaBars, FaTimes, FaClipboardList, FaBug, FaTasks, FaTicketAlt, FaCode, FaLock } from "react-icons/fa";
 import styles from "./RdLayout.module.css";
 import ThemeToggle from "../../components/themeToggle/ThemeToggle";
 import Notification from "../../components/notification/Notification";
@@ -192,6 +192,7 @@ const RdLayout: React.FC = () => {
         { id: "requirements", label: "需求管理", icon: <FaClipboardList />, path: "/rd/requirements" },
         { id: "bugs", label: "缺陷管理", icon: <FaBug />, path: "/rd/bugs" },
         { id: "tasks", label: "任务管理", icon: <FaTasks />, path: "/rd/tasks" },
+        { id: "reviews", label: "代码审查", icon: <FaCode />, path: "/rd/reviews" },
       ],
     },
     {

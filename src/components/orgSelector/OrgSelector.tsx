@@ -29,9 +29,9 @@ const OrgSelector: React.FC<OrgSelectorProps> = ({ orgs, selectedOrgId, onChange
   if (orgs.length === 0) return null;
 
   const currentOrg = orgs.find((o) => o.orgId === selectedOrgId);
-  const displayName = currentOrg ? currentOrg.orgName : "全部组织";
+  const displayName = currentOrg ? currentOrg.orgName : (orgs[0]?.orgName || "");
 
-  const options = isSingle ? orgs : [{ orgId: "", orgName: "全部组织", role: 0 }, ...orgs];
+  const options = orgs;
 
   const handleSelect = (orgId: string) => {
     onChange(orgId);
@@ -79,7 +79,6 @@ const OrgSelector: React.FC<OrgSelectorProps> = ({ orgs, selectedOrgId, onChange
                       </div>
                       <div className={styles.optionInfo}>
                         <span className={styles.optionName}>{org.orgName}</span>
-                        {org.orgId === "" && <span className={styles.optionHint}>查看所有组织的数据</span>}
                       </div>
                     </div>
                     {isSelected && (

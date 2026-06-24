@@ -277,6 +277,10 @@
   border-bottom: 1px solid var(--border-primary);
 }
 
+.usersTable tbody tr:last-child {
+  border-bottom: none;
+}
+
 .usersTable tbody tr:hover {
   background-color: var(--bg-hover);
 }
@@ -465,6 +469,11 @@
 .statIcon.error {
   background-color: var(--error-light);
   color: var(--error);
+}
+
+.statIcon.info {
+  background-color: rgba(100, 100, 220, 0.1);
+  color: #6366f1;
 }
 
 .statValue {
@@ -1332,4 +1341,254 @@
 .formInput :global(.ant-picker-clear) {
   background-color: var(--input-bg);
   color: var(--text-secondary);
+}
+
+/* ---- 仓库列表卡片 ---- */
+.repoSection {
+  padding: 20px;
+  margin-top: 0;
+}
+
+.repoSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* 仓库 Token 徽章 */
+.repoTokenBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.repoTokenBadge:hover {
+  background: #16a34a;
+  color: #fff;
+}
+
+.repoTokenBadgeNone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.repoTokenBadgeNone:hover {
+  background: var(--text-tertiary);
+  color: #fff;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.repoCount {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.repoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.repoCard {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+}
+
+.repoCard:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--primary);
+}
+
+.repoCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.repoIcon {
+  font-size: 18px;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.repoName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--primary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.repoExternalIcon {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.repoDeleteBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.repoDeleteBtn:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.repoDescription {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 14px 0;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.repoMeta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.repoLanguage {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.repoLanguageDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.repoStars {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #eab308;
+}
+
+.repoUpdated {
+  color: var(--text-tertiary);
+}
+
+/* Sync 按钮 */
+.repoSyncBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.repoSyncBtn:hover {
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.repoSyncSpinning svg {
+  animation: repoSpin 1s linear infinite;
+}
+
+@keyframes repoSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.repoSyncStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.syncStatusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.syncStatusIdle {
+  background-color: var(--text-tertiary);
+}
+
+.syncStatusSyncing {
+  background-color: #a855f7;
+  animation: repoPulse 0.8s ease-in-out infinite;
+}
+
+.syncStatusDone {
+  background-color: #16a34a;
+}
+
+.syncStatusFailed {
+  background-color: #ef4444;
+}
+
+@keyframes repoPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@media (max-width: 768px) {
+  .repoGrid {
+    grid-template-columns: 1fr;
+  }
 }

@@ -131,6 +131,8 @@ export class RdPlatformService {
       unresolvedBugs: d.unresolved_bugs ?? 0,
       totalTasks: d.total_tasks ?? 0,
       overdueTasks: d.overdue_tasks ?? 0,
+      totalReviews: d.total_reviews ?? 0,
+      pendingReviews: d.pending_reviews ?? 0,
     };
   }
 

@@ -485,6 +485,164 @@ export class OrganizationService {
     const response = await http.get<GetApplyListResponse>(url);
     return response.data;
   }
+
+  // ---------------------------------------------------------------------------
+  // 组织仓库
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 获取组织仓库列表
+   */
+  static async getRepos(params: { org_id: string; page?: number; page_size?: number }): Promise<{
+    list: Array<{
+      id: number | string;
+      org_id: number | string;
+      name: string;
+      description: string;
+      url: string;
+      language: string;
+      stars_count: number;
+      updated_at: string;
+      created_at: string;
+    }>;
+    total: number;
+  }> {
+    const { org_id, page = 1, page_size = 20 } = params;
+    const url = `/organization/repos?org_id=${org_id}&page=${page}&page_size=${page_size}`;
+    const response = await http.get<any>(url);
+    return response.data;
+  }
+
+  /**
+   * 添加仓库
+   */
+  static async addRepo(params: {
+    org_id: string;
+    name: string;
+    url: string;
+    description?: string;
+    token?: string;
+  }): Promise<{ id: number | string }> {
+    const formData = new URLSearchParams();
+    formData.append("org_id", params.org_id);
+    formData.append("name", params.name);
+    formData.append("url", params.url);
+    if (params.description) formData.append("description", params.description);
+    if (params.token) formData.append("token", params.token);
+
+    const response = await http.post<{ id: number | string }>("/organization/repos/add", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+    return response.data;
+  }
+
+  /**
+   * 删除仓库
+   */
+  static async deleteRepo(params: { id: string; org_id: string }): Promise<void> {
+    const formData = new URLSearchParams();
+    formData.append("id", params.id);
+    formData.append("org_id", params.org_id);
+
+    await http.post("/organization/repos/delete", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  }
+
+  /**
+   * 获取仓库统计
+   */
+  static async getRepoStats(orgId: string): Promise<{ total_repos: number }> {
+    const response = await http.get<{ total_repos: number }>(`/organization/repos/stats?org_id=${orgId}`);
+    return response.data;
+  }
+
+  /**
+   * 获取组织成员统计
+   */
+  static async getStats(orgId: string): Promise<{
+    total_members: number;
+    active_members: number;
+    org_admin_count: number;
+    regular_count: number;
+  }> {
+    const response = await http.get<any>(`/organization/stats?id=${orgId}`);
+    return response.data;
+  }
+
+  // ---------------------------------------------------------------------------
+  // 仓库 Token
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 为单个仓库保存/更新 GitHub Token
+   */
+  static async saveRepoToken(params: { repo_id: string; token: string }): Promise<void> {
+    const formData = new URLSearchParams();
+    formData.append("repo_id", params.repo_id);
+    formData.append("token", params.token);
+    await http.post("/organization/repos/token", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  }
+
+  /**
+   * 触发仓库同步（后端调 GitHub API 拉取仓库元数据）
+   */
+  static async syncRepo(params: { repo_id: string }): Promise<void> {
+    const formData = new URLSearchParams();
+    formData.append("repo_id", params.repo_id);
+    await http.post("/organization/repos/sync", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // PR 同步与列表
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 获取 PR 列表
+   */
+  static async getPrs(params: {
+    org_id?: string;
+    repo_id?: string;
+    state?: string;
+    page?: number;
+    page_size?: number;
+  }): Promise<{ total: number; page: number; page_size: number; list: any[] }> {
+    const q: string[] = [];
+    if (params.org_id) q.push(`org_id=${params.org_id}`);
+    if (params.repo_id) q.push(`repo_id=${params.repo_id}`);
+    if (params.state) q.push(`state=${params.state}`);
+    if (params.page) q.push(`page=${params.page}`);
+    if (params.page_size) q.push(`page_size=${params.page_size}`);
+    const url = `/organization/repos/prs${q.length > 0 ? "?" + q.join("&") : ""}`;
+    const response = await http.get<any>(url);
+    return response.data;
+  }
+
+  /**
+   * 触发仓库 PR 同步
+   */
+  static async syncPrs(params: { repo_id: string }): Promise<void> {
+    const formData = new URLSearchParams();
+    formData.append("repo_id", params.repo_id);
+    await http.post("/organization/repos/prs/sync", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  }
+
+  /**
+   * 删除 PR（仅删除本地记录，不影响 GitHub）
+   */
+  static async deletePr(params: { id: string }): Promise<void> {
+    const formData = new URLSearchParams();
+    formData.append("id", params.id);
+    await http.post("/organization/repos/prs/delete", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  }
 }
 
 export default OrganizationService;

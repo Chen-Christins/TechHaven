@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRdNavigate } from "../../hooks/useRdNavigate";
 import { formatDateTime } from "../../utils/utils";
-import { FaClipboardList, FaBug, FaTasks, FaExclamationTriangle } from "react-icons/fa";
+import { FaClipboardList, FaBug, FaTasks, FaExclamationTriangle, FaCode } from "react-icons/fa";
 import styles from "./Dashboard.module.css";
 import Loading from "../../components/loading/Loading";
 import { encodeId } from "../../utils/hashId";
@@ -17,6 +17,7 @@ const Dashboard: React.FC = () => {
   const [recentRequirements, setRecentRequirements] = useState<Requirement[]>([]);
   const [recentBugs, setRecentBugs] = useState<Bug[]>([]);
   const [recentTasks, setRecentTasks] = useState<Task[]>([]);
+  const [reviewStats, setReviewStats] = useState({ totalReviews: 0, pendingReviews: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,6 +34,7 @@ const Dashboard: React.FC = () => {
       setRecentRequirements(reqs.data);
       setRecentBugs(bugs.data);
       setRecentTasks(tasks.data);
+      setReviewStats({ totalReviews: s.totalReviews ?? 0, pendingReviews: s.pendingReviews ?? 0 });
       setLoading(false);
     };
     fetchData();
@@ -102,6 +104,14 @@ const Dashboard: React.FC = () => {
           <div className={styles.statValue}>{stats?.totalTasks ?? 0}</div>
           <div className={styles.statLabel}>任务总数</div>
           <div className={styles.statSub}>已逾期 {stats?.overdueTasks ?? 0}</div>
+        </div>
+        <div className={styles.statCard} onClick={() => navigate("/rd/reviews")}>
+          <div className={`${styles.statIcon} ${styles.warning}`}>
+            <FaCode />
+          </div>
+          <div className={styles.statValue}>{reviewStats.totalReviews}</div>
+          <div className={styles.statLabel}>审查总数</div>
+          <div className={styles.statSub}>待审核 {reviewStats.pendingReviews}</div>
         </div>
         <div className={styles.statCard}>
           <div className={`${styles.statIcon} ${styles.warning}`}>

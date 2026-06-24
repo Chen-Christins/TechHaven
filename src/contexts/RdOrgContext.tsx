@@ -14,7 +14,7 @@ interface RdOrgContextType {
   maxOrgRole: number;
   /** 当前选中组织的角色（选中具体组织时返回该组织角色，全部组织时返回最高角色） */
   currentOrgRole: number;
-  /** 当前选中的组织 ID，空字符串 = 全部组织 */
+  /** 当前选中的组织 ID */
   selectedOrgId: string;
   setSelectedOrgId: (orgId: string) => void;
 }
@@ -57,11 +57,13 @@ export const RdOrgProvider: React.FC<{ children: ReactNode; initialOrgId?: strin
         const list = await RdPlatformService.getMyOrganizations();
         const mapped = list.map((item) => ({ orgId: item.orgId, orgName: item.orgName, role: item.role }));
         setOrgs(mapped);
-        // 单组织自动选中；多组织时校验 URL 传入的 orgId 是否有效
-        if (mapped.length === 1) {
-          setSelectedOrgId(mapped[0].orgId);
-        } else if (initialOrgId && !mapped.some((o) => o.orgId === initialOrgId)) {
-          setSelectedOrgId("");
+        if (mapped.length > 0) {
+          // URL 传入的 orgId 有效则使用，否则默认选中第一个
+          if (initialOrgId && mapped.some((o) => o.orgId === initialOrgId)) {
+            setSelectedOrgId(initialOrgId);
+          } else if (!selectedOrgId) {
+            setSelectedOrgId(mapped[0].orgId);
+          }
         }
       } catch {
         setOrgs([]);
@@ -83,7 +85,6 @@ export const RdOrgProvider: React.FC<{ children: ReactNode; initialOrgId?: strin
 
   const currentOrgRole = useMemo(() => {
     if (isAdmin) return 5;
-    // 全部组织 → 返回最高角色
     if (!selectedOrgId) return maxOrgRole;
     // 选中具体组织 → 返回该组织下的角色
     const org = orgs.find((o) => o.orgId === selectedOrgId);
