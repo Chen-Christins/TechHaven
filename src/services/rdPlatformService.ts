@@ -12,6 +12,9 @@ import type {
   RequirementFilters,
   BugFilters,
   TaskFilters,
+  RdTrendAnalysisData,
+  RdTrendFilters,
+  RdTrendPoint,
 } from "../types/rdPlatform";
 
 // ---------------------------------------------------------------------------
@@ -113,6 +116,88 @@ function toQuery(params: Record<string, any>): string {
   return parts.length > 0 ? "?" + parts.join("&") : "";
 }
 
+const mockTrendSeries: RdTrendPoint[] = [
+  { date: "06-01", requirements: 18, bugs: 9, tasks: 24, completed: 16, reopened: 3, reviewPassRate: 78, cycleTime: 4.8 },
+  { date: "06-02", requirements: 20, bugs: 10, tasks: 26, completed: 18, reopened: 4, reviewPassRate: 80, cycleTime: 4.7 },
+  { date: "06-03", requirements: 22, bugs: 12, tasks: 28, completed: 20, reopened: 4, reviewPassRate: 81, cycleTime: 4.6 },
+  { date: "06-04", requirements: 21, bugs: 11, tasks: 29, completed: 21, reopened: 3, reviewPassRate: 82, cycleTime: 4.5 },
+  { date: "06-05", requirements: 24, bugs: 13, tasks: 31, completed: 23, reopened: 4, reviewPassRate: 83, cycleTime: 4.4 },
+  { date: "06-06", requirements: 23, bugs: 10, tasks: 32, completed: 24, reopened: 3, reviewPassRate: 84, cycleTime: 4.3 },
+  { date: "06-07", requirements: 26, bugs: 14, tasks: 35, completed: 26, reopened: 5, reviewPassRate: 82, cycleTime: 4.5 },
+  { date: "06-08", requirements: 25, bugs: 12, tasks: 36, completed: 27, reopened: 4, reviewPassRate: 85, cycleTime: 4.2 },
+  { date: "06-09", requirements: 27, bugs: 11, tasks: 38, completed: 29, reopened: 3, reviewPassRate: 86, cycleTime: 4.1 },
+  { date: "06-10", requirements: 29, bugs: 13, tasks: 40, completed: 31, reopened: 4, reviewPassRate: 85, cycleTime: 4.2 },
+  { date: "06-11", requirements: 28, bugs: 10, tasks: 41, completed: 32, reopened: 3, reviewPassRate: 87, cycleTime: 4.0 },
+  { date: "06-12", requirements: 30, bugs: 9, tasks: 43, completed: 34, reopened: 3, reviewPassRate: 88, cycleTime: 3.9 },
+  { date: "06-13", requirements: 31, bugs: 12, tasks: 44, completed: 35, reopened: 4, reviewPassRate: 87, cycleTime: 4.0 },
+  { date: "06-14", requirements: 29, bugs: 11, tasks: 45, completed: 36, reopened: 3, reviewPassRate: 89, cycleTime: 3.8 },
+  { date: "06-15", requirements: 33, bugs: 10, tasks: 47, completed: 38, reopened: 3, reviewPassRate: 90, cycleTime: 3.7 },
+  { date: "06-16", requirements: 32, bugs: 8, tasks: 46, completed: 39, reopened: 2, reviewPassRate: 91, cycleTime: 3.6 },
+  { date: "06-17", requirements: 34, bugs: 12, tasks: 49, completed: 40, reopened: 4, reviewPassRate: 89, cycleTime: 3.8 },
+  { date: "06-18", requirements: 35, bugs: 9, tasks: 50, completed: 42, reopened: 3, reviewPassRate: 91, cycleTime: 3.5 },
+  { date: "06-19", requirements: 33, bugs: 8, tasks: 49, completed: 43, reopened: 2, reviewPassRate: 92, cycleTime: 3.4 },
+  { date: "06-20", requirements: 36, bugs: 10, tasks: 52, completed: 45, reopened: 3, reviewPassRate: 91, cycleTime: 3.5 },
+  { date: "06-21", requirements: 37, bugs: 9, tasks: 54, completed: 46, reopened: 2, reviewPassRate: 92, cycleTime: 3.3 },
+  { date: "06-22", requirements: 35, bugs: 7, tasks: 53, completed: 47, reopened: 2, reviewPassRate: 93, cycleTime: 3.2 },
+  { date: "06-23", requirements: 38, bugs: 8, tasks: 55, completed: 49, reopened: 2, reviewPassRate: 93, cycleTime: 3.1 },
+  { date: "06-24", requirements: 39, bugs: 10, tasks: 57, completed: 50, reopened: 3, reviewPassRate: 92, cycleTime: 3.2 },
+  { date: "06-25", requirements: 37, bugs: 7, tasks: 56, completed: 52, reopened: 2, reviewPassRate: 94, cycleTime: 3.0 },
+  { date: "06-26", requirements: 40, bugs: 8, tasks: 58, completed: 53, reopened: 2, reviewPassRate: 94, cycleTime: 2.9 },
+  { date: "06-27", requirements: 41, bugs: 9, tasks: 60, completed: 55, reopened: 3, reviewPassRate: 93, cycleTime: 3.0 },
+  { date: "06-28", requirements: 39, bugs: 6, tasks: 59, completed: 56, reopened: 2, reviewPassRate: 95, cycleTime: 2.8 },
+  { date: "06-29", requirements: 42, bugs: 7, tasks: 61, completed: 58, reopened: 2, reviewPassRate: 95, cycleTime: 2.7 },
+  { date: "06-30", requirements: 43, bugs: 8, tasks: 63, completed: 60, reopened: 2, reviewPassRate: 96, cycleTime: 2.6 },
+];
+
+function buildMockTrendData(periodDays: 7 | 30): RdTrendAnalysisData {
+  const series = mockTrendSeries.slice(-periodDays);
+  const latest = series[series.length - 1];
+  const previous = series[series.length - 2] || latest;
+  const completedTotal = series.reduce((sum, item) => sum + item.completed, 0);
+  const bugTotal = series.reduce((sum, item) => sum + item.bugs, 0);
+  const requirements = series.reduce((sum, item) => sum + item.requirements, 0);
+  const tasks = series.reduce((sum, item) => sum + item.tasks, 0);
+  const reviewCount = series.reduce((sum, item) => sum + Math.round(item.completed * 0.35), 0);
+
+  return {
+    summary: {
+      completedTotal,
+      bugTotal,
+      avgReviewPassRate: Math.round(series.reduce((sum, item) => sum + item.reviewPassRate, 0) / series.length),
+      avgCycleTime: Number((series.reduce((sum, item) => sum + item.cycleTime, 0) / series.length).toFixed(1)),
+      taskDelta: latest.tasks - previous.tasks,
+      cycleDelta: Number((latest.cycleTime - previous.cycleTime).toFixed(1)),
+    },
+    series,
+    workDistribution: {
+      requirementDelivery: requirements,
+      bugFix: bugTotal,
+      rdTask: tasks,
+      codeReview: reviewCount,
+    },
+    teamHealth: {
+      throughput: periodDays === 7 ? 92 : 87,
+      bugPressure: periodDays === 7 ? 24 : 34,
+      reviewEfficiency: periodDays === 7 ? 84 : 76,
+      reworkRisk: periodDays === 7 ? 18 : 22,
+    },
+    insights: [
+      {
+        title: "交付节奏",
+        content: "完成项保持增长，任务吞吐高于新增缺陷，短期积压风险可控。",
+      },
+      {
+        title: "质量风险",
+        content: "返工数处于低位，审查通过率持续提升，建议继续保留当前代码审查标准。",
+      },
+      {
+        title: "资源关注",
+        content: "任务总量仍在上升，如下个周期新增继续增加，需要提前拆分高优先级任务。",
+      },
+    ],
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Service
 // ---------------------------------------------------------------------------
@@ -134,6 +219,15 @@ export class RdPlatformService {
       totalReviews: d.total_reviews ?? 0,
       pendingReviews: d.pending_reviews ?? 0,
     };
+  }
+
+  static async getTrends(filters: RdTrendFilters): Promise<RdTrendAnalysisData> {
+    // TODO: Replace mock with GET /rd/trends after backend is ready.
+    // const q = toQuery({ org_id: filters.orgId, period_days: filters.periodDays, granularity: filters.granularity || "day" });
+    // const res = await http.get<any>(`${BASE}/trends${q}`);
+    // return mapTrendResponse(res.data);
+    await new Promise((resolve) => setTimeout(resolve, 240));
+    return buildMockTrendData(filters.periodDays);
   }
 
   // -- Requirements ---------------------------------------------------------

@@ -686,6 +686,33 @@ DELETE /rd/reviews/delete
        Req(JSON): { id, org_id }
 ```
 
+### 13.8 趋势分析 ⚠️
+
+```
+⚠️ Mock 阶段，后端待实现（当前页面使用 TrendAnalysis.tsx 本地 mock 数据）
+
+GET /rd/trends?org_id?=<string>&period_days?=<7|30>&start_date?=<YYYY-MM-DD>&end_date?=<YYYY-MM-DD>&granularity?=<day|week|month>
+   → {
+       summary: {
+         completed_total, bug_total, avg_review_pass_rate, avg_cycle_time,
+         task_delta, cycle_delta
+       },
+       series: [{
+         date, requirements, bugs, tasks, completed, reopened,
+         review_pass_rate, cycle_time
+       }],
+       work_distribution: {
+         requirement_delivery, bug_fix, rd_task, code_review
+       },
+       team_health: {
+         throughput, bug_pressure, review_efficiency, rework_risk
+       },
+       insights: [{ title, content }]
+     }
+
+详细字段、权限和示例见 docs/RD_TREND_ANALYSIS_BACKEND.md
+```
+
 ---
 
 ## 14. 仪表盘（管理后台）
@@ -739,6 +766,7 @@ GET /stats
 | 优先级 | 模块 | 接口 | 当前状态 |
 |--------|------|------|----------|
 | 高 | 代码审查 | `GET/POST/DELETE /rd/reviews` 全套 CRUD | Mock 内存数据（`rdPlatformMock.ts`） |
+| 高 | RD 趋势分析 | `GET /rd/trends` | Mock 本地数据（`TrendAnalysis.tsx`），详见 `docs/RD_TREND_ANALYSIS_BACKEND.md` |
 | 高 | 组织仓库 | `GET /organization/repos`、`POST /repos/add`、`POST /repos/delete`、`GET /repos/stats` | Mock 内存数据（`OrganizationRepos.tsx`） |
 | 中 | RD 统计 | `total_reviews` / `pending_reviews` 字段 | 前端类型已定义，后端 `GET /rd/stats` 待新增字段 |
 

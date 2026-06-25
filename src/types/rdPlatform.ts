@@ -136,6 +136,53 @@ export interface RdStats {
 }
 
 /** 通用分页响应 */
+export interface RdTrendPoint {
+  date: string;
+  requirements: number;
+  bugs: number;
+  tasks: number;
+  completed: number;
+  reopened: number;
+  reviewPassRate: number;
+  cycleTime: number;
+}
+
+export interface RdTrendSummary {
+  completedTotal: number;
+  bugTotal: number;
+  avgReviewPassRate: number;
+  avgCycleTime: number;
+  taskDelta: number;
+  cycleDelta: number;
+}
+
+export interface RdTrendAnalysisData {
+  summary: RdTrendSummary;
+  series: RdTrendPoint[];
+  workDistribution: {
+    requirementDelivery: number;
+    bugFix: number;
+    rdTask: number;
+    codeReview: number;
+  };
+  teamHealth: {
+    throughput: number;
+    bugPressure: number;
+    reviewEfficiency: number;
+    reworkRisk: number;
+  };
+  insights: Array<{
+    title: string;
+    content: string;
+  }>;
+}
+
+export interface RdTrendFilters {
+  orgId?: string;
+  periodDays: 7 | 30;
+  granularity?: "day" | "week" | "month";
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;
