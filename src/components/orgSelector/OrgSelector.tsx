@@ -29,7 +29,7 @@ const OrgSelector: React.FC<OrgSelectorProps> = ({ orgs, selectedOrgId, onChange
   if (orgs.length === 0) return null;
 
   const currentOrg = orgs.find((o) => o.orgId === selectedOrgId);
-  const displayName = currentOrg ? currentOrg.orgName : (orgs[0]?.orgName || "");
+  const displayName = currentOrg ? currentOrg.orgName : orgs[0]?.orgName || "";
 
   const options = orgs;
 

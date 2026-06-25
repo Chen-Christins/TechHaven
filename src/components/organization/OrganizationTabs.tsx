@@ -169,7 +169,10 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
           </button>
         )}
         {userRole !== "guest" && (
-          <button className={`${styles.tabButton} ${showRepos ? styles.activeTab : ""}`} onClick={() => onTabChange(false, false, true)}>
+          <button
+            className={`${styles.tabButton} ${showRepos ? styles.activeTab : ""}`}
+            onClick={() => onTabChange(false, false, true)}
+          >
             仓库列表
           </button>
         )}
@@ -200,94 +203,94 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
               <Loading />
             </div>
           ) : (
-          <table className={styles.usersTable}>
-            <thead>
-              <tr>
-                <th>用户信息</th>
-                <th>角色</th>
-                <th>状态</th>
-                <th>加入时间</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {members && members.length > 0 ? (
-                members.map((member) => (
-                  <tr key={member.id} className={styles.tableRow}>
-                    <td>
-                      <div className={styles.userInfo}>
-                        <Avatar src={member.avatar} name={member.name} size={40} className={styles.userAvatar} />
-                        <div className={styles.userDetails}>
-                          <div className={styles.userName}>{member.name}</div>
-                          {member.email && <div className={styles.userEmail}>{member.email}</div>}
+            <table className={styles.usersTable}>
+              <thead>
+                <tr>
+                  <th>用户信息</th>
+                  <th>角色</th>
+                  <th>状态</th>
+                  <th>加入时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {members && members.length > 0 ? (
+                  members.map((member) => (
+                    <tr key={member.id} className={styles.tableRow}>
+                      <td>
+                        <div className={styles.userInfo}>
+                          <Avatar src={member.avatar} name={member.name} size={40} className={styles.userAvatar} />
+                          <div className={styles.userDetails}>
+                            <div className={styles.userName}>{member.name}</div>
+                            {member.email && <div className={styles.userEmail}>{member.email}</div>}
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span
-                        className={`${styles.roleBadge} ${member.role === "组织管理员" ? styles.admin : member.role === "研发主管" ? styles.moderator : styles.user}`}
-                      >
-                        {member.role === "组织管理员" && <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />}
-                        {member.role === "研发主管" && <FaUserShield style={{ color: "#4caf50", marginRight: 4 }} />}
-                        {member.role === "开发者" && <FaCode style={{ color: "#2196f3", marginRight: 4 }} />}
-                        {member.role === "报告者" && <FaUserCheck style={{ color: "#2196f3", marginRight: 4 }} />}
-                        {member.role === "普通成员" && <FaUser style={{ color: "#2196f3", marginRight: 4 }} />}
-                        {member.role || "普通成员"}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`${styles.statusBadge} ${member.status === "active" ? styles.active : styles.inactive}`}>
-                        <span className={styles.statusIndicator}></span>
-                        {member.status === "active" ? "活跃" : "非活跃"}
-                      </span>
-                    </td>
-                    <td>{member.joinTime || "-"}</td>
-                    <td>
-                      <div className={styles.actionButtons}>
-                        <button
-                          className={`${styles.actionButton} ${styles.viewButton}`}
-                          title="查看详情"
-                          onClick={() => onViewMember(member)}
+                      </td>
+                      <td>
+                        <span
+                          className={`${styles.roleBadge} ${member.role === "组织管理员" ? styles.admin : member.role === "研发主管" ? styles.moderator : styles.user}`}
                         >
-                          <FaEye />
-                        </button>
-                        {canManageMember(member) && (
-                          <>
-                            <button
-                              className={`${styles.actionButton} ${styles.kickButton}`}
-                              title="踢出组织"
-                              onClick={() => onKickMember(member)}
-                            >
-                              <FaUserMinus />
-                            </button>
-                            {canSetRole(member) && (
+                          {member.role === "组织管理员" && <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />}
+                          {member.role === "研发主管" && <FaUserShield style={{ color: "#4caf50", marginRight: 4 }} />}
+                          {member.role === "开发者" && <FaCode style={{ color: "#2196f3", marginRight: 4 }} />}
+                          {member.role === "报告者" && <FaUserCheck style={{ color: "#2196f3", marginRight: 4 }} />}
+                          {member.role === "普通成员" && <FaUser style={{ color: "#2196f3", marginRight: 4 }} />}
+                          {member.role || "普通成员"}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`${styles.statusBadge} ${member.status === "active" ? styles.active : styles.inactive}`}>
+                          <span className={styles.statusIndicator}></span>
+                          {member.status === "active" ? "活跃" : "非活跃"}
+                        </span>
+                      </td>
+                      <td>{member.joinTime || "-"}</td>
+                      <td>
+                        <div className={styles.actionButtons}>
+                          <button
+                            className={`${styles.actionButton} ${styles.viewButton}`}
+                            title="查看详情"
+                            onClick={() => onViewMember(member)}
+                          >
+                            <FaEye />
+                          </button>
+                          {canManageMember(member) && (
+                            <>
                               <button
-                                className={`${styles.actionButton} ${styles.roleButton}`}
-                                title="设置角色"
-                                onClick={() => onSetMemberRole(member)}
+                                className={`${styles.actionButton} ${styles.kickButton}`}
+                                title="踢出组织"
+                                onClick={() => onKickMember(member)}
                               >
-                                <FaCog />
+                                <FaUserMinus />
                               </button>
-                            )}
-                          </>
-                        )}
+                              {canSetRole(member) && (
+                                <button
+                                  className={`${styles.actionButton} ${styles.roleButton}`}
+                                  title="设置角色"
+                                  onClick={() => onSetMemberRole(member)}
+                                >
+                                  <FaCog />
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} style={{ padding: 0 }}>
+                      <div className={styles.emptyState}>
+                        <FaUser className={styles.emptyIcon} />
+                        <h3 className={styles.emptyTitle}>暂无成员</h3>
+                        <p className={styles.emptySubtext}>该组织还没有成员加入</p>
                       </div>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} style={{ padding: 0 }}>
-                    <div className={styles.emptyState}>
-                      <FaUser className={styles.emptyIcon} />
-                      <h3 className={styles.emptyTitle}>暂无成员</h3>
-                      <p className={styles.emptySubtext}>该组织还没有成员加入</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
           )}
           {/* 分页区块 */}
           {membersTotal > 0 && (
@@ -463,7 +466,9 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
               <FaTasks className={styles.emptyIcon} />
               <h3 className={styles.emptyTitle}>暂无任务</h3>
               <p className={styles.emptySubtext}>
-                {userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员" ? '点击"创建任务"按钮来创建第一个任务' : "当前组织还没有发布任何任务"}
+                {userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员"
+                  ? '点击"创建任务"按钮来创建第一个任务'
+                  : "当前组织还没有发布任何任务"}
               </p>
             </div>
           ) : (

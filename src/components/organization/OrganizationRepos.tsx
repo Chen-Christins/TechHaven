@@ -96,7 +96,8 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
           language: cleanLang(item.language),
           languageColor: languageColors[cleanLang(item.language)] || "#6c757d",
           stars: item.stars_count ?? 0,
-          updatedAt: item.updated_at == null || (typeof item.updated_at === "number" && item.updated_at > 9999999999999) ? "" : item.updated_at,
+          updatedAt:
+            item.updated_at == null || (typeof item.updated_at === "number" && item.updated_at > 9999999999999) ? "" : item.updated_at,
           organizationId: String(item.org_id ?? ""),
           hasToken: item.has_token ?? false,
           syncStatus: item.sync_status || "idle",
@@ -258,8 +259,12 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
         <div className={styles.repoGrid}>
           {[1, 2, 3].map((i) => (
             <div key={i} className={styles.repoCard} style={{ opacity: 0.6 }}>
-              <div style={{ height: "20px", width: "60%", background: "var(--bg-secondary)", borderRadius: "4px", marginBottom: "12px" }} />
-              <div style={{ height: "14px", width: "90%", background: "var(--bg-secondary)", borderRadius: "4px", marginBottom: "8px" }} />
+              <div
+                style={{ height: "20px", width: "60%", background: "var(--bg-secondary)", borderRadius: "4px", marginBottom: "12px" }}
+              />
+              <div
+                style={{ height: "14px", width: "90%", background: "var(--bg-secondary)", borderRadius: "4px", marginBottom: "8px" }}
+              />
               <div style={{ height: "14px", width: "70%", background: "var(--bg-secondary)", borderRadius: "4px" }} />
             </div>
           ))}
@@ -364,11 +369,21 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <div>
             <label className={styles.formLabel}>仓库名称 *</label>
-            <Input placeholder="如 frontend-web" value={form.name} onChange={(v) => setForm((prev) => ({ ...prev, name: v }))} size="large" />
+            <Input
+              placeholder="如 frontend-web"
+              value={form.name}
+              onChange={(v) => setForm((prev) => ({ ...prev, name: v }))}
+              size="large"
+            />
           </div>
           <div>
             <label className={styles.formLabel}>仓库地址 *</label>
-            <Input placeholder="仅支持 GitHub：https://github.com/org/repo" value={form.url} onChange={(v) => setForm((prev) => ({ ...prev, url: v }))} size="large" />
+            <Input
+              placeholder="仅支持 GitHub：https://github.com/org/repo"
+              value={form.url}
+              onChange={(v) => setForm((prev) => ({ ...prev, url: v }))}
+              size="large"
+            />
           </div>
           <div>
             <label className={styles.formLabel}>GitHub Token（选填）</label>

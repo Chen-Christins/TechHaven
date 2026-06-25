@@ -97,10 +97,16 @@ const CodeReviewList: React.FC = () => {
   };
 
   // ---- 获取 PR 列表 ----
-  const fetchPrs = async () => {
+  const fetchPrs = async (repoId = selectedRepoId) => {
+    if (!repoId) {
+      setPrs([]);
+      setTotal(0);
+      return;
+    }
+
     const params: any = { page: currentPage, page_size: PAGE_SIZE };
     if (selectedOrgId) params.org_id = selectedOrgId;
-    if (selectedRepoId) params.repo_id = selectedRepoId;
+    params.repo_id = repoId;
     if (filters.state) params.state = filters.state;
     const res = await OrganizationService.getPrs(params);
     setPrs(
@@ -132,11 +138,22 @@ const CodeReviewList: React.FC = () => {
     try {
       const repoList = selectedOrgId ? await fetchRepos() : [];
       setRepos(repoList);
-      await fetchPrs();
+
+      const nextRepoId = repoList.some((repo) => repo.id === selectedRepoId) ? selectedRepoId : (repoList[0]?.id ?? null);
+      if (nextRepoId !== selectedRepoId) {
+        setSelectedRepoId(nextRepoId);
+        setCurrentPage(1);
+        setPrs([]);
+        setTotal(0);
+        return;
+      }
+
+      await fetchPrs(nextRepoId);
     } catch {
       message.error("获取数据失败");
+    } finally {
+      setInitialLoading(false);
     }
-    setInitialLoading(false);
   };
 
   useEffect(() => {
@@ -284,7 +301,10 @@ const CodeReviewList: React.FC = () => {
                 </span>
                 <button
                   className={styles.repoBarSyncBtn}
-                  onClick={(e) => { e.stopPropagation(); handleSyncRepo(repo); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSyncRepo(repo);
+                  }}
                   disabled={syncingRepos.has(repo.id)}
                 >
                   <FaSync className={syncingRepos.has(repo.id) ? styles.repoSpin : ""} size={12} />
@@ -369,8 +389,12 @@ const CodeReviewList: React.FC = () => {
                     {pr.changedFiles != null ? (
                       <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
                         {pr.changedFiles} 文件
-                        {pr.additions != null && pr.additions > 0 && <span style={{ color: "#22c55e", marginLeft: "6px" }}>+{pr.additions}</span>}
-                        {pr.deletions != null && pr.deletions > 0 && <span style={{ color: "#ef4444", marginLeft: "4px" }}>-{pr.deletions}</span>}
+                        {pr.additions != null && pr.additions > 0 && (
+                          <span style={{ color: "#22c55e", marginLeft: "6px" }}>+{pr.additions}</span>
+                        )}
+                        {pr.deletions != null && pr.deletions > 0 && (
+                          <span style={{ color: "#ef4444", marginLeft: "4px" }}>-{pr.deletions}</span>
+                        )}
                       </span>
                     ) : (
                       <span style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>-</span>
@@ -444,12 +468,22 @@ const CodeReviewList: React.FC = () => {
         {selectedPR && (
           <div data-allow-copy="true">
             <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
-              <span className={`${styles.badge} ${selectedPR.state === "closed" ? styles.pr_closed : styles[`status_${selectedPR.state}`]}`}>
+              <span
+                className={`${styles.badge} ${selectedPR.state === "closed" ? styles.pr_closed : styles[`status_${selectedPR.state}`]}`}
+              >
                 {stateText[selectedPR.state]}
               </span>
               {selectedPR.priority && (
                 <span className={`${styles.badge} ${styles[`priority_${selectedPR.priority}`]}`}>
-                  {selectedPR.priority === "high" ? "高" : selectedPR.priority === "medium" ? "中" : selectedPR.priority === "low" ? "低" : selectedPR.priority === "critical" ? "紧急" : selectedPR.priority}
+                  {selectedPR.priority === "high"
+                    ? "高"
+                    : selectedPR.priority === "medium"
+                      ? "中"
+                      : selectedPR.priority === "low"
+                        ? "低"
+                        : selectedPR.priority === "critical"
+                          ? "紧急"
+                          : selectedPR.priority}
                 </span>
               )}
             </div>
@@ -472,8 +506,12 @@ const CodeReviewList: React.FC = () => {
                 selectedPR.changedFiles != null ? (
                   <span>
                     {selectedPR.changedFiles} 文件
-                    {selectedPR.additions != null && selectedPR.additions > 0 && <span style={{ color: "#22c55e", marginLeft: "8px" }}>+{selectedPR.additions}</span>}
-                    {selectedPR.deletions != null && selectedPR.deletions > 0 && <span style={{ color: "#ef4444", marginLeft: "4px" }}>-{selectedPR.deletions}</span>}
+                    {selectedPR.additions != null && selectedPR.additions > 0 && (
+                      <span style={{ color: "#22c55e", marginLeft: "8px" }}>+{selectedPR.additions}</span>
+                    )}
+                    {selectedPR.deletions != null && selectedPR.deletions > 0 && (
+                      <span style={{ color: "#ef4444", marginLeft: "4px" }}>-{selectedPR.deletions}</span>
+                    )}
                   </span>
                 ) : (
                   "-"
