@@ -518,7 +518,7 @@ const CodeReviewList: React.FC = () => {
                 ),
               )}
               {renderField("创建时间", formatDateTime(selectedPR.createdAt))}
-              {renderField("更新时间", formatDateTime(selectedPR.updatedAt))}
+              {renderField("同步时间", formatDateTime(selectedPR.updatedAt))}
             </div>
             <div>
               <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
