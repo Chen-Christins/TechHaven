@@ -5,7 +5,38 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blog</title>
+    <title>TechBlog</title>
+    <script>
+        (function () {
+            try {
+                const raw = localStorage.getItem('publicSiteSettings');
+                if (!raw) return;
+
+                const settings = JSON.parse(raw);
+                if (settings.siteName) {
+                    document.title = settings.siteName;
+                }
+                if (settings.siteDescription) {
+                    var description = document.querySelector('meta[name="description"]') || document.createElement('meta');
+                    description.setAttribute('name', 'description');
+                    description.setAttribute('content', settings.siteDescription);
+                    if (!description.parentNode) document.head.appendChild(description);
+                }
+                if (settings.siteKeywords) {
+                    var keywords = document.querySelector('meta[name="keywords"]') || document.createElement('meta');
+                    keywords.setAttribute('name', 'keywords');
+                    keywords.setAttribute('content', settings.siteKeywords);
+                    if (!keywords.parentNode) document.head.appendChild(keywords);
+                }
+                if (settings.favicon) {
+                    var icon = document.querySelector('link[rel="icon"]');
+                    if (icon) icon.href = settings.favicon;
+                }
+            } catch (error) {
+                // Ignore invalid public settings cache.
+            }
+        })();
+    </script>
     <!-- 防止暗色主题导航时的白色闪烁 - 立即执行 -->
     <script>
         (function () {

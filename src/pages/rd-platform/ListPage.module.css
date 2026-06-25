@@ -410,9 +410,6 @@
 
 .repoBarClickable {
   cursor: pointer;
-  transition:
-    border-color 0.15s,
-    background 0.15s;
 }
 
 .repoBarClickable:hover {
