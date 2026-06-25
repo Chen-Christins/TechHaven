@@ -10,7 +10,6 @@ import {
   FaExternalLinkAlt,
   FaSignInAlt,
   FaBuilding,
-  FaTasks,
   FaFlask,
   FaGamepad,
 } from "react-icons/fa";
@@ -55,7 +54,6 @@ const Navbar: React.FC = () => {
   // 导航链接数据（包含图标和路径）
   const navLinks = [
     { label: "首页", icon: <FaHome />, path: "/" },
-    { label: "任务", icon: <FaTasks />, path: "/assignments" },
     { label: "组织", icon: <FaBuilding />, path: "/organizations/list" },
   ];
 
@@ -178,7 +176,7 @@ const Navbar: React.FC = () => {
         return location.pathname === "/" || location.pathname === "/index";
       }
       if (path === "/assignments") {
-        return location.pathname.startsWith("/assignments") || location.pathname.startsWith("/assignment");
+        return location.pathname === "/personal" && location.search.includes("tab=assignments");
       }
       if (path === "/organizations/list") {
         return location.pathname.startsWith("/organizations") || location.pathname.startsWith("/organization");

@@ -25,7 +25,6 @@ import OrganizationList from "../pages/organization/OrganizationList";
 import OrganizationDetail from "../pages/organization/OrganizationDetail";
 import ArticleViewPage from "../pages/article/ArticleViewPage";
 import AssignmentSubmit from "../pages/assignment/AssignmentSubmit";
-import AssignmentList from "../pages/assignment/AssignmentList";
 import AssignmentSubmissions from "../pages/assignment/AssignmentSubmissions";
 import ChunkUploadTest from "../pages/test/ChunkUploadTest";
 import GMShell from "../pages/gm/GMShell";
@@ -79,7 +78,7 @@ const RouterConfig: React.FC = () => {
         <Route path="/article/:id" element={<ArticleViewPage />} />
 
         {/* 作业列表页 */}
-        <Route path="/assignments" element={<AssignmentList />} />
+        <Route path="/assignments" element={<Navigate to="/personal?tab=assignments" replace />} />
         {/* 作业提交页 */}
         <Route path="/assignment/submit/:id" element={<AssignmentSubmit />} />
         {/* 作业提交详情页 */}
