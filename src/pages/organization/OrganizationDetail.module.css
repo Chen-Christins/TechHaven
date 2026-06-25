@@ -1422,7 +1422,10 @@
   border-radius: 10px;
   text-decoration: none;
   cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s,
+    border-color 0.2s;
 }
 
 .repoCard:hover {
@@ -1547,8 +1550,12 @@
 }
 
 @keyframes repoSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .repoSyncStatus {
@@ -1583,8 +1590,13 @@
 }
 
 @keyframes repoPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 @media (max-width: 768px) {

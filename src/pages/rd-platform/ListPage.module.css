@@ -410,7 +410,9 @@
 
 .repoBarClickable {
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .repoBarClickable:hover {
@@ -485,8 +487,12 @@
 }
 
 @keyframes repoSpinner {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Markdown 预览 */
