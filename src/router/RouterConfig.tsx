@@ -38,6 +38,7 @@ import TaskList from "../pages/rd-platform/TaskList";
 import MyTickets from "../pages/rd-platform/MyTickets";
 import CodeReviewList from "../pages/rd-platform/CodeReviewList";
 import TicketDetail from "../pages/rd-platform/TicketDetail";
+import TrendAnalysis from "../pages/rd-platform/TrendAnalysis";
 
 const RouterConfig: React.FC = () => {
   return (
@@ -107,6 +108,7 @@ const RouterConfig: React.FC = () => {
         {/* 研发平台 */}
         <Route path="/rd" element={<RdLayout />}>
           <Route index element={<RdDashboard />} />
+          <Route path="trends" element={<TrendAnalysis />} />
           <Route path="requirements" element={<RequirementList />} />
           <Route path="requirements/:id" element={<TicketDetail />} />
           <Route path="bugs" element={<BugList />} />

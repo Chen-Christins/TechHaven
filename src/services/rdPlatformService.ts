@@ -12,6 +12,8 @@ import type {
   RequirementFilters,
   BugFilters,
   TaskFilters,
+  RdTrendAnalysisData,
+  RdTrendFilters,
 } from "../types/rdPlatform";
 
 // ---------------------------------------------------------------------------
@@ -113,6 +115,58 @@ function toQuery(params: Record<string, any>): string {
   return parts.length > 0 ? "?" + parts.join("&") : "";
 }
 
+/** 后端趋势响应 → 前端 RdTrendAnalysisData */
+function mapTrendResponse(raw: any): RdTrendAnalysisData {
+  const s = raw.summary || {};
+  const series = (raw.series || []).map((item: any) => ({
+    date: item.date || "",
+    requirements: item.requirements ?? 0,
+    bugs: item.bugs ?? 0,
+    tasks: item.tasks ?? 0,
+    completed: item.completed ?? 0,
+    reopened: item.reopened ?? 0,
+    reviewPassRate: item.review_pass_rate ?? 0,
+    cycleTime: item.cycle_time ?? 0,
+  }));
+  const wd = raw.work_distribution || {};
+  const th = raw.team_health || {};
+
+  // insights 为空时使用 mock
+  const insights =
+    raw.insights && raw.insights.length > 0
+      ? raw.insights
+      : [
+          { title: "交付节奏", content: "完成项保持增长，任务吞吐高于新增缺陷，短期积压风险可控。" },
+          { title: "质量风险", content: "返工数处于低位，审查通过率持续提升，建议继续保留当前代码审查标准。" },
+          { title: "资源关注", content: "任务总量仍在上升，如下个周期新增继续增加，需要提前拆分高优先级任务。" },
+        ];
+
+  return {
+    summary: {
+      completedTotal: s.completed_total ?? 0,
+      bugTotal: s.bug_total ?? 0,
+      avgReviewPassRate: s.avg_review_pass_rate ?? 0,
+      avgCycleTime: s.avg_cycle_time ?? 0,
+      taskDelta: s.task_delta ?? 0,
+      cycleDelta: s.cycle_delta ?? 0,
+    },
+    series,
+    workDistribution: {
+      requirementDelivery: wd.requirement_delivery ?? wd.requirements ?? 0,
+      bugFix: wd.bug_fix ?? wd.bugs ?? 0,
+      rdTask: wd.rd_task ?? wd.tasks ?? 0,
+      codeReview: wd.code_review ?? 0,
+    },
+    teamHealth: {
+      throughput: th.throughput ?? 0,
+      bugPressure: th.bug_pressure ?? 0,
+      reviewEfficiency: th.review_efficiency ?? 0,
+      reworkRisk: th.rework_risk ?? 0,
+    },
+    insights,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Service
 // ---------------------------------------------------------------------------
@@ -134,6 +188,16 @@ export class RdPlatformService {
       totalReviews: d.total_reviews ?? 0,
       pendingReviews: d.pending_reviews ?? 0,
     };
+  }
+
+  static async getTrends(filters: RdTrendFilters): Promise<RdTrendAnalysisData> {
+    const q = toQuery({
+      org_id: filters.orgId,
+      period_days: filters.periodDays,
+      granularity: filters.granularity || "day",
+    });
+    const res = await http.get<any>(`${BASE}/trends${q}`);
+    return mapTrendResponse(res.data);
   }
 
   // -- Requirements ---------------------------------------------------------
