@@ -1422,10 +1422,6 @@
   border-radius: 10px;
   text-decoration: none;
   cursor: pointer;
-  transition:
-    box-shadow 0.2s,
-    transform 0.2s,
-    border-color 0.2s;
 }
 
 .repoCard:hover {

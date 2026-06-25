@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from "react";
 import SettingsService from "../services/settingsService";
 import { resetOriginalFavicon } from "../utils/favicon";
+import { readSiteSettingsCache, writeSiteSettingsCache } from "../utils/siteSettingsCache";
 
 export interface SiteSettingsState {
   siteName: string;
@@ -50,6 +51,13 @@ const DEFAULT_SETTINGS: SiteSettingsState = {
 
 const SiteSettingsContext = createContext<SiteSettingsContextType | undefined>(undefined);
 
+function getInitialSettings(): SiteSettingsState {
+  return {
+    ...DEFAULT_SETTINGS,
+    ...readSiteSettingsCache(),
+  };
+}
+
 function updateMetaTag(name: string, content: string): void {
   let el = document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`);
   if (!el) {
@@ -70,12 +78,13 @@ function updateFavicon(url: string): void {
 }
 
 export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [settings, setSettings] = useState<SiteSettingsState>({ ...DEFAULT_SETTINGS });
+  const [settings, setSettings] = useState<SiteSettingsState>(getInitialSettings);
   const [loading, setLoading] = useState(true);
 
   const refreshSettings = useCallback(async () => {
     try {
       const data = await SettingsService.getPublicSettings();
+      writeSiteSettingsCache(data);
       setSettings((prev) => ({
         ...prev,
         siteName: data.siteName,

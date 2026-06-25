@@ -12,6 +12,7 @@ import {
   FaUserEdit,
   FaUserPlus,
   FaUserFriends,
+  FaTasks,
 } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Loading from "../../components/loading/Loading";
@@ -32,6 +33,7 @@ import NotificationsTab from "./components/NotificationsTab";
 import EditProfileTab from "./components/EditProfileTab";
 import FollowingTab from "./components/FollowingTab";
 import FollowerTab from "./components/FollowerTab";
+import MyAssignmentsTab from "./components/MyAssignmentsTab";
 
 interface NavItem {
   id: string;
@@ -47,7 +49,7 @@ const PersonalCenter: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "articles" | "tags" | "stats" | "organizations" | "notifications" | "edit" | "following" | "followers"
+    "articles" | "assignments" | "tags" | "stats" | "organizations" | "notifications" | "edit" | "following" | "followers"
   >("articles");
   const [loading] = useState(false);
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -95,6 +97,12 @@ const PersonalCenter: React.FC = () => {
       label: "我的文章",
       icon: <FaFileAlt />,
       path: "/personal?tab=articles",
+    },
+    {
+      id: "assignments",
+      label: "我的任务",
+      icon: <FaTasks />,
+      path: "/personal?tab=assignments",
     },
     {
       id: "edit",
@@ -507,6 +515,9 @@ const PersonalCenter: React.FC = () => {
 
             {/* 文章管理 */}
             {activeTab === "articles" && <MyArticlesTab />}
+
+            {/* 我的任务 */}
+            {activeTab === "assignments" && <MyAssignmentsTab />}
 
             {/* 标签管理 */}
             {activeTab === "tags" && <MyTagsTab />}
