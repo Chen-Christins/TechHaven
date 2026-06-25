@@ -710,7 +710,7 @@ GET /rd/trends?org_id?=<string>&period_days?=<7|30>&start_date?=<YYYY-MM-DD>&end
        insights: [{ title, content }]
      }
 
-详细字段、权限和示例见 docs/RD_TREND_ANALYSIS_BACKEND.md
+详细字段、权限、指标口径和示例见 docs/RD_TREND_ANALYSIS_BACKEND.md
 ```
 
 ---
