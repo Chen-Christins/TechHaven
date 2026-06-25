@@ -46,16 +46,6 @@
   transform: none !important;
 }
 
-.mockBadge {
-  padding: 6px 12px;
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  color: var(--text-secondary);
-  background-color: var(--card-bg);
-  font-size: 13px;
-  white-space: nowrap;
-}
-
 .metricsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

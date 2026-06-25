@@ -203,7 +203,7 @@ const TrendAnalysis: React.FC = () => {
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>趋势分析</h1>
-          <p className={styles.pageDescription}>基于近 {periodDays} 天 mock 数据的研发吞吐、质量与效率走势</p>
+          <p className={styles.pageDescription}>基于近 {periodDays} 天研发数据，总结其吞吐、质量与效率走势</p>
         </div>
         <div className={styles.pageActions}>
           <div className={styles.periodSwitch} aria-label="趋势时间范围">
@@ -226,7 +226,6 @@ const TrendAnalysis: React.FC = () => {
               30 天
             </Button>
           </div>
-          <span className={styles.mockBadge}>Mock 数据</span>
         </div>
       </div>
 
