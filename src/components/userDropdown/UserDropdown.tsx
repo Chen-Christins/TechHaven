@@ -105,7 +105,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
               className={styles.dropdownItem}
               onClick={() => {
                 closeDropdown();
-                navigate(`/profile/${encodeId(user.id)}`);
+                navigate(`/profile/${encodeId(user.id, "user")}`);
               }}
             >
               <FaUserCircle />

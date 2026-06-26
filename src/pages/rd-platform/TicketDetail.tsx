@@ -104,12 +104,12 @@ type DetailItem = Requirement | Bug | Task;
 
 const TicketDetail: React.FC = () => {
   const { id: encodedId } = useParams<{ id: string }>();
-  const id = encodedId ? String(decodeId(encodedId) ?? "") : "";
   const navigate = useRdNavigate();
   const location = useLocation();
   const { orgNameMap } = useRdOrg();
 
   const entityType = getTypeFromPath(location.pathname);
+  const id = encodedId ? String(decodeId(encodedId, entityType) ?? "") : "";
 
   const [item, setItem] = useState<DetailItem | null>(null);
   const [loading, setLoading] = useState(true);

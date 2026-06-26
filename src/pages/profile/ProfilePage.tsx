@@ -60,7 +60,7 @@ type TabKey = (typeof TABS)[number]["key"];
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const { id: encodedId } = useParams<{ id: string }>();
-  const id = encodedId ? decodeId(encodedId) : null;
+  const id = encodedId ? decodeId(encodedId, "user") : null;
   const { user: currentUser, isAuthenticated } = useAuth();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -296,7 +296,11 @@ const Profile: React.FC = () => {
           </div>
           <div className={styles.featuredGrid}>
             {articles.slice(0, 6).map((article) => (
-              <article key={article.id} className={styles.featuredCard} onClick={() => navigate(`/article/${encodeId(article.id)}`)}>
+              <article
+                key={article.id}
+                className={styles.featuredCard}
+                onClick={() => navigate(`/article/${encodeId(article.id, "article")}`)}
+              >
                 <div className={styles.featuredCardHeader}>
                   <span className={styles.articleCategoryBadge}>
                     {Array.isArray(article.categorys) && article.categorys.length > 0
@@ -367,7 +371,7 @@ const Profile: React.FC = () => {
             <article
               key={article.id}
               className={`${styles.articleCard} ${viewMode === "grid" ? styles.gridCard : styles.listCard}`}
-              onClick={() => navigate(`/article/${encodeId(article.id)}`)}
+              onClick={() => navigate(`/article/${encodeId(article.id, "article")}`)}
             >
               <div className={styles.articleHeader}>
                 <span className={styles.articleCategoryBadge}>

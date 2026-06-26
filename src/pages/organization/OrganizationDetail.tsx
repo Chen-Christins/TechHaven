@@ -70,7 +70,7 @@ const TASKS_PAGE_SIZE = 15; // 任务列表每页显示的条数
 
 const OrganizationDetail: React.FC = () => {
   const { id: encodedId } = useParams<{ id: string }>();
-  const id = encodedId ? decodeId(encodedId) : null;
+  const id = encodedId ? decodeId(encodedId, "organization") : null;
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "members";
   const { user: currentUser } = useAuth();

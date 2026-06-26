@@ -42,7 +42,7 @@ const STATUS_MAP: { [key: string]: string } = {
 
 const AssignmentSubmit: React.FC = () => {
   const { id: encodedId } = useParams();
-  const id = encodedId ? decodeId(encodedId) : null;
+  const id = encodedId ? decodeId(encodedId, "assignment") : null;
   const navigate = useNavigate();
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [files, setFiles] = useState<File[]>([]);

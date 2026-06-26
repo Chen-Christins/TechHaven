@@ -62,7 +62,7 @@ interface AssignmentSubmissionItem {
 
 const AssignmentSubmissions: React.FC = () => {
   const { id: encodedId } = useParams();
-  const id = encodedId ? decodeId(encodedId) : null;
+  const id = encodedId ? decodeId(encodedId, "assignment") : null;
   const navigate = useNavigate();
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [submissions, setSubmissions] = useState<AssignmentSubmissionItem[]>([]);

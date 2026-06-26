@@ -348,7 +348,7 @@ const RequirementList: React.FC = () => {
           <tbody>
             {requirements.map((r) => (
               <tr key={r.id}>
-                <td className={styles.titleCell} onClick={() => navigate(`/rd/requirements/${encodeId(r.id)}`)}>
+                <td className={styles.titleCell} onClick={() => navigate(`/rd/requirements/${encodeId(r.id, "requirement")}`)}>
                   {r.title}
                 </td>
                 <td>
@@ -368,7 +368,7 @@ const RequirementList: React.FC = () => {
                     <button
                       className={`${styles.actionBtn} ${styles.view}`}
                       title="查看"
-                      onClick={() => navigate(`/rd/requirements/${encodeId(r.id)}`)}
+                      onClick={() => navigate(`/rd/requirements/${encodeId(r.id, "requirement")}`)}
                     >
                       <FaEye />
                     </button>

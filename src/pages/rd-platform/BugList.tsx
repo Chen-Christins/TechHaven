@@ -376,7 +376,7 @@ const BugList: React.FC = () => {
           <tbody>
             {bugs.map((b) => (
               <tr key={b.id}>
-                <td className={styles.titleCell} onClick={() => navigate(`/rd/bugs/${encodeId(b.id)}`)}>
+                <td className={styles.titleCell} onClick={() => navigate(`/rd/bugs/${encodeId(b.id, "bug")}`)}>
                   {b.title}
                 </td>
                 <td>
@@ -399,7 +399,7 @@ const BugList: React.FC = () => {
                     <button
                       className={`${styles.actionBtn} ${styles.view}`}
                       title="查看"
-                      onClick={() => navigate(`/rd/bugs/${encodeId(b.id)}`)}
+                      onClick={() => navigate(`/rd/bugs/${encodeId(b.id, "bug")}`)}
                     >
                       <FaEye />
                     </button>

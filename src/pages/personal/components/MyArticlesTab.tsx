@@ -317,10 +317,18 @@ const MyArticlesTab: React.FC = () => {
                 {article.publish_time ? article.publish_time : "-"}
               </div>
               <div className={styles.actions}>
-                <button className={styles.actionButton} title="查看" onClick={() => navigate(`/article/${encodeId(article.id)}`)}>
+                <button
+                  className={styles.actionButton}
+                  title="查看"
+                  onClick={() => navigate(`/article/${encodeId(article.id, "article")}`)}
+                >
                   <FaEye />
                 </button>
-                <button className={styles.actionButton} title="编辑" onClick={() => navigate(`/article/edit/${encodeId(article.id)}`)}>
+                <button
+                  className={styles.actionButton}
+                  title="编辑"
+                  onClick={() => navigate(`/article/edit/${encodeId(article.id, "article")}`)}
+                >
                   <FaEdit />
                 </button>
                 {article.state === "reviewing" && (

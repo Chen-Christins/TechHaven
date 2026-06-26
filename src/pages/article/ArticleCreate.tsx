@@ -156,7 +156,7 @@ const MermaidComponent: React.FC<{ code: string }> = ({ code }) => {
 const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDraft, onPublish, initialData }) => {
   const { user } = useAuth();
   const { id: encodedId } = useParams();
-  const id = encodedId ? decodeId(encodedId) : null;
+  const id = encodedId ? decodeId(encodedId, "article") : null;
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -460,7 +460,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
           content: formData.content,
         });
         message.success("文章更新成功");
-        navigate(`/article/${encodeId(id)}`);
+        navigate(`/article/${encodeId(id, "article")}`);
       } else {
         const createParams: CreateArticleParams = {
           title: formData.title,
@@ -479,7 +479,7 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
           });
           message.success("文章发布成功, 待审核");
           clearDraftFromStorage();
-          navigate(`/article/${encodeId(createRes.id)}`);
+          navigate(`/article/${encodeId(createRes.id, "article")}`);
           // console.log('发布文章成功:', publishRes);
         } else {
           // console.error('创建文章失败，无法发布');

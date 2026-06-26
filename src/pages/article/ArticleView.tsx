@@ -804,11 +804,11 @@ const ArticleView: React.FC<ArticleViewProps> = ({
         {/* 作者卡片 */}
         <div className={styles.authorCard}>
           <div className={styles.authorCardTop}>
-            <div className={styles.authorCardAvatar} onClick={() => authorId && navigate(`/profile/${encodeId(authorId)}`)}>
+            <div className={styles.authorCardAvatar} onClick={() => authorId && navigate(`/profile/${encodeId(authorId, "user")}`)}>
               <Avatar src={authorAvatar} name={author} size={64} className={styles.authorCardAvatarImg} />
             </div>
             <div className={styles.authorCardInfo}>
-              <span className={styles.authorCardName} onClick={() => authorId && navigate(`/profile/${encodeId(authorId)}`)}>
+              <span className={styles.authorCardName} onClick={() => authorId && navigate(`/profile/${encodeId(authorId, "user")}`)}>
                 {author}
               </span>
               <span className={styles.authorCardMeta}>{pushlish_time} 发布</span>

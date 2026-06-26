@@ -182,7 +182,7 @@ const MyAssignmentsTab: React.FC = () => {
                     color="secondary"
                     size="small"
                     className={styles.assignmentIconButton}
-                    onClick={() => navigate(`/assignment/submissions/${encodeId(item.id)}`)}
+                    onClick={() => navigate(`/assignment/submissions/${encodeId(item.id, "assignment")}`)}
                   >
                     <FaEye />
                     提交记录
@@ -191,7 +191,7 @@ const MyAssignmentsTab: React.FC = () => {
                     color={closed ? "secondary" : "primary"}
                     variant={closed ? "light" : "solid"}
                     size="small"
-                    onClick={() => navigate(`/assignment/submit/${encodeId(item.id)}`)}
+                    onClick={() => navigate(`/assignment/submit/${encodeId(item.id, "assignment")}`)}
                   >
                     {closed ? "查看详情" : "去提交"}
                     <FaArrowRight />

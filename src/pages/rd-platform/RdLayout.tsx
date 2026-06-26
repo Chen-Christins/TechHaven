@@ -25,7 +25,7 @@ const RdLayout: React.FC = () => {
   const navigate = useRdNavigate();
   const [searchParams] = useSearchParams();
   const rawOrg = searchParams.get("org");
-  const urlOrgId = rawOrg ? decodeId(rawOrg)?.toString() || "" : "";
+  const urlOrgId = rawOrg ? decodeId(rawOrg, "organization")?.toString() || "" : "";
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -234,7 +234,7 @@ const RdLayout: React.FC = () => {
     const handleOrgChange = (orgId: string) => {
       setSelectedOrgId(orgId);
       if (orgId) {
-        setSearchParams({ org: encodeId(orgId) }, { replace: true });
+        setSearchParams({ org: encodeId(orgId, "organization") }, { replace: true });
       } else {
         setSearchParams({}, { replace: true });
       }

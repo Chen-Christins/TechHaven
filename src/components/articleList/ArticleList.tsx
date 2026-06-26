@@ -216,7 +216,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
                   color="secondary"
                   size="small"
                   onClick={() => {
-                    navigate(`/article/${encodeId(article.id)}`);
+                    navigate(`/article/${encodeId(article.id, "article")}`);
                   }}
                 >
                   阅读全文 →
