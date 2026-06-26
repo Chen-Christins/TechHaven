@@ -66,3 +66,13 @@ export function subscribeUnreadCount(fn: (count: number) => void): () => void {
 export function isUnreadCountInitialized(): boolean {
   return countInitialized;
 }
+
+export function resetNotificationState(): void {
+  readIds.clear();
+  version++;
+  listeners.forEach((fn) => fn(0));
+
+  globalUnreadCount = 0;
+  countInitialized = false;
+  countListeners.forEach((fn) => fn(globalUnreadCount));
+}

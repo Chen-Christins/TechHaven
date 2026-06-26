@@ -162,7 +162,7 @@ const OrganizationList: React.FC = () => {
                       </div>
                       <button
                         className={`${styles.actionBtn} ${styles.btnPrimary}`}
-                        onClick={() => navigate(`/organization/detail/${encodeId(org.id)}`)}
+                        onClick={() => navigate(`/organization/detail/${encodeId(org.id, "organization")}`)}
                       >
                         查看详情
                         <FaArrowRight />

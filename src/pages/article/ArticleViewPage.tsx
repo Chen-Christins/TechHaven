@@ -14,7 +14,7 @@ import SkeletonArticleView from "../../components/articleView/SkeletonArticleVie
 
 const ArticleViewPage: React.FC = () => {
   const { id: encodedId } = useParams<{ id: string }>();
-  const id = encodedId ? decodeId(encodedId) : null;
+  const id = encodedId ? decodeId(encodedId, "article") : null;
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

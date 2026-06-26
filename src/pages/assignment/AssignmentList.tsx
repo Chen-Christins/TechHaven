@@ -170,14 +170,14 @@ const AssignmentList: React.FC = () => {
                       <div className={styles.buttonGroup}>
                         <button
                           className={`${styles.actionBtn} ${styles.viewBtn}`}
-                          onClick={() => navigate(`/assignment/submissions/${encodeId(item.id)}`)}
+                          onClick={() => navigate(`/assignment/submissions/${encodeId(item.id, "assignment")}`)}
                           title="查看提交详情"
                         >
                           <FaEye />
                         </button>
                         <button
                           className={`${styles.actionBtn} ${STATUS_MAP[item.status] === "closed" ? styles.btnSecondary : styles.btnPrimary}`}
-                          onClick={() => navigate(`/assignment/submit/${encodeId(item.id)}`)}
+                          onClick={() => navigate(`/assignment/submit/${encodeId(item.id, "assignment")}`)}
                         >
                           {STATUS_MAP[item.status] === "closed" ? "查看详情" : "去提交"} <FaArrowRight />
                         </button>

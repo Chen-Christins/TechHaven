@@ -85,7 +85,7 @@ const FollowerTab: React.FC = () => {
             <div key={user.id} className={styles.followItem}>
               <div
                 className={styles.followItemLeft}
-                onClick={() => navigate(`/profile/${encodeId(user.id)}`)}
+                onClick={() => navigate(`/profile/${encodeId(user.id, "user")}`)}
                 style={{ cursor: "pointer" }}
               >
                 <Avatar src={user.avatar} name={user.name} size={48} className={styles.followAvatar} />

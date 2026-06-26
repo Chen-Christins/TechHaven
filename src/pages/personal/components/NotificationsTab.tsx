@@ -242,37 +242,37 @@ const NotificationsTab: React.FC = () => {
 
     // RD 平台通知 → 跳转到对应工单详情
     if (item.type === "bug_assigned" && item.bug_id) {
-      navigate(`/rd/bugs/${encodeId(item.bug_id)}`);
+      navigate(`/rd/bugs/${encodeId(item.bug_id, "bug")}`);
       return;
     }
     if (item.type === "requirement_assigned" && item.requirement_id) {
-      navigate(`/rd/requirements/${encodeId(item.requirement_id)}`);
+      navigate(`/rd/requirements/${encodeId(item.requirement_id, "requirement")}`);
       return;
     }
     if (item.type === "task_assigned" && item.task_id) {
-      navigate(`/rd/tasks/${encodeId(item.task_id)}`);
+      navigate(`/rd/tasks/${encodeId(item.task_id, "task")}`);
       return;
     }
 
     // 组织创建申请通过 → 跳转到组织详情
     if (item.type === "org_apply_approved" && item.org_id) {
-      navigate(`/organization/detail/${encodeId(item.org_id)}`);
+      navigate(`/organization/detail/${encodeId(item.org_id, "organization")}`);
       return;
     }
 
     // 作业相关通知
     if (item.type === "assignment_submitted" && item.assignment_id) {
-      navigate(`/assignment/submissions/${encodeId(item.assignment_id)}`);
+      navigate(`/assignment/submissions/${encodeId(item.assignment_id, "assignment")}`);
       return;
     }
     if (item.type === "assignment_created" && item.assignment_id) {
-      navigate(`/assignment/submit/${encodeId(item.assignment_id)}`);
+      navigate(`/assignment/submit/${encodeId(item.assignment_id, "assignment")}`);
       return;
     }
 
     // 文章相关通知 → 跳转到文章详情
     if (item.article_id) {
-      navigate(`/article/${encodeId(item.article_id)}`);
+      navigate(`/article/${encodeId(item.article_id, "article")}`);
       return;
     }
 

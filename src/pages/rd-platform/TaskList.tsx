@@ -325,7 +325,7 @@ const TaskList: React.FC = () => {
           <tbody>
             {tasks.map((t) => (
               <tr key={t.id}>
-                <td className={styles.titleCell} onClick={() => navigate(`/rd/tasks/${encodeId(t.id)}`)}>
+                <td className={styles.titleCell} onClick={() => navigate(`/rd/tasks/${encodeId(t.id, "task")}`)}>
                   {t.title}
                 </td>
                 <td>
@@ -344,7 +344,7 @@ const TaskList: React.FC = () => {
                     <button
                       className={`${styles.actionBtn} ${styles.view}`}
                       title="查看"
-                      onClick={() => navigate(`/rd/tasks/${encodeId(t.id)}`)}
+                      onClick={() => navigate(`/rd/tasks/${encodeId(t.id, "task")}`)}
                     >
                       <FaEye />
                     </button>

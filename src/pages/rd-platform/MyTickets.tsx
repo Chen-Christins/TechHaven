@@ -596,7 +596,7 @@ const MyTickets: React.FC = () => {
                   const r = item as Requirement;
                   return (
                     <tr key={r.id}>
-                      <td className={styles.titleCell} onClick={() => navigate(`/rd/requirements/${encodeId(r.id)}`)}>
+                      <td className={styles.titleCell} onClick={() => navigate(`/rd/requirements/${encodeId(r.id, "requirement")}`)}>
                         {r.title}
                       </td>
                       <td>{renderPriorityBadge(r.priority)}</td>
@@ -658,7 +658,7 @@ const MyTickets: React.FC = () => {
                   const b = item as Bug;
                   return (
                     <tr key={b.id}>
-                      <td className={styles.titleCell} onClick={() => navigate(`/rd/bugs/${encodeId(b.id)}`)}>
+                      <td className={styles.titleCell} onClick={() => navigate(`/rd/bugs/${encodeId(b.id, "bug")}`)}>
                         {b.title}
                       </td>
                       <td>
@@ -722,7 +722,7 @@ const MyTickets: React.FC = () => {
                   const t = item as Task;
                   return (
                     <tr key={t.id}>
-                      <td className={styles.titleCell} onClick={() => navigate(`/rd/tasks/${encodeId(t.id)}`)}>
+                      <td className={styles.titleCell} onClick={() => navigate(`/rd/tasks/${encodeId(t.id, "task")}`)}>
                         {t.title}
                       </td>
                       <td>{renderPriorityBadge(t.priority)}</td>

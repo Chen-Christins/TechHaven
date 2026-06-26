@@ -3,6 +3,7 @@ import { AuthService } from "../services/authService";
 import { tokenManager, getTokenFromCookie } from "../utils/http";
 import { notificationWS } from "../utils/websocket";
 import { setFaviconBadge } from "../utils/favicon";
+import { resetNotificationState } from "../utils/notificationState";
 
 // 用户信息类型
 export interface User {
@@ -69,6 +70,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return null;
   };
 
+  const clearAuthRuntimeState = () => {
+    setUser(null);
+    setToken(null);
+    tokenManager.clearToken();
+    resetNotificationState();
+    setFaviconBadge(0);
+  };
+
   // 初始化认证状态
   useEffect(() => {
     const initAuth = async () => {
@@ -88,14 +97,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             userData.role = ROLE_MAP[userData.role] || "用户";
             setUser(userData);
           } else {
-            setUser(null);
-            setToken(null);
-            tokenManager.clearToken();
+            clearAuthRuntimeState();
           }
         } catch (_userError) {
-          setUser(null);
-          setToken(null);
-          tokenManager.clearToken();
+          clearAuthRuntimeState();
         }
       } finally {
         setLoading(false);
@@ -123,6 +128,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setLoginError(null);
       setLoading(true);
+      resetNotificationState();
+      setFaviconBadge(0);
 
       const response = await AuthService.login(authId, password);
 
@@ -186,16 +193,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // 调用后端登出接口
       await AuthService.logout();
       // 清除内存状态
-      setUser(null);
-      setToken(null);
-      tokenManager.clearToken();
+      clearAuthRuntimeState();
       setLoginError(null);
     } catch (error) {
       console.error("登出失败:", error);
       // 即使后端登出失败，也清除本地状态
-      setUser(null);
-      setToken(null);
-      tokenManager.clearToken();
+      clearAuthRuntimeState();
     } finally {
       setLoading(false);
     }

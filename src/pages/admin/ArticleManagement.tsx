@@ -449,12 +449,12 @@ const ArticleManagement: React.FC = () => {
 
   // 查看文章详情
   const handleViewArticle = (id: string) => {
-    navigate(`/article/${encodeId(id)}`);
+    navigate(`/article/${encodeId(id, "article")}`);
   };
 
   // 编辑文章
   const handleEditArticle = (id: string) => {
-    navigate(`/article/edit/${encodeId(id)}`);
+    navigate(`/article/edit/${encodeId(id, "article")}`);
   };
 
   // 删除文章

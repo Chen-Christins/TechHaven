@@ -74,7 +74,11 @@ const MyOrganizationsTab: React.FC = () => {
       ) : (
         <div className={styles.organizationsGrid}>
           {organizations.map((org) => (
-            <div key={org.id} className={styles.orgCard} onClick={() => navigate(`/organization/detail/${encodeId(org.id)}`)}>
+            <div
+              key={org.id}
+              className={styles.orgCard}
+              onClick={() => navigate(`/organization/detail/${encodeId(org.id, "organization")}`)}
+            >
               <div className={styles.orgHeader}>
                 <div className={styles.orgAvatar}>
                   {org.avatar ? (

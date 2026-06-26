@@ -144,7 +144,11 @@ const Dashboard: React.FC = () => {
             </thead>
             <tbody>
               {recentRequirements.map((r) => (
-                <tr key={r.id} className={styles.clickableRow} onClick={() => navigate(`/rd/requirements/${encodeId(r.id)}`)}>
+                <tr
+                  key={r.id}
+                  className={styles.clickableRow}
+                  onClick={() => navigate(`/rd/requirements/${encodeId(r.id, "requirement")}`)}
+                >
                   <td>{r.title}</td>
                   <td>
                     <span className={`${styles.badge} ${styles[`priority_${r.priority}`]}`}>{priorityText[r.priority]}</span>
@@ -195,7 +199,7 @@ const Dashboard: React.FC = () => {
             </thead>
             <tbody>
               {recentBugs.map((b) => (
-                <tr key={b.id} className={styles.clickableRow} onClick={() => navigate(`/rd/bugs/${encodeId(b.id)}`)}>
+                <tr key={b.id} className={styles.clickableRow} onClick={() => navigate(`/rd/bugs/${encodeId(b.id, "bug")}`)}>
                   <td>{b.title}</td>
                   <td>
                     <span className={`${styles.badge} ${styles[`severity_${b.severity}`]}`}>{severityText[b.severity]}</span>
@@ -248,7 +252,7 @@ const Dashboard: React.FC = () => {
             </thead>
             <tbody>
               {recentTasks.map((t) => (
-                <tr key={t.id} className={styles.clickableRow} onClick={() => navigate(`/rd/tasks/${encodeId(t.id)}`)}>
+                <tr key={t.id} className={styles.clickableRow} onClick={() => navigate(`/rd/tasks/${encodeId(t.id, "task")}`)}>
                   <td>{t.title}</td>
                   <td>
                     <span className={`${styles.badge} ${styles[`status_${t.status}`]}`}>{statusText[t.status]}</span>
