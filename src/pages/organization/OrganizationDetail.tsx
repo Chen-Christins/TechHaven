@@ -16,7 +16,7 @@ import OrganizationTabs from "../../components/organization/OrganizationTabs";
 import type { Member, OrganizationDetail as OrganizationDetailType, MemberStats, Task } from "../../types/organization";
 import { FaUser, FaUserShield, FaCrown, FaUserCheck, FaCode } from "react-icons/fa";
 import Input from "../../components/input/Input";
-import DatePicker from "../../components/input/DatePicker";
+import DatePicker from "../../components/datePicker/DatePicker";
 import CustomSelect from "../../components/customSelect/CustomSelect";
 import Modal from "../../components/modal/Modal";
 import AssignmentService from "../../services/assignmentService";

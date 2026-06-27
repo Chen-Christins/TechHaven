@@ -16,7 +16,7 @@ import {
 } from "react-icons/fa";
 import styles from "./ListPage.module.css";
 import Input from "../../components/input/Input";
-import DatePicker from "../../components/input/DatePicker";
+import DatePicker from "../../components/datePicker/DatePicker";
 import CustomSelect from "../../components/customSelect/CustomSelect";
 import Modal from "../../components/modal/Modal";
 import Loading from "../../components/loading/Loading";

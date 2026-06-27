@@ -6,7 +6,7 @@ import { FaArrowLeft, FaEdit, FaSave, FaTimes, FaClipboardList, FaBug, FaTasks }
 import styles from "./TicketDetail.module.css";
 import Loading from "../../components/loading/Loading";
 import Input from "../../components/input/Input";
-import DatePicker from "../../components/input/DatePicker";
+import DatePicker from "../../components/datePicker/DatePicker";
 import CustomSelect from "../../components/customSelect/CustomSelect";
 import message from "../../components/message/Message";
 import { useRdOrg } from "../../contexts/RdOrgContext";

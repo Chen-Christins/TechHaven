@@ -23,7 +23,7 @@ import {
 } from "react-icons/fa";
 import type { Member, Task, OrganizationDetail } from "../../types/organization";
 import Avatar from "../avatar/Avatar";
-import styles from "../../pages/organization/OrganizationDetail.module.css";
+import styles from "./Organization.module.css";
 import Modal from "../modal/Modal";
 // import Input from '../input/Input';
 // import DatePicker from '../datePicker/DatePicker';
