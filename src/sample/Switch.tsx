@@ -1,4 +1,4 @@
-import Switch from "../components/switcher/Switch";
+import Switch from "../components/switch/Switch";
 import { useState } from "react";
 
 function SampleSwitch() {

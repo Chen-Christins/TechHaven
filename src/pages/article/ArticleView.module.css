@@ -570,60 +570,6 @@
   border: 1px solid var(--border-primary);
 }
 
-.mermaidDiagram {
-  background-color: var(--card-bg);
-  padding: 16px;
-  text-align: center;
-  overflow-x: auto;
-}
-
-.mermaidDiagram svg {
-  max-width: 100%;
-  height: auto;
-}
-
-.mermaidError {
-  background-color: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 8px;
-  padding: 16px;
-  margin: 20px 0;
-}
-
-.errorMessage {
-  color: #dc2626;
-  font-weight: 500;
-  margin-bottom: 8px;
-  font-size: 0.9rem;
-}
-
-.errorCode {
-  background-color: var(--code-block-bg);
-  padding: 12px;
-  border-radius: 6px;
-  overflow-x: auto;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
-
-/* Dark mermaid */
-[data-theme="dark"] .mermaidDiagram .node rect,
-[data-theme="dark"] .mermaidDiagram .node circle,
-[data-theme="dark"] .mermaidDiagram .node ellipse,
-[data-theme="dark"] .mermaidDiagram .node polygon {
-  fill: #374151;
-  stroke: #6b7280;
-}
-
-[data-theme="dark"] .mermaidDiagram .edgePath .path {
-  stroke: #60a5fa;
-}
-
-[data-theme="dark"] .mermaidDiagram .marker {
-  fill: #60a5fa;
-  stroke: #60a5fa;
-}
-
 /* ========== 作者卡片操作按钮 ========== */
 .authorCardActions {
   display: flex;

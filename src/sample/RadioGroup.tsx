@@ -1,5 +1,5 @@
-import Radio from "../components/radiogroup/Radio";
-import RadioGroup from "../components/radiogroup/RadioGroup";
+import Radio from "../components/radio/Radio";
+import RadioGroup from "../components/radioGroup/RadioGroup";
 import { useState } from "react";
 
 function SampleRadioGroup() {

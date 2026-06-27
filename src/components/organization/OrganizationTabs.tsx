@@ -21,7 +21,7 @@ import {
   FaTimes,
   FaPlus,
 } from "react-icons/fa";
-import type { Member, Task, OrganizationDetail } from "./types";
+import type { Member, Task, OrganizationDetail } from "../../types/organization";
 import Avatar from "../avatar/Avatar";
 import styles from "../../pages/organization/OrganizationDetail.module.css";
 import Modal from "../modal/Modal";

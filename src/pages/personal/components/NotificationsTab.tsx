@@ -21,7 +21,7 @@ import {
   FaBug,
   FaTasks,
 } from "react-icons/fa";
-import NotificationService from "../../../services/NotificationService";
+import NotificationService from "../../../services/notificationService";
 import { isRead, markRead, markAllRead, subscribe, setUnreadCount } from "../../../utils/notificationState";
 import {
   getSettings,
@@ -33,7 +33,7 @@ import {
 import { notificationWS } from "../../../utils/websocket";
 import CustomSelect from "../../../components/customSelect/CustomSelect";
 import Modal from "../../../components/modal/Modal";
-import Switch from "../../../components/switcher/Switch";
+import Switch from "../../../components/switch/Switch";
 import type { SelectOption } from "../../../types/index";
 import { encodeId } from "../../../utils/hashId";
 import type { Notification as NotificationItem } from "../../../types/notification";

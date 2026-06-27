@@ -23,7 +23,7 @@ import {
   FaTasks,
 } from "react-icons/fa";
 import styles from "./Notification.module.css";
-import NotificationService from "../../services/NotificationService";
+import NotificationService from "../../services/notificationService";
 import {
   markRead,
   markAllRead,
@@ -40,7 +40,7 @@ import { notificationWS } from "../../utils/websocket";
 import { playNotificationSound } from "../../utils/notificationSound";
 import { useAuth } from "../../contexts/AuthContext";
 import Modal from "../modal/Modal";
-import Switch from "../switcher/Switch";
+import Switch from "../switch/Switch";
 import { setFaviconBadge } from "../../utils/favicon";
 import { encodeId } from "../../utils/hashId";
 import type { Notification as NotificationItem } from "../../types/notification";

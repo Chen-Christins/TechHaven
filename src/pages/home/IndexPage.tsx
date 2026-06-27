@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import styles from "./IndexPage.module.css";
 import ArticleList from "../../components/articleList/ArticleList";
-import StatsPanel from "../../components/StatsPanel/StatsPanel";
-import SubscribeBox from "../../components/SubscribeBox/SubscribeBox";
+import StatsPanel from "../../components/statsPanel/StatsPanel";
+import SubscribeBox from "../../components/subscribeBox/SubscribeBox";
 import Calendar from "../../components/calendar/Calendar";
 import CategoryPanel from "../../components/categoryPanel/CategoryPanel";
 import Navbar from "../../components/navbar/Navbar";
