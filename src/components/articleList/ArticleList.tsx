@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaChevronLeft, FaChevronRight, FaAngleDoubleLeft, FaAngleDoubleRight, FaCalendarAlt, FaUser, FaEye } from "react-icons/fa";
-import ArticleService from "../../services/articleService";
+import ArticleService from "@/services/articleService";
 import styles from "./ArticleList.module.css";
-import { encodeId } from "../../utils/hashId";
-import { formatToChinaTime } from "../../utils/utils";
-import type { ArticleListItem } from "../../types/index";
+import { encodeId } from "@/utils/hashId";
+import { formatToChinaTime } from "@/utils/utils";
+import type { ArticleListItem } from "@/types/index";
 import Skeleton from "../skeleton/Skeleton";
 import Button from "../button/Button";
 

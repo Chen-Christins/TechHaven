@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ArticleView from "./ArticleView";
-import ArticleService from "../../services/articleService";
-import Navbar from "../../components/navbar/Navbar";
-import Footer from "../../components/footer/Footer";
-import BackToTop from "../../components/backToTop/BackToTop";
-import { formatToChinaTime } from "../../utils/utils";
-import { decodeId } from "../../utils/hashId";
-import { useAuth } from "../../contexts/AuthContext";
-import AuthRequired from "../../components/auth/AuthRequired";
-import ArticleErrorView from "../../components/articleView/ArticleErrorView";
-import SkeletonArticleView from "../../components/articleView/SkeletonArticleView";
+import ArticleService from "@/services/articleService";
+import Navbar from "@/components/navbar/Navbar";
+import Footer from "@/components/footer/Footer";
+import BackToTop from "@/components/backToTop/BackToTop";
+import { formatToChinaTime } from "@/utils/utils";
+import { decodeId } from "@/utils/hashId";
+import { useAuth } from "@/contexts/AuthContext";
+import AuthRequired from "@/components/auth/AuthRequired";
+import ArticleErrorView from "@/components/articleView/ArticleErrorView";
+import SkeletonArticleView from "@/components/articleView/SkeletonArticleView";
 
 const ArticleViewPage: React.FC = () => {
   const { id: encodedId } = useParams<{ id: string }>();

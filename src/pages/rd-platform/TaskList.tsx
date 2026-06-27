@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useRdNavigate } from "../../hooks/useRdNavigate";
-import { formatDateTime } from "../../utils/utils";
-import { encodeId } from "../../utils/hashId";
+import { useRdNavigate } from "@/hooks/useRdNavigate";
+import { formatDateTime } from "@/utils/utils";
+import { encodeId } from "@/utils/hashId";
 import {
   FaPlus,
   FaEye,
@@ -15,19 +15,20 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import styles from "./ListPage.module.css";
-import Input from "../../components/input/Input";
-import DatePicker from "../../components/input/DatePicker";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Modal from "../../components/modal/Modal";
-import Loading from "../../components/loading/Loading";
-import { confirm } from "../../components/confirm/Confirm";
-import message from "../../components/message/Message";
-import { useAuth } from "../../contexts/AuthContext";
-import { useRdOrg } from "../../contexts/RdOrgContext";
-import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
-import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
-import type { Task } from "../../types/rdPlatform";
-import { OrgPermission } from "../../types/rdPlatform";
+import taskStyles from "./TaskList.module.css";
+import Input from "@/components/input/Input";
+import DatePicker from "@/components/datePicker/DatePicker";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Modal from "@/components/modal/Modal";
+import Loading from "@/components/loading/Loading";
+import { confirm } from "@/components/confirm/Confirm";
+import message from "@/components/message/Message";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRdOrg } from "@/contexts/RdOrgContext";
+import { RdPlatformService as RdAPI } from "@/services/rdPlatformService";
+import AssigneeDisplay from "@/components/assigneeDisplay/AssigneeDisplay";
+import type { Task } from "@/types/rdPlatform";
+import { OrgPermission } from "@/types/rdPlatform";
 import type { SelectOption } from "../../types";
 
 const statusOptions: SelectOption[] = [
@@ -418,53 +419,28 @@ const TaskList: React.FC = () => {
         onClose={() => setModalVisible(false)}
         width={640}
         footer={
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
-            <button
-              onClick={() => setModalVisible(false)}
-              style={{
-                padding: "10px 20px",
-                background: "var(--card-bg)",
-                color: "var(--text-primary)",
-                border: "1px solid var(--border-primary)",
-                borderRadius: "8px",
-                fontSize: "14px",
-                cursor: "pointer",
-              }}
-            >
+          <div className={taskStyles.modalFooter}>
+            <button onClick={() => setModalVisible(false)} className={taskStyles.modalCancelBtn}>
               取消
             </button>
-            <button
-              onClick={handleSubmit}
-              style={{
-                padding: "10px 20px",
-                background: "var(--primary)",
-                color: "#fff",
-                border: "none",
-                borderRadius: "8px",
-                fontSize: "14px",
-                fontWeight: 500,
-                cursor: "pointer",
-              }}
-            >
+            <button onClick={handleSubmit} className={taskStyles.modalSubmitBtn}>
               {editingTask ? "保存修改" : "创建任务"}
             </button>
           </div>
         }
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div className={taskStyles.formContainer}>
           <div>
-            <label style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}>
-              标题 <span style={{ color: "#ef4444" }}>*</span>
+            <label className={taskStyles.formLabel}>
+              标题 <span className={taskStyles.formLabelRequired}>*</span>
             </label>
             <Input placeholder="请输入任务标题" value={form.title} onChange={(val) => handleFormChange("title", val)} size="large" />
           </div>
 
           {(isAdmin || orgs.length > 1) && (
             <div>
-              <label
-                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-              >
-                所属组织 {!isAdmin && <span style={{ color: "#ef4444" }}>*</span>}
+              <label className={taskStyles.formLabel}>
+                所属组织 {!isAdmin && <span className={taskStyles.formLabelRequired}>*</span>}
               </label>
               <CustomSelect
                 name="所属组织"
@@ -481,13 +457,9 @@ const TaskList: React.FC = () => {
             </div>
           )}
 
-          <div style={{ display: "flex", gap: "16px" }}>
-            <div style={{ flex: 1 }}>
-              <label
-                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-              >
-                状态
-              </label>
+          <div className={taskStyles.formRow}>
+            <div className={taskStyles.formField}>
+              <label className={taskStyles.formLabel}>状态</label>
               <CustomSelect
                 name="状态"
                 options={statusOptions.filter((o) => o.id !== "")}
@@ -496,12 +468,8 @@ const TaskList: React.FC = () => {
                 hideBadge
               />
             </div>
-            <div style={{ flex: 1 }}>
-              <label
-                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-              >
-                优先级
-              </label>
+            <div className={taskStyles.formField}>
+              <label className={taskStyles.formLabel}>优先级</label>
               <CustomSelect
                 name="优先级"
                 options={priorityOptions.filter((o) => o.id !== "")}
@@ -512,13 +480,9 @@ const TaskList: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "16px" }}>
-            <div style={{ flex: 1 }}>
-              <label
-                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-              >
-                负责人
-              </label>
+          <div className={taskStyles.formRow}>
+            <div className={taskStyles.formField}>
+              <label className={taskStyles.formLabel}>负责人</label>
               <CustomSelect
                 name="负责人"
                 options={memberOptions}
@@ -530,12 +494,8 @@ const TaskList: React.FC = () => {
                 hideBadge
               />
             </div>
-            <div style={{ flex: 1 }}>
-              <label
-                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-              >
-                截止日期
-              </label>
+            <div className={taskStyles.formField}>
+              <label className={taskStyles.formLabel}>截止日期</label>
               <DatePicker
                 placeholder="请选择截止日期"
                 value={form.deadline ? new Date(form.deadline) : undefined}
@@ -547,18 +507,13 @@ const TaskList: React.FC = () => {
                 }}
                 size="large"
                 allowClear
-                style={{ width: "100%" }}
               />
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "16px" }}>
-            <div style={{ flex: 1 }}>
-              <label
-                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-              >
-                预估工时 (h)
-              </label>
+          <div className={taskStyles.formRow}>
+            <div className={taskStyles.formField}>
+              <label className={taskStyles.formLabel}>预估工时 (h)</label>
               <Input
                 placeholder="如 8"
                 value={String(form.estimatedHours || "")}
@@ -567,12 +522,8 @@ const TaskList: React.FC = () => {
                 size="large"
               />
             </div>
-            <div style={{ flex: 1 }}>
-              <label
-                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-              >
-                关联需求 ID
-              </label>
+            <div className={taskStyles.formField}>
+              <label className={taskStyles.formLabel}>关联需求 ID</label>
               <Input
                 placeholder="选填"
                 value={form.requirementId}
@@ -583,26 +534,13 @@ const TaskList: React.FC = () => {
           </div>
 
           <div>
-            <label style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}>
-              描述
-            </label>
+            <label className={taskStyles.formLabel}>描述</label>
             <textarea
               placeholder="请输入任务描述"
               value={form.description}
               onChange={(e) => handleFormChange("description", e.target.value)}
               rows={4}
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                border: "1px solid var(--border-primary)",
-                borderRadius: "8px",
-                fontSize: "14px",
-                color: "var(--text-primary)",
-                backgroundColor: "var(--bg-primary)",
-                resize: "vertical",
-                fontFamily: "inherit",
-                lineHeight: 1.6,
-              }}
+              className={taskStyles.formTextarea}
             />
           </div>
         </div>

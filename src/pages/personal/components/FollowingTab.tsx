@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { encodeId } from "../../../utils/hashId";
+import { encodeId } from "@/utils/hashId";
 import { FaUserMinus, FaUserSlash } from "react-icons/fa";
-import FollowService from "../../../services/followService";
-import type { FollowUser } from "../../../types/follow";
-import Avatar from "../../../components/avatar/Avatar";
+import FollowService from "@/services/followService";
+import type { FollowUser } from "@/types/follow";
+import Avatar from "@/components/avatar/Avatar";
 import styles from "../PersonalCenter.module.css";
 
 const PAGE_SIZE = 20;

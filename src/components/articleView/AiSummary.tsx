@@ -2,7 +2,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import { Sparkles, RotateCw, AlertCircle } from "lucide-react";
 import styles from "./AiSummary.module.css";
-import useAiSummary from "../../hooks/useAiSummary";
+import useAiSummary from "@/hooks/useAiSummary";
 
 interface AiSummaryProps {
   /** 文章 ID，用于请求后端 AI 总结 */

@@ -11,18 +11,18 @@ import {
   FaAngleDoubleRight,
   FaUsers,
 } from "react-icons/fa";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Input from "../../components/input/Input";
-import Button from "../../components/button/Button";
-import Loading from "../../components/loading/Loading";
-import Avatar from "../../components/avatar/Avatar";
-import Modal from "../../components/modal/Modal";
-import { confirm } from "../../components/confirm/Confirm";
-import message from "../../components/message/Message";
-import type { SelectOption } from "../../types/index";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Input from "@/components/input/Input";
+import Button from "@/components/button/Button";
+import Loading from "@/components/loading/Loading";
+import Avatar from "@/components/avatar/Avatar";
+import Modal from "@/components/modal/Modal";
+import { confirm } from "@/components/confirm/Confirm";
+import message from "@/components/message/Message";
+import type { SelectOption } from "@/types/index";
 import styles from "./UserManagement.module.css";
-import { AuthService } from "../../services/authService";
-import { formatToChinaTime } from "../../utils/utils";
+import { AuthService } from "@/services/authService";
+import { formatToChinaTime } from "@/utils/utils";
 
 // 用户接口定义
 interface UserListItem {

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaRobot, FaKey, FaGlobe, FaCogs } from "react-icons/fa";
-import Input from "../../../components/input/Input";
-import CustomSelect from "../../../components/customSelect/CustomSelect";
-import type { SelectOption } from "../../../types/index";
-import { message } from "../../../components/message/Message";
-import { AuthService } from "../../../services/authService";
+import Input from "@/components/input/Input";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import type { SelectOption } from "@/types/index";
+import { message } from "@/components/message/Message";
+import { AuthService } from "@/services/authService";
 import styles from "../PersonalCenter.module.css";
 
 type ApiType = "openai" | "claude" | "glm";

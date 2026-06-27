@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FaArrowRight, FaCalendarAlt, FaCheckCircle, FaClipboardList, FaExclamationCircle, FaEye, FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import Button from "../../../components/button/Button";
-import CustomSelect from "../../../components/customSelect/CustomSelect";
-import ErrorState from "../../../components/errorState/ErrorState";
-import Input from "../../../components/input/Input";
-import Skeleton from "../../../components/skeleton/Skeleton";
-import AssignmentService, { type GetUserAssignmentsResponse } from "../../../services/assignmentService";
-import type { SelectOption } from "../../../types/index";
-import { encodeId } from "../../../utils/hashId";
+import Button from "@/components/button/Button";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import ErrorState from "@/components/errorState/ErrorState";
+import Input from "@/components/input/Input";
+import Skeleton from "@/components/skeleton/Skeleton";
+import AssignmentService, { type GetUserAssignmentsResponse } from "@/services/assignmentService";
+import type { SelectOption } from "@/types/index";
+import { encodeId } from "@/utils/hashId";
 import styles from "../PersonalCenter.module.css";
 
 type Assignment = GetUserAssignmentsResponse["list"][number];

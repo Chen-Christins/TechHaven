@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useRdNavigate } from "../../hooks/useRdNavigate";
-import { formatDateTime } from "../../utils/utils";
+import { useRdNavigate } from "@/hooks/useRdNavigate";
+import { formatDateTime } from "@/utils/utils";
 import { FaClipboardList, FaBug, FaTasks, FaExclamationTriangle, FaCode } from "react-icons/fa";
 import styles from "./Dashboard.module.css";
-import Loading from "../../components/loading/Loading";
-import { encodeId } from "../../utils/hashId";
-import { useRdOrg } from "../../contexts/RdOrgContext";
-import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
-import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
-import type { RdStats, Requirement, Bug, Task } from "../../types/rdPlatform";
+import Loading from "@/components/loading/Loading";
+import { encodeId } from "@/utils/hashId";
+import { useRdOrg } from "@/contexts/RdOrgContext";
+import { RdPlatformService as RdAPI } from "@/services/rdPlatformService";
+import AssigneeDisplay from "@/components/assigneeDisplay/AssigneeDisplay";
+import type { RdStats, Requirement, Bug, Task } from "@/types/rdPlatform";
 
 const Dashboard: React.FC = () => {
   const navigate = useRdNavigate();

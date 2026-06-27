@@ -17,12 +17,12 @@ import {
   FaUserCog,
   FaUserTag,
 } from "react-icons/fa";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Input from "../../components/input/Input";
-import Loading from "../../components/loading/Loading";
-import { confirm } from "../../components/confirm/Confirm";
-import Avatar from "../../components/avatar/Avatar";
-import type { SelectOption } from "../../types/index";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Input from "@/components/input/Input";
+import Loading from "@/components/loading/Loading";
+import { confirm } from "@/components/confirm/Confirm";
+import Avatar from "@/components/avatar/Avatar";
+import type { SelectOption } from "@/types/index";
 import styles from "./PermissionManagement.module.css";
 
 // 权限接口定义

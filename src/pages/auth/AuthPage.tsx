@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, Mail, User, Lock, ArrowLeft, Check, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import styles from "./AuthPage.module.css"; // 导入 CSS Modules
-import Footer from "../../components/footer/Footer";
-import { useAuth } from "../../contexts/AuthContext";
-import { useSiteSettings } from "../../contexts/SiteSettingsContext";
-import { AuthService } from "../../services/authService";
+import Footer from "@/components/footer/Footer";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import { AuthService } from "@/services/authService";
 
 // 定义表单类型
 type FormType = "login" | "register" | "forgotPassword";

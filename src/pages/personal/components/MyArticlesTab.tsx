@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { FaEdit, FaTrash, FaPlus, FaEye, FaSearch, FaCalendarAlt, FaThumbsUp, FaComment, FaArrowDown, FaLock } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { encodeId } from "../../../utils/hashId";
-import CustomSelect from "../../../components/customSelect/CustomSelect";
-import { confirm } from "../../../components/confirm/Confirm";
-import { message } from "../../../components/message/Message";
-import { useAuth } from "../../../contexts/AuthContext";
-import type { SelectOption } from "../../../types/index";
-import ArticleService from "../../../services/articleService";
-import { formatToChinaTime } from "../../../utils/utils";
-import type { ArticleListItem } from "../../../types/index";
+import { encodeId } from "@/utils/hashId";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import { confirm } from "@/components/confirm/Confirm";
+import { message } from "@/components/message/Message";
+import { useAuth } from "@/contexts/AuthContext";
+import type { SelectOption } from "@/types/index";
+import ArticleService from "@/services/articleService";
+import { formatToChinaTime } from "@/utils/utils";
+import type { ArticleListItem } from "@/types/index";
 import styles from "../PersonalCenter.module.css";
 
 const STATE_MAP: Record<number, string> = {

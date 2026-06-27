@@ -1,8 +1,8 @@
 import React from "react";
 import { FaFileAlt } from "react-icons/fa";
 import styles from "./GMProtocol.module.css";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Button from "../../components/button/Button";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Button from "@/components/button/Button";
 import type { SelectOption } from "../../types";
 
 const GMProtocol: React.FC = () => {

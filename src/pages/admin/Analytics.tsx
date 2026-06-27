@@ -18,7 +18,7 @@ import {
   FaMousePointer,
 } from "react-icons/fa";
 import styles from "./Analytics.module.css";
-import CustomSelect from "../../components/customSelect/CustomSelect";
+import CustomSelect from "@/components/customSelect/CustomSelect";
 
 interface AnalyticsData {
   overview: {

@@ -16,10 +16,10 @@ import {
   FaSpinner,
 } from "react-icons/fa";
 import styles from "./Settings.module.css";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import message from "../../components/message/Message";
-import SettingsService, { type SiteSettings, type EmailSettings, type SystemSettings } from "../../services/settingsService";
-import { useSiteSettings } from "../../contexts/SiteSettingsContext";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import message from "@/components/message/Message";
+import SettingsService, { type SiteSettings, type EmailSettings, type SystemSettings } from "@/services/settingsService";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
 const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"site" | "email" | "system">("site");

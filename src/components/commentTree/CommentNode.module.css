@@ -1,0 +1,279 @@
+/* Textarea shared by edit & reply */
+.textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+}
+
+.textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* ========== Comment items ========== */
+.commentItem {
+  display: flex;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.commentItem:last-child {
+  border-bottom: none;
+}
+
+.commentAvatar {
+  flex-shrink: 0;
+}
+
+.commentAvatar img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+}
+
+.commentBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.commentMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.commentUser {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.commentTime {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.commentContent {
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  line-height: 1.7;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.commentContent p {
+  margin: 0 0 4px;
+}
+
+.commentContent p:last-child {
+  margin-bottom: 0;
+}
+
+.commentContent ul,
+.commentContent ol {
+  margin: 0 0 4px;
+  padding-left: 1.4em;
+}
+
+.commentContent li {
+  margin-bottom: 1px;
+}
+
+.commentContent code {
+  background: rgba(59, 130, 246, 0.08);
+  color: var(--primary);
+  border-radius: 3px;
+  padding: 0.1em 0.3em;
+  font-size: 0.88em;
+  font-family: "SFMono-Regular", Consolas, monospace;
+}
+
+.commentContent a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.commentContent a:hover {
+  text-decoration: underline;
+}
+
+/* ========== Reply list ========== */
+.replyList {
+  margin-left: 48px;
+  margin-bottom: 8px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border-light);
+}
+
+/* Nested indentation */
+.replyList .replyList {
+  margin-left: 28px;
+}
+
+.replyList .replyList .replyList {
+  margin-left: 20px;
+}
+
+.replyList .replyList .replyList .replyList {
+  margin-left: 14px;
+}
+
+.replyItem {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.replyItem:not(:last-child) {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.replyItem .commentAvatar img {
+  width: 28px;
+  height: 28px;
+}
+
+/* ========== Reply input ========== */
+.replyInputWrapper {
+  margin-bottom: 16px;
+}
+
+.inputFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.hint {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.submitButton:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.submitButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  padding: 6px 16px;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.cancelButton:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ========== Actions ========== */
+.actions {
+  display: flex;
+  gap: 14px;
+}
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-tertiary);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.actionButton:hover {
+  color: var(--primary);
+}
+
+.liked {
+  color: var(--primary);
+}
+
+/* ========== Edit ========== */
+.editSection {
+  /* wrapper around textarea when editing */
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.editSave {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.editSave:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.editCancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.editCancel:hover {
+  border-color: var(--text-secondary);
+}

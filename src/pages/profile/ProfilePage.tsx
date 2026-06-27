@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styles from "./ProfilePage.module.css";
-import Navbar from "../../components/navbar/Navbar";
-import Footer from "../../components/footer/Footer";
-import { encodeId, decodeId } from "../../utils/hashId";
-import BackToTop from "../../components/backToTop/BackToTop";
-import { useAuth } from "../../contexts/AuthContext";
-import AuthService from "../../services/authService";
-import ArticleService from "../../services/articleService";
-import LabelService from "../../services/labelService";
+import Navbar from "@/components/navbar/Navbar";
+import Footer from "@/components/footer/Footer";
+import { encodeId, decodeId } from "@/utils/hashId";
+import BackToTop from "@/components/backToTop/BackToTop";
+import { useAuth } from "@/contexts/AuthContext";
+import AuthService from "@/services/authService";
+import ArticleService from "@/services/articleService";
+import LabelService from "@/services/labelService";
 import {
   MapPin,
   Mail,
@@ -26,10 +26,10 @@ import {
   Loader2,
   Edit,
 } from "lucide-react";
-import type { Article, UserProfile } from "../../types/index";
-import type { UserStats } from "../../services/authService";
-import FollowService from "../../services/followService";
-import message from "../../components/message/Message";
+import type { Article, UserProfile } from "@/types/index";
+import type { UserStats } from "@/services/authService";
+import FollowService from "@/services/followService";
+import message from "@/components/message/Message";
 
 function formatDate(timestamp: number | string): string {
   if (!timestamp) return "";

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useRdNavigate } from "../../hooks/useRdNavigate";
-import { formatDateTime } from "../../utils/utils";
-import { encodeId } from "../../utils/hashId";
+import { useRdNavigate } from "@/hooks/useRdNavigate";
+import { formatDateTime } from "@/utils/utils";
+import { encodeId } from "@/utils/hashId";
 import {
   FaPlus,
   FaEye,
@@ -15,19 +15,20 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import styles from "./ListPage.module.css";
-import Input from "../../components/input/Input";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Modal from "../../components/modal/Modal";
-import Loading from "../../components/loading/Loading";
-import { confirm } from "../../components/confirm/Confirm";
-import message from "../../components/message/Message";
-import { useAuth } from "../../contexts/AuthContext";
-import { useRdOrg } from "../../contexts/RdOrgContext";
-import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
-import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
+import reqStyles from "./RequirementList.module.css";
+import Input from "@/components/input/Input";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Modal from "@/components/modal/Modal";
+import Loading from "@/components/loading/Loading";
+import { confirm } from "@/components/confirm/Confirm";
+import message from "@/components/message/Message";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRdOrg } from "@/contexts/RdOrgContext";
+import { RdPlatformService as RdAPI } from "@/services/rdPlatformService";
+import AssigneeDisplay from "@/components/assigneeDisplay/AssigneeDisplay";
 import type { SelectOption } from "../../types";
-import type { Requirement } from "../../types/rdPlatform";
-import { OrgPermission } from "../../types/rdPlatform";
+import type { Requirement } from "@/types/rdPlatform";
+import { OrgPermission } from "@/types/rdPlatform";
 
 // ---- constants ----
 const statusOptions: SelectOption[] = [
@@ -236,9 +237,9 @@ const RequirementList: React.FC = () => {
 
   // ---- render helpers ----
   const renderField = (label: string, value: React.ReactNode) => (
-    <div style={{ marginBottom: "14px" }}>
-      <span style={{ fontSize: "13px", color: "var(--text-tertiary)", display: "block", marginBottom: "2px" }}>{label}</span>
-      <span style={{ fontSize: "14px", color: "var(--text-primary)", fontWeight: 500 }}>{value || "-"}</span>
+    <div className={reqStyles.detailField}>
+      <span className={reqStyles.detailFieldLabel}>{label}</span>
+      <span className={reqStyles.detailFieldValue}>{value || "-"}</span>
     </div>
   );
 
@@ -444,34 +445,11 @@ const RequirementList: React.FC = () => {
         width={720}
         footer={
           modalMode === "view" ? null : (
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
-              <button
-                onClick={closeModal}
-                style={{
-                  padding: "10px 20px",
-                  background: "var(--card-bg)",
-                  color: "var(--text-primary)",
-                  border: "1px solid var(--border-primary)",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                }}
-              >
+            <div className={reqStyles.modalFooter}>
+              <button onClick={closeModal} className={reqStyles.modalCancelBtn}>
                 取消
               </button>
-              <button
-                onClick={handleSubmit}
-                style={{
-                  padding: "10px 20px",
-                  background: "var(--primary)",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={handleSubmit} className={reqStyles.modalSubmitBtn}>
                 {modalMode === "edit" ? "保存修改" : "创建需求"}
               </button>
             </div>
@@ -481,22 +459,13 @@ const RequirementList: React.FC = () => {
         {modalMode === "view" && selectedReq ? (
           /* ---- detail view ---- */
           <div data-allow-copy="true">
-            <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+            <div className={reqStyles.detailBadges}>
               <span className={`${styles.badge} ${styles[`priority_${selectedReq.priority}`]}`}>
                 {priorityText[selectedReq.priority]}
               </span>
               <span className={`${styles.badge} ${styles[`status_${selectedReq.status}`]}`}>{statusText[selectedReq.status]}</span>
             </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                gap: "8px",
-                marginBottom: "20px",
-                paddingBottom: "16px",
-                borderBottom: "1px solid var(--border-primary)",
-              }}
-            >
+            <div className={reqStyles.detailGrid}>
               {renderField("负责人", <AssigneeDisplay name={selectedReq.assignee} avatar={selectedReq.assigneeAvatar} />)}
               {renderField("创建人", selectedReq.creator)}
               {renderField("所属组织", orgNameMap[selectedReq.organizationId] || selectedReq.organizationId)}
@@ -507,29 +476,23 @@ const RequirementList: React.FC = () => {
               {renderField("更新时间", formatDateTime(selectedReq.updatedAt))}
             </div>
             <div>
-              <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
-              <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                {selectedReq.description || "暂无描述"}
-              </div>
+              <h4 className={reqStyles.detailSectionTitle}>描述</h4>
+              <div className={reqStyles.detailDescription}>{selectedReq.description || "暂无描述"}</div>
             </div>
           </div>
         ) : (
           /* ---- create / edit form ---- */
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div className={reqStyles.formContainer}>
             <div>
-              <label
-                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-              >
-                标题 <span style={{ color: "#ef4444" }}>*</span>
+              <label className={reqStyles.formLabel}>
+                标题 <span className={reqStyles.formLabelRequired}>*</span>
               </label>
               <Input placeholder="请输入需求标题" value={form.title} onChange={(v) => setFormField("title", v)} size="large" />
             </div>
             {(isAdmin || orgs.length > 1) && (
               <div>
-                <label
-                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                >
-                  所属组织 {!isAdmin && <span style={{ color: "#ef4444" }}>*</span>}
+                <label className={reqStyles.formLabel}>
+                  所属组织 {!isAdmin && <span className={reqStyles.formLabelRequired}>*</span>}
                 </label>
                 <CustomSelect
                   name="所属组织"
@@ -549,13 +512,9 @@ const RequirementList: React.FC = () => {
                 />
               </div>
             )}
-            <div style={{ display: "flex", gap: "16px" }}>
-              <div style={{ flex: 1 }}>
-                <label
-                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                >
-                  优先级
-                </label>
+            <div className={reqStyles.formRow}>
+              <div className={reqStyles.formField}>
+                <label className={reqStyles.formLabel}>优先级</label>
                 <CustomSelect
                   name="优先级"
                   options={formPriorityOptions}
@@ -565,12 +524,8 @@ const RequirementList: React.FC = () => {
                 />
               </div>
               {modalMode === "edit" && (
-                <div style={{ flex: 1 }}>
-                  <label
-                    style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                  >
-                    状态
-                  </label>
+                <div className={reqStyles.formField}>
+                  <label className={reqStyles.formLabel}>状态</label>
                   <CustomSelect
                     name="状态"
                     options={formStatusOptions}
@@ -580,12 +535,8 @@ const RequirementList: React.FC = () => {
                   />
                 </div>
               )}
-              <div style={{ flex: 1 }}>
-                <label
-                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                >
-                  负责人
-                </label>
+              <div className={reqStyles.formField}>
+                <label className={reqStyles.formLabel}>负责人</label>
                 <CustomSelect
                   name="负责人"
                   options={memberOptions}
@@ -598,55 +549,28 @@ const RequirementList: React.FC = () => {
                 />
               </div>
             </div>
-            <div style={{ display: "flex", gap: "16px" }}>
-              <div style={{ flex: 1 }}>
-                <label
-                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                >
-                  迭代
-                </label>
+            <div className={reqStyles.formRow}>
+              <div className={reqStyles.formField}>
+                <label className={reqStyles.formLabel}>迭代</label>
                 <Input placeholder="如 Sprint 12" value={form.iteration} onChange={(v) => setFormField("iteration", v)} size="large" />
               </div>
-              <div style={{ flex: 1 }}>
-                <label
-                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                >
-                  分类
-                </label>
+              <div className={reqStyles.formField}>
+                <label className={reqStyles.formLabel}>分类</label>
                 <Input placeholder="如 前端、后端" value={form.category} onChange={(v) => setFormField("category", v)} size="large" />
               </div>
-              <div style={{ flex: 1 }}>
-                <label
-                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                >
-                  来源
-                </label>
+              <div className={reqStyles.formField}>
+                <label className={reqStyles.formLabel}>来源</label>
                 <Input placeholder="如 产品需求" value={form.source} onChange={(v) => setFormField("source", v)} size="large" />
               </div>
             </div>
             <div>
-              <label
-                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-              >
-                描述
-              </label>
+              <label className={reqStyles.formLabel}>描述</label>
               <textarea
                 placeholder="请输入需求详细描述..."
                 value={form.description}
                 onChange={(e) => setFormField("description", e.target.value)}
                 rows={6}
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  border: "1px solid var(--border-primary)",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  color: "var(--text-primary)",
-                  backgroundColor: "var(--bg-primary)",
-                  resize: "vertical",
-                  fontFamily: "inherit",
-                  lineHeight: 1.6,
-                }}
+                className={reqStyles.formTextarea}
               />
             </div>
           </div>

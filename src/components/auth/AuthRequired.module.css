@@ -1,61 +1,194 @@
-.authRequired {
+.wrapper {
   position: relative;
 }
 
+/* ========== Loading state ========== */
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+/* ========== Empty state card ========== */
 .emptyState {
   text-align: center;
   background: var(--card-bg);
-  border-radius: 12px;
-  border: 1px solid var(--border-primary);
-  box-shadow: var(--shadow-sm);
-  margin: 4rem auto;
-  max-width: 600px;
-  padding: 4rem 2rem;
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 16px rgba(0, 0, 0, 0.04);
+  margin: 3rem auto;
+  max-width: 480px;
+  padding: 3.5rem 2rem 3rem;
 }
 
-.emptyIcon {
-  font-size: 4rem;
-  color: var(--text-tertiary);
-  margin-bottom: 1rem;
-  background: var(--bg-secondary);
-  width: 100px;
-  height: 100px;
+/* ========== Icon ========== */
+.iconCircle {
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 1.5rem;
+  margin: 0 auto 1.75rem;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 12%, transparent),
+    color-mix(in srgb, var(--accent, #6366f1) 12%, transparent)
+  );
+  border: 2px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  animation: iconPulse 3s ease-in-out infinite;
 }
 
-.emptyText {
-  font-size: 1.8rem;
+.iconCircle svg {
+  font-size: 2.2rem;
+  color: var(--primary);
+  filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.2));
+}
+
+@keyframes iconPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.15);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 12px rgba(59, 130, 246, 0);
+  }
+}
+
+/* ========== Typography ========== */
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.01em;
 }
 
-.emptySubtext {
+.subtext {
   color: var(--text-secondary);
   margin: 0 0 2rem;
-  max-width: 400px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 340px;
   margin-left: auto;
   margin-right: auto;
 }
 
+/* ========== Actions ========== */
+.actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
 .loginBtn {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  color: white;
+  min-width: 130px;
+  padding: 8px 20px;
+  background: var(--primary);
+  color: #fff;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  white-space: nowrap;
 }
 
 .loginBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+}
+
+.loginBtn:active {
+  transform: translateY(0);
+}
+
+.loginBtn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.backBtn {
+  min-width: 130px;
+  padding: 8px 20px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+  white-space: nowrap;
+}
+
+.backBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.backBtn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 520px) {
+  .emptyState {
+    margin: 2rem 1rem;
+    padding: 2.5rem 1.25rem 2rem;
+    border-radius: 12px;
+  }
+
+  .iconCircle {
+    width: 68px;
+    height: 68px;
+    margin-bottom: 1.25rem;
+  }
+
+  .iconCircle svg {
+    font-size: 1.7rem;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .subtext {
+    font-size: 0.88rem;
+    max-width: 280px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .loginBtn,
+  .backBtn {
+    flex: unset;
+    width: 100%;
+  }
 }

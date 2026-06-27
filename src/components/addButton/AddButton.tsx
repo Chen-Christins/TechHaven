@@ -1,7 +1,7 @@
 import React from "react";
 import { FaPlus } from "react-icons/fa";
 import { confirm } from "../confirm/Confirm";
-import type { SelectOption } from "../../types/index";
+import type { SelectOption } from "@/types/index";
 import styles from "./AddButton.module.css";
 
 interface AddButtonProps {

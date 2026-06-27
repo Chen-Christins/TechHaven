@@ -11,12 +11,12 @@ import {
   FaCheck,
   FaTerminal,
 } from "react-icons/fa";
-import message from "../../components/message/Message";
-import Input from "../../components/input/Input";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Button from "../../components/button/Button";
+import message from "@/components/message/Message";
+import Input from "@/components/input/Input";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Button from "@/components/button/Button";
 import type { SelectOption } from "../../types";
-import { resolveBackendEnvLabel } from "../../utils/http";
+import { resolveBackendEnvLabel } from "@/utils/http";
 import styles from "./GMDashboard.module.css";
 
 interface CommandTemplate {

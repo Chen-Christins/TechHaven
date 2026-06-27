@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { encodeId } from "../../utils/hashId";
+import { encodeId } from "@/utils/hashId";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -8,7 +8,9 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import "katex/dist/katex.min.css";
-import mermaid from "mermaid";
+import MermaidComponent from "@/components/mermaid/MermaidComponent";
+import CommentNode from "@/components/commentTree/CommentNode";
+import type { ArticleComment } from "@/types/comment";
 import {
   Eye,
   Heart,
@@ -24,14 +26,14 @@ import {
   Loader2,
 } from "lucide-react";
 import styles from "./ArticleView.module.css";
-import Avatar from "../../components/avatar/Avatar";
-import AiSummary from "../../components/articleView/AiSummary";
-import FollowService from "../../services/followService";
-import PraiseService from "../../services/praiseService";
-import CommentService from "../../services/commentService";
-import { useAuth } from "../../contexts/AuthContext";
-import { useSiteSettings } from "../../contexts/SiteSettingsContext";
-import message from "../../components/message/Message";
+import Avatar from "@/components/avatar/Avatar";
+import AiSummary from "@/components/articleView/AiSummary";
+import FollowService from "@/services/followService";
+import PraiseService from "@/services/praiseService";
+import CommentService from "@/services/commentService";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import message from "@/components/message/Message";
 
 interface Heading {
   id: string;
@@ -63,240 +65,13 @@ interface ArticleViewProps {
   readingTime?: number;
 }
 
-interface CommentItem {
-  id: number;
-  user: string;
-  avatar: string;
-  user_id?: number;
-  content: string;
-  time: string;
-  likes: number;
-  replies: CommentItem[];
-  is_liked?: boolean;
-  reply_count?: number;
-}
-
 const COMMENT_PAGE_SIZE = 20;
-
-// 初始化 Mermaid 配置
-mermaid.initialize({
-  startOnLoad: false,
-  theme: "default",
-  securityLevel: "loose",
-  fontFamily: "monospace",
-  fontSize: 14,
-  flowchart: {
-    useMaxWidth: true,
-    htmlLabels: true,
-    curve: "basis",
-  },
-});
-
-// Mermaid 图表组件
-const MermaidComponent: React.FC<{ code: string }> = ({ code }) => {
-  const elementRef = useRef<HTMLDivElement>(null);
-  const [error, setError] = useState<string>("");
-
-  useEffect(() => {
-    if (elementRef.current) {
-      try {
-        const id = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        mermaid
-          .render(id, code)
-          .then(({ svg }) => {
-            if (elementRef.current) {
-              elementRef.current.innerHTML = svg;
-            }
-          })
-          .catch((err) => {
-            setError(`Mermaid 渲染错误: ${err.message}`);
-          });
-      } catch (err: any) {
-        setError(`Mermaid 渲染错误: ${err.message}`);
-      }
-    }
-  }, [code]);
-
-  if (error) {
-    return (
-      <div className={styles.mermaidError}>
-        <div className={styles.errorMessage}>{error}</div>
-        <pre className={styles.errorCode}>{code}</pre>
-      </div>
-    );
-  }
-
-  return <div ref={elementRef} className={styles.mermaidDiagram} />;
-};
 
 // 使用 react-markdown 期望的标题属性类型
 interface HeadingComponentProps extends React.HTMLAttributes<HTMLHeadingElement> {
   level?: number;
   node?: any;
 }
-
-// 最大回复嵌套深度（0=顶级评论，每级回复+1）
-const MAX_REPLY_DEPTH = 4;
-
-interface CommentNodeProps {
-  comment: CommentItem;
-  depth: number;
-  likedCommentIds: Set<number>;
-  editingId: number | null;
-  editText: string;
-  replyToId: number | null;
-  replyText: string;
-  currentUserId?: number;
-  isAuthenticated: boolean;
-  onLike: (id: number) => void;
-  onToggleReply: (id: number) => void;
-  onStartEdit: (comment: CommentItem) => void;
-  onSaveEdit: (id: number) => void;
-  onCancelEdit: () => void;
-  onReplyTextChange: (text: string) => void;
-  onReplySubmit: (parentId: number) => void;
-  onReplyCancel: () => void;
-  onEditTextChange: (text: string) => void;
-}
-
-const CommentNode: React.FC<CommentNodeProps> = ({
-  comment,
-  depth,
-  likedCommentIds,
-  editingId,
-  editText,
-  replyToId,
-  replyText,
-  currentUserId,
-  isAuthenticated,
-  onLike,
-  onToggleReply,
-  onStartEdit,
-  onSaveEdit,
-  onCancelEdit,
-  onReplyTextChange,
-  onReplySubmit,
-  onReplyCancel,
-  onEditTextChange,
-}) => {
-  const isReply = depth > 0;
-  const canReply = depth < MAX_REPLY_DEPTH;
-
-  return (
-    <>
-      <div className={isReply ? styles.replyItem : styles.commentItem}>
-        <div className={styles.commentAvatar}>
-          <Avatar src={comment.avatar} name={comment.user} size={isReply ? 32 : 40} />
-        </div>
-        <div className={styles.commentBody}>
-          <div className={styles.commentMeta}>
-            <span className={styles.commentUser}>{comment.user}</span>
-            <span className={styles.commentTime}>{comment.time}</span>
-          </div>
-          {editingId === comment.id ? (
-            <div className={styles.commentEditSection}>
-              <textarea
-                className={styles.commentTextarea}
-                value={editText}
-                onChange={(e) => onEditTextChange(e.target.value)}
-                rows={isReply ? 2 : 3}
-              />
-              <div className={styles.commentEditActions}>
-                <button
-                  className={styles.commentEditSave}
-                  onClick={() => onSaveEdit(comment.id)}
-                  disabled={!editText.trim() || editText.trim() === comment.content}
-                >
-                  保存
-                </button>
-                <button className={styles.commentEditCancel} onClick={onCancelEdit}>
-                  取消
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className={styles.commentContent}>
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment.content}</ReactMarkdown>
-            </div>
-          )}
-          <div className={styles.commentActions}>
-            <button
-              className={`${styles.commentActionButton} ${likedCommentIds.has(comment.id) ? styles.commentLiked : ""}`}
-              onClick={() => onLike(comment.id)}
-            >
-              <ThumbsUp size={12} />
-              {comment.likes > 0 ? comment.likes : "赞"}
-            </button>
-            {canReply && (
-              <button className={styles.commentActionButton} onClick={() => onToggleReply(comment.id)}>
-                回复
-              </button>
-            )}
-            {isAuthenticated && currentUserId === comment.user_id && (
-              <button className={styles.commentActionButton} onClick={() => onStartEdit(comment)}>
-                编辑
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 子回复列表 */}
-      {comment.replies?.length > 0 && (
-        <div className={styles.replyList}>
-          {comment.replies.map((reply) => (
-            <CommentNode
-              key={reply.id}
-              comment={reply}
-              depth={depth + 1}
-              likedCommentIds={likedCommentIds}
-              editingId={editingId}
-              editText={editText}
-              replyToId={replyToId}
-              replyText={replyText}
-              currentUserId={currentUserId}
-              isAuthenticated={isAuthenticated}
-              onLike={onLike}
-              onToggleReply={onToggleReply}
-              onStartEdit={onStartEdit}
-              onSaveEdit={onSaveEdit}
-              onCancelEdit={onCancelEdit}
-              onReplyTextChange={onReplyTextChange}
-              onReplySubmit={onReplySubmit}
-              onReplyCancel={onReplyCancel}
-              onEditTextChange={onEditTextChange}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* 回复输入框 */}
-      {replyToId === comment.id && (
-        <div className={styles.replyInputWrapper}>
-          <textarea
-            className={styles.commentTextarea}
-            placeholder={`回复 ${comment.user}...`}
-            value={replyText}
-            onChange={(e) => onReplyTextChange(e.target.value)}
-            rows={2}
-          />
-          <div className={styles.commentInputFooter}>
-            <span className={styles.commentHint}>支持 Markdown 语法</span>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button className={styles.writeCommentButton} onClick={onReplyCancel}>
-                取消
-              </button>
-              <button className={styles.commentSubmitButton} onClick={() => onReplySubmit(comment.id)} disabled={!replyText.trim()}>
-                <Send size={14} />
-                回复
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-};
 
 const ArticleView: React.FC<ArticleViewProps> = ({
   title,
@@ -333,7 +108,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   const [likeLoading, setLikeLoading] = useState(false);
   const [likesCount, setLikesCount] = useState(praises);
   const [authorLikesCount, setAuthorLikesCount] = useState(authorStats?.likes ?? 0);
-  const [commentsList, setCommentsList] = useState<CommentItem[]>([]);
+  const [commentsList, setCommentsList] = useState<ArticleComment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [showCommentInput, setShowCommentInput] = useState(false);
@@ -370,7 +145,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
         setCommentsList(data.list);
         setLikedCommentIds((prev) => {
           const liked = new Set<number>();
-          const collectLiked = (comments: CommentItem[]) => {
+          const collectLiked = (comments: ArticleComment[]) => {
             comments.forEach((c) => {
               if (c.is_liked) liked.add(c.id);
               if (c.replies?.length) collectLiked(c.replies);
@@ -508,6 +283,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
           likes: newReply.likes,
           replies: [],
           is_liked: newReply.is_liked,
+          reply_count: 0,
         }),
       );
       setReplyText("");
@@ -543,7 +319,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   };
 
   // 递归查找并更新评论/回复的点赞数
-  const toggleCommentLike = (comment: CommentItem, targetId: number, delta: number): CommentItem => {
+  const toggleCommentLike = (comment: ArticleComment, targetId: number, delta: number): ArticleComment => {
     if (comment.id === targetId) {
       return { ...comment, likes: comment.likes + delta };
     }
@@ -557,7 +333,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   };
 
   // 递归更新评论/回复的内容
-  const updateComment = (comment: CommentItem, targetId: number, newContent: string): CommentItem => {
+  const updateComment = (comment: ArticleComment, targetId: number, newContent: string): ArticleComment => {
     if (comment.id === targetId) {
       return { ...comment, content: newContent };
     }
@@ -571,7 +347,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   };
 
   // 递归向评论树中添加回复
-  const addReplyToTree = (comments: CommentItem[], parentId: number, newReply: CommentItem): CommentItem[] => {
+  const addReplyToTree = (comments: ArticleComment[], parentId: number, newReply: ArticleComment): ArticleComment[] => {
     return comments.map((c) => {
       if (c.id === parentId) {
         const replies = Array.isArray(c.replies) ? c.replies : [];
@@ -584,7 +360,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     });
   };
 
-  const handleStartEdit = (comment: CommentItem) => {
+  const handleStartEdit = (comment: ArticleComment) => {
     setEditingId(comment.id);
     setEditText(comment.content);
   };

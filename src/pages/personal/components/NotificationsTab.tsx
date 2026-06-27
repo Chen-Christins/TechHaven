@@ -21,22 +21,22 @@ import {
   FaBug,
   FaTasks,
 } from "react-icons/fa";
-import NotificationService from "../../../services/NotificationService";
-import { isRead, markRead, markAllRead, subscribe, setUnreadCount } from "../../../utils/notificationState";
+import NotificationService from "@/services/notificationService";
+import { isRead, markRead, markAllRead, subscribe, setUnreadCount } from "@/utils/notificationState";
 import {
   getSettings,
   getEnabledTypes,
   setTypeEnabled,
   subscribe as subscribeSettings,
   type NotifType,
-} from "../../../utils/notificationSettingsState";
-import { notificationWS } from "../../../utils/websocket";
-import CustomSelect from "../../../components/customSelect/CustomSelect";
-import Modal from "../../../components/modal/Modal";
-import Switch from "../../../components/switcher/Switch";
-import type { SelectOption } from "../../../types/index";
-import { encodeId } from "../../../utils/hashId";
-import type { Notification as NotificationItem } from "../../../types/notification";
+} from "@/utils/notificationSettingsState";
+import { notificationWS } from "@/utils/websocket";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Modal from "@/components/modal/Modal";
+import Switch from "@/components/switch/Switch";
+import type { SelectOption } from "@/types/index";
+import { encodeId } from "@/utils/hashId";
+import type { Notification as NotificationItem } from "@/types/notification";
 import styles from "../PersonalCenter.module.css";
 
 const TYPE_ICON_MAP: Record<string, { icon: React.ReactNode; className: string }> = {

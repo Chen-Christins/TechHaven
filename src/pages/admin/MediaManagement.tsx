@@ -29,11 +29,11 @@ import {
   FaFileAlt,
   FaTag,
 } from "react-icons/fa";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Input from "../../components/input/Input";
-import Loading from "../../components/loading/Loading";
-import { confirm } from "../../components/confirm/Confirm";
-import type { SelectOption } from "../../types/index";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Input from "@/components/input/Input";
+import Loading from "@/components/loading/Loading";
+import { confirm } from "@/components/confirm/Confirm";
+import type { SelectOption } from "@/types/index";
 import styles from "./MediaManagement.module.css";
 
 // 媒体文件接口

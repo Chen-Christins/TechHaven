@@ -13,16 +13,16 @@ import {
   FaTerminal,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import message from "../../components/message/Message";
-import { useAuth } from "../../contexts/AuthContext";
+import message from "@/components/message/Message";
+import { useAuth } from "@/contexts/AuthContext";
 import GMLayout from "./GMLayout";
 import styles from "./GMConsole.module.css";
-import Input from "../../components/input/Input";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Button from "../../components/button/Button";
-import Loading from "../../components/loading/Loading";
+import Input from "@/components/input/Input";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Button from "@/components/button/Button";
+import Loading from "@/components/loading/Loading";
 import type { SelectOption } from "../../types";
-import { resolveBackendEnvLabel } from "../../utils/http";
+import { resolveBackendEnvLabel } from "@/utils/http";
 
 interface CommandTemplate {
   label: string;

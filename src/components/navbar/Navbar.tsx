@@ -18,9 +18,9 @@ import LayoutWidthToggle from "../layoutWidthToggle/LayoutWidthToggle";
 import ThemeToggle from "../themeToggle/ThemeToggle";
 import AuthButtons from "../authButtons/AuthButtons";
 import Notification from "../notification/Notification";
-import { useSiteSettings } from "../../contexts/SiteSettingsContext";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import Avatar from "../avatar/Avatar";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();

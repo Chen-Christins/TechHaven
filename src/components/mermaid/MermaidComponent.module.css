@@ -1,0 +1,53 @@
+.diagram {
+  background-color: var(--card-bg);
+  padding: 16px;
+  text-align: center;
+  overflow-x: auto;
+}
+
+.diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.error {
+  background-color: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 20px 0;
+}
+
+.errorMessage {
+  color: #dc2626;
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.errorCode {
+  background-color: var(--code-block-bg);
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Dark theme: mermaid internal SVG nodes */
+[data-theme="dark"] .diagram :global(.node) rect,
+[data-theme="dark"] .diagram :global(.node) circle,
+[data-theme="dark"] .diagram :global(.node) ellipse,
+[data-theme="dark"] .diagram :global(.node) polygon {
+  fill: #374151;
+  stroke: #6b7280;
+}
+
+[data-theme="dark"] .diagram :global(.edgePath) :global(.path) {
+  stroke: #60a5fa;
+}
+
+[data-theme="dark"] .diagram :global(.marker) {
+  fill: #60a5fa;
+  stroke: #60a5fa;
+}

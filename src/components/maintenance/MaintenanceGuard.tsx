@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Outlet } from "react-router-dom";
-import { useSiteSettings } from "../../contexts/SiteSettingsContext";
-import { useAuth } from "../../contexts/AuthContext";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
 import MaintenancePage from "./MaintenancePage";
 
 const MaintenanceGuard: React.FC = () => {

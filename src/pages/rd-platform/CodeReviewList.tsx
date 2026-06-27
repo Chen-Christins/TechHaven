@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { formatDateTime, formatRelativeTime } from "../../utils/utils";
+import { formatDateTime, formatRelativeTime } from "@/utils/utils";
 import {
   FaSync,
   FaEye,
@@ -14,14 +14,15 @@ import {
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import styles from "./ListPage.module.css";
-import Input from "../../components/input/Input";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Modal from "../../components/modal/Modal";
-import Loading from "../../components/loading/Loading";
-import message from "../../components/message/Message";
-import { confirm } from "../../components/confirm/Confirm";
-import { useRdOrg } from "../../contexts/RdOrgContext";
-import OrganizationService from "../../services/organizationService";
+import crStyles from "./CodeReviewList.module.css";
+import Input from "@/components/input/Input";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Modal from "@/components/modal/Modal";
+import Loading from "@/components/loading/Loading";
+import message from "@/components/message/Message";
+import { confirm } from "@/components/confirm/Confirm";
+import { useRdOrg } from "@/contexts/RdOrgContext";
+import OrganizationService from "@/services/organizationService";
 import type { SelectOption } from "../../types";
 
 // ---- PR 数据映射 ----
@@ -230,9 +231,9 @@ const CodeReviewList: React.FC = () => {
   };
 
   const renderField = (label: string, value: React.ReactNode) => (
-    <div style={{ marginBottom: "14px" }}>
-      <span style={{ fontSize: "13px", color: "var(--text-tertiary)", display: "block", marginBottom: "2px" }}>{label}</span>
-      <span style={{ fontSize: "14px", color: "var(--text-primary)", fontWeight: 500 }}>{value || "-"}</span>
+    <div className={crStyles.detailField}>
+      <span className={crStyles.detailFieldLabel}>{label}</span>
+      <span className={crStyles.detailFieldValue}>{value || "-"}</span>
     </div>
   );
 
@@ -278,7 +279,7 @@ const CodeReviewList: React.FC = () => {
                 className={`${styles.repoBarItem} ${styles.repoBarClickable} ${selectedRepoId === repo.id ? styles.repoBarActive : ""}`}
                 onClick={() => setSelectedRepoId(repo.id)}
               >
-                <FaGithub size={14} style={{ flexShrink: 0 }} />
+                <FaGithub size={14} className={crStyles.iconNoShrink} />
                 <span className={styles.repoBarName}>{repo.name}</span>
                 <span
                   className={`${styles.repoBarStatus} ${
@@ -379,25 +380,21 @@ const CodeReviewList: React.FC = () => {
                       {stateText[pr.state]}
                     </span>
                   </td>
-                  <td style={{ textAlign: "center" }}>{pr.author}</td>
-                  <td style={{ textAlign: "center", fontSize: "13px" }}>
-                    <span style={{ fontWeight: 500 }}>{pr.headBranch}</span>
-                    <span style={{ color: "var(--text-tertiary)", margin: "0 4px" }}>→</span>
-                    <span style={{ color: "var(--text-tertiary)" }}>{pr.baseBranch}</span>
+                  <td className={crStyles.cellCenter}>{pr.author}</td>
+                  <td className={crStyles.branchCell}>
+                    <span className={crStyles.branchHead}>{pr.headBranch}</span>
+                    <span className={crStyles.branchArrow}>→</span>
+                    <span className={crStyles.branchBase}>{pr.baseBranch}</span>
                   </td>
-                  <td style={{ textAlign: "center" }}>
+                  <td className={crStyles.changeCell}>
                     {pr.changedFiles != null ? (
-                      <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                      <span className={crStyles.changeFiles}>
                         {pr.changedFiles} 文件
-                        {pr.additions != null && pr.additions > 0 && (
-                          <span style={{ color: "#22c55e", marginLeft: "6px" }}>+{pr.additions}</span>
-                        )}
-                        {pr.deletions != null && pr.deletions > 0 && (
-                          <span style={{ color: "#ef4444", marginLeft: "4px" }}>-{pr.deletions}</span>
-                        )}
+                        {pr.additions != null && pr.additions > 0 && <span className={crStyles.changeAdditions}>+{pr.additions}</span>}
+                        {pr.deletions != null && pr.deletions > 0 && <span className={crStyles.changeDeletions}>-{pr.deletions}</span>}
                       </span>
                     ) : (
-                      <span style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>-</span>
+                      <span className={crStyles.changeNone}>-</span>
                     )}
                   </td>
                   <td>{formatRelativeTime(pr.createdAt)}</td>
@@ -467,7 +464,7 @@ const CodeReviewList: React.FC = () => {
       <Modal visible={viewModalVisible} title={selectedPR?.title || "PR 详情"} onClose={closeView} width={800} footer={null}>
         {selectedPR && (
           <div data-allow-copy="true">
-            <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+            <div className={crStyles.detailBadges}>
               <span
                 className={`${styles.badge} ${selectedPR.state === "closed" ? styles.pr_closed : styles[`status_${selectedPR.state}`]}`}
               >
@@ -487,16 +484,7 @@ const CodeReviewList: React.FC = () => {
                 </span>
               )}
             </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                gap: "8px",
-                marginBottom: "20px",
-                paddingBottom: "16px",
-                borderBottom: "1px solid var(--border-primary)",
-              }}
-            >
+            <div className={crStyles.detailGrid}>
               {renderField("作者", selectedPR.author)}
               {renderField("源分支", selectedPR.headBranch)}
               {renderField("目标分支", selectedPR.baseBranch)}
@@ -507,10 +495,10 @@ const CodeReviewList: React.FC = () => {
                   <span>
                     {selectedPR.changedFiles} 文件
                     {selectedPR.additions != null && selectedPR.additions > 0 && (
-                      <span style={{ color: "#22c55e", marginLeft: "8px" }}>+{selectedPR.additions}</span>
+                      <span className={crStyles.changeAdditions}>+{selectedPR.additions}</span>
                     )}
                     {selectedPR.deletions != null && selectedPR.deletions > 0 && (
-                      <span style={{ color: "#ef4444", marginLeft: "4px" }}>-{selectedPR.deletions}</span>
+                      <span className={crStyles.changeDeletions}>-{selectedPR.deletions}</span>
                     )}
                   </span>
                 ) : (
@@ -521,7 +509,7 @@ const CodeReviewList: React.FC = () => {
               {renderField("同步时间", formatDateTime(selectedPR.updatedAt))}
             </div>
             <div>
-              <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
+              <h4 className={crStyles.detailSectionTitle}>描述</h4>
               <div className={styles.markdownPreview}>
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedPR.description || "暂无描述"}</ReactMarkdown>
               </div>

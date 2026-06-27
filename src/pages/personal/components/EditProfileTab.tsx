@@ -1,10 +1,10 @@
 import React, { useState, useRef } from "react";
 import { FaCamera, FaUser, FaLock, FaSave, FaQuoteRight, FaGlobe, FaLink, FaGithub } from "react-icons/fa";
-import { useAuth } from "../../../contexts/AuthContext";
-import { AuthService } from "../../../services/authService";
-import { FileService } from "../../../services/fileService";
-import { message } from "../../../components/message/Message";
-import Avatar from "../../../components/avatar/Avatar";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthService } from "@/services/authService";
+import { FileService } from "@/services/fileService";
+import { message } from "@/components/message/Message";
+import Avatar from "@/components/avatar/Avatar";
 import ApiConfigCard from "./ApiConfigCard";
 import styles from "../PersonalCenter.module.css";
 

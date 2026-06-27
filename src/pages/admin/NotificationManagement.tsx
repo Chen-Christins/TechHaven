@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { FaBell, FaPaperPlane } from "react-icons/fa";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Input from "../../components/input/Input";
-import Button from "../../components/button/Button";
-import message from "../../components/message/Message";
-import NotificationService from "../../services/NotificationService";
-import type { SelectOption } from "../../types/index";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Input from "@/components/input/Input";
+import Button from "@/components/button/Button";
+import message from "@/components/message/Message";
+import NotificationService from "@/services/notificationService";
+import type { SelectOption } from "@/types/index";
 import styles from "./NotificationManagement.module.css";
 
 const NotificationManagement: React.FC = () => {
