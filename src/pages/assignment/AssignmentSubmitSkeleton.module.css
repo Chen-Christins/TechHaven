@@ -1,0 +1,150 @@
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.wrapper {
+  padding: 2rem;
+  max-width: 1560px;
+  margin: 0 auto;
+  width: 100%;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.block {
+  background-color: var(--bg-secondary, #f0f0f0);
+  border-radius: 6px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Back button */
+.backPlaceholder {
+  width: 120px;
+  height: 36px;
+  margin-bottom: 1rem;
+  composes: block;
+}
+
+/* Title area */
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.titleGroup {
+  flex: 1;
+}
+
+.titleLine {
+  height: 32px;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  width: 60%;
+  composes: block;
+}
+
+.subtitleLine {
+  height: 20px;
+  border-radius: 4px;
+  width: 40%;
+  composes: block;
+}
+
+.statusBadge {
+  height: 28px;
+  width: 80px;
+  border-radius: 14px;
+  composes: block;
+}
+
+/* Info cards */
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.infoCard {
+  border-radius: 8px;
+  padding: 1rem;
+  height: 80px;
+  composes: block;
+}
+
+/* Description */
+.descriptionBlock {
+  margin-bottom: 2rem;
+}
+
+.descriptionLine {
+  height: 16px;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  animation: pulse 1.5s ease-in-out infinite;
+  background-color: var(--bg-secondary, #f0f0f0);
+}
+
+.descriptionLineFull {
+  composes: descriptionLine;
+  width: 100%;
+}
+
+.descriptionLinePartial {
+  composes: descriptionLine;
+  width: 70%;
+}
+
+/* Upload area */
+.uploadArea {
+  margin-bottom: 2rem;
+}
+
+.uploadBox {
+  height: 180px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  composes: block;
+}
+
+.uploadInner {
+  text-align: center;
+  color: var(--text-tertiary, #ccc);
+}
+
+.uploadBtnPlaceholder {
+  height: 40px;
+  background-color: var(--bg-tertiary, #e0e0e0);
+  border-radius: 20px;
+  width: 240px;
+  margin: 0 auto 1rem;
+  composes: block;
+}
+
+/* Action buttons */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.actionBtn {
+  height: 40px;
+  width: 80px;
+  composes: block;
+}
+
+.actionBtnWide {
+  height: 40px;
+  width: 100px;
+  composes: block;
+}
