@@ -9,8 +9,7 @@
     "skipLibCheck": true,
 
     /* Path alias */
-    "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] },
+    "paths": { "@/*": ["./src/*"] },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
