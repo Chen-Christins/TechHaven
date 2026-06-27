@@ -1,0 +1,15 @@
+.radioGroup {
+  display: flex;
+  gap: 16px;
+}
+
+.layout-horizontal {
+  flex-direction: row;
+  align-items: center;
+}
+
+.layout-vertical {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}

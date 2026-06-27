@@ -182,13 +182,13 @@
     max-width: 280px;
   }
 
-    .actions {
-      flex-direction: column;
-    }
-
-    .loginBtn,
-    .backBtn {
-      flex: unset;
-      width: 100%;
-    }
+  .actions {
+    flex-direction: column;
   }
+
+  .loginBtn,
+  .backBtn {
+    flex: unset;
+    width: 100%;
+  }
+}
