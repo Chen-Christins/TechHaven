@@ -200,7 +200,7 @@ const NotificationsTab: React.FC = () => {
       });
       // 未全部启用时，客户端再过滤一层
       const filtered =
-        enabledTypes.length === allTypesCount ? data.list : data.list.filter((n) => enabledTypes.includes(n.type as NotifType));
+        enabledTypes.length === allTypesCount ? data.list : data.list.filter((n: NotificationItem) => enabledTypes.includes(n.type as NotifType));
       setNotifications(filtered);
       setTotal(data.total ?? data.list.length);
     } catch {
@@ -287,7 +287,7 @@ const NotificationsTab: React.FC = () => {
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const startIndex = (currentPage - 1) * PAGE_SIZE;
   const endIndex = Math.min(startIndex + notifications.length, total);
-  const unreadCount = notifications.filter((n) => !n.is_read && !isRead(n.id)).length;
+  const unreadCount = notifications.filter((n: NotificationItem) => !n.is_read && !isRead(n.id)).length;
 
   // 设置面板中要用到的类型列表
   const settingTypes: { key: NotifType; label: string }[] = [
