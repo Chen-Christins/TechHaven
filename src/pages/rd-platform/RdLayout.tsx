@@ -2,13 +2,26 @@ import React, { useState, useEffect } from "react";
 import { useLocation, Outlet, useSearchParams } from "react-router-dom";
 import { useRdNavigate } from "../../hooks/useRdNavigate";
 import { encodeId, decodeId } from "../../utils/hashId";
-import { FaHome, FaBars, FaTimes, FaClipboardList, FaBug, FaTasks, FaTicketAlt, FaCode, FaLock, FaChartLine } from "react-icons/fa";
+import {
+  FaHome,
+  FaBars,
+  FaTimes,
+  FaClipboardList,
+  FaBug,
+  FaTasks,
+  FaTicketAlt,
+  FaCode,
+  FaLock,
+  FaChartLine,
+  FaBuilding,
+} from "react-icons/fa";
 import styles from "./RdLayout.module.css";
 import ThemeToggle from "../../components/themeToggle/ThemeToggle";
 import Notification from "../../components/notification/Notification";
 import UserDropdown from "../../components/userDropdown/UserDropdown";
-import NotFound404 from "../error/NotFound404";
+import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
+import AuthRequired from "../../components/auth/AuthRequired";
 import OrgSelector from "../../components/orgSelector/OrgSelector";
 import { useAuth } from "../../contexts/AuthContext";
 import { RdOrgProvider, useRdOrg } from "../../contexts/RdOrgContext";
@@ -65,7 +78,30 @@ const RdLayout: React.FC = () => {
   }
 
   if (!isAuthenticated || !user) {
-    return <NotFound404 />;
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: "var(--bg-primary)",
+        }}
+      >
+        <Navbar />
+        <div
+          style={{
+            flex: 1,
+            maxWidth: "var(--page-max-width)",
+            margin: "0 auto",
+            width: "100%",
+            padding: "2rem 1.8rem",
+          }}
+        >
+          <AuthRequired message="您需要登录后才能访问研发平台。">{null}</AuthRequired>
+        </div>
+        <Footer startYear={2025} />
+      </div>
+    );
   }
 
   if (!accessChecked) {
@@ -102,7 +138,7 @@ const RdLayout: React.FC = () => {
         <div
           style={{
             fontSize: "64px",
-            color: "#dc3545",
+            color: "#f0a020",
             marginBottom: "24px",
             opacity: 0.9,
           }}
@@ -117,7 +153,7 @@ const RdLayout: React.FC = () => {
             color: "var(--text-primary)",
           }}
         >
-          访问被拒绝
+          需要加入组织
         </h1>
         <p
           style={{
@@ -129,13 +165,13 @@ const RdLayout: React.FC = () => {
             lineHeight: "1.6",
           }}
         >
-          抱歉，您没有权限访问研发平台。需要系统管理员权限或在已批准的组织中具有报告者及以上角色。
+          研发平台需要您加入一个组织，并在组织中具有报告者及以上角色才能访问。
           <br />
-          如果您认为这是一个错误，请联系组织管理员。
+          请前往组织页面查找并申请加入您所属的团队，或联系组织管理员为您开通权限。
         </p>
-        <div style={{ display: "flex", gap: "16px" }}>
+        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "center" }}>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/organizations/list")}
             style={{
               padding: "10px 24px",
               backgroundColor: "var(--primary)",
@@ -146,6 +182,24 @@ const RdLayout: React.FC = () => {
               fontSize: "15px",
               fontWeight: "500",
               boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <FaBuilding /> 加入组织
+          </button>
+          <button
+            onClick={() => navigate("/")}
+            style={{
+              padding: "10px 24px",
+              backgroundColor: "transparent",
+              color: "var(--text-primary)",
+              border: "1px solid var(--border-primary)",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "15px",
+              fontWeight: "500",
               display: "flex",
               alignItems: "center",
               gap: "8px",
