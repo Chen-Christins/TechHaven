@@ -19,11 +19,11 @@ import {
   FaBell,
 } from "react-icons/fa";
 import styles from "./AdminLayout.module.css";
-import ThemeToggle from "../../components/themeToggle/ThemeToggle";
-import Notification from "../../components/notification/Notification";
-import UserDropdown from "../../components/userDropdown/UserDropdown";
-import Footer from "../../components/footer/Footer";
-import { useAuth } from "../../contexts/AuthContext";
+import ThemeToggle from "@/components/themeToggle/ThemeToggle";
+import Notification from "@/components/notification/Notification";
+import UserDropdown from "@/components/userDropdown/UserDropdown";
+import Footer from "@/components/footer/Footer";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NavItem {
   id: string;

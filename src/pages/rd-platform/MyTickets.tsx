@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useRdNavigate } from "../../hooks/useRdNavigate";
-import { formatDateTime } from "../../utils/utils";
-import { encodeId } from "../../utils/hashId";
+import { useRdNavigate } from "@/hooks/useRdNavigate";
+import { formatDateTime } from "@/utils/utils";
+import { encodeId } from "@/utils/hashId";
 import {
   FaEye,
   FaEdit,
@@ -14,17 +14,19 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import styles from "./ListPage.module.css";
-import Input from "../../components/input/Input";
-import DatePicker from "../../components/datePicker/DatePicker";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Modal from "../../components/modal/Modal";
-import Loading from "../../components/loading/Loading";
-import message from "../../components/message/Message";
-import { useRdOrg } from "../../contexts/RdOrgContext";
-import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
-import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
+import myStyles from "./MyTickets.module.css";
+import Input from "@/components/input/Input";
+import DatePicker from "@/components/datePicker/DatePicker";
+
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Modal from "@/components/modal/Modal";
+import Loading from "@/components/loading/Loading";
+import message from "@/components/message/Message";
+import { useRdOrg } from "@/contexts/RdOrgContext";
+import { RdPlatformService as RdAPI } from "@/services/rdPlatformService";
+import AssigneeDisplay from "@/components/assigneeDisplay/AssigneeDisplay";
 import type { SelectOption } from "../../types";
-import type { Requirement, Bug, Task } from "../../types/rdPlatform";
+import type { Requirement, Bug, Task } from "@/types/rdPlatform";
 
 const reqStatusOptions: SelectOption[] = [
   { id: "", name: "全部状态", color: "#6c757d" },
@@ -269,29 +271,29 @@ const MyTickets: React.FC = () => {
   };
 
   const renderField = (label: string, value: React.ReactNode) => (
-    <div style={{ marginBottom: "14px" }}>
-      <span style={{ fontSize: "13px", color: "var(--text-tertiary)", display: "block", marginBottom: "2px" }}>{label}</span>
-      <span style={{ fontSize: "14px", color: "var(--text-primary)", fontWeight: 500 }}>{value || "-"}</span>
+    <div className={myStyles.detailField}>
+      <span className={myStyles.detailFieldLabel}>{label}</span>
+      <span className={myStyles.detailFieldValue}>{value || "-"}</span>
     </div>
   );
 
   const formLabel = (label: string, required?: boolean) => (
-    <label style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}>
-      {label} {required && <span style={{ color: "#ef4444" }}>*</span>}
+    <label className={myStyles.formLabel}>
+      {label} {required && <span className={myStyles.formLabelRequired}>*</span>}
     </label>
   );
 
   const renderEditForm = () => {
     if (!detail) return null;
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div className={myStyles.formContainer}>
         <div>
           {formLabel("标题", true)}
           <Input value={editForm.title || ""} onChange={(v) => setEditForm((p) => ({ ...p, title: v }))} size="large" />
         </div>
 
-        <div style={{ display: "flex", gap: "16px" }}>
-          <div style={{ flex: 1 }}>
+        <div className={myStyles.formRow}>
+          <div className={myStyles.formField}>
             {formLabel("状态")}
             <CustomSelect
               name="状态"
@@ -312,7 +314,7 @@ const MyTickets: React.FC = () => {
           </div>
 
           {detail.type === "req" && (
-            <div style={{ flex: 1 }}>
+            <div className={myStyles.formField}>
               {formLabel("优先级")}
               <CustomSelect
                 name="优先级"
@@ -325,7 +327,7 @@ const MyTickets: React.FC = () => {
           )}
           {detail.type === "bug" && (
             <>
-              <div style={{ flex: 1 }}>
+              <div className={myStyles.formField}>
                 {formLabel("严重程度")}
                 <CustomSelect
                   name="严重程度"
@@ -335,7 +337,7 @@ const MyTickets: React.FC = () => {
                   hideBadge
                 />
               </div>
-              <div style={{ flex: 1 }}>
+              <div className={myStyles.formField}>
                 {formLabel("优先级")}
                 <CustomSelect
                   name="优先级"
@@ -348,7 +350,7 @@ const MyTickets: React.FC = () => {
             </>
           )}
           {detail.type === "task" && (
-            <div style={{ flex: 1 }}>
+            <div className={myStyles.formField}>
               {formLabel("优先级")}
               <CustomSelect
                 name="优先级"
@@ -360,7 +362,7 @@ const MyTickets: React.FC = () => {
             </div>
           )}
 
-          <div style={{ flex: 1 }}>
+          <div className={myStyles.formField}>
             {formLabel("负责人")}
             <CustomSelect
               name="负责人"
@@ -377,28 +379,28 @@ const MyTickets: React.FC = () => {
 
         {/* type-specific fields */}
         {detail.type === "req" && (
-          <div style={{ display: "flex", gap: "16px" }}>
-            <div style={{ flex: 1 }}>
+          <div className={myStyles.formRow}>
+            <div className={myStyles.formField}>
               {formLabel("迭代")}
               <Input value={editForm.iteration || ""} onChange={(v) => setEditForm((p) => ({ ...p, iteration: v }))} size="large" />
             </div>
-            <div style={{ flex: 1 }}>
+            <div className={myStyles.formField}>
               {formLabel("分类")}
               <Input value={editForm.category || ""} onChange={(v) => setEditForm((p) => ({ ...p, category: v }))} size="large" />
             </div>
-            <div style={{ flex: 1 }}>
+            <div className={myStyles.formField}>
               {formLabel("来源")}
               <Input value={editForm.source || ""} onChange={(v) => setEditForm((p) => ({ ...p, source: v }))} size="large" />
             </div>
           </div>
         )}
         {detail.type === "bug" && (
-          <div style={{ display: "flex", gap: "16px" }}>
-            <div style={{ flex: 1 }}>
+          <div className={myStyles.formRow}>
+            <div className={myStyles.formField}>
               {formLabel("模块")}
               <Input value={editForm.module || ""} onChange={(v) => setEditForm((p) => ({ ...p, module: v }))} size="large" />
             </div>
-            <div style={{ flex: 1 }}>
+            <div className={myStyles.formField}>
               {formLabel("运行环境")}
               <Input
                 value={editForm.environment || ""}
@@ -409,8 +411,8 @@ const MyTickets: React.FC = () => {
           </div>
         )}
         {detail.type === "task" && (
-          <div style={{ display: "flex", gap: "16px" }}>
-            <div style={{ flex: 1 }}>
+          <div className={myStyles.formRow}>
+            <div className={myStyles.formField}>
               {formLabel("截止日期")}
               <DatePicker
                 placeholder="选择截止日期"
@@ -424,10 +426,9 @@ const MyTickets: React.FC = () => {
                   }))
                 }
                 size="large"
-                style={{ width: "100%" }}
               />
             </div>
-            <div style={{ flex: 1 }}>
+            <div className={myStyles.formField}>
               {formLabel("预估工时 (h)")}
               <Input
                 value={editForm.estimatedHours || ""}
@@ -444,18 +445,7 @@ const MyTickets: React.FC = () => {
             value={editForm.description || ""}
             onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
             rows={5}
-            style={{
-              width: "100%",
-              padding: "10px 14px",
-              border: "1px solid var(--border-primary)",
-              borderRadius: "8px",
-              fontSize: "14px",
-              color: "var(--text-primary)",
-              backgroundColor: "var(--bg-primary)",
-              resize: "vertical",
-              fontFamily: "inherit",
-              lineHeight: 1.6,
-            }}
+            className={myStyles.formTextarea}
           />
         </div>
       </div>
@@ -465,31 +455,16 @@ const MyTickets: React.FC = () => {
   const renderField_ = renderField;
 
   const tabBtn = (key: TabKey, icon: React.ReactNode, label: string, count: number) => (
-    <button
-      onClick={() => setActiveTab(key)}
-      style={{
-        padding: "10px 24px",
-        fontSize: "14px",
-        fontWeight: activeTab === key ? 600 : 400,
-        color: activeTab === key ? "var(--primary)" : "var(--text-secondary)",
-        border: "none",
-        background: "transparent",
-        cursor: "pointer",
-        borderBottom: activeTab === key ? "2px solid var(--primary)" : "2px solid transparent",
-        marginBottom: "-2px",
-      }}
-    >
+    <button onClick={() => setActiveTab(key)} className={`${myStyles.tabBtn} ${activeTab === key ? myStyles.tabBtnActive : ""}`}>
       {icon} {label} ({count})
     </button>
   );
-
   const renderPriorityBadge = (p: string) => (
     <span className={`${styles.badge} ${styles[`priority_${p}`]}`}>{priorityText[p] || p}</span>
   );
   const renderStatusBadge = (s: string, map: Record<string, string>) => (
     <span className={`${styles.badge} ${styles[`status_${s}`]}`}>{map[s] || s}</span>
   );
-
   const filterBar = (
     <div className={styles.filterSection}>
       <div className={styles.filterHeader}>
@@ -568,10 +543,10 @@ const MyTickets: React.FC = () => {
           <p className={styles.pageDescription}>我负责或创建的需求、缺陷与任务</p>
         </div>
       </div>
-      <div style={{ display: "flex", gap: "0", marginBottom: "20px", borderBottom: "2px solid var(--border-primary)" }}>
-        {tabBtn("req", <FaClipboardList style={{ marginRight: "6px" }} />, "需求", totalMap.req)}
-        {tabBtn("bug", <FaBug style={{ marginRight: "6px" }} />, "缺陷", totalMap.bug)}
-        {tabBtn("task", <FaTasks style={{ marginRight: "6px" }} />, "任务", totalMap.task)}
+      <div className={myStyles.tabBar}>
+        {tabBtn("req", <FaClipboardList className={myStyles.tabBtnIcon} />, "需求", totalMap.req)}
+        {tabBtn("bug", <FaBug className={myStyles.tabBtnIcon} />, "缺陷", totalMap.bug)}
+        {tabBtn("task", <FaTasks className={myStyles.tabBtnIcon} />, "任务", totalMap.task)}
       </div>
       {filterBar}
 
@@ -780,35 +755,11 @@ const MyTickets: React.FC = () => {
         width={720}
         footer={
           editMode ? (
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
-              <button
-                onClick={() => setEditMode(false)}
-                style={{
-                  padding: "10px 20px",
-                  background: "var(--card-bg)",
-                  color: "var(--text-primary)",
-                  border: "1px solid var(--border-primary)",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                }}
-              >
+            <div className={myStyles.modalFooter}>
+              <button onClick={() => setEditMode(false)} className={myStyles.modalCancelBtn}>
                 取消
               </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                style={{
-                  padding: "10px 20px",
-                  background: "var(--primary)",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={handleSave} disabled={saving} className={myStyles.modalSubmitBtn}>
                 {saving ? "保存中..." : "保存"}
               </button>
             </div>
@@ -823,20 +774,11 @@ const MyTickets: React.FC = () => {
                 const r = detail.item as Requirement;
                 return (
                   <div>
-                    <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+                    <div className={myStyles.detailBadges}>
                       {renderPriorityBadge(r.priority)}
                       {renderStatusBadge(r.status, reqStatusText)}
                     </div>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                        gap: "8px",
-                        marginBottom: "20px",
-                        paddingBottom: "16px",
-                        borderBottom: "1px solid var(--border-primary)",
-                      }}
-                    >
+                    <div className={myStyles.detailGrid}>
                       {renderField_("负责人", <AssigneeDisplay name={r.assignee} avatar={r.assigneeAvatar} />)}
                       {renderField_("创建人", r.creator)}
                       {renderField_("所属组织", orgNameMap[r.organizationId] || r.organizationId)}
@@ -847,10 +789,8 @@ const MyTickets: React.FC = () => {
                       {renderField_("更新时间", r.updatedAt ? formatDateTime(r.updatedAt) : "-")}
                     </div>
                     <div>
-                      <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
-                      <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                        {r.description || "暂无描述"}
-                      </div>
+                      <h4 className={myStyles.detailSectionTitle}>描述</h4>
+                      <div className={myStyles.detailDescription}>{r.description || "暂无描述"}</div>
                     </div>
                   </div>
                 );
@@ -861,21 +801,12 @@ const MyTickets: React.FC = () => {
                 const b = detail.item as Bug;
                 return (
                   <div>
-                    <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+                    <div className={myStyles.detailBadges}>
                       <span className={`${styles.badge} ${styles[`severity_${b.severity}`]}`}>{severityText[b.severity]}</span>
                       {renderPriorityBadge(b.priority)}
                       {renderStatusBadge(b.status, bugStatusText)}
                     </div>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                        gap: "8px",
-                        marginBottom: "20px",
-                        paddingBottom: "16px",
-                        borderBottom: "1px solid var(--border-primary)",
-                      }}
-                    >
+                    <div className={myStyles.detailGrid}>
                       {renderField_("负责人", <AssigneeDisplay name={b.assignee} avatar={b.assigneeAvatar} />)}
                       {renderField_("创建人", b.creator)}
                       {renderField_("所属组织", orgNameMap[b.organizationId] || b.organizationId)}
@@ -885,20 +816,14 @@ const MyTickets: React.FC = () => {
                       {renderField_("创建时间", b.createdAt ? formatDateTime(b.createdAt) : "-")}
                       {renderField_("更新时间", b.updatedAt ? formatDateTime(b.updatedAt) : "-")}
                     </div>
-                    <div style={{ marginBottom: b.stepsToReproduce ? "20px" : "0" }}>
-                      <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
-                      <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                        {b.description || "暂无描述"}
-                      </div>
+                    <div className={b.stepsToReproduce ? myStyles.detailSection : myStyles.detailSectionLast}>
+                      <h4 className={myStyles.detailSectionTitle}>描述</h4>
+                      <div className={myStyles.detailDescription}>{b.description || "暂无描述"}</div>
                     </div>
                     {b.stepsToReproduce && (
                       <div>
-                        <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>
-                          复现步骤
-                        </h4>
-                        <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                          {b.stepsToReproduce}
-                        </div>
+                        <h4 className={myStyles.detailSectionTitle}>复现步骤</h4>
+                        <div className={myStyles.detailDescription}>{b.stepsToReproduce}</div>
                       </div>
                     )}
                   </div>
@@ -910,34 +835,14 @@ const MyTickets: React.FC = () => {
                 const t = detail.item as Task;
                 return (
                   <div>
-                    <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+                    <div className={myStyles.detailBadges}>
                       {renderPriorityBadge(t.priority)}
                       {renderStatusBadge(t.status, taskStatusText)}
                     </div>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                        gap: "8px",
-                        marginBottom: "20px",
-                        paddingBottom: "16px",
-                        borderBottom: "1px solid var(--border-primary)",
-                      }}
-                    >
-                      {renderField_("负责人", <AssigneeDisplay name={t.assignee} avatar={t.assigneeAvatar} />)}
-                      {renderField_("创建人", t.creator)}
-                      {renderField_("所属组织", orgNameMap[t.organizationId] || t.organizationId)}
-                      {renderField_("关联需求", t.requirementId)}
-                      {renderField_("截止日期", t.deadline ? formatDateTime(t.deadline) : "-")}
-                      {renderField_("预估工时", `${t.estimatedHours}h`)}
-                      {renderField_("创建时间", t.createdAt ? formatDateTime(t.createdAt) : "-")}
-                      {renderField_("更新时间", t.updatedAt ? formatDateTime(t.updatedAt) : "-")}
-                    </div>
+                    <div className={myStyles.detailGrid}>className={myStyles.statusGridWithBorder}</div>
                     <div>
-                      <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
-                      <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                        {t.description || "暂无描述"}
-                      </div>
+                      <h4 className={myStyles.detailSectionTitle}>描述</h4>
+                      <div className={myStyles.detailDescription}>{t.description || "暂无描述"}</div>
                     </div>
                   </div>
                 );
@@ -949,5 +854,4 @@ const MyTickets: React.FC = () => {
     </div>
   );
 };
-
 export default MyTickets;

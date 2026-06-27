@@ -1,6 +1,6 @@
 import React from "react";
 import { FaFileAlt, FaEye, FaThumbsUp, FaComment, FaTag, FaChartBar } from "react-icons/fa";
-import type { UserStats } from "../../../services/authService";
+import type { UserStats } from "@/services/authService";
 import styles from "../PersonalCenter.module.css";
 
 interface Props {

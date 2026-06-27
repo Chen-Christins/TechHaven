@@ -2,12 +2,12 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import * as echarts from "echarts";
 import { FaArrowDown, FaArrowUp, FaBug, FaChartLine, FaClock, FaClipboardCheck, FaCodeBranch } from "react-icons/fa";
 import { useSearchParams } from "react-router-dom";
-import Button from "../../components/button/Button";
-import ErrorState from "../../components/errorState/ErrorState";
-import Loading from "../../components/loading/Loading";
-import { useRdOrg } from "../../contexts/RdOrgContext";
-import RdPlatformService from "../../services/rdPlatformService";
-import type { RdTrendAnalysisData } from "../../types/rdPlatform";
+import Button from "@/components/button/Button";
+import ErrorState from "@/components/errorState/ErrorState";
+import Loading from "@/components/loading/Loading";
+import { useRdOrg } from "@/contexts/RdOrgContext";
+import RdPlatformService from "@/services/rdPlatformService";
+import type { RdTrendAnalysisData } from "@/types/rdPlatform";
 import styles from "./TrendAnalysis.module.css";
 
 type TrendPeriod = 7 | 30;

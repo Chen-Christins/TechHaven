@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { encodeId } from "../../utils/hashId";
+import { encodeId } from "@/utils/hashId";
 import {
   FaFileAlt,
   FaPlus,
@@ -27,16 +27,16 @@ import {
   FaComment,
   FaClipboardCheck,
 } from "react-icons/fa";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Input from "../../components/input/Input";
-import Loading from "../../components/loading/Loading";
-import { confirm } from "../../components/confirm/Confirm";
-import type { SelectOption } from "../../types/index";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Input from "@/components/input/Input";
+import Loading from "@/components/loading/Loading";
+import { confirm } from "@/components/confirm/Confirm";
+import type { SelectOption } from "@/types/index";
 import styles from "./ArticleManagement.module.css";
-import ArticleService, { type ListAdminArticlesResponse, type ArticleStatsResponse } from "../../services/articleService";
-import { CategoryService } from "../../services/categoryService";
-import { formatToChinaTime } from "../../utils/utils";
-import message from "../../components/message/Message";
+import ArticleService, { type ListAdminArticlesResponse, type ArticleStatsResponse } from "@/services/articleService";
+import { CategoryService } from "@/services/categoryService";
+import { formatToChinaTime } from "@/utils/utils";
+import message from "@/components/message/Message";
 
 // 文章接口定义
 interface Article {

@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import styles from "./IndexPage.module.css";
-import ArticleList from "../../components/articleList/ArticleList";
-import StatsPanel from "../../components/statsPanel/StatsPanel";
-import SubscribeBox from "../../components/subscribeBox/SubscribeBox";
-import Calendar from "../../components/calendar/Calendar";
-import CategoryPanel from "../../components/categoryPanel/CategoryPanel";
-import Navbar from "../../components/navbar/Navbar";
-import Footer from "../../components/footer/Footer";
-import TagPanel from "../../components/tagPanel/TagPanel";
-import SearchPanel from "../../components/searchArticle/SearchArticle";
-import BackToTop from "../../components/backToTop/BackToTop";
-import LabelService from "../../services/labelService";
-import PageSkeleton from "../../components/pageSkeleton/PageSkeleton";
-import { useAuth } from "../../contexts/AuthContext";
+import ArticleList from "@/components/articleList/ArticleList";
+import StatsPanel from "@/components/statsPanel/StatsPanel";
+import SubscribeBox from "@/components/subscribeBox/SubscribeBox";
+import Calendar from "@/components/calendar/Calendar";
+import CategoryPanel from "@/components/categoryPanel/CategoryPanel";
+import Navbar from "@/components/navbar/Navbar";
+import Footer from "@/components/footer/Footer";
+import TagPanel from "@/components/tagPanel/TagPanel";
+import SearchPanel from "@/components/searchArticle/SearchArticle";
+import BackToTop from "@/components/backToTop/BackToTop";
+import LabelService from "@/services/labelService";
+import PageSkeleton from "@/components/pageSkeleton/PageSkeleton";
+import { useAuth } from "@/contexts/AuthContext";
 
 const IndexPage: React.FC = () => {
   const { user, loading: authLoading } = useAuth();

@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./TagPanel.module.css";
-import type { Tag } from "../../types/index";
+import type { Tag } from "@/types/index";
 import Skeleton from "../skeleton/Skeleton";
 
 export interface TagPanelProps {

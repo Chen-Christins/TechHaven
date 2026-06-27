@@ -1,26 +1,26 @@
-import ArticleService, { type CreateArticleParams } from "../../services/articleService";
-import CategoryService from "../../services/categoryService";
-import LabelService from "../../services/labelService";
+import ArticleService, { type CreateArticleParams } from "@/services/articleService";
+import CategoryService from "@/services/categoryService";
+import LabelService from "@/services/labelService";
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { encodeId, decodeId } from "../../utils/hashId";
+import { encodeId, decodeId } from "@/utils/hashId";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import mermaid from "mermaid";
 import "katex/dist/katex.min.css";
-import type { ArticleCreateProps, ArticleFormData, SelectOption, Tag } from "../../types/index";
+import type { ArticleCreateProps, ArticleFormData, SelectOption, Tag } from "@/types/index";
 import { FaEdit, FaEye, FaFileImport, FaInfoCircle, FaSave, FaFly, FaLock } from "react-icons/fa";
 import styles from "./ArticleCreate.module.css";
-import Footer from "../../components/footer/Footer";
-import Navbar from "../../components/navbar/Navbar";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import AddButton from "../../components/addButton/AddButton";
-import BackToTop from "../../components/backToTop/BackToTop";
-import Skeleton from "../../components/skeleton/Skeleton";
-import { useAuth } from "../../contexts/AuthContext";
-import message from "../../components/message/Message";
+import Footer from "@/components/footer/Footer";
+import Navbar from "@/components/navbar/Navbar";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import AddButton from "@/components/addButton/AddButton";
+import BackToTop from "@/components/backToTop/BackToTop";
+import Skeleton from "@/components/skeleton/Skeleton";
+import { useAuth } from "@/contexts/AuthContext";
+import message from "@/components/message/Message";
 
 // 模拟数据（已移除）
 

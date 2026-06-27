@@ -1,6 +1,6 @@
 import React from "react";
 import { StretchHorizontal } from "lucide-react";
-import { useLayoutWidth } from "../../contexts/LayoutWidthContext";
+import { useLayoutWidth } from "@/contexts/LayoutWidthContext";
 import styles from "./LayoutWidthToggle.module.css";
 
 const MODE_META = {

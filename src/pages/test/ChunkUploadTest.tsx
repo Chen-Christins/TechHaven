@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import FileService from "../../services/fileService";
-import message from "../../components/message/Message";
+import FileService from "@/services/fileService";
+import message from "@/components/message/Message";
 import styles from "./ChunkUploadTest.module.css";
 
 interface ChunkStatus {

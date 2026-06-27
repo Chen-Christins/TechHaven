@@ -4,8 +4,8 @@ import Modal from "../modal/Modal";
 import Input from "../input/Input";
 import message from "../message/Message";
 import { confirm } from "../confirm/Confirm";
-import { formatRelativeTime } from "../../utils/utils";
-import OrganizationService from "../../services/organizationService";
+import { formatRelativeTime } from "@/utils/utils";
+import OrganizationService from "@/services/organizationService";
 import styles from "./Organization.module.css";
 
 /** 过滤语言字段中的控制字符 */

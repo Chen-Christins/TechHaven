@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { encodeId } from "../../utils/hashId";
+import { encodeId } from "@/utils/hashId";
 import { FaUserCircle, FaCog, FaSignOutAlt, FaHome } from "react-icons/fa";
 import Avatar from "../avatar/Avatar";
 import styles from "./UserDropdown.module.css";

@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ThumbsUp, Send } from "lucide-react";
 import Avatar from "../avatar/Avatar";
-import type { ArticleComment } from "../../types/comment";
+import type { ArticleComment } from "@/types/comment";
 import styles from "./CommentNode.module.css";
 
 // 最大回复嵌套深度（0=顶级评论，每级回复+1）

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useRdNavigate } from "../../hooks/useRdNavigate";
-import { formatDateTime } from "../../utils/utils";
-import { encodeId } from "../../utils/hashId";
+import { useRdNavigate } from "@/hooks/useRdNavigate";
+import { formatDateTime } from "@/utils/utils";
+import { encodeId } from "@/utils/hashId";
 import {
   FaPlus,
   FaEye,
@@ -15,19 +15,20 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import styles from "./ListPage.module.css";
-import Input from "../../components/input/Input";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Modal from "../../components/modal/Modal";
-import Loading from "../../components/loading/Loading";
-import { confirm } from "../../components/confirm/Confirm";
-import message from "../../components/message/Message";
-import { useAuth } from "../../contexts/AuthContext";
-import { useRdOrg } from "../../contexts/RdOrgContext";
-import { RdPlatformService as RdAPI } from "../../services/rdPlatformService";
-import AssigneeDisplay from "../../components/assigneeDisplay/AssigneeDisplay";
+import bugStyles from "./BugList.module.css";
+import Input from "@/components/input/Input";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Modal from "@/components/modal/Modal";
+import Loading from "@/components/loading/Loading";
+import { confirm } from "@/components/confirm/Confirm";
+import message from "@/components/message/Message";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRdOrg } from "@/contexts/RdOrgContext";
+import { RdPlatformService as RdAPI } from "@/services/rdPlatformService";
+import AssigneeDisplay from "@/components/assigneeDisplay/AssigneeDisplay";
 import type { SelectOption } from "../../types";
-import type { Bug } from "../../types/rdPlatform";
-import { OrgPermission } from "../../types/rdPlatform";
+import type { Bug } from "@/types/rdPlatform";
+import { OrgPermission } from "@/types/rdPlatform";
 
 // ---- constants ----
 const statusOptions: SelectOption[] = [
@@ -256,9 +257,9 @@ const BugList: React.FC = () => {
   };
 
   const renderField = (label: string, value: React.ReactNode) => (
-    <div style={{ marginBottom: "14px" }}>
-      <span style={{ fontSize: "13px", color: "var(--text-tertiary)", display: "block", marginBottom: "2px" }}>{label}</span>
-      <span style={{ fontSize: "14px", color: "var(--text-primary)", fontWeight: 500 }}>{value || "-"}</span>
+    <div className={bugStyles.detailField}>
+      <span className={bugStyles.detailFieldLabel}>{label}</span>
+      <span className={bugStyles.detailFieldValue}>{value || "-"}</span>
     </div>
   );
 
@@ -474,34 +475,11 @@ const BugList: React.FC = () => {
         width={760}
         footer={
           modalMode === "view" ? null : (
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
-              <button
-                onClick={closeModal}
-                style={{
-                  padding: "10px 20px",
-                  background: "var(--card-bg)",
-                  color: "var(--text-primary)",
-                  border: "1px solid var(--border-primary)",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                }}
-              >
+            <div className={bugStyles.modalFooter}>
+              <button onClick={closeModal} className={bugStyles.modalCancelBtn}>
                 取消
               </button>
-              <button
-                onClick={handleSubmit}
-                style={{
-                  padding: "10px 20px",
-                  background: "var(--primary)",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={handleSubmit} className={bugStyles.modalSubmitBtn}>
                 {modalMode === "edit" ? "保存修改" : "提交缺陷"}
               </button>
             </div>
@@ -511,7 +489,7 @@ const BugList: React.FC = () => {
         {modalMode === "view" && selectedBug ? (
           /* ---- detail view ---- */
           <div data-allow-copy="true">
-            <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+            <div className={bugStyles.detailBadges}>
               <span className={`${styles.badge} ${styles[`severity_${selectedBug.severity}`]}`}>
                 {severityText[selectedBug.severity]}
               </span>
@@ -520,16 +498,7 @@ const BugList: React.FC = () => {
               </span>
               <span className={`${styles.badge} ${styles[`status_${selectedBug.status}`]}`}>{statusText[selectedBug.status]}</span>
             </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                gap: "8px",
-                marginBottom: "20px",
-                paddingBottom: "16px",
-                borderBottom: "1px solid var(--border-primary)",
-              }}
-            >
+            <div className={bugStyles.detailGrid}>
               {renderField("负责人", <AssigneeDisplay name={selectedBug.assignee} avatar={selectedBug.assigneeAvatar} />)}
               {renderField("创建人", selectedBug.creator)}
               {renderField("所属组织", orgNameMap[selectedBug.organizationId] || selectedBug.organizationId)}
@@ -539,38 +508,30 @@ const BugList: React.FC = () => {
               {renderField("创建时间", formatDateTime(selectedBug.createdAt))}
               {renderField("更新时间", formatDateTime(selectedBug.updatedAt))}
             </div>
-            <div style={{ marginBottom: selectedBug.stepsToReproduce ? "20px" : "0" }}>
-              <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>描述</h4>
-              <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                {selectedBug.description || "暂无描述"}
-              </div>
+            <div className={selectedBug.stepsToReproduce ? bugStyles.detailSection : bugStyles.detailSectionLast}>
+              <h4 className={bugStyles.detailSectionTitle}>描述</h4>
+              <div className={bugStyles.detailDescription}>{selectedBug.description || "暂无描述"}</div>
             </div>
             {selectedBug.stepsToReproduce && (
               <div>
-                <h4 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "8px" }}>复现步骤</h4>
-                <div style={{ fontSize: "14px", color: "var(--text-primary)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
-                  {selectedBug.stepsToReproduce}
-                </div>
+                <h4 className={bugStyles.detailSectionTitle}>复现步骤</h4>
+                <div className={bugStyles.detailDescription}>{selectedBug.stepsToReproduce}</div>
               </div>
             )}
           </div>
         ) : (
           /* ---- create / edit form ---- */
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div className={bugStyles.formContainer}>
             <div>
-              <label
-                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-              >
-                标题 <span style={{ color: "#ef4444" }}>*</span>
+              <label className={bugStyles.formLabel}>
+                标题 <span className={bugStyles.formLabelRequired}>*</span>
               </label>
               <Input placeholder="请输入缺陷标题" value={form.title} onChange={(v) => setFormField("title", v)} size="large" />
             </div>
             {(isAdmin || orgs.length > 1) && (
               <div>
-                <label
-                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                >
-                  所属组织 {!isAdmin && <span style={{ color: "#ef4444" }}>*</span>}
+                <label className={bugStyles.formLabel}>
+                  所属组织 {!isAdmin && <span className={bugStyles.formLabelRequired}>*</span>}
                 </label>
                 <CustomSelect
                   name="所属组织"
@@ -590,13 +551,9 @@ const BugList: React.FC = () => {
                 />
               </div>
             )}
-            <div style={{ display: "flex", gap: "16px" }}>
-              <div style={{ flex: 1 }}>
-                <label
-                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                >
-                  严重程度
-                </label>
+            <div className={bugStyles.formRow}>
+              <div className={bugStyles.formField}>
+                <label className={bugStyles.formLabel}>严重程度</label>
                 <CustomSelect
                   name="严重程度"
                   options={formSeverityOptions}
@@ -605,12 +562,8 @@ const BugList: React.FC = () => {
                   hideBadge
                 />
               </div>
-              <div style={{ flex: 1 }}>
-                <label
-                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                >
-                  优先级
-                </label>
+              <div className={bugStyles.formField}>
+                <label className={bugStyles.formLabel}>优先级</label>
                 <CustomSelect
                   name="优先级"
                   options={formPriorityOptions}
@@ -620,12 +573,8 @@ const BugList: React.FC = () => {
                 />
               </div>
               {modalMode === "edit" && (
-                <div style={{ flex: 1 }}>
-                  <label
-                    style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                  >
-                    状态
-                  </label>
+                <div className={bugStyles.formField}>
+                  <label className={bugStyles.formLabel}>状态</label>
                   <CustomSelect
                     name="状态"
                     options={formStatusOptions}
@@ -636,13 +585,9 @@ const BugList: React.FC = () => {
                 </div>
               )}
             </div>
-            <div style={{ display: "flex", gap: "16px" }}>
-              <div style={{ flex: 1 }}>
-                <label
-                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                >
-                  负责人
-                </label>
+            <div className={bugStyles.formRow}>
+              <div className={bugStyles.formField}>
+                <label className={bugStyles.formLabel}>负责人</label>
                 <CustomSelect
                   name="负责人"
                   options={memberOptions}
@@ -654,12 +599,8 @@ const BugList: React.FC = () => {
                   hideBadge
                 />
               </div>
-              <div style={{ flex: 1 }}>
-                <label
-                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                >
-                  关联需求 ID
-                </label>
+              <div className={bugStyles.formField}>
+                <label className={bugStyles.formLabel}>关联需求 ID</label>
                 <Input
                   placeholder="选填"
                   value={form.relatedRequirementId}
@@ -667,71 +608,33 @@ const BugList: React.FC = () => {
                   size="large"
                 />
               </div>
-              <div style={{ flex: 1 }}>
-                <label
-                  style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-                >
-                  所属模块
-                </label>
+              <div className={bugStyles.formField}>
+                <label className={bugStyles.formLabel}>所属模块</label>
                 <Input placeholder="如 用户模块" value={form.module} onChange={(v) => setFormField("module", v)} size="large" />
               </div>
             </div>
             <div>
-              <label
-                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-              >
-                描述
-              </label>
+              <label className={bugStyles.formLabel}>描述</label>
               <textarea
                 placeholder="请输入缺陷详细描述..."
                 value={form.description}
                 onChange={(e) => setFormField("description", e.target.value)}
                 rows={5}
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  border: "1px solid var(--border-primary)",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  color: "var(--text-primary)",
-                  backgroundColor: "var(--bg-primary)",
-                  resize: "vertical",
-                  fontFamily: "inherit",
-                  lineHeight: 1.6,
-                }}
+                className={bugStyles.formTextarea}
               />
             </div>
             <div>
-              <label
-                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-              >
-                复现步骤
-              </label>
+              <label className={bugStyles.formLabel}>复现步骤</label>
               <textarea
                 placeholder={"1. 打开页面\n2. 点击按钮\n3. 观察结果"}
                 value={form.stepsToReproduce}
                 onChange={(e) => setFormField("stepsToReproduce", e.target.value)}
                 rows={4}
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  border: "1px solid var(--border-primary)",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  color: "var(--text-primary)",
-                  backgroundColor: "var(--bg-primary)",
-                  resize: "vertical",
-                  fontFamily: "inherit",
-                  lineHeight: 1.6,
-                }}
+                className={bugStyles.formTextarea}
               />
             </div>
             <div>
-              <label
-                style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}
-              >
-                运行环境
-              </label>
+              <label className={bugStyles.formLabel}>运行环境</label>
               <Input
                 placeholder="如 Chrome 120 / iOS 18 Safari"
                 value={form.environment}

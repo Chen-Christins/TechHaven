@@ -1,9 +1,9 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./GMLayout.module.css";
-import Navbar from "../../components/navbar/Navbar";
-import Footer from "../../components/footer/Footer";
-import { resolveBackendEnvLabel } from "../../utils/http";
+import Navbar from "@/components/navbar/Navbar";
+import Footer from "@/components/footer/Footer";
+import { resolveBackendEnvLabel } from "@/utils/http";
 
 interface NavItem {
   path: string;

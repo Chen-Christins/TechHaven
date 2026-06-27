@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FaBuilding, FaCheckCircle, FaLock, FaUserFriends, FaArrowLeft, FaPlus, FaUser, FaUserAlt, FaGithub } from "react-icons/fa";
-import type { OrganizationDetail, MemberStats } from "../../types/organization";
+import type { OrganizationDetail, MemberStats } from "@/types/organization";
 import styles from "./Organization.module.css";
 
 interface OrganizationInfoProps {

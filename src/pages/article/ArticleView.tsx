@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { encodeId } from "../../utils/hashId";
+import { encodeId } from "@/utils/hashId";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -8,9 +8,9 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import "katex/dist/katex.min.css";
-import MermaidComponent from "../../components/mermaid/MermaidComponent";
-import CommentNode from "../../components/commentTree/CommentNode";
-import type { ArticleComment } from "../../types/comment";
+import MermaidComponent from "@/components/mermaid/MermaidComponent";
+import CommentNode from "@/components/commentTree/CommentNode";
+import type { ArticleComment } from "@/types/comment";
 import {
   Eye,
   Heart,
@@ -26,14 +26,14 @@ import {
   Loader2,
 } from "lucide-react";
 import styles from "./ArticleView.module.css";
-import Avatar from "../../components/avatar/Avatar";
-import AiSummary from "../../components/articleView/AiSummary";
-import FollowService from "../../services/followService";
-import PraiseService from "../../services/praiseService";
-import CommentService from "../../services/commentService";
-import { useAuth } from "../../contexts/AuthContext";
-import { useSiteSettings } from "../../contexts/SiteSettingsContext";
-import message from "../../components/message/Message";
+import Avatar from "@/components/avatar/Avatar";
+import AiSummary from "@/components/articleView/AiSummary";
+import FollowService from "@/services/followService";
+import PraiseService from "@/services/praiseService";
+import CommentService from "@/services/commentService";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import message from "@/components/message/Message";
 
 interface Heading {
   id: string;

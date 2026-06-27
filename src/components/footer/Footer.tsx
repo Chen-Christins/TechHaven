@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import styles from "./Footer.module.css";
-import { useSiteSettings } from "../../contexts/SiteSettingsContext";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
 export interface FooterLink {
   text: string;

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { FaTag, FaPlus, FaEdit, FaTrash } from "react-icons/fa";
-import Loading from "../../../components/loading/Loading";
-import { confirm } from "../../../components/confirm/Confirm";
-import { message } from "../../../components/message/Message";
-import { useAuth } from "../../../contexts/AuthContext";
-import LabelService from "../../../services/labelService";
-import { formatToChinaTime } from "../../../utils/utils";
+import Loading from "@/components/loading/Loading";
+import { confirm } from "@/components/confirm/Confirm";
+import { message } from "@/components/message/Message";
+import { useAuth } from "@/contexts/AuthContext";
+import LabelService from "@/services/labelService";
+import { formatToChinaTime } from "@/utils/utils";
 import styles from "../PersonalCenter.module.css";
 
 // 个人标签类型

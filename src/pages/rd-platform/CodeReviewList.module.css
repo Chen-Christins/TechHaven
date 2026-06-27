@@ -1,0 +1,93 @@
+/* ---- Detail field (renderField helper) ---- */
+.detailField {
+  margin-bottom: 14px;
+}
+
+.detailFieldLabel {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.detailFieldValue {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* ---- Branch display in table ---- */
+.branchCell {
+  text-align: center;
+  font-size: 13px;
+}
+
+.branchHead {
+  font-weight: 500;
+}
+
+.branchArrow {
+  color: var(--text-tertiary);
+  margin: 0 4px;
+}
+
+.branchBase {
+  color: var(--text-tertiary);
+}
+
+/* ---- Change stats in table ---- */
+.changeCell {
+  text-align: center;
+}
+
+.changeFiles {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.changeAdditions {
+  color: #22c55e;
+  margin-left: 6px;
+}
+
+.changeDeletions {
+  color: #ef4444;
+  margin-left: 4px;
+}
+
+.changeNone {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+/* ---- Modal detail view ---- */
+.detailBadges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.detailSectionTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+/* ---- Table cell alignment helpers ---- */
+.cellCenter {
+  text-align: center;
+}
+
+.iconNoShrink {
+  flex-shrink: 0;
+}

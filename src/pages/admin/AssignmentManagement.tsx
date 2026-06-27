@@ -16,15 +16,15 @@ import {
   FaAngleDoubleRight,
   FaFlag,
 } from "react-icons/fa";
-import DatePicker from "../../components/datePicker/DatePicker";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import Input from "../../components/input/Input";
-import Loading from "../../components/loading/Loading";
-import { confirm } from "../../components/confirm/Confirm";
-import message from "../../components/message/Message";
-import Modal from "../../components/modal/Modal";
+import DatePicker from "@/components/datePicker/DatePicker";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import Input from "@/components/input/Input";
+import Loading from "@/components/loading/Loading";
+import { confirm } from "@/components/confirm/Confirm";
+import message from "@/components/message/Message";
+import Modal from "@/components/modal/Modal";
 import styles from "./AssignmentManagement.module.css";
-import AssignmentService, { type AssignmentStatsResponse } from "../../services/assignmentService";
+import AssignmentService, { type AssignmentStatsResponse } from "@/services/assignmentService";
 
 // 模拟任务数据接口
 interface Assignment {

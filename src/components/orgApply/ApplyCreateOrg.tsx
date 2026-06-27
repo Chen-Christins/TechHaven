@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { FaBuilding, FaTimes } from "react-icons/fa";
 import styles from "./ApplyCreateOrg.module.css";
-import OrganizationService from "../../services/organizationService";
-import message from "../../components/message/Message";
+import OrganizationService from "@/services/organizationService";
+import message from "@/components/message/Message";
 
 interface ApplyCreateOrgProps {
   visible: boolean;

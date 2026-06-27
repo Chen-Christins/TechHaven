@@ -1,7 +1,7 @@
 import React from "react";
-import { useSiteSettings } from "../../contexts/SiteSettingsContext";
-import { useAuth } from "../../contexts/AuthContext";
-import { useIdleTimeout } from "../../hooks/useIdleTimeout";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useIdleTimeout } from "@/hooks/useIdleTimeout";
 
 const IdleTimeoutHandler: React.FC = () => {
   const { settings } = useSiteSettings();

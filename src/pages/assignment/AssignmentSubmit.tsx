@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { decodeId } from "../../utils/hashId";
+import { decodeId } from "@/utils/hashId";
 import {
   FaCloudUploadAlt,
   FaFileAlt,
@@ -12,14 +12,14 @@ import {
   FaExclamationCircle,
   FaBookOpen,
 } from "react-icons/fa";
-import Navbar from "../../components/navbar/Navbar";
-import Footer from "../../components/footer/Footer";
-import message from "../../components/message/Message";
-import AuthRequired from "../../components/auth/AuthRequired";
-import AssignmentSubmitSkeleton from "../../components/assignment/AssignmentSubmitSkeleton";
-import AssignmentService from "../../services/assignmentService";
-import FileService from "../../services/fileService";
-import ErrorState from "../../components/errorState/ErrorState";
+import Navbar from "@/components/navbar/Navbar";
+import Footer from "@/components/footer/Footer";
+import message from "@/components/message/Message";
+import AuthRequired from "@/components/auth/AuthRequired";
+import AssignmentSubmitSkeleton from "./AssignmentSubmitSkeleton";
+import AssignmentService from "@/services/assignmentService";
+import FileService from "@/services/fileService";
+import ErrorState from "@/components/errorState/ErrorState";
 import styles from "./AssignmentSubmit.module.css";
 
 interface Assignment {

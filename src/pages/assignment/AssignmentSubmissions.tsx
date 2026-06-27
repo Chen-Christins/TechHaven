@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { decodeId } from "../../utils/hashId";
+import { decodeId } from "@/utils/hashId";
 import {
   FaArrowLeft,
   FaBookOpen,
@@ -17,15 +17,15 @@ import {
   FaChevronDown,
   FaChevronUp,
 } from "react-icons/fa";
-import Navbar from "../../components/navbar/Navbar";
-import Footer from "../../components/footer/Footer";
-import AuthRequired from "../../components/auth/AuthRequired";
-import Skeleton from "../../components/skeleton/Skeleton";
-import AssignmentService from "../../services/assignmentService";
+import Navbar from "@/components/navbar/Navbar";
+import Footer from "@/components/footer/Footer";
+import AuthRequired from "@/components/auth/AuthRequired";
+import Skeleton from "@/components/skeleton/Skeleton";
+import AssignmentService from "@/services/assignmentService";
 import styles from "./AssignmentSubmissions.module.css";
-import message from "../../components/message/Message";
-import FileService from "../../services/fileService";
-import ErrorState from "../../components/errorState/ErrorState";
+import message from "@/components/message/Message";
+import FileService from "@/services/fileService";
+import ErrorState from "@/components/errorState/ErrorState";
 
 interface Assignment {
   id: string | number;

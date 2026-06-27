@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { encodeId } from "../../utils/hashId";
+import { encodeId } from "@/utils/hashId";
 import { FaCheckCircle, FaExclamationCircle, FaArrowRight, FaCalendarAlt, FaClipboardList, FaTasks, FaEye } from "react-icons/fa";
-import Navbar from "../../components/navbar/Navbar";
-import Footer from "../../components/footer/Footer";
-import Skeleton from "../../components/skeleton/Skeleton";
-import AuthRequired from "../../components/auth/AuthRequired";
-import AssignmentService from "../../services/assignmentService";
+import Navbar from "@/components/navbar/Navbar";
+import Footer from "@/components/footer/Footer";
+import Skeleton from "@/components/skeleton/Skeleton";
+import AuthRequired from "@/components/auth/AuthRequired";
+import AssignmentService from "@/services/assignmentService";
 import styles from "./AssignmentList.module.css";
-import ErrorState from "../../components/errorState/ErrorState";
+import ErrorState from "@/components/errorState/ErrorState";
 
 interface Assignment {
   id: string | number;

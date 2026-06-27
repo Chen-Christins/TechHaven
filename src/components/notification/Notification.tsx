@@ -23,7 +23,7 @@ import {
   FaTasks,
 } from "react-icons/fa";
 import styles from "./Notification.module.css";
-import NotificationService from "../../services/notificationService";
+import NotificationService from "@/services/notificationService";
 import {
   markRead,
   markAllRead,
@@ -34,16 +34,16 @@ import {
   subscribeUnreadCount,
   incrementUnreadCount,
   decrementUnreadCount,
-} from "../../utils/notificationState";
-import { getSettings, setTypeEnabled, subscribe as subscribeSettings, type NotifType } from "../../utils/notificationSettingsState";
-import { notificationWS } from "../../utils/websocket";
-import { playNotificationSound } from "../../utils/notificationSound";
-import { useAuth } from "../../contexts/AuthContext";
+} from "@/utils/notificationState";
+import { getSettings, setTypeEnabled, subscribe as subscribeSettings, type NotifType } from "@/utils/notificationSettingsState";
+import { notificationWS } from "@/utils/websocket";
+import { playNotificationSound } from "@/utils/notificationSound";
+import { useAuth } from "@/contexts/AuthContext";
 import Modal from "../modal/Modal";
 import Switch from "../switch/Switch";
-import { setFaviconBadge } from "../../utils/favicon";
-import { encodeId } from "../../utils/hashId";
-import type { Notification as NotificationItem } from "../../types/notification";
+import { setFaviconBadge } from "@/utils/favicon";
+import { encodeId } from "@/utils/hashId";
+import type { Notification as NotificationItem } from "@/types/notification";
 
 const TYPE_ICON_MAP: Record<string, { icon: React.ReactNode; className: string }> = {
   system: { icon: <FaBullhorn />, className: styles.iconSystem },

@@ -1,0 +1,61 @@
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.wrapper {
+  width: 100%;
+  padding: 1rem;
+}
+
+.item {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.line {
+  background-color: var(--bg-secondary, #f0f0f0);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.title {
+  height: 40px;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  composes: line;
+}
+
+.textShort {
+  height: 20px;
+}
+
+.textWide {
+  height: 20px;
+  margin-bottom: 1rem;
+}
+
+.contentBlock {
+  height: 150px;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  composes: line;
+}
+
+.textPartial {
+  height: 16px;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  width: 65%;
+  composes: line;
+}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaUsers, FaEye, FaChartLine, FaUserCheck } from "react-icons/fa";
-import StatsService from "../../services/statsService";
-import { useOnlineCount } from "../../hooks/useOnlineCount";
+import StatsService from "@/services/statsService";
+import { useOnlineCount } from "@/hooks/useOnlineCount";
 import styles from "./StatsPanel.module.css";
 
 const POLL_INTERVAL = 30_000; // 30 秒轮询一次 HTTP 统计

@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FaSignInAlt } from "react-icons/fa";
 import styles from "./AuthButtons.module.css";
-import { useSiteSettings } from "../../contexts/SiteSettingsContext";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
 interface AuthButtonsProps {
   onButtonClick?: () => void;

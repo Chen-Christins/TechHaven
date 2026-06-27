@@ -16,14 +16,14 @@ import {
   FaEye,
   FaClipboardList,
 } from "react-icons/fa";
-import Input from "../../components/input/Input";
-import Loading from "../../components/loading/Loading";
-import { confirm } from "../../components/confirm/Confirm";
-import message from "../../components/message/Message";
-import Modal from "../../components/modal/Modal";
-import CustomSelect from "../../components/customSelect/CustomSelect";
+import Input from "@/components/input/Input";
+import Loading from "@/components/loading/Loading";
+import { confirm } from "@/components/confirm/Confirm";
+import message from "@/components/message/Message";
+import Modal from "@/components/modal/Modal";
+import CustomSelect from "@/components/customSelect/CustomSelect";
 import styles from "./OrganizationManagement.module.css";
-import OrganizationService, { type OrganizationStatsResponse, type ApplyItem } from "../../services/organizationService";
+import OrganizationService, { type OrganizationStatsResponse, type ApplyItem } from "@/services/organizationService";
 
 interface Organization {
   id: string;

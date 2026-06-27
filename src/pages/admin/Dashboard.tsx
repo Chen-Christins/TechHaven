@@ -15,14 +15,14 @@ import {
   FaUserPlus,
   FaChevronRight,
 } from "react-icons/fa";
-import Loading from "../../components/loading/Loading";
-import Avatar from "../../components/avatar/Avatar";
+import Loading from "@/components/loading/Loading";
+import Avatar from "@/components/avatar/Avatar";
 import DashboardService, {
   type DashboardStats,
   type DashboardTrend,
   type DashboardActivity,
   type DashboardRecentUser,
-} from "../../services/dashboardService";
+} from "@/services/dashboardService";
 import styles from "./Dashboard.module.css";
 
 const Dashboard: React.FC = () => {

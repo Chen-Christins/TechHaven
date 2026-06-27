@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { FaLock, FaSignInAlt, FaArrowLeft } from "react-icons/fa";
 import Loading from "../loading/Loading";
 import styles from "./AuthRequired.module.css";

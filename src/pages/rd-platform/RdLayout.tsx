@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, Outlet, useSearchParams } from "react-router-dom";
-import { useRdNavigate } from "../../hooks/useRdNavigate";
-import { encodeId, decodeId } from "../../utils/hashId";
+import { useRdNavigate } from "@/hooks/useRdNavigate";
+import { encodeId, decodeId } from "@/utils/hashId";
 import {
   FaHome,
   FaBars,
@@ -16,16 +16,16 @@ import {
   FaBuilding,
 } from "react-icons/fa";
 import styles from "./RdLayout.module.css";
-import ThemeToggle from "../../components/themeToggle/ThemeToggle";
-import Notification from "../../components/notification/Notification";
-import UserDropdown from "../../components/userDropdown/UserDropdown";
-import Navbar from "../../components/navbar/Navbar";
-import Footer from "../../components/footer/Footer";
-import AuthRequired from "../../components/auth/AuthRequired";
-import OrgSelector from "../../components/orgSelector/OrgSelector";
-import { useAuth } from "../../contexts/AuthContext";
-import { RdOrgProvider, useRdOrg } from "../../contexts/RdOrgContext";
-import { RdPlatformService } from "../../services/rdPlatformService";
+import ThemeToggle from "@/components/themeToggle/ThemeToggle";
+import Notification from "@/components/notification/Notification";
+import UserDropdown from "@/components/userDropdown/UserDropdown";
+import Navbar from "@/components/navbar/Navbar";
+import Footer from "@/components/footer/Footer";
+import AuthRequired from "@/components/auth/AuthRequired";
+import OrgSelector from "@/components/orgSelector/OrgSelector";
+import { useAuth } from "@/contexts/AuthContext";
+import { RdOrgProvider, useRdOrg } from "@/contexts/RdOrgContext";
+import { RdPlatformService } from "@/services/rdPlatformService";
 
 interface NavItem {
   id: string;

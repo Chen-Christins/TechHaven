@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import type { Category } from "../../types/index";
+import type { Category } from "@/types/index";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 import styles from "./CategoryPanel.module.css";
-import CategoryService from "../../services/categoryService";
+import CategoryService from "@/services/categoryService";
 import Skeleton from "../skeleton/Skeleton";
 
 interface CategoryPanelProps {

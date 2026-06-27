@@ -13,11 +13,11 @@ import {
   FaLayerGroup,
 } from "react-icons/fa";
 import styles from "./CategoryManagement.module.css";
-import CustomSelect from "../../components/customSelect/CustomSelect";
-import SearchBox from "../../components/searchBox/SearchBox";
-import Button from "../../components/button/Button";
-import { confirm } from "../../components/confirm/Confirm";
-import CategoryService from "../../services/categoryService";
+import CustomSelect from "@/components/customSelect/CustomSelect";
+import SearchBox from "@/components/searchBox/SearchBox";
+import Button from "@/components/button/Button";
+import { confirm } from "@/components/confirm/Confirm";
+import CategoryService from "@/services/categoryService";
 
 interface Category {
   id: string | number;

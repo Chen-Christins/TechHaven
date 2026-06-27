@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { FaBuilding, FaTimes, FaCheck } from "react-icons/fa";
 import styles from "./OrgSelector.module.css";
-import type { RdOrgInfo } from "../../types/rdPlatform";
+import type { RdOrgInfo } from "@/types/rdPlatform";
 
 interface OrgSelectorProps {
   orgs: RdOrgInfo[];
