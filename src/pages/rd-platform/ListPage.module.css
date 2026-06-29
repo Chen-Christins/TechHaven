@@ -397,15 +397,23 @@
 
 .repoBarList {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
   align-items: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+
+.repoBarList::-webkit-scrollbar {
+  display: none;
 }
 
 .repoBarItem {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
   padding: 6px 10px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
