@@ -213,6 +213,11 @@
   color: #ef4444;
   border-color: #ef4444;
 }
+.actionBtn.ghBtn:hover {
+  color: #24292f;
+  border-color: #0969da;
+  background: #f0f6fc;
+}
 
 /* Badges */
 .badge {

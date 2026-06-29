@@ -62,6 +62,12 @@ export class WebSocketClient {
     }
     this.intentionalClose = false;
 
+    // 页面卸载时标记为主动关闭，避免触发无意义的自动重连调度
+    const handleBeforeUnload = () => {
+      this.intentionalClose = true;
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload, { once: true });
+
     const token = getCookie("S_TOKEN");
     const tokenTime = getCookie("S_TOKEN_TIME");
 
