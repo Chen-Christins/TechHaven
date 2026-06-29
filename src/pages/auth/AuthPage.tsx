@@ -42,8 +42,8 @@ const validateForm = (type: FormType, formData: any) => {
 
     if (!formData.auth_code) {
       errors.auth_code = "请输入验证码";
-    } else if (formData.auth_code.length !== 8) {
-      errors.auth_code = "验证码长度为8位";
+    } else if (formData.auth_code.length < 4) {
+      errors.auth_code = "验证码长度至少4位";
     }
 
     if (!formData.password) {
@@ -64,8 +64,8 @@ const validateForm = (type: FormType, formData: any) => {
 
     if (!formData.code) {
       errors.code = "请输入验证码";
-    } else if (formData.code.length !== 8) {
-      errors.code = "验证码长度为8位";
+    } else if (formData.code.length < 4) {
+      errors.code = "验证码长度至少4位";
     }
 
     if (!formData.newPassword) {
