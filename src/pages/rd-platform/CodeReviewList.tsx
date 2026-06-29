@@ -6,6 +6,7 @@ import {
   FaTrash,
   FaFilter,
   FaGithub,
+  FaExternalLinkAlt,
   FaAngleDoubleLeft,
   FaAngleDoubleRight,
   FaChevronLeft,
@@ -37,6 +38,7 @@ interface PR {
   headBranch: string;
   baseBranch: string;
   commitSha: string;
+  githubPrId: number | null;
   changedFiles: number | null;
   additions: number | null;
   deletions: number | null;
@@ -49,6 +51,7 @@ interface PR {
 interface RepoItem {
   id: string;
   name: string;
+  url: string;
   prSyncStatus: string;
 }
 
@@ -68,6 +71,7 @@ const CodeReviewList: React.FC = () => {
   const [prs, setPrs] = useState<PR[]>([]);
   const [total, setTotal] = useState(0);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({ search: "", state: "" });
 
@@ -90,6 +94,7 @@ const CodeReviewList: React.FC = () => {
       return (res.list || []).map((r: any) => ({
         id: String(r.id),
         name: r.name || "",
+        url: r.url || "",
         prSyncStatus: r.pr_sync_status || "idle",
       }));
     } catch {
@@ -122,6 +127,7 @@ const CodeReviewList: React.FC = () => {
         headBranch: item.head_branch || "",
         baseBranch: item.base_branch || "",
         commitSha: item.commit_sha || "",
+        githubPrId: item.github_pr_id ?? null,
         changedFiles: item.changed_files,
         additions: item.additions,
         deletions: item.deletions,
@@ -149,11 +155,15 @@ const CodeReviewList: React.FC = () => {
         return;
       }
 
+      if (!initialLoading) {
+        setTableLoading(true);
+      }
       await fetchPrs(nextRepoId);
     } catch {
       message.error("获取数据失败");
     } finally {
       setInitialLoading(false);
+      setTableLoading(false);
     }
   };
 
@@ -219,6 +229,13 @@ const CodeReviewList: React.FC = () => {
         }
       },
     });
+  };
+
+  const getPrUrl = (pr: PR): string | null => {
+    if (!pr.githubPrId) return null;
+    const repo = repos.find((r) => r.id === pr.repoId);
+    if (!repo?.url) return null;
+    return `${repo.url.replace(/\.git$/, "")}/pull/${pr.githubPrId}`;
   };
 
   const openView = (pr: PR) => {
@@ -369,9 +386,25 @@ const CodeReviewList: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {prs.map((pr) => {
-              return (
-                <tr key={pr.id}>
+            {tableLoading ? (
+              <tr>
+                <td colSpan={7} className={styles.emptyCell}>
+                  <Loading size="small" text="加载中..." />
+                </td>
+              </tr>
+            ) : prs.length === 0 ? (
+              <tr>
+                <td colSpan={7} className={styles.emptyCell}>
+                  <div className={styles.emptyCellIcon}>
+                    <FaGithub />
+                  </div>
+                  <div className={styles.emptyCellText}>{selectedRepoId ? "暂无 PR 数据" : "请点击上方仓库查看 PR"}</div>
+                </td>
+              </tr>
+            ) : (
+              prs.map((pr) => {
+                return (
+                  <tr key={pr.id}>
                   <td className={styles.titleCell} onClick={() => openView(pr)}>
                     {pr.title}
                   </td>
@@ -403,6 +436,18 @@ const CodeReviewList: React.FC = () => {
                       <button className={`${styles.actionBtn} ${styles.view}`} title="查看详情" onClick={() => openView(pr)}>
                         <FaEye />
                       </button>
+                      {getPrUrl(pr) && (
+                        <button
+                          className={`${styles.actionBtn} ${styles.ghBtn}`}
+                          title="在 GitHub 查看"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(getPrUrl(pr)!, "_blank", "noopener,noreferrer");
+                          }}
+                        >
+                          <FaGithub />
+                        </button>
+                      )}
                       <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDeletePr(pr)}>
                         <FaTrash />
                       </button>
@@ -410,17 +455,8 @@ const CodeReviewList: React.FC = () => {
                   </td>
                 </tr>
               );
-            })}
-            {prs.length === 0 && (
-              <tr>
-                <td colSpan={7} className={styles.emptyCell}>
-                  <div className={styles.emptyCellIcon}>
-                    <FaGithub />
-                  </div>
-                  <div className={styles.emptyCellText}>{selectedRepoId ? "暂无 PR 数据" : "请点击上方仓库查看 PR"}</div>
-                </td>
-              </tr>
-            )}
+            })
+          )}
           </tbody>
         </table>
       </div>
@@ -482,6 +518,19 @@ const CodeReviewList: React.FC = () => {
                           ? "紧急"
                           : selectedPR.priority}
                 </span>
+              )}
+              {getPrUrl(selectedPR) && (
+                <a
+                  className={crStyles.githubLink}
+                  href={getPrUrl(selectedPR)!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="在 GitHub 查看此 PR"
+                >
+                  <FaGithub size={14} />
+                  <span>前往 GitHub</span>
+                  <FaExternalLinkAlt size={10} />
+                </a>
               )}
             </div>
             <div className={crStyles.detailGrid}>
