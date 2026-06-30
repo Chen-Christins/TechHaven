@@ -18,6 +18,7 @@ import LayoutWidthToggle from "../layoutWidthToggle/LayoutWidthToggle";
 import ThemeToggle from "../themeToggle/ThemeToggle";
 import AuthButtons from "../authButtons/AuthButtons";
 import Notification from "../notification/Notification";
+import BroadcastMarquee from "../broadcastMarquee/BroadcastMarquee";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import Avatar from "../avatar/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -282,144 +283,147 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <header className={`${styles.navbar} ${isScrolled ? styles.navbarScrolled : ""}`}>
-      <div className={styles.container}>
-        {/* 左侧Logo和导航 */}
-        <div className={styles.leftSection}>
-          {/* Logo */}
-          <div className={styles.logo} onClick={() => navigate("/")}>
-            {siteSettings.siteLogo ? (
-              <img src={siteSettings.siteLogo} alt={siteSettings.siteName} className={styles.logoImage} />
-            ) : (
-              <span className={styles.logoText}>{siteSettings.siteName}</span>
-            )}
+    <>
+      <header className={`${styles.navbar} ${isScrolled ? styles.navbarScrolled : ""}`}>
+        <div className={styles.container}>
+          {/* 左侧Logo和导航 */}
+          <div className={styles.leftSection}>
+            {/* Logo */}
+            <div className={styles.logo} onClick={() => navigate("/")}>
+              {siteSettings.siteLogo ? (
+                <img src={siteSettings.siteLogo} alt={siteSettings.siteName} className={styles.logoImage} />
+              ) : (
+                <span className={styles.logoText}>{siteSettings.siteName}</span>
+              )}
+            </div>
+
+            {/* 桌面端导航链接 */}
+            <div className={styles.desktopNav}>{renderNavLinks()}</div>
+
+            {/* 移动端菜单按钮 */}
+            <button
+              className={styles.mobileMenuBtn}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "关闭菜单" : "打开菜单"}
+            >
+              <FaBars className={styles.menuIcon} />
+            </button>
           </div>
 
-          {/* 桌面端导航链接 */}
-          <div className={styles.desktopNav}>{renderNavLinks()}</div>
+          {/* 右侧用户区域 */}
+          <div className={styles.rightSection} ref={userMenuRef}>
+            {import.meta.env.DEV && (
+              <button
+                className={styles.testButton}
+                onClick={() => {
+                  setUserMenuOpen(false);
+                  setMobileMenuOpen(false);
+                  navigate("/test/chunk-upload");
+                }}
+                type="button"
+                title="进入测试页面"
+                aria-label="进入测试页面"
+              >
+                <FaFlask className={styles.testButtonIcon} />
+              </button>
+            )}
+            <LayoutWidthToggle />
+            {/* 主题切换按钮 */}
+            <ThemeToggle />
 
-          {/* 移动端菜单按钮 */}
-          <button
-            className={styles.mobileMenuBtn}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "关闭菜单" : "打开菜单"}
-          >
-            <FaBars className={styles.menuIcon} />
-          </button>
-        </div>
+            {/* 通知按钮 */}
+            {isAuthenticated && <Notification />}
 
-        {/* 右侧用户区域 */}
-        <div className={styles.rightSection} ref={userMenuRef}>
-          {import.meta.env.DEV && (
-            <button
-              className={styles.testButton}
-              onClick={() => {
-                setUserMenuOpen(false);
-                setMobileMenuOpen(false);
-                navigate("/test/chunk-upload");
-              }}
-              type="button"
-              title="进入测试页面"
-              aria-label="进入测试页面"
-            >
-              <FaFlask className={styles.testButtonIcon} />
-            </button>
-          )}
-          <LayoutWidthToggle />
-          {/* 主题切换按钮 */}
-          <ThemeToggle />
-
-          {/* 通知按钮 */}
-          {isAuthenticated && <Notification />}
-
-          {loading ? (
-            // 认证状态加载中 - 显示占位符以避免状态切换的闪烁
-            <div className={styles.userAreaPlaceholder}>
-              <div className={styles.avatarContainer}>
-                <div className={styles.avatarPlaceholder}></div>
-              </div>
-            </div>
-          ) : isAuthenticated && currentUser ? (
-            <>
-              <div className={styles.userArea} onClick={toggleUserMenu}>
-                {/* 用户头像 */}
+            {loading ? (
+              // 认证状态加载中 - 显示占位符以避免状态切换的闪烁
+              <div className={styles.userAreaPlaceholder}>
                 <div className={styles.avatarContainer}>
-                  <Avatar src={currentUser.avatar} name={currentUser.name} size={36} className={styles.avatar} />
-                  {/* 在线状态指示器 */}
-                  <span className={styles.statusIndicator}></span>
-                </div>
-
-                {/* 用户信息（桌面端显示） */}
-                <div className={styles.userInfo}>
-                  <div className={styles.userName}>{currentUser.name}</div>
-                  <div className={styles.userRole}>{currentUser.role}</div>
+                  <div className={styles.avatarPlaceholder}></div>
                 </div>
               </div>
-
-              {/* 用户下拉菜单 */}
-              {userMenuOpen && (
-                <div className={styles.userDropdown}>
-                  <div className={styles.dropdownHeader}>
-                    <Avatar src={currentUser.avatar} name={currentUser.name} size={48} />
-                    <div className={styles.dropdownUserInfo}>
-                      <div className={styles.dropdownUserName}>{currentUser.name}</div>
-                      <div className={styles.dropdownUserEmail}>{currentUser.email}</div>
-                    </div>
+            ) : isAuthenticated && currentUser ? (
+              <>
+                <div className={styles.userArea} onClick={toggleUserMenu}>
+                  {/* 用户头像 */}
+                  <div className={styles.avatarContainer}>
+                    <Avatar src={currentUser.avatar} name={currentUser.name} size={36} className={styles.avatar} />
+                    {/* 在线状态指示器 */}
+                    <span className={styles.statusIndicator}></span>
                   </div>
-                  <div className={styles.dropdownDivider}></div>
-                  <div className={styles.dropdownMenu}>
-                    <div
-                      className={styles.dropdownItem}
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        navigate("/personal");
-                      }}
-                    >
-                      <FaUserCircle />
-                      个人中心
-                    </div>
-                    <div
-                      className={styles.dropdownItem}
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        navigate("/article/create");
-                      }}
-                    >
-                      <FaPen />
-                      撰写文章
+
+                  {/* 用户信息（桌面端显示） */}
+                  <div className={styles.userInfo}>
+                    <div className={styles.userName}>{currentUser.name}</div>
+                    <div className={styles.userRole}>{currentUser.role}</div>
+                  </div>
+                </div>
+
+                {/* 用户下拉菜单 */}
+                {userMenuOpen && (
+                  <div className={styles.userDropdown}>
+                    <div className={styles.dropdownHeader}>
+                      <Avatar src={currentUser.avatar} name={currentUser.name} size={48} />
+                      <div className={styles.dropdownUserInfo}>
+                        <div className={styles.dropdownUserName}>{currentUser.name}</div>
+                        <div className={styles.dropdownUserEmail}>{currentUser.email}</div>
+                      </div>
                     </div>
                     <div className={styles.dropdownDivider}></div>
-                    <button
-                      className={styles.dropdownItem}
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        logout();
-                      }}
-                    >
-                      <FaSignOutAlt />
-                      退出登录
-                    </button>
+                    <div className={styles.dropdownMenu}>
+                      <div
+                        className={styles.dropdownItem}
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate("/personal");
+                        }}
+                      >
+                        <FaUserCircle />
+                        个人中心
+                      </div>
+                      <div
+                        className={styles.dropdownItem}
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate("/article/create");
+                        }}
+                      >
+                        <FaPen />
+                        撰写文章
+                      </div>
+                      <div className={styles.dropdownDivider}></div>
+                      <button
+                        className={styles.dropdownItem}
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          logout();
+                        }}
+                      >
+                        <FaSignOutAlt />
+                        退出登录
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </>
-          ) : (
-            /* 未登录状态：显示登录/注册按钮 */
-            <AuthButtons
-              onButtonClick={() => {
-                // 关闭可能打开的移动端菜单
-                if (mobileMenuOpen) {
-                  setMobileMenuOpen(false);
-                }
-              }}
-            />
-          )}
+                )}
+              </>
+            ) : (
+              /* 未登录状态：显示登录/注册按钮 */
+              <AuthButtons
+                onButtonClick={() => {
+                  // 关闭可能打开的移动端菜单
+                  if (mobileMenuOpen) {
+                    setMobileMenuOpen(false);
+                  }
+                }}
+              />
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* 移动端菜单 */}
-      {renderMobileMenu()}
-    </header>
+        {/* 移动端菜单 */}
+        {renderMobileMenu()}
+      </header>
+      <BroadcastMarquee />
+    </>
   );
 };
 
