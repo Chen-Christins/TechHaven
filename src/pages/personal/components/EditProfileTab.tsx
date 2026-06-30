@@ -2,7 +2,6 @@ import React, { useState, useRef } from "react";
 import { FaCamera, FaUser, FaLock, FaSave, FaQuoteRight, FaGlobe, FaLink, FaGithub } from "react-icons/fa";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthService } from "@/services/authService";
-import { FileService } from "@/services/fileService";
 import { message } from "@/components/message/Message";
 import Avatar from "@/components/avatar/Avatar";
 import ApiConfigCard from "./ApiConfigCard";
@@ -22,46 +21,20 @@ const EditProfileTab: React.FC = () => {
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || "https://picsum.photos/id/64/200");
   const [avatarInput, setAvatarInput] = useState("");
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      message.warn("图片大小不能超过 5MB");
-      return;
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
 
-    setUploading(true);
-    try {
-      const result = await FileService.uploadFile({
-        dir_name: "avatar",
-        biz_type: "user",
-        biz_id: String(user?.id || ""),
-        files: [file],
-      });
-
-      if (result.data?.file_path || result.data?.url) {
-        const newAvatar = result.data.file_path || result.data.url;
-        setAvatarUrl(newAvatar);
-        await AuthService.updateUserProfile(undefined, undefined, undefined, undefined, undefined, newAvatar);
-        message.success("头像上传成功");
-      } else {
-        message.warn("头像上传失败，请重试");
-      }
-    } catch (err: any) {
-      message.error(err?.message || "头像上传失败");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
+    message.info("头像上传功能暂未开放，请使用图片链接更新头像");
   };
 
   const handleApplyAvatarUrl = async () => {
@@ -151,10 +124,10 @@ const EditProfileTab: React.FC = () => {
                 <Avatar src={avatarUrl} name={name || user?.name || "用户"} size={100} className={styles.editAvatar} />
                 <div className={styles.avatarOverlay}>
                   <FaCamera />
-                  <span>{uploading ? "上传中..." : "更换头像"}</span>
+                  <span>更换头像</span>
                 </div>
               </div>
-              <p className={styles.avatarHint}>支持 JPG、PNG 格式，大小不超过 5MB，或直接输入图片链接</p>
+              <p className={styles.avatarHint}>头像上传功能暂未开放，可直接输入图片链接</p>
               <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
                 <input
                   type="url"
