@@ -240,6 +240,35 @@ export class ArticleService {
     return response.data;
   }
 
+  /**
+   * 搜索文章（多条件 AND）
+   */
+  static async searchArticles(params: {
+    keyword?: string;
+    state?: number;
+    category_id?: number;
+    label_id?: number;
+    channel?: number;
+    user_id?: number;
+    year_month?: string;
+    page?: number;
+    page_size?: number;
+  }): Promise<ListArticlesResponse> {
+    const q: string[] = [];
+    if (params.keyword) q.push(`keyword=${encodeURIComponent(params.keyword)}`);
+    if (params.state !== undefined) q.push(`state=${params.state}`);
+    if (params.category_id !== undefined) q.push(`category_id=${params.category_id}`);
+    if (params.label_id !== undefined) q.push(`label_id=${params.label_id}`);
+    if (params.channel !== undefined) q.push(`channel=${params.channel}`);
+    if (params.user_id !== undefined) q.push(`user_id=${params.user_id}`);
+    if (params.year_month) q.push(`year_month=${encodeURIComponent(params.year_month)}`);
+    if (params.page) q.push(`page=${params.page}`);
+    if (params.page_size) q.push(`page_size=${params.page_size}`);
+    const url = `/article/search${q.length > 0 ? "?" + q.join("&") : ""}`;
+    const response = await http.get<ListArticlesResponse>(url);
+    return response.data;
+  }
+
   static async listAdminArticlesByPages(params: ListAdminArticlesParams): Promise<ListAdminArticlesResponse> {
     let url = `/article/admin/lists?page_num=${params.page_num}`;
     url += `&page_size=${params.page_size}`;

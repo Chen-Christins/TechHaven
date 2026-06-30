@@ -200,7 +200,9 @@ const NotificationsTab: React.FC = () => {
       });
       // 未全部启用时，客户端再过滤一层
       const filtered =
-        enabledTypes.length === allTypesCount ? data.list : data.list.filter((n: NotificationItem) => enabledTypes.includes(n.type as NotifType));
+        enabledTypes.length === allTypesCount
+          ? data.list
+          : data.list.filter((n: NotificationItem) => enabledTypes.includes(n.type as NotifType));
       setNotifications(filtered);
       setTotal(data.total ?? data.list.length);
     } catch {

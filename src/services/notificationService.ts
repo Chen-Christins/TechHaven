@@ -58,6 +58,10 @@ export class NotificationService {
     type: string;
     target: "all" | "users";
     user_ids?: string;
+    is_broadcast?: boolean;
+    level?: string;
+    start_time?: number;
+    end_time?: number;
   }): Promise<void> {
     const formData = new URLSearchParams();
     formData.append("title", params.title);
@@ -65,6 +69,10 @@ export class NotificationService {
     formData.append("type", params.type);
     formData.append("target", params.target);
     if (params.user_ids) formData.append("user_ids", params.user_ids);
+    if (params.is_broadcast) formData.append("is_broadcast", "1");
+    if (params.level) formData.append("level", params.level);
+    if (params.start_time !== undefined) formData.append("start_time", String(params.start_time));
+    if (params.end_time !== undefined) formData.append("end_time", String(params.end_time));
     await http.post("/notification/send", formData.toString(), {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });

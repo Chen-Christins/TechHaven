@@ -3,10 +3,18 @@ import { FaBell, FaPaperPlane } from "react-icons/fa";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import Input from "@/components/input/Input";
 import Button from "@/components/button/Button";
+import DatePicker from "@/components/datePicker/DatePicker";
+import Switch from "@/components/switch/Switch";
 import message from "@/components/message/Message";
 import NotificationService from "@/services/notificationService";
 import type { SelectOption } from "@/types/index";
 import styles from "./NotificationManagement.module.css";
+
+const BROADCAST_LEVEL_OPTIONS: SelectOption[] = [
+  { id: "info", name: "普通", color: "#3b82f6" },
+  { id: "warning", name: "警告", color: "#f59e0b" },
+  { id: "danger", name: "紧急", color: "#ef4444" },
+];
 
 const NotificationManagement: React.FC = () => {
   const [title, setTitle] = useState("");
@@ -14,6 +22,10 @@ const NotificationManagement: React.FC = () => {
   const [type, setType] = useState("system");
   const [target, setTarget] = useState<"all" | "users">("all");
   const [userIds, setUserIds] = useState("");
+  const [isBroadcast, setIsBroadcast] = useState(false);
+  const [broadcastLevel, setBroadcastLevel] = useState<string>("info");
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [endTime, setEndTime] = useState<Date | null>(null);
   const [sending, setSending] = useState(false);
 
   const typeOptions: SelectOption[] = [
@@ -40,6 +52,10 @@ const NotificationManagement: React.FC = () => {
       message.error("请输入目标用户ID");
       return;
     }
+    if (isBroadcast && endTime && startTime && endTime <= startTime) {
+      message.error("结束时间必须晚于开始时间");
+      return;
+    }
 
     setSending(true);
     try {
@@ -49,11 +65,18 @@ const NotificationManagement: React.FC = () => {
         type,
         target,
         user_ids: target === "users" ? userIds.trim() : undefined,
+        is_broadcast: isBroadcast,
+        level: isBroadcast ? broadcastLevel : undefined,
+        start_time: isBroadcast && startTime ? Math.floor(startTime.getTime() / 1000) : undefined,
+        end_time: isBroadcast && endTime ? Math.floor(endTime.getTime() / 1000) : undefined,
       });
-      message.success("通知发送成功");
+      message.success(isBroadcast ? "广播已创建" : "通知发送成功");
       setTitle("");
       setContent("");
       setUserIds("");
+      setIsBroadcast(false);
+      setStartTime(null);
+      setEndTime(null);
     } catch (err: any) {
       message.error(err.message || "发送失败，请稍后重试");
     } finally {
@@ -119,6 +142,57 @@ const NotificationManagement: React.FC = () => {
                 size="large"
               />
             </div>
+          )}
+
+          {/* 设为广播跑马灯 */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>设为广播</label>
+            <div className={styles.switchRow}>
+              <Switch checked={isBroadcast} onChange={(checked) => setIsBroadcast(checked)} />
+              <span className={styles.switchHint}>开启后该通知将在页面顶部跑马灯持续滚动展示</span>
+            </div>
+          </div>
+
+          {/* 广播设置 */}
+          {isBroadcast && (
+            <>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>广播级别</label>
+                <CustomSelect
+                  name="广播级别"
+                  options={BROADCAST_LEVEL_OPTIONS}
+                  value={BROADCAST_LEVEL_OPTIONS.find((o) => o.id === broadcastLevel) || null}
+                  onChange={(option) => setBroadcastLevel(String(option?.id || "info"))}
+                  placeholder="选择广播级别"
+                  hideBadge={true}
+                />
+              </div>
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>开始时间（可选，留空立即可见）</label>
+                  <DatePicker
+                    value={startTime || undefined}
+                    onChange={(date) => setStartTime(date)}
+                    placeholder="即时生效"
+                    showTime
+                    allowClear
+                    size="large"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>结束时间（可选，留空手动关闭）</label>
+                  <DatePicker
+                    value={endTime || undefined}
+                    onChange={(date) => setEndTime(date)}
+                    placeholder="手动关闭"
+                    showTime
+                    allowClear
+                    minDate={startTime || new Date()}
+                    size="large"
+                  />
+                </div>
+              </div>
+            </>
           )}
         </div>
 

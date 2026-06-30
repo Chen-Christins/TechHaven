@@ -21,9 +21,10 @@ interface ArticleListProps {
   labelName?: string;
   categoryId?: string | number;
   categoryName?: string;
+  searchKeyword?: string;
 }
 
-const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryId, categoryName }) => {
+const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryId, categoryName, searchKeyword }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const itemsPerPage = 6;
@@ -41,20 +42,22 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
 
   const prevLabelId = useRef<string | number | undefined>(labelId);
   const prevCategoryId = useRef<string | number | undefined>(categoryId);
+  const prevSearchKeyword = useRef<string | undefined>(searchKeyword);
 
   useEffect(() => {
-    // 当 labelId 或 categoryId 变化时，重置到第 1 页再请求
+    // 当 labelId / categoryId / searchKeyword 变化时，重置到第 1 页再请求
     const labelChanged = prevLabelId.current !== labelId;
     const categoryChanged = prevCategoryId.current !== categoryId;
+    const searchChanged = prevSearchKeyword.current !== searchKeyword;
 
-    if (labelChanged || categoryChanged) {
+    if (labelChanged || categoryChanged || searchChanged) {
       prevLabelId.current = labelId;
       prevCategoryId.current = categoryId;
+      prevSearchKeyword.current = searchKeyword;
       if (currentPage !== 1) {
         setSearchParams({ page: "1" });
-        return; // 触发 re-render 后 currentPage=1 再 fetch
+        return;
       }
-      // 已经在第 1 页，直接走下面的 fetch 逻辑
     }
 
     let cancelled = false;
@@ -79,16 +82,13 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
           }>;
         };
 
-        if (labelId) {
-          res = await ArticleService.listByLabel({
-            label_id: labelId,
-            page_from: currentPage,
-            page_size: itemsPerPage,
-          });
-        } else if (categoryId) {
-          res = await ArticleService.listByCategory({
-            category_id: categoryId,
-            page_from: currentPage,
+        if (searchKeyword || labelId || categoryId) {
+          res = await ArticleService.searchArticles({
+            keyword: searchKeyword || undefined,
+            label_id: labelId ? Number(labelId) : undefined,
+            category_id: categoryId ? Number(categoryId) : undefined,
+            state: 2,
+            page: currentPage,
             page_size: itemsPerPage,
           });
         } else {
@@ -136,7 +136,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
     return () => {
       cancelled = true;
     };
-  }, [currentPage, labelId, categoryId]);
+  }, [currentPage, labelId, categoryId, searchKeyword]);
 
   const totalPages = Math.ceil(totalArticles / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;

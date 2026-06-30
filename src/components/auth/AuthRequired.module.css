@@ -102,10 +102,6 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
   white-space: nowrap;
 }
 
@@ -138,10 +134,6 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition:
-    border-color 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
   white-space: nowrap;
 }
 

@@ -405,58 +405,62 @@ const CodeReviewList: React.FC = () => {
               prs.map((pr) => {
                 return (
                   <tr key={pr.id}>
-                  <td className={styles.titleCell} onClick={() => openView(pr)}>
-                    {pr.title}
-                  </td>
-                  <td>
-                    <span className={`${styles.badge} ${pr.state === "closed" ? styles.pr_closed : styles[`status_${pr.state}`]}`}>
-                      {stateText[pr.state]}
-                    </span>
-                  </td>
-                  <td className={crStyles.cellCenter}>{pr.author}</td>
-                  <td className={crStyles.branchCell}>
-                    <span className={crStyles.branchHead}>{pr.headBranch}</span>
-                    <span className={crStyles.branchArrow}>→</span>
-                    <span className={crStyles.branchBase}>{pr.baseBranch}</span>
-                  </td>
-                  <td className={crStyles.changeCell}>
-                    {pr.changedFiles != null ? (
-                      <span className={crStyles.changeFiles}>
-                        {pr.changedFiles} 文件
-                        {pr.additions != null && pr.additions > 0 && <span className={crStyles.changeAdditions}>+{pr.additions}</span>}
-                        {pr.deletions != null && pr.deletions > 0 && <span className={crStyles.changeDeletions}>-{pr.deletions}</span>}
+                    <td className={styles.titleCell} onClick={() => openView(pr)}>
+                      {pr.title}
+                    </td>
+                    <td>
+                      <span className={`${styles.badge} ${pr.state === "closed" ? styles.pr_closed : styles[`status_${pr.state}`]}`}>
+                        {stateText[pr.state]}
                       </span>
-                    ) : (
-                      <span className={crStyles.changeNone}>-</span>
-                    )}
-                  </td>
-                  <td>{formatRelativeTime(pr.createdAt)}</td>
-                  <td>
-                    <div className={styles.actionButtons}>
-                      <button className={`${styles.actionBtn} ${styles.view}`} title="查看详情" onClick={() => openView(pr)}>
-                        <FaEye />
-                      </button>
-                      {getPrUrl(pr) && (
-                        <button
-                          className={`${styles.actionBtn} ${styles.ghBtn}`}
-                          title="在 GitHub 查看"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            window.open(getPrUrl(pr)!, "_blank", "noopener,noreferrer");
-                          }}
-                        >
-                          <FaGithub />
-                        </button>
+                    </td>
+                    <td className={crStyles.cellCenter}>{pr.author}</td>
+                    <td className={crStyles.branchCell}>
+                      <span className={crStyles.branchHead}>{pr.headBranch}</span>
+                      <span className={crStyles.branchArrow}>→</span>
+                      <span className={crStyles.branchBase}>{pr.baseBranch}</span>
+                    </td>
+                    <td className={crStyles.changeCell}>
+                      {pr.changedFiles != null ? (
+                        <span className={crStyles.changeFiles}>
+                          {pr.changedFiles} 文件
+                          {pr.additions != null && pr.additions > 0 && (
+                            <span className={crStyles.changeAdditions}>+{pr.additions}</span>
+                          )}
+                          {pr.deletions != null && pr.deletions > 0 && (
+                            <span className={crStyles.changeDeletions}>-{pr.deletions}</span>
+                          )}
+                        </span>
+                      ) : (
+                        <span className={crStyles.changeNone}>-</span>
                       )}
-                      <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDeletePr(pr)}>
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })
-          )}
+                    </td>
+                    <td>{formatRelativeTime(pr.createdAt)}</td>
+                    <td>
+                      <div className={styles.actionButtons}>
+                        <button className={`${styles.actionBtn} ${styles.view}`} title="查看详情" onClick={() => openView(pr)}>
+                          <FaEye />
+                        </button>
+                        {getPrUrl(pr) && (
+                          <button
+                            className={`${styles.actionBtn} ${styles.ghBtn}`}
+                            title="在 GitHub 查看"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(getPrUrl(pr)!, "_blank", "noopener,noreferrer");
+                            }}
+                          >
+                            <FaGithub />
+                          </button>
+                        )}
+                        <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDeletePr(pr)}>
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>

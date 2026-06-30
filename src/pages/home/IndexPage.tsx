@@ -25,6 +25,7 @@ const IndexPage: React.FC = () => {
   const [selectedLabelName, setSelectedLabelName] = useState<string | undefined>(undefined);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | number | undefined>(undefined);
   const [selectedCategoryName, setSelectedCategoryName] = useState<string | undefined>(undefined);
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
 
   // 获取标签（使用 LabelService），仅在已登录时请求
   useEffect(() => {
@@ -80,13 +81,14 @@ const IndexPage: React.FC = () => {
               labelName={selectedLabelName}
               categoryId={selectedCategoryId}
               categoryName={selectedCategoryName}
+              searchKeyword={searchKeyword}
             />
           </div>
 
           {/* 右侧：侧边栏 */}
           <div className={styles.rightColumn}>
             {/* 标签面板可能仍在加载，显示局部加载状态 */}
-            <SearchPanel />
+            <SearchPanel onSearch={(keyword) => setSearchKeyword(keyword)} />
             <TagPanel
               tags={tags}
               loading={tagsLoading}
@@ -99,9 +101,10 @@ const IndexPage: React.FC = () => {
                 } else {
                   setSelectedLabelId(tag.id);
                   setSelectedLabelName(tag.name);
-                  // 清除分类筛选
+                  // 清除分类和搜索
                   setSelectedCategoryId(undefined);
                   setSelectedCategoryName(undefined);
+                  setSearchKeyword("");
                 }
               }}
             />
@@ -116,9 +119,10 @@ const IndexPage: React.FC = () => {
                 } else {
                   setSelectedCategoryId(id);
                   setSelectedCategoryName(name);
-                  // 清除标签筛选
+                  // 清除标签和搜索
                   setSelectedLabelId(undefined);
                   setSelectedLabelName(undefined);
+                  setSearchKeyword("");
                 }
               }}
             />

@@ -165,9 +165,6 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  transition:
-    color 0.2s,
-    border-color 0.2s;
 }
 
 .tabBtn:hover {
