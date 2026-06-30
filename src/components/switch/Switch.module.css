@@ -8,6 +8,18 @@
   background: transparent;
   padding: 0;
   border-radius: 100px;
+
+  /* 默认颜色变量 */
+  --switch-off: #ccc;
+  --switch-handle: #fff;
+  --switch-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+  --switch-shadow-hover: inset 0 0 0 1px rgba(0,0,0,0.12);
+  --switch-handle-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  --switch-handle-shadow-hover: 0 2px 4px rgba(0,0,0,0.25);
+  --switch-disabled: #f0f0f0;
+  --switch-shadow-disabled: inset 0 0 0 1px rgba(0,0,0,0.04);
+  --switch-handle-disabled: #e0e0e0;
+  --switch-handle-shadow-disabled: none;
 }
 
 /* 尺寸变体 */
@@ -81,7 +93,7 @@
   top: 50%;
   background-color: var(--switch-handle);
   border-radius: 50%;
-  box-shadow: var(--handle-shadow);
+  box-shadow: var(--switch-handle-shadow);
   transform: translateY(-50%);
 }
 
@@ -91,7 +103,7 @@
 }
 
 .switch:not(.disabled):hover .handle {
-  box-shadow: var(--handle-shadow-hover);
+  box-shadow: var(--switch-handle-shadow-hover);
 }
 
 /* 聚焦状态 */
@@ -113,7 +125,7 @@
 
 .disabled .handle {
   background-color: var(--switch-handle-disabled);
-  box-shadow: var(--handle-shadow-disabled);
+  box-shadow: var(--switch-handle-shadow-disabled);
 }
 
 /* 加载动画 */

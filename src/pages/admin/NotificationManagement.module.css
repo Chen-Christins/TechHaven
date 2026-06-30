@@ -78,6 +78,17 @@
   margin-bottom: 0;
 }
 
+.switchRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.switchHint {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
 .formLabel {
   font-size: 14px;
   font-weight: 500;
