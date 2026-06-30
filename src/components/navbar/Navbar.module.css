@@ -35,7 +35,7 @@
 .leftSection {
   display: flex;
   align-items: center;
-  gap: 2.5rem;
+  gap: 1rem;
 }
 
 /* Logo样式 */
@@ -43,6 +43,9 @@
   text-decoration: none;
   display: flex;
   align-items: center;
+  flex: 0 0 160px;
+  height: 40px;
+  cursor: pointer;
 }
 
 .logoText {
@@ -56,8 +59,12 @@
 }
 
 .logoImage {
+  display: block;
   max-height: 40px;
-  width: auto;
+  width: 160px;
+  height: 40px;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .logo:hover .logoText {
@@ -87,7 +94,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.6rem 1rem;
+  padding: 0.6rem 0.75rem;
   color: var(--text-secondary);
   text-decoration: none;
   font-weight: 500;

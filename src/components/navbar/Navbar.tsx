@@ -29,6 +29,7 @@ const Navbar: React.FC = () => {
   // 获取认证状态
   const { user, isAuthenticated, logout, token, loading } = useAuth();
   const { settings: siteSettings } = useSiteSettings();
+  const defaultLogo = "/techhaven-logo.svg";
 
   // 状态管理
   const [isScrolled, setIsScrolled] = useState(false); // 滚动状态（控制导航栏样式变化）
@@ -290,11 +291,7 @@ const Navbar: React.FC = () => {
           <div className={styles.leftSection}>
             {/* Logo */}
             <div className={styles.logo} onClick={() => navigate("/")}>
-              {siteSettings.siteLogo ? (
-                <img src={siteSettings.siteLogo} alt={siteSettings.siteName} className={styles.logoImage} />
-              ) : (
-                <span className={styles.logoText}>{siteSettings.siteName}</span>
-              )}
+              <img src={siteSettings.siteLogo || defaultLogo} alt={siteSettings.siteName} className={styles.logoImage} />
             </div>
 
             {/* 桌面端导航链接 */}
