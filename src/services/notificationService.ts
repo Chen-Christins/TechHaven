@@ -77,6 +77,25 @@ export class NotificationService {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
   }
+
+  /**
+   * 获取广播跑马灯列表
+   */
+  static async getBroadcasts(): Promise<{ id: number; title: string; content: string; level: string }[]> {
+    const response = await http.get<{ list: { id: number; title: string; content: string; level: string }[] }>("/broadcast/list");
+    return response.data?.list ?? [];
+  }
+
+  /**
+   * 关闭广播（手动下线）
+   */
+  static async closeBroadcast(id: number): Promise<void> {
+    const formData = new URLSearchParams();
+    formData.append("id", String(id));
+    await http.post("/broadcast/close", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  }
 }
 
 export default NotificationService;
