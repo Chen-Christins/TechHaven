@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { FaBell, FaPaperPlane } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { FaBell, FaPaperPlane, FaTimes } from "react-icons/fa";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import Input from "@/components/input/Input";
 import Button from "@/components/button/Button";
@@ -27,6 +27,30 @@ const NotificationManagement: React.FC = () => {
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [endTime, setEndTime] = useState<Date | null>(null);
   const [sending, setSending] = useState(false);
+  const [activeBroadcasts, setActiveBroadcasts] = useState<{ id: number; title: string; content: string; level: string }[]>([]);
+
+  const fetchBroadcasts = async () => {
+    try {
+      const list = await NotificationService.getBroadcasts();
+      setActiveBroadcasts(list);
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    fetchBroadcasts();
+  }, []);
+
+  const handleCloseBroadcast = async (id: number) => {
+    try {
+      await NotificationService.closeBroadcast(id);
+      message.success("广播已关闭");
+      fetchBroadcasts();
+    } catch (err: any) {
+      message.error(err?.message || "关闭失败");
+    }
+  };
 
   const typeOptions: SelectOption[] = [
     { id: "system", name: "系统通知", color: "#6366f1" },
@@ -77,6 +101,7 @@ const NotificationManagement: React.FC = () => {
       setIsBroadcast(false);
       setStartTime(null);
       setEndTime(null);
+      if (isBroadcast) fetchBroadcasts();
     } catch (err: any) {
       message.error(err.message || "发送失败，请稍后重试");
     } finally {
@@ -187,7 +212,6 @@ const NotificationManagement: React.FC = () => {
                     placeholder="手动关闭"
                     showTime
                     allowClear
-                    minDate={startTime || new Date()}
                     size="large"
                   />
                 </div>
@@ -238,6 +262,65 @@ const NotificationManagement: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {/* 当前广播列表 */}
+      {activeBroadcasts.length > 0 && (
+        <div className={styles.formCard} style={{ marginTop: 24 }}>
+          <h3 className={styles.formSectionTitle}>当前广播</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {activeBroadcasts.map((bc) => (
+              <div
+                key={bc.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "10px 14px",
+                  background: "var(--bg-secondary)",
+                  borderRadius: 8,
+                  border: "1px solid var(--border-primary)",
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        background: bc.level === "danger" ? "#ef4444" : bc.level === "warning" ? "#f59e0b" : "#3b82f6",
+                      }}
+                    />
+                    <strong style={{ fontSize: 14 }}>{bc.title}</strong>
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {bc.content}
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleCloseBroadcast(bc.id)}
+                  style={{
+                    flexShrink: 0,
+                    marginLeft: 12,
+                    padding: "4px 10px",
+                    fontSize: 12,
+                    border: "1px solid var(--border-primary)",
+                    borderRadius: 6,
+                    background: "var(--card-bg)",
+                    color: "var(--text-secondary)",
+                    cursor: "pointer",
+                  }}
+                  title="手动关闭此广播"
+                >
+                  <FaTimes size={10} style={{ marginRight: 4 }} />
+                  关闭
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
