@@ -29,12 +29,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 /* 左侧区域（Logo + 导航） */
 .leftSection {
   display: flex;
   align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
   /* gap: 1rem; */
 }
 
@@ -138,6 +142,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
+  flex: 0 0 auto;
 }
 
 .testButton {
@@ -365,6 +370,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
   background: none;
   border: none;
   color: var(--text-primary);
@@ -522,7 +530,16 @@
   }
 
   .leftSection {
-    gap: 1rem;
+    gap: 8px;
+  }
+
+  .logo {
+    flex-basis: 112px;
+    width: 112px;
+  }
+
+  .logoImage {
+    width: 112px;
   }
 
   .logoText {
@@ -533,6 +550,54 @@
     list-style: none;
     margin: 0;
     padding: 0.2rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .logo {
+    flex-basis: 96px;
+    width: 96px;
+  }
+
+  .logoImage {
+    width: 96px;
+  }
+
+  .rightSection {
+    gap: 4px;
+  }
+
+  .testButton {
+    display: none;
+  }
+
+  .userArea {
+    padding: 0.3rem 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .container {
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  .leftSection {
+    gap: 6px;
+  }
+
+  .logo {
+    flex-basis: 64px;
+    width: 64px;
+  }
+
+  .logoImage {
+    width: 64px;
   }
 }
 

@@ -294,7 +294,16 @@ const NotificationManagement: React.FC = () => {
                     />
                     <strong style={{ fontSize: 14 }}>{bc.title}</strong>
                   </div>
-                  <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      color: "var(--text-secondary)",
+                      marginTop: 2,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {bc.content}
                   </div>
                 </div>
