@@ -1,18 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  FaHome,
-  FaPen,
-  FaBars,
-  FaSignOutAlt,
-  FaUserCircle,
-  FaStar,
-  FaExternalLinkAlt,
-  FaSignInAlt,
-  FaBuilding,
-  FaFlask,
-  FaGamepad,
-} from "react-icons/fa";
+import { FaHome, FaPen, FaBars, FaSignOutAlt, FaUserCircle, FaBuilding, FaFlask, FaGamepad, FaTimes } from "react-icons/fa";
 import styles from "./Navbar.module.css";
 import LayoutWidthToggle from "../layoutWidthToggle/LayoutWidthToggle";
 import ThemeToggle from "../themeToggle/ThemeToggle";
@@ -35,10 +23,8 @@ const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false); // 滚动状态（控制导航栏样式变化）
   const [userMenuOpen, setUserMenuOpen] = useState(false); // 用户下拉菜单状态
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // 移动端菜单状态
-  const [recommendMenuOpen, setRecommendMenuOpen] = useState(false); // 推荐下拉菜单状态
 
   const userMenuRef = useRef<HTMLDivElement>(null); // 用户菜单DOM引用
-  const recommendMenuRef = useRef<HTMLDivElement>(null); // 推荐菜单DOM引用
 
   // console.log(user);
 
@@ -58,26 +44,6 @@ const Navbar: React.FC = () => {
     { label: "组织", icon: <FaBuilding />, path: "/organizations/list" },
   ];
 
-  // 推荐网站数据
-  const recommendations = [
-    {
-      title: "MDN Web Docs",
-      url: "https://developer.mozilla.org",
-    },
-    {
-      title: "GitHub",
-      url: "https://github.com",
-    },
-    {
-      title: "Stack Overflow",
-      url: "https://stackoverflow.com",
-    },
-    {
-      title: "CodePen",
-      url: "https://codepen.io",
-    },
-  ];
-
   // 监听滚动事件和用户状态变化
   useEffect(() => {
     const handleScroll = () => {
@@ -93,9 +59,6 @@ const Navbar: React.FC = () => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false);
       }
-      if (recommendMenuRef.current && !recommendMenuRef.current.contains(event.target as Node)) {
-        setRecommendMenuOpen(false);
-      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -106,82 +69,55 @@ const Navbar: React.FC = () => {
     setUserMenuOpen(!userMenuOpen);
   };
 
-  // 切换推荐菜单
-  const toggleRecommendMenu = () => {
-    setRecommendMenuOpen(!recommendMenuOpen);
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
   };
 
-  // 渲染推荐下拉菜单
-  const renderRecommendMenu = () => {
-    return (
-      <div className={styles.navItem} ref={recommendMenuRef}>
-        <button
-          className={styles.recommendButton}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleRecommendMenu();
-          }}
-          title="推荐网站"
-        >
-          <FaStar className={styles.linkIcon} />
-          <span className={styles.linkText}>推荐</span>
-        </button>
-        {recommendMenuOpen && (
-          <div className={styles.recommendDropdown}>
-            <div className={styles.dropdownContent}>
-              {recommendations.map((item, index) => (
-                <a
-                  key={index}
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.recommendItem}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setRecommendMenuOpen(false);
-                  }}
-                >
-                  <span className={styles.itemTitle}>{item.title}</span>
-                  <FaExternalLinkAlt className={styles.externalIcon} size={12} />
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      return;
+    }
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [mobileMenuOpen]);
+
+  const isActive = (path: string) => {
+    if (path === "/") {
+      return location.pathname === "/" || location.pathname === "/index";
+    }
+    if (path === "/assignments") {
+      return location.pathname === "/personal" && location.search.includes("tab=assignments");
+    }
+    if (path === "/organizations/list") {
+      return location.pathname.startsWith("/organizations") || location.pathname.startsWith("/organization");
+    }
+    if (path === "/gm") {
+      return location.pathname.startsWith("/gm");
+    }
+    if (path === "/rd") {
+      return location.pathname.startsWith("/rd");
+    }
+    return location.pathname === path;
+  };
+
+  const getNavLinks = () => {
+    const links = [...navLinks, { label: "研发", icon: <FaFlask />, path: "/rd" }];
+    if (isAuthenticated && user?.role === "管理员") {
+      links.push({ label: "游戏", icon: <FaGamepad />, path: "/gm" });
+    }
+    return links;
   };
 
   // 渲染导航链接（桌面端）
   const renderNavLinks = () => {
-    const isActive = (path: string) => {
-      if (path === "/") {
-        return location.pathname === "/" || location.pathname === "/index";
-      }
-      if (path === "/assignments") {
-        return location.pathname === "/personal" && location.search.includes("tab=assignments");
-      }
-      if (path === "/organizations/list") {
-        return location.pathname.startsWith("/organizations") || location.pathname.startsWith("/organization");
-      }
-      if (path === "/gm") {
-        return location.pathname.startsWith("/gm");
-      }
-      if (path === "/rd") {
-        return location.pathname.startsWith("/rd");
-      }
-      return location.pathname === path;
-    };
-
-    const links = [...navLinks];
-    links.push({ label: "研发", icon: <FaFlask />, path: "/rd" });
-    if (isAuthenticated && user?.role === "管理员") {
-      links.push({ label: "游戏", icon: <FaGamepad />, path: "/gm" });
-    }
-
     return (
       <ul className={styles.navLinks}>
-        {links.map((link, index) => (
+        {getNavLinks().map((link, index) => (
           <li key={index} className={styles.navItem}>
             <div
               onClick={() => {
@@ -195,7 +131,6 @@ const Navbar: React.FC = () => {
             </div>
           </li>
         ))}
-        {renderRecommendMenu()}
       </ul>
     );
   };
@@ -204,80 +139,29 @@ const Navbar: React.FC = () => {
   const renderMobileMenu = () => {
     return (
       <div className={`${styles.mobileMenu} ${mobileMenuOpen ? styles.mobileMenuOpen : ""}`}>
+        <div className={styles.mobileMenuHeader}>
+          <div className={styles.mobileMenuTitle}>导航菜单</div>
+          <button className={styles.mobileMenuCloseBtn} onClick={closeMobileMenu} type="button" aria-label="关闭菜单">
+            <FaTimes />
+          </button>
+        </div>
         <ul className={styles.mobileNavLinks}>
-          {navLinks
-            .concat(
-              [{ label: "研发平台", icon: <FaFlask />, path: "/rd" }],
-              isAuthenticated && user?.role === "管理员" ? [{ label: "GM 控制台", icon: <FaGamepad />, path: "/gm" }] : [],
-            )
-            .map((link, index) => (
-              <li key={index} className={styles.mobileNavItem}>
-                <a
-                  href={link.path}
-                  className={styles.mobileNavLink}
-                  onClick={() => setMobileMenuOpen(false)} // 点击后关闭菜单
-                >
-                  <span className={styles.mobileLinkIcon}>{link.icon}</span>
-                  <span className={styles.mobileLinkText}>{link.label}</span>
-                </a>
-              </li>
-            ))}
-          {/* 移动端推荐选项 */}
-          <li className={styles.mobileNavItem}>
-            <div className={styles.mobileRecommendSection}>
-              <button className={styles.mobileRecommendButton} onClick={() => setRecommendMenuOpen(!recommendMenuOpen)}>
-                <FaStar className={styles.mobileLinkIcon} />
-                <span className={styles.mobileLinkText}>推荐</span>
+          {getNavLinks().map((link, index) => (
+            <li key={index} className={styles.mobileNavItem}>
+              <button
+                type="button"
+                className={styles.mobileNavLink}
+                data-active={isActive(link.path)}
+                onClick={() => {
+                  closeMobileMenu();
+                  navigate(link.path);
+                }}
+              >
+                <span className={styles.mobileLinkIcon}>{link.icon}</span>
+                <span className={styles.mobileLinkText}>{link.label}</span>
               </button>
-              {recommendMenuOpen && (
-                <div className={styles.mobileRecommendDropdown}>
-                  {recommendations.map((item, index) => (
-                    <a
-                      key={index}
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.mobileRecommendItem}
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        setRecommendMenuOpen(false);
-                      }}
-                    >
-                      <span className={styles.mobileItemTitle}>{item.title}</span>
-                      <FaExternalLinkAlt className={styles.mobileExternalIcon} size={12} />
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
-          </li>
-          {/* 移动端认证区域 */}
-          {loading ? (
-            // 认证状态加载中 - 显示占位符以避免状态切换的闪烁
-            <li className={styles.mobileNavItem}>
-              <div className={styles.mobileAuthSection}>
-                <div className={styles.mobileAuthButtonPlaceholder}>
-                  <FaSignInAlt className={styles.mobileLinkIcon} />
-                  <span className={styles.mobileLinkText}>加载中...</span>
-                </div>
-              </div>
             </li>
-          ) : !isAuthenticated ? (
-            <li className={styles.mobileNavItem}>
-              <div className={styles.mobileAuthSection}>
-                <div
-                  className={styles.mobileAuthButton}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/login");
-                  }}
-                >
-                  <FaSignInAlt className={styles.mobileLinkIcon} />
-                  <span className={styles.mobileLinkText}>登录 | 注册</span>
-                </div>
-              </div>
-            </li>
-          ) : null}
+          ))}
         </ul>
       </div>
     );
@@ -314,7 +198,7 @@ const Navbar: React.FC = () => {
                 className={styles.testButton}
                 onClick={() => {
                   setUserMenuOpen(false);
-                  setMobileMenuOpen(false);
+                  closeMobileMenu();
                   navigate("/test/chunk-upload");
                 }}
                 type="button"
@@ -408,7 +292,7 @@ const Navbar: React.FC = () => {
                 onButtonClick={() => {
                   // 关闭可能打开的移动端菜单
                   if (mobileMenuOpen) {
-                    setMobileMenuOpen(false);
+                    closeMobileMenu();
                   }
                 }}
               />
@@ -416,6 +300,10 @@ const Navbar: React.FC = () => {
           </div>
         </div>
 
+        <div
+          className={`${styles.mobileMenuOverlay} ${mobileMenuOpen ? styles.mobileMenuOverlayShow : ""}`}
+          onClick={closeMobileMenu}
+        />
         {/* 移动端菜单 */}
         {renderMobileMenu()}
       </header>

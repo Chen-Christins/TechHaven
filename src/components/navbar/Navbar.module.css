@@ -390,30 +390,93 @@
 }
 
 /* 移动端导航菜单 */
-.mobileMenu {
+.mobileMenuOverlay {
   position: fixed;
-  top: 56px;
+  top: 0;
   left: 0;
   right: 0;
-  background-color: var(--card-bg);
-  box-shadow: var(--shadow-lg);
-  border-top: 1px solid var(--border-primary);
-  transform: translateY(-100%);
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
   opacity: 0;
   visibility: hidden;
-  z-index: 999;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
 }
 
-.mobileMenuOpen {
-  transform: translateY(0);
+.mobileMenuOverlayShow {
   opacity: 1;
   visibility: visible;
 }
 
+.mobileMenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(82vw, 300px);
+  height: 100vh;
+  background-color: var(--card-bg);
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.16);
+  border-right: 1px solid var(--border-primary);
+  transform: translateX(-100%);
+  visibility: hidden;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition:
+    transform 0.25s ease,
+    visibility 0.25s ease;
+}
+
+.mobileMenuOpen {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+.mobileMenuHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  height: 56px;
+  padding: 0 16px 0 20px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.mobileMenuTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mobileMenuCloseBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.mobileMenuCloseBtn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
 .mobileNavLinks {
+  flex: 1 1 auto;
   list-style: none;
   margin: 0;
   padding: 1rem 0;
+  overflow-y: auto;
 }
 
 .mobileNavItem {
@@ -425,10 +488,15 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  width: 100%;
   padding: 1rem 1.5rem;
   color: var(--text-primary);
+  background: none;
+  border: none;
   text-decoration: none;
   font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
 }
 
 .mobileNavLink:hover {
@@ -436,91 +504,28 @@
   color: var(--primary);
 }
 
+.mobileNavLink[data-active="true"] {
+  position: relative;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.mobileNavLink[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  background-color: var(--primary);
+  border-radius: 0 3px 3px 0;
+}
+
 .mobileLinkIcon {
   font-size: 1.2rem;
   width: 24px;
   text-align: center;
-}
-
-/* 移动端推荐功能 */
-.mobileRecommendSection {
-  width: 100%;
-}
-
-.mobileRecommendButton {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-  padding: 1rem 1.5rem;
-  color: var(--text-primary);
-  background: none;
-  border: none;
-  text-align: left;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-.mobileRecommendButton:hover {
-  background-color: var(--bg-hover);
-  color: var(--primary);
-}
-
-.mobileRecommendDropdown {
-  background-color: var(--bg-secondary);
-  border-top: 1px solid var(--border-secondary);
-  animation: slideDown 0.2s ease;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.mobileDropdownHeader {
-  padding: 0.75rem 1.5rem;
-  border-bottom: 1px solid var(--border-secondary);
-}
-
-.mobileDropdownTitle {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 0.85rem;
-}
-
-.mobileRecommendItem {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1.5rem;
-  color: var(--text-primary);
-  text-decoration: none;
-  border-bottom: 1px solid var(--border-secondary);
-}
-
-.mobileRecommendItem:last-child {
-  border-bottom: none;
-}
-
-.mobileRecommendItem:hover {
-  background-color: var(--bg-hover);
-}
-
-.mobileItemTitle {
-  font-weight: 500;
-  color: var(--text-primary);
-  font-size: 0.85rem;
-}
-
-.mobileExternalIcon {
-  color: var(--text-tertiary);
-  opacity: 0.7;
 }
 
 /* 响应式调整 */
@@ -606,164 +611,8 @@
     display: none;
   }
 
+  .mobileMenuOverlay,
   .mobileMenu {
     display: none;
   }
-}
-
-/* 推荐下拉菜单样式 */
-.recommendButton {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  color: var(--text-secondary);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 1rem;
-  text-decoration: none;
-  height: 56px;
-}
-
-.recommendButton:hover {
-  background-color: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-/* 推荐按钮活跃状态（当下拉菜单打开时） */
-
-.recommendDropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-  min-width: 200px;
-  max-width: 240px;
-  z-index: 1000;
-  overflow: hidden;
-  animation: dropdownIn 0.2s ease;
-}
-
-@keyframes dropdownIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dropdownTitle {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 0.9rem;
-}
-
-.dropdownContent {
-  padding: 0.5rem;
-}
-
-.recommendItem {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.8rem 1rem;
-  color: var(--text-primary);
-  text-decoration: none;
-  border-radius: 8px;
-  border: 1px solid transparent;
-}
-
-.recommendItem:hover {
-  background-color: var(--bg-hover);
-  border-color: var(--border-secondary);
-}
-
-.itemTitle {
-  font-weight: 500;
-  color: var(--text-primary);
-  font-size: 0.9rem;
-}
-
-.externalIcon {
-  color: var(--text-tertiary);
-  opacity: 0.7;
-}
-
-/* 移动端认证区域 */
-.mobileAuthSection {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
-  padding-left: 32px;
-}
-
-.mobileAuthButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 12px;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
-  border: 2px solid rgba(59, 130, 246, 0.3);
-  color: var(--text-primary);
-  backdrop-filter: blur(10px);
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
-  position: relative;
-  overflow: hidden;
-}
-
-.mobileAuthButton::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-}
-
-.mobileAuthButton:hover::before {
-  left: 100%;
-}
-
-.mobileAuthButton:hover {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
-  border-color: rgba(59, 130, 246, 0.6);
-  color: var(--accent-color);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
-}
-
-.mobileAuthButton:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
-}
-
-.mobileAuthButtonPlaceholder {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  border: 2px solid transparent;
-  color: var(--text-tertiary);
-  background: var(--bg-secondary);
-  position: relative;
-  opacity: 0.7;
 }
