@@ -728,6 +728,155 @@
   border-radius: 50%;
 }
 
+@media (max-width: 640px) {
+  .tableContainer {
+    overflow: visible;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+  }
+
+  .tableHeader {
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .articlesTable,
+  .articlesTable tbody,
+  .articlesTable tr,
+  .articlesTable td {
+    display: block;
+    width: 100%;
+  }
+
+  .articlesTable {
+    min-width: 0;
+  }
+
+  .articlesTable thead {
+    display: none;
+  }
+
+  .articlesTable tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .articlesTable tbody tr {
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .articlesTable td,
+  .articlesTable td:nth-child(2),
+  .articlesTable td:nth-child(3),
+  .articlesTable td:nth-child(5),
+  .articlesTable td:nth-child(6) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+    text-align: right;
+    font-size: 14px;
+  }
+
+  .articlesTable td::before {
+    flex: 0 0 auto;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .articlesTable td:first-child {
+    display: block;
+    text-align: left;
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  .articlesTable td:first-child::before {
+    display: none;
+  }
+
+  .articlesTable td:nth-child(2)::before {
+    content: "作者";
+  }
+
+  .articlesTable td:nth-child(3)::before {
+    content: "分类";
+  }
+
+  .articlesTable td:nth-child(4)::before {
+    content: "状态";
+  }
+
+  .articlesTable td:nth-child(4) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 16px;
+    justify-items: end;
+  }
+
+  .articlesTable td:nth-child(4)::before {
+    justify-self: start;
+  }
+
+  .articlesTable td:nth-child(4) .statusBadge,
+  .articlesTable td:nth-child(4) > :not(:first-child) {
+    justify-self: end;
+    text-align: right;
+    width: fit-content;
+  }
+
+  .articlesTable td:nth-child(4) .reviewInfo {
+    grid-column: 2;
+  }
+
+  .articlesTable td:nth-child(5)::before {
+    content: "统计";
+  }
+
+  .articlesTable td:nth-child(6)::before {
+    content: "发布时间";
+  }
+
+  .articlesTable td:nth-child(7)::before {
+    content: "操作";
+  }
+
+  .authorInfo {
+    align-items: flex-end;
+  }
+
+  .statsInfo {
+    justify-content: flex-end;
+  }
+
+  .dateInfo {
+    align-items: flex-end;
+  }
+
+  .actionButtons {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .paginationContainer {
+    margin-top: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+  }
+}
+
 /* 文章信息样式 - 参考任务管理页面 */
 .userInfo {
   display: flex;
