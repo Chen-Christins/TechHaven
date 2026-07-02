@@ -22,6 +22,14 @@
   font-size: 13px;
 }
 
+.branchRoute {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+}
+
 .branchHead {
   font-weight: 500;
 }
@@ -58,6 +66,114 @@
 .changeNone {
   font-size: 13px;
   color: var(--text-tertiary);
+}
+
+.mobilePrList {
+  display: none;
+}
+
+.mobilePrCard {
+  display: block;
+  min-width: 0;
+}
+
+.mobileCardMain {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mobileCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  min-width: 0;
+}
+
+.mobileTitleBlock {
+  min-width: 0;
+  flex: 1;
+}
+
+.mobileTitle {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.mobileSubtitle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.mobileMetaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+}
+
+.mobileMetaItem,
+.mobileDescription {
+  min-width: 0;
+}
+
+.mobileMetaLabel {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mobileMetaValue,
+.mobileDescription span:last-child {
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.mobileDescription {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-primary);
+  text-align: left;
+}
+
+.mobileBranchBlock {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-primary);
+}
+
+.mobileActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-primary);
+}
+
+.mobileEmpty {
+  background: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 32px 16px;
+  text-align: center;
 }
 
 /* ---- Modal detail view ---- */
@@ -110,4 +226,101 @@
   color: #24292f;
   background: #f0f6fc;
   border-color: #0969da;
+}
+
+@media (max-width: 768px) {
+  .desktopPrTable {
+    display: none;
+  }
+
+  .mobilePrList {
+    display: grid;
+    gap: 12px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .mobilePrCard {
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 12px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .mobileTitleBlock,
+  .mobileSubtitle,
+  .mobileBranchBlock,
+  .mobileDescription,
+  .mobileMetaGrid,
+  .mobileMetaItem,
+  .mobileMetaValue,
+  .mobileCardMain {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .mobileCardHeader {
+    width: 100%;
+  }
+
+  .mobileMetaGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .mobileCardHeader > :global(.badge) {
+    flex-shrink: 0;
+  }
+
+  .branchCell,
+  .changeCell,
+  .cellCenter {
+    display: flex;
+    text-align: right;
+  }
+
+  .branchRoute {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    max-width: 100%;
+    text-align: left;
+    line-height: 1.5;
+  }
+
+  .branchHead,
+  .branchBase {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .branchArrow {
+    margin: 0 2px;
+  }
+
+  .changeFiles {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 2px 0;
+    max-width: 100%;
+    line-height: 1.5;
+  }
+
+  .detailBadges {
+    flex-wrap: wrap;
+  }
+
+  .detailGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .githubLink {
+    max-width: 100%;
+  }
 }

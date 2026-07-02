@@ -262,3 +262,107 @@
   background-color: #fef2f2;
   color: #dc2626;
 }
+
+@media (max-width: 640px) {
+  .pageHeader {
+    margin-bottom: 16px;
+  }
+
+  .pageTitle {
+    font-size: 20px;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .statCard {
+    padding: 16px;
+  }
+
+  .section {
+    margin-bottom: 24px;
+  }
+
+  .sectionHeader {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .tableWrapper {
+    overflow: visible;
+    border: none;
+    border-radius: 0;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+
+  .table {
+    background: transparent;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .table tr {
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .table td {
+    border-bottom: none;
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    text-align: right;
+    min-width: 0;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .table td:first-child {
+    display: block;
+    text-align: left;
+    font-size: 15px;
+    line-height: 1.45;
+    padding-bottom: 10px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  .table td:first-child::before,
+  .emptyCell::before {
+    display: none;
+  }
+
+  .emptyCell {
+    display: block;
+    text-align: center;
+    padding: 32px 16px;
+  }
+}

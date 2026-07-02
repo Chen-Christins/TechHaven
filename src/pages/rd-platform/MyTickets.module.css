@@ -202,3 +202,42 @@
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border-primary);
 }
+
+@media (max-width: 640px) {
+  .tabBar {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabBar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabBtn {
+    flex: 0 0 auto;
+    padding: 10px 16px;
+  }
+
+  .modalFooter {
+    flex-direction: column-reverse;
+  }
+
+  .modalCancelBtn,
+  .modalSubmitBtn {
+    width: 100%;
+  }
+
+  .detailBadges {
+    flex-wrap: wrap;
+  }
+
+  .detailGrid,
+  .statusGrid,
+  .statusGridWithBorder {
+    grid-template-columns: 1fr;
+  }
+
+  .formRow {
+    flex-direction: column;
+  }
+}

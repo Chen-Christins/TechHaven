@@ -571,17 +571,21 @@ const MyTickets: React.FC = () => {
                   const r = item as Requirement;
                   return (
                     <tr key={r.id}>
-                      <td className={styles.titleCell} onClick={() => navigate(`/rd/requirements/${encodeId(r.id, "requirement")}`)}>
+                      <td
+                        className={styles.titleCell}
+                        data-label="标题"
+                        onClick={() => navigate(`/rd/requirements/${encodeId(r.id, "requirement")}`)}
+                      >
                         {r.title}
                       </td>
-                      <td>{renderPriorityBadge(r.priority)}</td>
-                      <td>{renderStatusBadge(r.status, reqStatusText)}</td>
-                      <td>
+                      <td data-label="优先级">{renderPriorityBadge(r.priority)}</td>
+                      <td data-label="状态">{renderStatusBadge(r.status, reqStatusText)}</td>
+                      <td data-label="负责人">
                         <AssigneeDisplay name={r.assignee} avatar={r.assigneeAvatar} />
                       </td>
-                      <td>{r.creator}</td>
-                      <td>{formatDateTime(r.createdAt)}</td>
-                      <td>
+                      <td data-label="创建人">{r.creator}</td>
+                      <td data-label="创建时间">{formatDateTime(r.createdAt)}</td>
+                      <td data-label="操作">
                         <div className={styles.actionButtons}>
                           <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openDetail("req", r)}>
                             <FaEye />
@@ -633,20 +637,20 @@ const MyTickets: React.FC = () => {
                   const b = item as Bug;
                   return (
                     <tr key={b.id}>
-                      <td className={styles.titleCell} onClick={() => navigate(`/rd/bugs/${encodeId(b.id, "bug")}`)}>
+                      <td className={styles.titleCell} data-label="标题" onClick={() => navigate(`/rd/bugs/${encodeId(b.id, "bug")}`)}>
                         {b.title}
                       </td>
-                      <td>
+                      <td data-label="严重程度">
                         <span className={`${styles.badge} ${styles[`severity_${b.severity}`]}`}>{severityText[b.severity]}</span>
                       </td>
-                      <td>{renderPriorityBadge(b.priority)}</td>
-                      <td>{renderStatusBadge(b.status, bugStatusText)}</td>
-                      <td>
+                      <td data-label="优先级">{renderPriorityBadge(b.priority)}</td>
+                      <td data-label="状态">{renderStatusBadge(b.status, bugStatusText)}</td>
+                      <td data-label="负责人">
                         <AssigneeDisplay name={b.assignee} avatar={b.assigneeAvatar} />
                       </td>
-                      <td>{b.creator}</td>
-                      <td>{formatDateTime(b.createdAt)}</td>
-                      <td>
+                      <td data-label="创建人">{b.creator}</td>
+                      <td data-label="创建时间">{formatDateTime(b.createdAt)}</td>
+                      <td data-label="操作">
                         <div className={styles.actionButtons}>
                           <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openDetail("bug", b)}>
                             <FaEye />
@@ -697,17 +701,21 @@ const MyTickets: React.FC = () => {
                   const t = item as Task;
                   return (
                     <tr key={t.id}>
-                      <td className={styles.titleCell} onClick={() => navigate(`/rd/tasks/${encodeId(t.id, "task")}`)}>
+                      <td
+                        className={styles.titleCell}
+                        data-label="标题"
+                        onClick={() => navigate(`/rd/tasks/${encodeId(t.id, "task")}`)}
+                      >
                         {t.title}
                       </td>
-                      <td>{renderPriorityBadge(t.priority)}</td>
-                      <td>{renderStatusBadge(t.status, taskStatusText)}</td>
-                      <td>
+                      <td data-label="优先级">{renderPriorityBadge(t.priority)}</td>
+                      <td data-label="状态">{renderStatusBadge(t.status, taskStatusText)}</td>
+                      <td data-label="负责人">
                         <AssigneeDisplay name={t.assignee} avatar={t.assigneeAvatar} />
                       </td>
-                      <td>{t.creator}</td>
-                      <td>{t.deadline ? formatDateTime(t.deadline) : "-"}</td>
-                      <td>
+                      <td data-label="创建人">{t.creator}</td>
+                      <td data-label="截止日期">{t.deadline ? formatDateTime(t.deadline) : "-"}</td>
+                      <td data-label="操作">
                         <div className={styles.actionButtons}>
                           <button className={`${styles.actionBtn} ${styles.view}`} title="查看" onClick={() => openDetail("task", t)}>
                             <FaEye />

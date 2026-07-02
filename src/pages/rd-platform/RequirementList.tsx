@@ -349,22 +349,26 @@ const RequirementList: React.FC = () => {
           <tbody>
             {requirements.map((r) => (
               <tr key={r.id}>
-                <td className={styles.titleCell} onClick={() => navigate(`/rd/requirements/${encodeId(r.id, "requirement")}`)}>
+                <td
+                  className={styles.titleCell}
+                  data-label="标题"
+                  onClick={() => navigate(`/rd/requirements/${encodeId(r.id, "requirement")}`)}
+                >
                   {r.title}
                 </td>
-                <td>
+                <td data-label="优先级">
                   <span className={`${styles.badge} ${styles[`priority_${r.priority}`]}`}>{priorityText[r.priority]}</span>
                 </td>
-                <td>
+                <td data-label="状态">
                   <span className={`${styles.badge} ${styles[`status_${r.status}`]}`}>{statusText[r.status]}</span>
                 </td>
-                <td>
+                <td data-label="负责人">
                   <AssigneeDisplay name={r.assignee} avatar={r.assigneeAvatar} />
                 </td>
-                <td>{r.iteration || "-"}</td>
-                <td>{r.creator}</td>
-                <td>{formatDateTime(r.createdAt)}</td>
-                <td>
+                <td data-label="迭代">{r.iteration || "-"}</td>
+                <td data-label="创建人">{r.creator}</td>
+                <td data-label="创建时间">{formatDateTime(r.createdAt)}</td>
+                <td data-label="操作">
                   <div className={styles.actionButtons}>
                     <button
                       className={`${styles.actionBtn} ${styles.view}`}

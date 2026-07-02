@@ -377,25 +377,25 @@ const BugList: React.FC = () => {
           <tbody>
             {bugs.map((b) => (
               <tr key={b.id}>
-                <td className={styles.titleCell} onClick={() => navigate(`/rd/bugs/${encodeId(b.id, "bug")}`)}>
+                <td className={styles.titleCell} data-label="标题" onClick={() => navigate(`/rd/bugs/${encodeId(b.id, "bug")}`)}>
                   {b.title}
                 </td>
-                <td>
+                <td data-label="严重程度">
                   <span className={`${styles.badge} ${styles[`severity_${b.severity}`]}`}>{severityText[b.severity]}</span>
                 </td>
-                <td>
+                <td data-label="优先级">
                   <span className={`${styles.badge} ${styles[`priority_${b.priority}`]}`}>{priorityText[b.priority]}</span>
                 </td>
-                <td>
+                <td data-label="状态">
                   <span className={`${styles.badge} ${styles[`status_${b.status}`]}`}>{statusText[b.status]}</span>
                 </td>
-                <td>
+                <td data-label="负责人">
                   <AssigneeDisplay name={b.assignee} avatar={b.assigneeAvatar} />
                 </td>
-                <td>{b.module || "-"}</td>
-                <td>{b.creator}</td>
-                <td>{formatDateTime(b.createdAt)}</td>
-                <td>
+                <td data-label="模块">{b.module || "-"}</td>
+                <td data-label="创建人">{b.creator}</td>
+                <td data-label="创建时间">{formatDateTime(b.createdAt)}</td>
+                <td data-label="操作">
                   <div className={styles.actionButtons}>
                     <button
                       className={`${styles.actionBtn} ${styles.view}`}
