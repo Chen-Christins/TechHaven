@@ -450,7 +450,7 @@ const OrganizationManagement: React.FC = () => {
                 <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>共 {total} 个组织</span>
               </div>
             </div>
-            <table className={styles.orgTable}>
+            <table className={`${styles.orgTable} ${styles.organizationTable}`}>
               <thead>
                 <tr>
                   <th>组织名称</th>
@@ -776,7 +776,7 @@ const OrganizationManagement: React.FC = () => {
               <Loading />
             ) : (
               <>
-                <table className={styles.orgTable}>
+                <table className={`${styles.orgTable} ${styles.applyTable}`}>
                   <thead>
                     <tr>
                       <th>申请人</th>

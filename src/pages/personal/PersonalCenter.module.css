@@ -1205,6 +1205,18 @@
     box-sizing: border-box;
   }
 
+  .assignmentSearchInput {
+    width: 100%;
+    min-height: 46px;
+    height: 46px;
+    flex: none;
+  }
+
+  .assignmentStatusSelect {
+    width: 100%;
+    flex: none;
+  }
+
   .statusSelect {
     min-width: auto;
     width: 100%;
@@ -1851,6 +1863,11 @@
 .assignmentSearchInput {
   flex: 2;
   width: 50%;
+  min-height: 46px;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 8px;
+  box-sizing: border-box;
 }
 
 .assignmentStatusSelect > div:first-child {

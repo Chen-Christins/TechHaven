@@ -869,7 +869,7 @@ const DataManagement: React.FC = () => {
             </div>
 
             {activeTab === "backups" ? (
-              <table className={styles.recordsTable}>
+              <table className={`${styles.recordsTable} ${styles.backupRecordsTable}`}>
                 <thead>
                   <tr>
                     <th>备份信息</th>
@@ -968,7 +968,7 @@ const DataManagement: React.FC = () => {
                 </tbody>
               </table>
             ) : (
-              <table className={styles.recordsTable}>
+              <table className={`${styles.recordsTable} ${styles.exportRecordsTable}`}>
                 <thead>
                   <tr>
                     <th>导出信息</th>

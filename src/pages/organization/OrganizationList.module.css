@@ -308,6 +308,13 @@
     gap: 1rem;
   }
 
+  .pageHeaderTop {
+    width: 100%;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
   .pageTitle {
     font-size: 1.4rem;
   }

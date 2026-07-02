@@ -901,3 +901,125 @@
     font-size: 11px;
   }
 }
+
+@media (max-width: 640px) {
+  .filesContainer {
+    overflow: visible;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+  }
+
+  .filesList {
+    display: grid;
+    gap: 12px;
+    min-height: 0;
+  }
+
+  .listHeader {
+    display: none;
+  }
+
+  .listItem {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px 12px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+  }
+
+  .listItem:hover {
+    background: var(--card-bg);
+  }
+
+  .listItem > :not(:first-child):not(:nth-child(2)) {
+    display: flex;
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    text-align: right;
+  }
+
+  .listCheckbox {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: flex-start;
+    padding-top: 2px;
+  }
+
+  .listName {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .listType,
+  .listSize,
+  .listAuthor,
+  .listDate,
+  .listDownloads {
+    padding-top: 8px;
+    border-top: 1px solid var(--border-primary);
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+
+  .listType::before,
+  .listSize::before,
+  .listAuthor::before,
+  .listDate::before,
+  .listDownloads::before,
+  .listActions::before {
+    flex: 0 0 auto;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .listType::before {
+    content: "类型";
+  }
+
+  .listSize::before {
+    content: "大小";
+  }
+
+  .listAuthor::before {
+    content: "上传者";
+  }
+
+  .listDate::before {
+    content: "上传时间";
+  }
+
+  .listDownloads::before {
+    content: "下载";
+  }
+
+  .listActions {
+    padding-top: 8px;
+    border-top: 1px solid var(--border-primary);
+    justify-content: flex-end;
+  }
+
+  .listActions::before {
+    content: "操作";
+    margin-right: auto;
+  }
+
+  .typeBadge {
+    width: fit-content;
+  }
+
+  .actionButton.small {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+}

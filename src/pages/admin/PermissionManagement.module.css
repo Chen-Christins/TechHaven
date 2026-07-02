@@ -695,3 +695,139 @@
   padding: 8px;
   border-radius: 50%;
 }
+
+@media (max-width: 640px) {
+  .tableContainer {
+    overflow: visible;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+  }
+
+  .tableHeader {
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .rolesTable,
+  .usersTable,
+  .rolesTable tbody,
+  .usersTable tbody,
+  .rolesTable tr,
+  .usersTable tr,
+  .rolesTable td,
+  .usersTable td {
+    display: block;
+    width: 100%;
+  }
+
+  .rolesTable,
+  .usersTable {
+    min-width: 0;
+  }
+
+  .rolesTable thead,
+  .usersTable thead {
+    display: none;
+  }
+
+  .rolesTable tbody,
+  .usersTable tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .rolesTable tbody tr,
+  .usersTable tbody tr {
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .rolesTable td,
+  .usersTable td,
+  .usersTable td:nth-child(3),
+  .usersTable td:nth-child(5) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+    text-align: right;
+    font-size: 14px;
+  }
+
+  .rolesTable td::before,
+  .usersTable td::before {
+    flex: 0 0 auto;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .rolesTable td:nth-child(1),
+  .usersTable td:nth-child(1) {
+    display: block;
+    text-align: left;
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  .rolesTable td:nth-child(1)::before,
+  .usersTable td:nth-child(1)::before {
+    display: none;
+  }
+
+  .rolesTable td:nth-child(2)::before {
+    content: "权限数量";
+  }
+
+  .rolesTable td:nth-child(3)::before {
+    content: "用户数量";
+  }
+
+  .rolesTable td:nth-child(4)::before {
+    content: "创建时间";
+  }
+
+  .rolesTable td:nth-child(5)::before {
+    content: "操作";
+  }
+
+  .usersTable td:nth-child(2)::before {
+    content: "角色";
+  }
+
+  .usersTable td:nth-child(3)::before {
+    content: "权限数量";
+  }
+
+  .usersTable td:nth-child(4)::before {
+    content: "状态";
+  }
+
+  .usersTable td:nth-child(5)::before {
+    content: "最后登录";
+  }
+
+  .usersTable td:nth-child(6)::before {
+    content: "操作";
+  }
+
+  .actionButtons {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .paginationContainer {
+    margin-top: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+  }
+}

@@ -618,3 +618,122 @@
   border-color: var(--primary);
   box-shadow: var(--focus-ring);
 }
+
+@media (max-width: 640px) {
+  .tableContainer {
+    overflow: visible;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+  }
+
+  .tableHeader {
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .usersTable,
+  .usersTable tbody,
+  .usersTable tr,
+  .usersTable td {
+    display: block;
+    width: 100%;
+  }
+
+  .usersTable {
+    min-width: 0;
+  }
+
+  .usersTable thead {
+    display: none;
+  }
+
+  .usersTable tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .usersTable tbody tr {
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .usersTable td,
+  .usersTable td:nth-child(1),
+  .usersTable td:nth-child(4),
+  .usersTable td:nth-child(5),
+  .usersTable td:nth-child(6),
+  .usersTable td:nth-child(7) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+    text-align: right;
+    font-size: 14px;
+  }
+
+  .usersTable td::before {
+    flex: 0 0 auto;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .usersTable td:nth-child(1) {
+    display: block;
+    text-align: left;
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  .usersTable td:nth-child(1)::before {
+    display: none;
+  }
+
+  .usersTable td:nth-child(2)::before {
+    content: "角色";
+  }
+
+  .usersTable td:nth-child(3)::before {
+    content: "状态";
+  }
+
+  .usersTable td:nth-child(4)::before {
+    content: "注册时间";
+  }
+
+  .usersTable td:nth-child(5)::before {
+    content: "最后登录";
+  }
+
+  .usersTable td:nth-child(6)::before {
+    content: "文章数";
+  }
+
+  .usersTable td:nth-child(7)::before {
+    content: "评论数";
+  }
+
+  .usersTable td:nth-child(8)::before {
+    content: "操作";
+  }
+
+  .actionButtons {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .paginationContainer {
+    margin-top: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+  }
+}

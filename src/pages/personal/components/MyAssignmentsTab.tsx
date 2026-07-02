@@ -109,7 +109,6 @@ const MyAssignmentsTab: React.FC = () => {
           placeholder="搜索任务名称、描述或科目..."
           allowClear
           className={styles.assignmentSearchInput}
-          style={{ height: 46, padding: "0 14px", borderRadius: 8 }}
         />
         <CustomSelect
           name="任务状态"
