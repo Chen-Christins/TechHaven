@@ -1,5 +1,7 @@
 .notificationManagement {
   max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* 页面头部 */
@@ -34,10 +36,14 @@
 
 /* 表单卡片 */
 .formCard {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   background-color: var(--card-bg);
   border: 1px solid var(--border-primary);
   border-radius: 8px;
   padding: 24px;
+  overflow: hidden;
 }
 
 .formSection {
@@ -106,6 +112,9 @@
 
 /* 文本域 */
 .textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 10px 14px;
   border: 1px solid var(--border-primary);
   border-radius: 8px;
@@ -159,8 +168,76 @@
   justify-content: flex-end;
 }
 
+.broadcastList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.broadcastItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+}
+
+.broadcastContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.broadcastTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.broadcastTitle strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.broadcastText {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.broadcastCloseButton {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 /* 响应式 */
 @media (max-width: 768px) {
+  .notificationManagement {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
   .formGrid {
     grid-template-columns: 1fr;
   }
@@ -173,6 +250,12 @@
     flex-direction: column;
     align-items: flex-start;
   }
+
+  .formGroup,
+  .switchRow,
+  .formLabel {
+    min-width: 0;
+  }
 }
 
 @media (max-width: 480px) {
@@ -182,6 +265,14 @@
 
   .formCard {
     padding: 12px;
+  }
+
+  .switchRow {
+    align-items: flex-start;
+  }
+
+  .switchHint {
+    min-width: 0;
   }
 
   .formGrid {
@@ -196,6 +287,16 @@
   .formActions .btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .broadcastItem {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 10px 12px;
+  }
+
+  .broadcastCloseButton {
+    align-self: flex-end;
   }
 
   .textarea {
