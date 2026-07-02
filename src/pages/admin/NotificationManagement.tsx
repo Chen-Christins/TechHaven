@@ -267,22 +267,11 @@ const NotificationManagement: React.FC = () => {
       {activeBroadcasts.length > 0 && (
         <div className={styles.formCard} style={{ marginTop: 24 }}>
           <h3 className={styles.formSectionTitle}>当前广播</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div className={styles.broadcastList}>
             {activeBroadcasts.map((bc) => (
-              <div
-                key={bc.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "10px 14px",
-                  background: "var(--bg-secondary)",
-                  borderRadius: 8,
-                  border: "1px solid var(--border-primary)",
-                }}
-              >
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div key={bc.id} className={styles.broadcastItem}>
+                <div className={styles.broadcastContent}>
+                  <div className={styles.broadcastTitle}>
                     <span
                       style={{
                         display: "inline-block",
@@ -294,34 +283,9 @@ const NotificationManagement: React.FC = () => {
                     />
                     <strong style={{ fontSize: 14 }}>{bc.title}</strong>
                   </div>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      color: "var(--text-secondary)",
-                      marginTop: 2,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {bc.content}
-                  </div>
+                  <div className={styles.broadcastText}>{bc.content}</div>
                 </div>
-                <button
-                  onClick={() => handleCloseBroadcast(bc.id)}
-                  style={{
-                    flexShrink: 0,
-                    marginLeft: 12,
-                    padding: "4px 10px",
-                    fontSize: 12,
-                    border: "1px solid var(--border-primary)",
-                    borderRadius: 6,
-                    background: "var(--card-bg)",
-                    color: "var(--text-secondary)",
-                    cursor: "pointer",
-                  }}
-                  title="手动关闭此广播"
-                >
+                <button onClick={() => handleCloseBroadcast(bc.id)} className={styles.broadcastCloseButton} title="手动关闭此广播">
                   <FaTimes size={10} style={{ marginRight: 4 }} />
                   关闭
                 </button>
