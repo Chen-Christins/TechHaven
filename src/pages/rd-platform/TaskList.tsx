@@ -326,21 +326,21 @@ const TaskList: React.FC = () => {
           <tbody>
             {tasks.map((t) => (
               <tr key={t.id}>
-                <td className={styles.titleCell} onClick={() => navigate(`/rd/tasks/${encodeId(t.id, "task")}`)}>
+                <td className={styles.titleCell} data-label="标题" onClick={() => navigate(`/rd/tasks/${encodeId(t.id, "task")}`)}>
                   {t.title}
                 </td>
-                <td>
+                <td data-label="状态">
                   <span className={`${styles.badge} ${styles[`status_${t.status}`]}`}>{statusText[t.status]}</span>
                 </td>
-                <td>
+                <td data-label="优先级">
                   <span className={`${styles.badge} ${styles[`priority_${t.priority}`]}`}>{priorityText[t.priority]}</span>
                 </td>
-                <td>
+                <td data-label="负责人">
                   <AssigneeDisplay name={t.assignee} avatar={t.assigneeAvatar} />
                 </td>
-                <td>{t.deadline ? formatDateTime(t.deadline) : "-"}</td>
-                <td>{t.estimatedHours ? `${t.estimatedHours}h` : "-"}</td>
-                <td>
+                <td data-label="截止日期">{t.deadline ? formatDateTime(t.deadline) : "-"}</td>
+                <td data-label="预估工时">{t.estimatedHours ? `${t.estimatedHours}h` : "-"}</td>
+                <td data-label="操作">
                   <div className={styles.actionButtons}>
                     <button
                       className={`${styles.actionBtn} ${styles.view}`}

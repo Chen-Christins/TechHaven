@@ -63,6 +63,19 @@ const stateOptions: SelectOption[] = [
 ];
 
 const stateText: Record<string, string> = { open: "开启中", closed: "已关闭", merged: "已合并" };
+const reviewStatusText: Record<string, string> = {
+  pending: "待审查",
+  reviewing: "审查中",
+  approved: "已通过",
+  rejected: "已拒绝",
+  changes_requested: "需修改",
+};
+const priorityText: Record<string, string> = {
+  critical: "紧急",
+  high: "高",
+  medium: "中",
+  low: "低",
+};
 const PAGE_SIZE = 10;
 
 // ---- component ----
@@ -238,6 +251,37 @@ const CodeReviewList: React.FC = () => {
     return `${repo.url.replace(/\.git$/, "")}/pull/${pr.githubPrId}`;
   };
 
+  const getRepoName = (repoId: string) => repos.find((repo) => repo.id === repoId)?.name || "-";
+
+  const formatCommit = (commitSha: string) => (commitSha ? commitSha.slice(0, 8) : "-");
+
+  const formatReviewers = (reviewers: string) => {
+    if (!reviewers) return "-";
+    try {
+      const parsed = JSON.parse(reviewers);
+      if (Array.isArray(parsed)) {
+        return (
+          parsed
+            .map((item) => (typeof item === "string" ? item : item?.name || item?.login || item?.username || ""))
+            .filter(Boolean)
+            .join("、") || "-"
+        );
+      }
+    } catch {
+      return reviewers;
+    }
+    return reviewers;
+  };
+
+  const getDescriptionSummary = (description: string) => {
+    const text = description
+      .replace(/[#>*_`[\]()\-]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!text) return "-";
+    return text.length > 80 ? `${text.slice(0, 80)}...` : text;
+  };
+
   const openView = (pr: PR) => {
     setSelectedPR(pr);
     setViewModalVisible(true);
@@ -252,6 +296,40 @@ const CodeReviewList: React.FC = () => {
       <span className={crStyles.detailFieldLabel}>{label}</span>
       <span className={crStyles.detailFieldValue}>{value || "-"}</span>
     </div>
+  );
+
+  const renderChangeStats = (pr: PR) =>
+    pr.changedFiles != null ? (
+      <span className={crStyles.changeFiles}>
+        {pr.changedFiles} 文件
+        {pr.additions != null && pr.additions > 0 && <span className={crStyles.changeAdditions}>+{pr.additions}</span>}
+        {pr.deletions != null && pr.deletions > 0 && <span className={crStyles.changeDeletions}>-{pr.deletions}</span>}
+      </span>
+    ) : (
+      <span className={crStyles.changeNone}>-</span>
+    );
+
+  const renderPrActions = (pr: PR) => (
+    <>
+      <button className={`${styles.actionBtn} ${styles.view}`} title="查看详情" onClick={() => openView(pr)}>
+        <FaEye />
+      </button>
+      {getPrUrl(pr) && (
+        <button
+          className={`${styles.actionBtn} ${styles.ghBtn}`}
+          title="在 GitHub 查看"
+          onClick={(e) => {
+            e.stopPropagation();
+            window.open(getPrUrl(pr)!, "_blank", "noopener,noreferrer");
+          }}
+        >
+          <FaGithub />
+        </button>
+      )}
+      <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDeletePr(pr)}>
+        <FaTrash />
+      </button>
+    </>
   );
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -372,7 +450,7 @@ const CodeReviewList: React.FC = () => {
         </div>
       </div>
 
-      <div className={styles.tableWrapper}>
+      <div className={`${styles.tableWrapper} ${crStyles.desktopPrTable}`}>
         <table className={styles.table}>
           <thead>
             <tr>
@@ -405,57 +483,30 @@ const CodeReviewList: React.FC = () => {
               prs.map((pr) => {
                 return (
                   <tr key={pr.id}>
-                    <td className={styles.titleCell} onClick={() => openView(pr)}>
+                    <td className={styles.titleCell} data-label="标题" onClick={() => openView(pr)}>
                       {pr.title}
                     </td>
-                    <td>
+                    <td data-label="状态">
                       <span className={`${styles.badge} ${pr.state === "closed" ? styles.pr_closed : styles[`status_${pr.state}`]}`}>
                         {stateText[pr.state]}
                       </span>
                     </td>
-                    <td className={crStyles.cellCenter}>{pr.author}</td>
-                    <td className={crStyles.branchCell}>
-                      <span className={crStyles.branchHead}>{pr.headBranch}</span>
-                      <span className={crStyles.branchArrow}>→</span>
-                      <span className={crStyles.branchBase}>{pr.baseBranch}</span>
+                    <td className={crStyles.cellCenter} data-label="作者">
+                      {pr.author}
                     </td>
-                    <td className={crStyles.changeCell}>
-                      {pr.changedFiles != null ? (
-                        <span className={crStyles.changeFiles}>
-                          {pr.changedFiles} 文件
-                          {pr.additions != null && pr.additions > 0 && (
-                            <span className={crStyles.changeAdditions}>+{pr.additions}</span>
-                          )}
-                          {pr.deletions != null && pr.deletions > 0 && (
-                            <span className={crStyles.changeDeletions}>-{pr.deletions}</span>
-                          )}
-                        </span>
-                      ) : (
-                        <span className={crStyles.changeNone}>-</span>
-                      )}
+                    <td className={crStyles.branchCell} data-label="分支">
+                      <span className={crStyles.branchRoute}>
+                        <span className={crStyles.branchHead}>{pr.headBranch}</span>
+                        <span className={crStyles.branchArrow}>→</span>
+                        <span className={crStyles.branchBase}>{pr.baseBranch}</span>
+                      </span>
                     </td>
-                    <td>{formatRelativeTime(pr.createdAt)}</td>
-                    <td>
-                      <div className={styles.actionButtons}>
-                        <button className={`${styles.actionBtn} ${styles.view}`} title="查看详情" onClick={() => openView(pr)}>
-                          <FaEye />
-                        </button>
-                        {getPrUrl(pr) && (
-                          <button
-                            className={`${styles.actionBtn} ${styles.ghBtn}`}
-                            title="在 GitHub 查看"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.open(getPrUrl(pr)!, "_blank", "noopener,noreferrer");
-                            }}
-                          >
-                            <FaGithub />
-                          </button>
-                        )}
-                        <button className={`${styles.actionBtn} ${styles.delete}`} title="删除" onClick={() => handleDeletePr(pr)}>
-                          <FaTrash />
-                        </button>
-                      </div>
+                    <td className={crStyles.changeCell} data-label="变更">
+                      {renderChangeStats(pr)}
+                    </td>
+                    <td data-label="创建时间">{formatRelativeTime(pr.createdAt)}</td>
+                    <td data-label="操作">
+                      <div className={styles.actionButtons}>{renderPrActions(pr)}</div>
                     </td>
                   </tr>
                 );
@@ -463,6 +514,91 @@ const CodeReviewList: React.FC = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className={crStyles.mobilePrList}>
+        {tableLoading ? (
+          <div className={crStyles.mobileEmpty}>
+            <Loading size="small" text="加载中..." />
+          </div>
+        ) : prs.length === 0 ? (
+          <div className={crStyles.mobileEmpty}>
+            <div className={styles.emptyCellIcon}>
+              <FaGithub />
+            </div>
+            <div className={styles.emptyCellText}>{selectedRepoId ? "暂无 PR 数据" : "请点击上方仓库查看 PR"}</div>
+          </div>
+        ) : (
+          prs.map((pr) => (
+            <article key={pr.id} className={crStyles.mobilePrCard}>
+              <button className={crStyles.mobileCardMain} type="button" onClick={() => openView(pr)}>
+                <div className={crStyles.mobileCardHeader}>
+                  <div className={crStyles.mobileTitleBlock}>
+                    <div className={crStyles.mobileTitle}>{pr.title || "-"}</div>
+                    <div className={crStyles.mobileSubtitle}>
+                      <span>{getRepoName(pr.repoId)}</span>
+                      <span>{pr.githubPrId ? `#${pr.githubPrId}` : "无 PR 编号"}</span>
+                    </div>
+                  </div>
+                  <span className={`${styles.badge} ${pr.state === "closed" ? styles.pr_closed : styles[`status_${pr.state}`]}`}>
+                    {stateText[pr.state]}
+                  </span>
+                </div>
+
+                <div className={crStyles.mobileMetaGrid}>
+                  <div className={crStyles.mobileMetaItem}>
+                    <span className={crStyles.mobileMetaLabel}>作者</span>
+                    <span className={crStyles.mobileMetaValue}>{pr.author || "-"}</span>
+                  </div>
+                  <div className={crStyles.mobileMetaItem}>
+                    <span className={crStyles.mobileMetaLabel}>审查状态</span>
+                    <span className={crStyles.mobileMetaValue}>{reviewStatusText[pr.reviewStatus] || pr.reviewStatus || "-"}</span>
+                  </div>
+                  <div className={crStyles.mobileMetaItem}>
+                    <span className={crStyles.mobileMetaLabel}>优先级</span>
+                    <span className={crStyles.mobileMetaValue}>{priorityText[pr.priority] || pr.priority || "-"}</span>
+                  </div>
+                  <div className={crStyles.mobileMetaItem}>
+                    <span className={crStyles.mobileMetaLabel}>变更</span>
+                    <span className={crStyles.mobileMetaValue}>{renderChangeStats(pr)}</span>
+                  </div>
+                  <div className={crStyles.mobileMetaItem}>
+                    <span className={crStyles.mobileMetaLabel}>评审人</span>
+                    <span className={crStyles.mobileMetaValue}>{formatReviewers(pr.reviewers)}</span>
+                  </div>
+                  <div className={crStyles.mobileMetaItem}>
+                    <span className={crStyles.mobileMetaLabel}>Commit</span>
+                    <span className={crStyles.mobileMetaValue}>{formatCommit(pr.commitSha)}</span>
+                  </div>
+                  <div className={crStyles.mobileMetaItem}>
+                    <span className={crStyles.mobileMetaLabel}>创建</span>
+                    <span className={crStyles.mobileMetaValue}>{formatRelativeTime(pr.createdAt)}</span>
+                  </div>
+                  <div className={crStyles.mobileMetaItem}>
+                    <span className={crStyles.mobileMetaLabel}>同步</span>
+                    <span className={crStyles.mobileMetaValue}>{formatRelativeTime(pr.updatedAt)}</span>
+                  </div>
+                </div>
+
+                <div className={crStyles.mobileBranchBlock}>
+                  <span className={crStyles.mobileMetaLabel}>分支</span>
+                  <span className={crStyles.branchRoute}>
+                    <span className={crStyles.branchHead}>{pr.headBranch || "-"}</span>
+                    <span className={crStyles.branchArrow}>→</span>
+                    <span className={crStyles.branchBase}>{pr.baseBranch || "-"}</span>
+                  </span>
+                </div>
+
+                <div className={crStyles.mobileDescription}>
+                  <span className={crStyles.mobileMetaLabel}>描述</span>
+                  <span>{getDescriptionSummary(pr.description)}</span>
+                </div>
+              </button>
+
+              <div className={crStyles.mobileActions}>{renderPrActions(pr)}</div>
+            </article>
+          ))
+        )}
       </div>
 
       {total > 0 && (
@@ -538,7 +674,11 @@ const CodeReviewList: React.FC = () => {
               )}
             </div>
             <div className={crStyles.detailGrid}>
+              {renderField("仓库", getRepoName(selectedPR.repoId))}
+              {renderField("PR 编号", selectedPR.githubPrId ? `#${selectedPR.githubPrId}` : "-")}
               {renderField("作者", selectedPR.author)}
+              {renderField("评审人", formatReviewers(selectedPR.reviewers))}
+              {renderField("审查状态", reviewStatusText[selectedPR.reviewStatus] || selectedPR.reviewStatus)}
               {renderField("源分支", selectedPR.headBranch)}
               {renderField("目标分支", selectedPR.baseBranch)}
               {renderField("Commit", selectedPR.commitSha)}

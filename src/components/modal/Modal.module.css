@@ -134,12 +134,34 @@
 
 /* 移动端适配 */
 @media (max-width: 640px) {
+  .overlay {
+    align-items: flex-start;
+    padding: 12px;
+    overflow-y: auto;
+  }
+
   .modal {
-    width: 95%;
-    max-height: 95vh;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(100vh - 24px);
+    margin: 0;
+    border-radius: 10px;
+  }
+
+  .header {
+    padding: 14px 16px;
+  }
+
+  .title {
+    font-size: 16px;
+    line-height: 1.4;
   }
 
   .content {
     padding: 16px;
+  }
+
+  .footer {
+    padding: 12px 16px;
   }
 }

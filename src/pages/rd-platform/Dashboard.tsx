@@ -149,17 +149,17 @@ const Dashboard: React.FC = () => {
                   className={styles.clickableRow}
                   onClick={() => navigate(`/rd/requirements/${encodeId(r.id, "requirement")}`)}
                 >
-                  <td>{r.title}</td>
-                  <td>
+                  <td data-label="标题">{r.title}</td>
+                  <td data-label="优先级">
                     <span className={`${styles.badge} ${styles[`priority_${r.priority}`]}`}>{priorityText[r.priority]}</span>
                   </td>
-                  <td>
+                  <td data-label="状态">
                     <span className={`${styles.badge} ${styles[`status_${r.status}`]}`}>{statusText[r.status] || r.status}</span>
                   </td>
-                  <td>
+                  <td data-label="负责人">
                     <AssigneeDisplay name={r.assignee} avatar={r.assigneeAvatar} />
                   </td>
-                  <td>{formatDateTime(r.createdAt)}</td>
+                  <td data-label="创建时间">{formatDateTime(r.createdAt)}</td>
                 </tr>
               ))}
               {recentRequirements.length === 0 && (
@@ -200,20 +200,20 @@ const Dashboard: React.FC = () => {
             <tbody>
               {recentBugs.map((b) => (
                 <tr key={b.id} className={styles.clickableRow} onClick={() => navigate(`/rd/bugs/${encodeId(b.id, "bug")}`)}>
-                  <td>{b.title}</td>
-                  <td>
+                  <td data-label="标题">{b.title}</td>
+                  <td data-label="严重程度">
                     <span className={`${styles.badge} ${styles[`severity_${b.severity}`]}`}>{severityText[b.severity]}</span>
                   </td>
-                  <td>
+                  <td data-label="优先级">
                     <span className={`${styles.badge} ${styles[`priority_${b.priority}`]}`}>{priorityText[b.priority]}</span>
                   </td>
-                  <td>
+                  <td data-label="状态">
                     <span className={`${styles.badge} ${styles[`status_${b.status}`]}`}>{statusText[b.status] || b.status}</span>
                   </td>
-                  <td>
+                  <td data-label="负责人">
                     <AssigneeDisplay name={b.assignee} avatar={b.assigneeAvatar} />
                   </td>
-                  <td>{formatDateTime(b.createdAt)}</td>
+                  <td data-label="创建时间">{formatDateTime(b.createdAt)}</td>
                 </tr>
               ))}
               {recentBugs.length === 0 && (
@@ -253,17 +253,17 @@ const Dashboard: React.FC = () => {
             <tbody>
               {recentTasks.map((t) => (
                 <tr key={t.id} className={styles.clickableRow} onClick={() => navigate(`/rd/tasks/${encodeId(t.id, "task")}`)}>
-                  <td>{t.title}</td>
-                  <td>
+                  <td data-label="标题">{t.title}</td>
+                  <td data-label="状态">
                     <span className={`${styles.badge} ${styles[`status_${t.status}`]}`}>{statusText[t.status]}</span>
                   </td>
-                  <td>
+                  <td data-label="优先级">
                     <span className={`${styles.badge} ${styles[`priority_${t.priority}`]}`}>{priorityText[t.priority]}</span>
                   </td>
-                  <td>
+                  <td data-label="负责人">
                     <AssigneeDisplay name={t.assignee} avatar={t.assigneeAvatar} />
                   </td>
-                  <td>{t.deadline ? formatDateTime(t.deadline) : "-"}</td>
+                  <td data-label="截止日期">{t.deadline ? formatDateTime(t.deadline) : "-"}</td>
                 </tr>
               ))}
               {recentTasks.length === 0 && (
