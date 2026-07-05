@@ -44,13 +44,13 @@ const AiSummary: React.FC<AiSummaryProps> = ({ articleId }) => {
             生成中...
           </button>
         )}
-        {isCompleted && !error && (
+        {isCompleted && !error && text && (
           <button className={styles.generateBtn} onClick={handleRegenerate}>
             <RotateCw size={14} />
             重新生成
           </button>
         )}
-        {error && (
+        {(error || (isCompleted && !text)) && (
           <button className={styles.generateBtn} onClick={handleRegenerate}>
             <RotateCw size={14} />
             重试
@@ -71,6 +71,11 @@ const AiSummary: React.FC<AiSummaryProps> = ({ articleId }) => {
         </div>
       ) : isStreaming ? (
         <div className={styles.contentPlaceholder}>AI 正在生成总结...</div>
+      ) : isCompleted ? (
+        <div className={styles.errorContent}>
+          <AlertCircle size={14} className={styles.errorIcon} />
+          <span>AI 总结生成失败，请稍后重试</span>
+        </div>
       ) : (
         <div className={styles.contentPlaceholder}>
           {articleId == null ? "文章数据加载中，请稍候..." : "点击上方按钮，让 AI 帮你总结这篇文章的核心内容"}
@@ -78,7 +83,7 @@ const AiSummary: React.FC<AiSummaryProps> = ({ articleId }) => {
       )}
 
       {/* 完成后的底部免责声明 */}
-      {isCompleted && !error && (
+      {isCompleted && !error && text && (
         <div className={styles.footer}>
           <span className={styles.disclaimer}>内容由 AI 生成，仅供参考</span>
         </div>

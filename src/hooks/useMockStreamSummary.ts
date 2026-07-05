@@ -74,6 +74,7 @@ function useMockStreamSummary() {
     text,
     isStreaming,
     isCompleted,
+    error: null,
     start,
     reset,
   };
