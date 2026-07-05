@@ -279,7 +279,7 @@ const MyArticlesTab: React.FC = () => {
             <div key={article.id} className={styles.listItem}>
               <div className={styles.articleTitle}>
                 <div>{article.title}</div>
-                <div className={styles.articleSummary}>{article.summary}...</div>
+                <div className={styles.articleSummary}>{article.summary.replace(/�/g, "")}...</div>
               </div>
               <div className={styles.articleCategory}>
                 {article.categories && article.categories.length > 0

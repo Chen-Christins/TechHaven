@@ -724,7 +724,7 @@ const ArticleManagement: React.FC = () => {
                                 lineHeight: "1.4",
                               }}
                             >
-                              {article.summary}
+                              {article.summary.replace(/�/g, "")}
                             </span>
                           )}
                           {article.isReported && (
