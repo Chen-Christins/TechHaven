@@ -167,6 +167,11 @@ function useAiSummary(articleId?: string | number) {
               }
             }
 
+            // 流结束但没有收到任何有效数据 → 视为失败
+            if (eventCount === 0) {
+              setError("AI 总结生成失败，请稍后重试");
+            }
+
             setIsStreaming(false);
             setIsCompleted(true);
             break;
