@@ -4,7 +4,6 @@ import {
   FaHome,
   FaUsers,
   FaFileAlt,
-  FaChartBar,
   FaCog,
   FaBars,
   FaTimes,
@@ -231,12 +230,6 @@ const AdminLayout: React.FC = () => {
     {
       title: "系统设置",
       items: [
-        {
-          id: "analytics",
-          label: "统计分析",
-          icon: <FaChartBar />,
-          path: "/admin/analytics",
-        },
         {
           id: "settings",
           label: "系统设置",
