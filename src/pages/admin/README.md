@@ -52,8 +52,7 @@
 ├── 媒体库 (/admin/media) [待开发]
 ├── 数据管理 (/admin/database) [待开发]
 ├── 统计分析 (/admin/analytics) [待开发]
-├── 系统设置 (/admin/settings) [待开发]
-└── 权限管理 (/admin/permissions) [待开发]
+└── 系统设置 (/admin/settings) [待开发]
 ```
 
 ## 🛠 技术实现
@@ -154,7 +153,6 @@ src/pages/admin/
 - [ ] 媒体库管理
 - [ ] 数据统计图表
 - [ ] 系统设置页面
-- [ ] 权限管理系统
 - [ ] API集成
 - [ ] 数据导出功能
 

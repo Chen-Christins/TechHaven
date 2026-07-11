@@ -178,6 +178,20 @@ export class HttpError extends Error {
 }
 
 /**
+ * 触发浏览器下载 Blob
+ */
+function triggerBlobDownload(blob: Blob, filename: string): void {
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(downloadUrl);
+}
+
+/**
  * HTTP请求类
  */
 class HttpClient {
@@ -516,24 +530,46 @@ class HttpClient {
   }
 
   /**
-   * 文件下载
+   * 文件下载 - 使用原生 fetch，绕过 axios 拦截器
+   * 后端直接返回文件二进制流，通过 Authorization header 鉴权
    */
-  async download(url: string, filename?: string, config?: HttpRequestConfig): Promise<void> {
-    const downloadConfig: HttpRequestConfig = {
-      ...config,
-      responseType: "blob",
-    };
+  async download(url: string, filename?: string, _config?: HttpRequestConfig): Promise<void> {
+    const fullUrl = `${this.baseURL}${url}`;
+    const headers: HeadersInit = {};
+    const token = tokenManager.getToken();
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    const res = await fetch(fullUrl, { headers, credentials: "include" });
 
-    const response = await this.instance.get(url, downloadConfig);
-    const blob = new Blob([response.data]);
-    const downloadUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.download = filename || "download";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(downloadUrl);
+    if (!res.ok) {
+      let msg = "下载失败";
+      try {
+        const err = await res.json();
+        msg = err.msg || err.message || msg;
+      } catch {
+        msg = `下载失败 (HTTP ${res.status})`;
+      }
+      throw new Error(msg);
+    }
+
+    const blob = await res.blob();
+
+    // 从 Content-Disposition 中提取文件名
+    const disposition = res.headers.get("Content-Disposition");
+    let fileName = filename || "download";
+    if (disposition) {
+      const match = disposition.match(/filename\*?=(?:UTF-8'')?"?([^";\n]+)"?/);
+      if (match) {
+        try {
+          fileName = decodeURIComponent(match[1]);
+        } catch {
+          fileName = match[1];
+        }
+      }
+    }
+
+    triggerBlobDownload(blob, fileName);
   }
 
   /**

@@ -15,7 +15,6 @@ import AssignmentManagement from "../pages/admin/AssignmentManagement";
 import CategoryManagement from "../pages/admin/CategoryManagement";
 import CommentManagement from "../pages/admin/CommentManagement";
 import MediaManagement from "../pages/admin/MediaManagement";
-import PermissionManagement from "../pages/admin/PermissionManagement";
 import NotificationManagement from "../pages/admin/NotificationManagement";
 import DataManagement from "../pages/admin/DataManagement";
 import Analytics from "../pages/admin/Analytics";
@@ -62,7 +61,6 @@ const RouterConfig: React.FC = () => {
         <Route path="database" element={<DataManagement />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="settings" element={<Settings />} />
-        <Route path="permissions" element={<PermissionManagement />} />
         <Route path="notifications" element={<NotificationManagement />} />
       </Route>
 

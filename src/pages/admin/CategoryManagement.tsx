@@ -1,22 +1,14 @@
 import React, { useState, useEffect } from "react";
-import {
-  FaTags,
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaTimes,
-  FaEye,
-  FaChartBar,
-  FaArrowUp,
-  FaArrowDown,
-  FaCheckCircle,
-  FaLayerGroup,
-} from "react-icons/fa";
-import styles from "./CategoryManagement.module.css";
+import { FaTags, FaPlus, FaEdit, FaTrash, FaFilter, FaEye, FaChartBar, FaCheckCircle, FaTimes, FaLayerGroup } from "react-icons/fa";
 import CustomSelect from "@/components/customSelect/CustomSelect";
-import SearchBox from "@/components/searchBox/SearchBox";
+import Input from "@/components/input/Input";
 import Button from "@/components/button/Button";
+import Loading from "@/components/loading/Loading";
+import Modal from "@/components/modal/Modal";
 import { confirm } from "@/components/confirm/Confirm";
+import message from "@/components/message/Message";
+import type { SelectOption } from "@/types/index";
+import styles from "./CategoryManagement.module.css";
 import CategoryService from "@/services/categoryService";
 
 interface Category {
@@ -46,15 +38,44 @@ interface CategoryFormData {
   status: "active" | "inactive";
 }
 
+interface CategoryStats {
+  totalCategories: number;
+  activeCategories: number;
+  totalArticles: number;
+  totalViews: number;
+}
+
+interface FilterOptions {
+  search: string;
+  status: string;
+  sortBy: "name" | "articleCount" | "views" | "createdAt";
+  sortOrder: "asc" | "desc";
+}
+
+const iconMap: Record<string, string> = {
+  "": "默认",
+  "💻": "技术",
+  "🌟": "生活",
+  "✈️": "旅行",
+  "🍔": "美食",
+  "🎨": "设计",
+  "🎵": "音乐",
+  "⚽": "运动",
+  "📚": "读书",
+  "📷": "摄影",
+};
+
 const CategoryManagement: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"name" | "articleCount" | "views" | "createdAt">("name");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<FilterOptions>({
+    search: "",
+    status: "",
+    sortBy: "name",
+    sortOrder: "asc",
+  });
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [selectedCategories, setSelectedCategories] = useState<(string | number)[]>([]);
   const [formData, setFormData] = useState<CategoryFormData>({
     name: "",
     slug: "",
@@ -64,58 +85,48 @@ const CategoryManagement: React.FC = () => {
     parentId: "",
     status: "active",
   });
+  const [submitting, setSubmitting] = useState(false);
 
-  // 排序选项
-  const sortOptions = [
+  const statusOptions: SelectOption[] = [
+    { id: "", name: "全部状态", color: "#6c757d" },
+    { id: "active", name: "活跃", color: "#28a745" },
+    { id: "inactive", name: "停用", color: "#dc3545" },
+  ];
+
+  const sortOptions: SelectOption[] = [
     { id: "name", name: "按名称", color: "#007bff" },
     { id: "articleCount", name: "按文章数", color: "#007bff" },
     { id: "views", name: "按浏览量", color: "#007bff" },
     { id: "createdAt", name: "按创建时间", color: "#007bff" },
   ];
 
-  // 状态选项
-  const statusOptions = [
-    { id: "active", name: "活跃", color: "#28a745" },
-    { id: "inactive", name: "停用", color: "#dc3545" },
-  ];
+  const iconOptions: SelectOption[] = Object.entries(iconMap).map(([value, label]) => ({
+    id: value,
+    name: value ? `${label} ${value}` : label,
+    color: "#007bff",
+  }));
 
-  // 动态获取父级分类选项
-  const getParentCategoryOptions = () => {
-    const parentOptions = [{ id: "", name: "无（顶级分类）", color: "#6c757d" }];
+  const getParentCategoryOptions = (): SelectOption[] => {
+    const options: SelectOption[] = [{ id: "", name: "无（顶级分类）", color: "#6c757d" }];
     const activeCategories = categories.filter((cat) => cat.level === 0 && cat.status === "active");
-    parentOptions.push(
+    options.push(
       ...activeCategories.map((cat) => ({
         id: cat.id.toString(),
         name: cat.name,
         color: "#17a2b8",
       })),
     );
-    return parentOptions;
+    return options;
   };
-
-  // 图标选项
-  const iconOptions = [
-    { name: "默认", value: "" },
-    { name: "技术", value: "💻" },
-    { name: "生活", value: "🌟" },
-    { name: "旅行", value: "✈️" },
-    { name: "美食", value: "🍔" },
-    { name: "设计", value: "🎨" },
-    { name: "音乐", value: "🎵" },
-    { name: "运动", value: "⚽" },
-    { name: "读书", value: "📚" },
-    { name: "摄影", value: "📷" },
-  ];
 
   useEffect(() => {
     loadCategories();
   }, []);
 
   const loadCategories = async () => {
-    setIsLoading(true);
+    setLoading(true);
     try {
       const response = await CategoryService.queryCategory();
-      // @ts-ignore
       const categoryList = response.list || [];
 
       const mappedCategories: Category[] = categoryList.map((item: any) => ({
@@ -139,11 +150,10 @@ const CategoryManagement: React.FC = () => {
     } catch (error) {
       console.error("加载分类失败:", error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  // 生成slug
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()
@@ -152,24 +162,20 @@ const CategoryManagement: React.FC = () => {
       .replace(/^-+|-+$/g, "");
   };
 
-  // 处理表单输入
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    // 自动生成slug
-    if (name === "name") {
-      setFormData((prev) => ({
-        ...prev,
-        slug: generateSlug(value),
-      }));
-    }
+  const handleFilterChange = (field: keyof FilterOptions, value: string) => {
+    setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
-  // 打开新增/编辑模态框
+  const handleSelectChange = (field: keyof FilterOptions) => {
+    return (selectedOption: SelectOption | null) => {
+      setFilters((prev) => ({ ...prev, [field]: selectedOption?.id || "" }));
+    };
+  };
+
+  const clearFilters = () => {
+    setFilters({ search: "", status: "", sortBy: "name", sortOrder: "asc" });
+  };
+
   const openModal = (category?: Category) => {
     if (category) {
       setEditingCategory(category);
@@ -197,19 +203,23 @@ const CategoryManagement: React.FC = () => {
     setShowModal(true);
   };
 
-  // 关闭模态框
   const closeModal = () => {
     setShowModal(false);
     setEditingCategory(null);
   };
 
-  // 保存分类
   const saveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
+    if (!formData.name.trim()) {
+      message.error("请输入分类名称");
+      return;
+    }
+    if (!formData.slug.trim()) {
+      message.error("请输入URL标识");
+      return;
+    }
+    setSubmitting(true);
     try {
-      // 调用后端API
       const response = await CategoryService.createCategory({
         id: editingCategory ? editingCategory.id : undefined,
         name: formData.name,
@@ -222,20 +232,13 @@ const CategoryManagement: React.FC = () => {
       });
 
       if (editingCategory) {
-        // 编辑模式
         setCategories((prev) =>
           prev.map((cat) =>
-            cat.id === editingCategory.id
-              ? {
-                  ...cat,
-                  ...formData,
-                  updatedAt: new Date().toISOString().split("T")[0],
-                }
-              : cat,
+            cat.id === editingCategory.id ? { ...cat, ...formData, updatedAt: new Date().toISOString().split("T")[0] } : cat,
           ),
         );
+        message.success("分类已更新");
       } else {
-        // 新增模式
         const newCategory: Category = {
           id: response.id,
           name: response.name,
@@ -252,47 +255,42 @@ const CategoryManagement: React.FC = () => {
           level: formData.parentId ? 1 : 0,
         };
         setCategories((prev) => [...prev, newCategory]);
+        message.success("分类已创建");
       }
 
       closeModal();
     } catch (error) {
-      console.error("保存分类失败:", error);
+      message.error("保存分类失败");
     } finally {
-      setIsLoading(false);
+      setSubmitting(false);
     }
   };
 
-  // 删除分类
-  const deleteCategories = async () => {
-    await confirm({
+  const deleteCategory = async (category: Category) => {
+    const isConfirmed = await confirm({
       title: "确认删除",
       content: (
         <div>
-          <p>确定要删除选中的 {selectedCategories.length} 个分类吗？</p>
-          <p style={{ color: "var(--danger-color)", fontWeight: 500 }}>注意：删除分类不会删除相关文章，但文章将失去分类归属。</p>
+          <p>
+            确定要删除分类 "<strong>{category.name}</strong>" 吗？
+          </p>
+          <p style={{ color: "var(--error)" }}>注意：删除分类不会删除相关文章，但文章将失去分类归属。</p>
         </div>
       ),
       confirmText: "确认删除",
       cancelText: "取消",
-      onConfirm: async () => {
-        setIsLoading(true);
-        try {
-          await CategoryService.deleteCategory({
-            ids: selectedCategories.join(","),
-          });
-
-          setCategories((prev) => prev.filter((cat) => !selectedCategories.includes(cat.id)));
-          setSelectedCategories([]);
-        } catch (error) {
-          console.error("删除分类失败:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      },
     });
+    if (!isConfirmed) return;
+
+    try {
+      await CategoryService.deleteCategory({ ids: String(category.id) });
+      setCategories((prev) => prev.filter((cat) => cat.id !== category.id));
+      message.success("分类已删除");
+    } catch (error) {
+      message.error("删除失败");
+    }
   };
 
-  // 切换分类状态
   const toggleCategoryStatus = async (category: Category) => {
     const newStatus = category.status === "active" ? "inactive" : "active";
     try {
@@ -305,95 +303,73 @@ const CategoryManagement: React.FC = () => {
         parent_id: category.parentId,
         status: newStatus === "active" ? 1 : 0,
       });
-
       setCategories((prev) =>
         prev.map((cat) =>
-          cat.id === category.id
-            ? {
-                ...cat,
-                status: newStatus,
-                updatedAt: new Date().toISOString().split("T")[0],
-              }
-            : cat,
+          cat.id === category.id ? { ...cat, status: newStatus, updatedAt: new Date().toISOString().split("T")[0] } : cat,
         ),
       );
     } catch (error) {
-      console.error("切换状态失败:", error);
+      message.error("切换状态失败");
     }
   };
 
-  // 删除单个分类
-  const deleteCategory = async (category: Category) => {
-    await confirm({
-      title: "确认删除分类",
-      content: (
-        <div>
-          <p>
-            确定要删除分类 "<strong>{category.name}</strong>" 吗？
-          </p>
-          <p style={{ color: "var(--danger-color)", fontWeight: 500 }}>注意：删除分类不会删除相关文章，但文章将失去分类归属。</p>
-        </div>
-      ),
-      confirmText: "确认删除",
-      cancelText: "取消",
-      onConfirm: async () => {
-        setIsLoading(true);
-        try {
-          await CategoryService.deleteCategory({
-            ids: String(category.id),
-          });
-          setCategories((prev) => prev.filter((cat) => cat.id !== category.id));
-        } catch (error) {
-          console.error("删除分类失败:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      },
-    });
-  };
-
-  // 排序和过滤分类
-  const filteredAndSortedCategories = categories
-    .filter(
-      (category) =>
-        category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        category.description.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
-    .sort((a, b) => {
-      let comparison = 0;
-      const aValue = a[sortBy];
-      const bValue = b[sortBy];
-
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        comparison = aValue.localeCompare(bValue);
-      } else {
-        comparison = (aValue || 0) > (bValue || 0) ? 1 : -1;
-      }
-
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
-
-  // 统计数据
-  const stats = {
+  const stats: CategoryStats = {
     totalCategories: categories.length,
     activeCategories: categories.filter((cat) => cat.status === "active").length,
     totalArticles: categories.reduce((sum, cat) => sum + cat.articleCount, 0),
     totalViews: categories.reduce((sum, cat) => sum + cat.views, 0),
   };
 
+  const filteredCategories = categories
+    .filter((cat) => {
+      if (
+        filters.search &&
+        !cat.name.toLowerCase().includes(filters.search.toLowerCase()) &&
+        !cat.description.toLowerCase().includes(filters.search.toLowerCase())
+      ) {
+        return false;
+      }
+      if (filters.status && cat.status !== filters.status) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      let comparison = 0;
+      if (filters.sortBy === "name") {
+        comparison = a.name.localeCompare(b.name);
+      } else {
+        comparison = (a[filters.sortBy] || 0) > (b[filters.sortBy] || 0) ? 1 : -1;
+      }
+      return filters.sortOrder === "asc" ? comparison : -comparison;
+    });
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.categoryManagement}>
+        <Loading text="加载分类数据中..." size="large" />
+      </div>
+    );
+  }
+
   return (
     <div className={styles.categoryManagement}>
       {/* 页面头部 */}
       <div className={styles.pageHeader}>
-        <div className={styles.headerLeft}>
-          <h1 className={styles.pageTitle}>
-            <FaTags />
-            分类管理
-          </h1>
+        <div>
+          <h1 className={styles.pageTitle}>分类管理</h1>
           <p className={styles.pageDescription}>管理博客文章分类，创建层级结构，优化内容组织</p>
         </div>
         <div className={styles.headerActions}>
-          <button className={styles.addButton} onClick={() => openModal()}>
+          <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => openModal()}>
             <FaPlus />
             新增分类
           </button>
@@ -401,343 +377,302 @@ const CategoryManagement: React.FC = () => {
       </div>
 
       {/* 统计卡片 */}
-      <div className={styles.statsGrid}>
+      <div className={styles.statsContainer}>
         <div className={styles.statCard}>
-          <div className={styles.statIcon}>
+          <div className={`${styles.statIcon} ${styles.primary}`}>
             <FaLayerGroup />
           </div>
-          <div className={styles.statContent}>
-            <div className={styles.statValue}>{stats.totalCategories}</div>
-            <div className={styles.statLabel}>总分类数</div>
-          </div>
+          <div className={styles.statValue}>{stats.totalCategories}</div>
+          <div className={styles.statLabel}>总分类数</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statIcon}>
+          <div className={`${styles.statIcon} ${styles.success}`}>
             <FaCheckCircle />
           </div>
-          <div className={styles.statContent}>
-            <div className={styles.statValue}>{stats.activeCategories}</div>
-            <div className={styles.statLabel}>活跃分类</div>
-          </div>
+          <div className={styles.statValue}>{stats.activeCategories}</div>
+          <div className={styles.statLabel}>活跃分类</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statIcon}>
+          <div className={`${styles.statIcon} ${styles.primary}`}>
             <FaChartBar />
           </div>
-          <div className={styles.statContent}>
-            <div className={styles.statValue}>{stats.totalArticles}</div>
-            <div className={styles.statLabel}>文章总数</div>
-          </div>
+          <div className={styles.statValue}>{stats.totalArticles}</div>
+          <div className={styles.statLabel}>文章总数</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statIcon}>
+          <div className={`${styles.statIcon} ${styles.warning}`}>
             <FaEye />
           </div>
-          <div className={styles.statContent}>
-            <div className={styles.statValue}>{stats.totalViews.toLocaleString()}</div>
-            <div className={styles.statLabel}>总浏览量</div>
-          </div>
+          <div className={styles.statValue}>{stats.totalViews.toLocaleString()}</div>
+          <div className={styles.statLabel}>总浏览量</div>
         </div>
       </div>
 
-      {/* 工具栏 */}
-      <div className={styles.toolbar}>
-        <div className={styles.toolbarLeft}>
-          <div className={styles.searchWrapper}>
-            <SearchBox
-              placeholder="搜索分类名称或描述..."
-              value={searchTerm}
-              onChange={(value) => setSearchTerm(value)}
-              onSearch={(value) => setSearchTerm(value)}
-              size="medium"
-              variant="default"
-            />
-          </div>
-
-          <div className={styles.filterGroup}>
-            <span className={styles.filterLabel}>排序：</span>
-            <CustomSelect
-              name="排序方式"
-              value={sortOptions.find((option) => option.id === sortBy) || null}
-              onChange={(selectedOption) => setSortBy(selectedOption?.id as any)}
-              options={sortOptions}
-              hideBadge={true}
-              placeholder="选择排序方式"
-              className={styles.sortSelect}
-            />
-            <button className={styles.sortButton} onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}>
-              {sortOrder === "asc" ? <FaArrowUp /> : <FaArrowDown />}
+      {/* 筛选区域 */}
+      <div className={styles.filterSection}>
+        <div className={styles.filterHeader}>
+          <h3 className={styles.filterTitle}>
+            <FaFilter />
+            筛选条件
+          </h3>
+          <div className={styles.filterActions}>
+            <button className={`${styles.btn} ${styles.btnOutline} ${styles.btnSm}`} onClick={clearFilters}>
+              清除筛选
             </button>
           </div>
-
-          <div className={styles.statsInfo}>
-            <div className={styles.stat}>
-              <span className={styles.statLabel}>总计</span>
-              <span className={styles.statValue}>{filteredAndSortedCategories.length}</span>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statLabel}>已选</span>
-              <span className={styles.statValue}>{selectedCategories.length}</span>
-            </div>
-          </div>
         </div>
-
-        <div className={styles.toolbarRight}>
-          {selectedCategories.length > 0 && (
-            <Button className={styles.deleteButton} onClick={deleteCategories} color="error">
-              <FaTrash />
-              删除 ({selectedCategories.length})
-            </Button>
-          )}
+        <div className={styles.filterForm}>
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>搜索分类</label>
+            <Input
+              placeholder="分类名称或描述"
+              value={filters.search}
+              onChange={(value) => handleFilterChange("search", value)}
+              allowClear={true}
+              size="large"
+              style={{ minHeight: "46px", height: "50px" }}
+            />
+          </div>
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>分类状态</label>
+            <CustomSelect
+              name="分类状态"
+              options={statusOptions}
+              value={statusOptions.find((option) => option.id === filters.status) || null}
+              onChange={handleSelectChange("status")}
+              placeholder="选择状态..."
+              className="adminCustomSelect"
+              hideBadge={true}
+            />
+          </div>
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>排序方式</label>
+            <CustomSelect
+              name="排序方式"
+              options={sortOptions}
+              value={sortOptions.find((option) => option.id === filters.sortBy) || null}
+              onChange={handleSelectChange("sortBy")}
+              placeholder="选择排序..."
+              className="adminCustomSelect"
+              hideBadge={true}
+            />
+          </div>
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>排序方向</label>
+            <button
+              className={`${styles.btn} ${styles.btnOutline}`}
+              onClick={() => setFilters((prev) => ({ ...prev, sortOrder: prev.sortOrder === "asc" ? "desc" : "asc" }))}
+              style={{ minHeight: "46px", height: "50px", justifyContent: "center" }}
+            >
+              {filters.sortOrder === "asc" ? "升序 ↑" : "降序 ↓"}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* 分类列表 */}
-      <div className={styles.categoryList}>
-        {isLoading ? (
-          <div className={styles.loading}>
-            <div className={styles.loadingSpinner}></div>
-            <p>加载中...</p>
+      {/* 分类表格 */}
+      <div className={styles.tableContainer}>
+        <div className={styles.tableHeader}>
+          <h3 className={styles.tableTitle}>分类列表</h3>
+          <div className={styles.tableActions}>
+            <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>共 {filteredCategories.length} 个分类</span>
           </div>
-        ) : filteredAndSortedCategories.length === 0 ? (
-          <div className={styles.emptyState}>
-            <FaTags className={styles.emptyIcon} />
-            <h3>暂无分类数据</h3>
-            <p>点击"新增分类"按钮创建第一个分类</p>
-          </div>
-        ) : (
-          <div className={styles.categoryGrid}>
-            {filteredAndSortedCategories.map((category) => (
-              <div key={category.id} className={`${styles.categoryCard} ${category.status === "inactive" ? styles.inactive : ""}`}>
-                <div className={styles.categoryHeader}>
-                  <div className={styles.categoryInfo}>
-                    <div className={styles.categoryIcon} style={{ backgroundColor: category.color }}>
-                      {category.icon || <FaTags />}
+        </div>
+        <table className={styles.categoriesTable}>
+          <thead>
+            <tr>
+              <th>分类信息</th>
+              <th>父级分类</th>
+              <th>状态</th>
+              <th>统计数据</th>
+              <th>创建时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredCategories.length > 0 ? (
+              filteredCategories.map((category) => (
+                <tr key={category.id}>
+                  <td>
+                    <div className={styles.categoryInfo}>
+                      <div className={styles.categoryIcon} style={{ backgroundColor: category.color }}>
+                        {category.icon || <FaTags />}
+                      </div>
+                      <div className={styles.categoryDetails}>
+                        <div className={styles.categoryName}>{category.name}</div>
+                        <div className={styles.categorySlug}>{category.slug}</div>
+                        {category.description && <div className={styles.categoryDescription}>{category.description}</div>}
+                      </div>
                     </div>
-                    <div>
-                      <h3 className={styles.categoryName}>{category.name}</h3>
-                      <p className={styles.categorySlug}>{category.slug}</p>
-                    </div>
-                  </div>
-                  <div className={styles.categoryStatus}>
+                  </td>
+                  <td>
+                    {category.parentId ? (
+                      <span className={styles.parentBadge}>{categories.find((c) => c.id === category.parentId)?.name || "-"}</span>
+                    ) : (
+                      <span style={{ color: "var(--text-tertiary)", fontSize: "13px" }}>顶级分类</span>
+                    )}
+                  </td>
+                  <td>
                     <span className={`${styles.statusBadge} ${styles[category.status]}`}>
+                      <span className={styles.statusIndicator}></span>
                       {category.status === "active" ? "活跃" : "停用"}
                     </span>
-                  </div>
-                </div>
-
-                <div className={styles.categoryDescription}>{category.description}</div>
-
-                <div className={styles.categoryStats}>
-                  <div className={styles.stat}>
-                    <span className={styles.statNumber}>{category.articleCount}</span>
-                    <span className={styles.statText}>篇文章</span>
-                  </div>
-                  <div className={styles.stat}>
-                    <span className={styles.statNumber}>{category.views.toLocaleString()}</span>
-                    <span className={styles.statText}>次浏览</span>
-                  </div>
-                </div>
-
-                <div className={styles.categoryActions}>
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <Button
-                      color="primary"
-                      variant="ghost"
-                      size="small"
-                      onClick={() => openModal(category)}
-                      className={styles.actionButton}
-                      aria-label="编辑分类"
-                    >
-                      <FaEdit />
-                    </Button>
-                    <Button
-                      color="warning"
-                      variant="ghost"
-                      size="small"
-                      onClick={() => toggleCategoryStatus(category)}
-                      className={styles.actionButton}
-                      aria-label={category.status === "active" ? "停用分类" : "启用分类"}
-                    >
-                      {category.status === "active" ? <FaTimes /> : <FaCheckCircle />}
-                    </Button>
-                    <Button
-                      color="error"
-                      variant="ghost"
-                      size="small"
-                      onClick={() => deleteCategory(category)}
-                      className={styles.actionButton}
-                      aria-label="删除分类"
-                    >
-                      <FaTrash />
-                    </Button>
-                  </div>
-                  <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={selectedCategories.includes(category.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedCategories((prev) => [...prev, category.id]);
-                      } else {
-                        setSelectedCategories((prev) => prev.filter((id) => id !== category.id));
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                  </td>
+                  <td>
+                    <div className={styles.statsInfo}>
+                      <span>
+                        <FaTags /> {category.articleCount} 篇
+                      </span>
+                      <span>
+                        <FaEye /> {category.views.toLocaleString()}
+                      </span>
+                    </div>
+                  </td>
+                  <td>{formatDate(category.createdAt)}</td>
+                  <td>
+                    <div className={styles.actionButtons}>
+                      <button className={`${styles.actionButton} ${styles.edit}`} title="编辑分类" onClick={() => openModal(category)}>
+                        <FaEdit />
+                      </button>
+                      <button
+                        className={`${styles.actionButton} ${styles.edit}`}
+                        title={category.status === "active" ? "停用" : "启用"}
+                        onClick={() => toggleCategoryStatus(category)}
+                      >
+                        {category.status === "active" ? <FaTimes /> : <FaCheckCircle />}
+                      </button>
+                      <Button
+                        color="error"
+                        variant="ghost"
+                        size="small"
+                        onClick={() => deleteCategory(category)}
+                        className={styles.actionButton}
+                        aria-label="删除分类"
+                      >
+                        <FaTrash />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={6}
+                  style={{
+                    textAlign: "center",
+                    padding: "40px",
+                    color: "var(--text-secondary)",
+                  }}
+                >
+                  暂无数据
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* 新增/编辑模态框 */}
-      {showModal && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>{editingCategory ? "编辑分类" : "新增分类"}</h2>
-              <button className={styles.closeButton} onClick={closeModal}>
-                <FaTimes />
-              </button>
+      <Modal
+        visible={showModal}
+        title={editingCategory ? "编辑分类" : "新增分类"}
+        onClose={closeModal}
+        width={600}
+        footer={
+          <>
+            <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={closeModal} disabled={submitting}>
+              取消
+            </button>
+            <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={saveCategory} disabled={submitting}>
+              {submitting ? "保存中..." : editingCategory ? "保存修改" : "确认创建"}
+            </button>
+          </>
+        }
+      >
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>分类名称 *</label>
+          <Input
+            placeholder="输入分类名称"
+            value={formData.name}
+            onChange={(value) => {
+              setFormData((prev) => ({ ...prev, name: value, slug: value ? generateSlug(value) : "" }));
+            }}
+            className={styles.formInput}
+            size="large"
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>URL标识 *</label>
+          <Input
+            placeholder="自动生成或手动输入"
+            value={formData.slug}
+            onChange={(value) => setFormData((prev) => ({ ...prev, slug: value }))}
+            className={styles.formInput}
+            size="large"
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>描述</label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+            className={styles.formTextarea}
+            placeholder="输入分类描述"
+            rows={3}
+          />
+        </div>
+        <div className={styles.formRow}>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>颜色</label>
+            <div className={styles.colorPickerContainer}>
+              <input
+                type="color"
+                className={styles.colorInput}
+                value={formData.color}
+                onChange={(e) => setFormData((prev) => ({ ...prev, color: e.target.value }))}
+              />
+              <div className={styles.colorPreview} style={{ backgroundColor: formData.color }} />
             </div>
-
-            <form onSubmit={saveCategory} className={styles.modalForm}>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>分类名称 *</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className={styles.formInput}
-                  placeholder="输入分类名称"
-                  required
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>URL标识 *</label>
-                <input
-                  type="text"
-                  name="slug"
-                  value={formData.slug}
-                  onChange={handleInputChange}
-                  className={styles.formInput}
-                  placeholder="自动生成或手动输入"
-                  required
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>描述</label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  className={styles.formTextarea}
-                  placeholder="输入分类描述"
-                  rows={3}
-                />
-              </div>
-
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>颜色</label>
-                  <div className={styles.colorPickerContainer}>
-                    <input
-                      type="color"
-                      className={styles.colorInput}
-                      value={formData.color}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          color: e.target.value,
-                        }))
-                      }
-                    />
-                    <div className={styles.colorPreview} style={{ backgroundColor: formData.color }} />
-                  </div>
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>图标</label>
-                  <CustomSelect
-                    name="图标"
-                    value={
-                      iconOptions.find((icon) => icon.value === formData.icon)
-                        ? {
-                            id: iconOptions.find((icon) => icon.value === formData.icon)!.value,
-                            name: iconOptions.find((icon) => icon.value === formData.icon)!.name,
-                            color: "#007bff",
-                          }
-                        : null
-                    }
-                    onChange={(selectedOption) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        icon: String(selectedOption?.id || ""),
-                      }))
-                    }
-                    options={iconOptions.map((icon) => ({
-                      id: icon.value,
-                      name: `${icon.name} ${icon.value}`,
-                      color: "#007bff",
-                    }))}
-                    hideBadge={true}
-                    placeholder="选择图标"
-                  />
-                </div>
-              </div>
-
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>父级分类</label>
-                  <CustomSelect
-                    name="父级分类"
-                    value={getParentCategoryOptions().find((option) => option.id === formData.parentId) || null}
-                    onChange={(selectedOption) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        parentId: String(selectedOption?.id || ""),
-                      }))
-                    }
-                    options={getParentCategoryOptions()}
-                    hideBadge={true}
-                    placeholder="选择父级分类"
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>状态</label>
-                  <CustomSelect
-                    name="状态"
-                    value={statusOptions.find((option) => option.id === formData.status) || null}
-                    onChange={(selectedOption) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        status: (selectedOption?.id as "active" | "inactive") || "active",
-                      }))
-                    }
-                    options={statusOptions}
-                    hideBadge={true}
-                    placeholder="选择状态"
-                  />
-                </div>
-              </div>
-
-              <div className={styles.modalActions}>
-                <button type="button" className={styles.cancelButton} onClick={closeModal} disabled={isLoading}>
-                  取消
-                </button>
-                <button type="submit" className={styles.saveButton} disabled={isLoading}>
-                  {isLoading ? "保存中..." : "保存"}
-                </button>
-              </div>
-            </form>
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>图标</label>
+            <CustomSelect
+              name="图标"
+              value={iconOptions.find((o) => o.id === formData.icon) || null}
+              onChange={(option) => setFormData((prev) => ({ ...prev, icon: String(option?.id || "") }))}
+              options={iconOptions}
+              hideBadge={true}
+              placeholder="选择图标"
+            />
           </div>
         </div>
-      )}
+        <div className={styles.formRow}>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>父级分类</label>
+            <CustomSelect
+              name="父级分类"
+              value={getParentCategoryOptions().find((option) => option.id === formData.parentId) || null}
+              onChange={(option) => setFormData((prev) => ({ ...prev, parentId: String(option?.id || "") }))}
+              options={getParentCategoryOptions()}
+              hideBadge={true}
+              placeholder="选择父级分类"
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>状态</label>
+            <CustomSelect
+              name="状态"
+              value={statusOptions.find((option) => option.id === formData.status) || null}
+              onChange={(option) => setFormData((prev) => ({ ...prev, status: (option?.id as "active" | "inactive") || "active" }))}
+              options={statusOptions.slice(1)}
+              hideBadge={true}
+              placeholder="选择状态"
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
