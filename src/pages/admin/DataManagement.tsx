@@ -30,51 +30,13 @@ import CustomSelect from "@/components/customSelect/CustomSelect";
 import Input from "@/components/input/Input";
 import Loading from "@/components/loading/Loading";
 import { confirm } from "@/components/confirm/Confirm";
+import { message } from "@/components/message/Message";
+import { formatToChinaTime } from "@/utils/utils";
+import DataService from "@/services/dataService";
+import http from "@/utils/http";
+import type { BackupRecord, DataStats, ExportRecord } from "@/services/dataService";
 import type { SelectOption } from "@/types/index";
 import styles from "./DataManagement.module.css";
-
-// 备份记录接口
-interface BackupRecord {
-  id: string;
-  name: string;
-  type: "full" | "incremental" | "manual";
-  size: number;
-  fileCount: number;
-  status: "completed" | "processing" | "failed";
-  createdAt: string;
-  completedAt?: string;
-  createdBy: string;
-  description: string;
-  downloadUrl?: string;
-}
-
-// 数据统计接口
-interface DataStats {
-  totalSize: number;
-  usedSize: number;
-  availableSize: number;
-  totalRecords: number;
-  articles: number;
-  users: number;
-  comments: number;
-  categories: number;
-  tags: number;
-  backups: number;
-}
-
-// 导出记录接口
-interface ExportRecord {
-  id: string;
-  name: string;
-  type: "articles" | "users" | "comments" | "full";
-  format: "json" | "csv" | "xlsx";
-  size: number;
-  recordCount: number;
-  status: "completed" | "processing" | "failed";
-  createdAt: string;
-  createdBy: string;
-  downloadUrl?: string;
-}
 
 // 筛选条件接口
 interface FilterOptions {
@@ -108,173 +70,70 @@ const DataManagement: React.FC = () => {
     dateRange: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [loadingBackups, setLoadingBackups] = useState(false);
+  const [loadingExports, setLoadingExports] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
-  const itemsPerPage = 15; // 每页显示15条数据
+  const itemsPerPage = 15;
 
-  // 模拟备份记录数据
-  const mockBackups = useMemo<BackupRecord[]>(
-    () => [
-      {
-        id: "backup_1",
-        name: "系统完整备份",
-        type: "full",
-        size: 2048576, // 2MB
-        fileCount: 1250,
-        status: "completed",
-        createdAt: "2024-11-20 02:00:00",
-        completedAt: "2024-11-20 02:15:00",
-        createdBy: "系统自动",
-        description: "包含所有系统数据的完整备份",
-        downloadUrl: "/api/backups/download/backup_1",
-      },
-      {
-        id: "backup_2",
-        name: "每日增量备份",
-        type: "incremental",
-        size: 512000, // 512KB
-        fileCount: 45,
-        status: "completed",
-        createdAt: "2024-11-21 02:00:00",
-        completedAt: "2024-11-21 02:03:00",
-        createdBy: "系统自动",
-        description: "昨日变更数据的增量备份",
-        downloadUrl: "/api/backups/download/backup_2",
-      },
-      {
-        id: "backup_3",
-        name: "手动备份",
-        type: "manual",
-        size: 1024000, // 1MB
-        fileCount: 320,
-        status: "processing",
-        createdAt: "2024-11-22 10:30:00",
-        createdBy: "管理员A",
-        description: "管理员手动触发的备份任务",
-      },
-      {
-        id: "backup_4",
-        name: "系统完整备份",
-        type: "full",
-        size: 2457600, // 2.4MB
-        fileCount: 1350,
-        status: "completed",
-        createdAt: "2024-11-19 02:00:00",
-        completedAt: "2024-11-19 02:18:00",
-        createdBy: "系统自动",
-        description: "包含所有系统数据的完整备份",
-        downloadUrl: "/api/backups/download/backup_4",
-      },
-      {
-        id: "backup_5",
-        name: "数据迁移备份",
-        type: "manual",
-        size: 0,
-        fileCount: 0,
-        status: "failed",
-        createdAt: "2024-11-18 15:45:00",
-        createdBy: "管理员B",
-        description: "数据迁移前的备份，执行失败",
-      },
-    ],
-    [],
-  );
-
-  // 模拟导出记录数据
-  const mockExports = useMemo<ExportRecord[]>(
-    () => [
-      {
-        id: "export_1",
-        name: "文章数据导出",
-        type: "articles",
-        format: "xlsx",
-        size: 256000, // 256KB
-        recordCount: 1250,
-        status: "completed",
-        createdAt: "2024-11-21 14:30:00",
-        createdBy: "管理员A",
-        downloadUrl: "/api/exports/download/export_1",
-      },
-      {
-        id: "export_2",
-        name: "用户数据导出",
-        type: "users",
-        format: "csv",
-        size: 128000, // 128KB
-        recordCount: 500,
-        status: "completed",
-        createdAt: "2024-11-20 10:15:00",
-        createdBy: "管理员B",
-        downloadUrl: "/api/exports/download/export_2",
-      },
-      {
-        id: "export_3",
-        name: "完整数据导出",
-        type: "full",
-        format: "json",
-        size: 1048576, // 1MB
-        recordCount: 2500,
-        status: "processing",
-        createdAt: "2024-11-22 09:00:00",
-        createdBy: "管理员A",
-      },
-      {
-        id: "export_4",
-        name: "评论数据导出",
-        type: "comments",
-        format: "xlsx",
-        size: 64000, // 64KB
-        recordCount: 890,
-        status: "completed",
-        createdAt: "2024-11-19 16:45:00",
-        createdBy: "管理员C",
-        downloadUrl: "/api/exports/download/export_4",
-      },
-      {
-        id: "export_5",
-        name: "分类数据导出",
-        type: "articles",
-        format: "csv",
-        size: 32000, // 32KB
-        recordCount: 45,
-        status: "completed",
-        createdAt: "2024-11-18 11:20:00",
-        createdBy: "管理员A",
-        downloadUrl: "/api/exports/download/export_5",
-      },
-    ],
-    [],
-  );
-
-  // 加载数据
+  // 加载数据概览
   useEffect(() => {
-    setLoading(true);
-    // 模拟API调用
-    setTimeout(() => {
-      setBackups(mockBackups);
-      setExports(mockExports);
+    const fetchStats = async () => {
+      try {
+        const data = await DataService.getStats();
+        setStats(data);
+      } catch (err) {
+        console.error("加载数据概览失败:", err);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
 
-      // 计算统计数据
-      const totalSize = 50 * 1024 * 1024 * 1024; // 50GB
-      const usedSize = 15.5 * 1024 * 1024 * 1024; // 15.5GB
-      const availableSize = totalSize - usedSize;
-
-      setStats({
-        totalSize,
-        usedSize,
-        availableSize,
-        totalRecords: 5000,
-        articles: 1250,
-        users: 500,
-        comments: 890,
-        categories: 15,
-        tags: 45,
-        backups: mockBackups.length,
-      });
-
-      setLoading(false);
-    }, 1000);
-  }, [mockBackups, mockExports]);
+  // 切换 tab 时懒加载
+  useEffect(() => {
+    if (activeTab === "overview") {
+      const fetchStats = async () => {
+        try {
+          const data = await DataService.getStats();
+          setStats(data);
+        } catch (err) {
+          console.error("加载数据概览失败:", err);
+        }
+      };
+      fetchStats();
+    }
+    if (activeTab === "backups") {
+      const fetchBackups = async () => {
+        setLoadingBackups(true);
+        try {
+          const res = await DataService.getBackups({});
+          setBackups(res.list);
+        } catch (err) {
+          console.error("加载备份列表失败:", err);
+        } finally {
+          setLoadingBackups(false);
+        }
+      };
+      fetchBackups();
+    }
+    if (activeTab === "exports") {
+      const fetchExports = async () => {
+        setLoadingExports(true);
+        try {
+          const res = await DataService.getExports({});
+          setExports(res.list);
+        } catch (err) {
+          console.error("加载导出列表失败:", err);
+        } finally {
+          setLoadingExports(false);
+        }
+      };
+      fetchExports();
+    }
+    setCurrentPage(1);
+  }, [activeTab]);
 
   // 筛选数据
   const filteredBackups = useMemo(() => {
@@ -391,37 +250,14 @@ const DataManagement: React.FC = () => {
       confirmText: "确认备份",
       cancelText: "取消",
       onConfirm: async () => {
-        const newBackup: BackupRecord = {
-          id: `backup_${Date.now()}`,
-          name: `${type === "full" ? "系统完整" : "增量"}备份`,
-          type,
-          size: 0,
-          fileCount: 0,
-          status: "processing",
-          createdAt: new Date().toLocaleString("zh-CN"),
-          createdBy: "当前管理员",
-          description: type === "full" ? "手动触发的完整备份" : "手动触发的增量备份",
-        };
-
-        setBackups((prev) => [newBackup, ...prev]);
-
-        // 模拟备份完成
-        setTimeout(() => {
-          setBackups((prev) =>
-            prev.map((backup) =>
-              backup.id === newBackup.id
-                ? {
-                    ...backup,
-                    status: "completed",
-                    size: type === "full" ? 2048576 : 512000,
-                    fileCount: type === "full" ? 1250 : 45,
-                    completedAt: new Date().toLocaleString("zh-CN"),
-                    downloadUrl: `/api/backups/download/${newBackup.id}`,
-                  }
-                : backup,
-            ),
-          );
-        }, 3000);
+        try {
+          const newBackup = await DataService.createBackup(type);
+          setBackups((prev) => [newBackup, ...prev]);
+          const stats = await DataService.getStats();
+          setStats(stats);
+        } catch (err) {
+          console.error("创建备份失败:", err);
+        }
       },
     });
   };
@@ -442,48 +278,26 @@ const DataManagement: React.FC = () => {
       confirmText: "确认导出",
       cancelText: "取消",
       onConfirm: async () => {
-        const newExport: ExportRecord = {
-          id: `export_${Date.now()}`,
-          name: `${type === "articles" ? "文章" : type === "users" ? "用户" : type === "comments" ? "评论" : "完整"}数据导出`,
-          type,
-          format: "xlsx",
-          size: 0,
-          recordCount: 0,
-          status: "processing",
-          createdAt: new Date().toLocaleString("zh-CN"),
-          createdBy: "当前管理员",
-        };
-
-        setExports((prev) => [newExport, ...prev]);
-
-        // 模拟导出完成
-        setTimeout(() => {
-          const mockSize = type === "full" ? 1048576 : type === "articles" ? 256000 : type === "users" ? 128000 : 64000;
-          const mockCount = type === "full" ? 2500 : type === "articles" ? 1250 : type === "users" ? 500 : 890;
-
-          setExports((prev) =>
-            prev.map((exportItem) =>
-              exportItem.id === newExport.id
-                ? {
-                    ...exportItem,
-                    status: "completed",
-                    size: mockSize,
-                    recordCount: mockCount,
-                    downloadUrl: `/api/exports/download/${newExport.id}`,
-                  }
-                : exportItem,
-            ),
-          );
-        }, 2000);
+        try {
+          const newExport = await DataService.createExport(type);
+          setExports((prev) => [newExport, ...prev]);
+          const stats = await DataService.getStats();
+          setStats(stats);
+        } catch (err) {
+          console.error("导出失败:", err);
+        }
       },
     });
   };
 
   // 下载文件
-  const downloadFile = (item: BackupRecord | ExportRecord) => {
-    const url = (item as BackupRecord).downloadUrl || (item as ExportRecord).downloadUrl;
-    if (url) {
-      window.open(url, "_blank");
+  const downloadFile = async (item: BackupRecord | ExportRecord) => {
+    const isBackup = "fileCount" in item;
+    const url = isBackup ? `/admin/database/backups/${item.id}/download` : `/admin/database/exports/${item.id}/download`;
+    try {
+      await http.download(url, (item as BackupRecord).name || (item as ExportRecord).name);
+    } catch (err: any) {
+      message.error(err?.message || "下载失败");
     }
   };
 
@@ -504,10 +318,18 @@ const DataManagement: React.FC = () => {
       confirmText: "确认删除",
       cancelText: "取消",
       onConfirm: async () => {
-        if ("fileCount" in item) {
-          setBackups((prev) => prev.filter((backup) => backup.id !== item.id));
-        } else {
-          setExports((prev) => prev.filter((exportItem) => exportItem.id !== item.id));
+        try {
+          if ("fileCount" in item) {
+            await DataService.deleteBackup(item.id);
+            setBackups((prev) => prev.filter((backup) => backup.id !== item.id));
+          } else {
+            await DataService.deleteExport(item.id);
+            setExports((prev) => prev.filter((exportItem) => exportItem.id !== item.id));
+          }
+          const stats = await DataService.getStats();
+          setStats(stats);
+        } catch (err) {
+          console.error("删除失败:", err);
         }
       },
     });
@@ -526,8 +348,13 @@ const DataManagement: React.FC = () => {
       confirmText: "确认清理",
       cancelText: "取消",
       onConfirm: async () => {
-        // 模拟清理过程
-        alert("数据清理完成");
+        try {
+          await DataService.cleanup();
+          const stats = await DataService.getStats();
+          setStats(stats);
+        } catch (err) {
+          console.error("清理数据失败:", err);
+        }
       },
     });
   };
@@ -538,19 +365,6 @@ const DataManagement: React.FC = () => {
     const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
-  };
-
-  // 格式化日期
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("zh-CN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   // 生成页码数组
@@ -584,7 +398,7 @@ const DataManagement: React.FC = () => {
     return pages;
   };
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <div className={styles.dataManagement}>
         <Loading text="加载数据管理中..." size="large" />
@@ -599,12 +413,6 @@ const DataManagement: React.FC = () => {
         <div>
           <h1 className={styles.pageTitle}>数据管理</h1>
           <p className={styles.pageDescription}>管理系统数据备份、导出和存储空间</p>
-        </div>
-        <div className={styles.headerActions}>
-          <button className={`${styles.btn} ${styles.btnPrimary}`}>
-            <FaPlus />
-            数据操作
-          </button>
         </div>
       </div>
 
@@ -869,104 +677,114 @@ const DataManagement: React.FC = () => {
             </div>
 
             {activeTab === "backups" ? (
-              <table className={`${styles.recordsTable} ${styles.backupRecordsTable}`}>
-                <thead>
-                  <tr>
-                    <th>备份信息</th>
-                    <th>类型</th>
-                    <th>大小</th>
-                    <th>文件数量</th>
-                    <th>状态</th>
-                    <th>创建时间</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentItems.length > 0 ? (
-                    currentItems.map((backup) => (
-                      <tr key={backup.id}>
-                        <td>
-                          <div className={styles.recordInfo}>
-                            <div className={styles.recordIcon}>
-                              <FaArchive />
-                            </div>
-                            <div className={styles.recordDetails}>
-                              <div className={styles.recordName}>{backup.name}</div>
-                              <div className={styles.recordMeta}>
-                                <span>
-                                  <FaUser /> {backup.createdBy}
-                                </span>
+              loadingBackups ? (
+                <div style={{ padding: "60px 0" }}>
+                  <Loading text="加载备份列表..." size="large" />
+                </div>
+              ) : (
+                <table className={`${styles.recordsTable} ${styles.backupRecordsTable}`}>
+                  <thead>
+                    <tr>
+                      <th>备份信息</th>
+                      <th>类型</th>
+                      <th>大小</th>
+                      <th>文件数量</th>
+                      <th>状态</th>
+                      <th>创建时间</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentItems.length > 0 ? (
+                      currentItems.map((backup) => (
+                        <tr key={backup.id}>
+                          <td>
+                            <div className={styles.recordInfo}>
+                              <div className={styles.recordIcon}>
+                                <FaArchive />
                               </div>
-                              <div className={styles.recordDescription}>{(backup as BackupRecord).description}</div>
+                              <div className={styles.recordDetails}>
+                                <div className={styles.recordName}>{backup.name}</div>
+                                <div className={styles.recordMeta}>
+                                  <span>
+                                    <FaUser /> {backup.createdBy}
+                                  </span>
+                                </div>
+                                <div className={styles.recordDescription}>{(backup as BackupRecord).description}</div>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span className={`${styles.typeBadge} ${styles[backup.type]}`}>
-                            {backup.type === "full" && "完整"}
-                            {backup.type === "incremental" && "增量"}
-                            {backup.type === "manual" && "手动"}
-                          </span>
-                        </td>
-                        <td>{formatFileSize(backup.size)}</td>
-                        <td>{(backup as BackupRecord).fileCount}</td>
-                        <td>
-                          <span className={`${styles.statusBadge} ${styles[backup.status]}`}>
-                            <span className={styles.statusIndicator}></span>
-                            {backup.status === "completed" && "已完成"}
-                            {backup.status === "processing" && "处理中"}
-                            {backup.status === "failed" && "失败"}
-                          </span>
-                        </td>
-                        <td>
-                          <div className={styles.timeInfo}>
-                            <div>
-                              <FaCalendar /> {formatDate(backup.createdAt)}
-                            </div>
-                            {(backup as BackupRecord).completedAt ? (
+                          </td>
+                          <td>
+                            <span className={`${styles.typeBadge} ${styles[backup.type]}`}>
+                              {backup.type === "full" && "完整"}
+                              {backup.type === "incremental" && "增量"}
+                              {backup.type === "manual" && "手动"}
+                            </span>
+                          </td>
+                          <td>{formatFileSize(backup.size)}</td>
+                          <td>{(backup as BackupRecord).fileCount}</td>
+                          <td>
+                            <span className={`${styles.statusBadge} ${styles[backup.status]}`}>
+                              <span className={styles.statusIndicator}></span>
+                              {backup.status === "completed" && "已完成"}
+                              {backup.status === "processing" && "处理中"}
+                              {backup.status === "failed" && "失败"}
+                            </span>
+                          </td>
+                          <td>
+                            <div className={styles.timeInfo}>
                               <div>
-                                <FaCheckCircle /> {formatDate((backup as BackupRecord).completedAt)}
+                                <FaCalendar /> {formatToChinaTime(Number(backup.createdAt))}
                               </div>
-                            ) : null}
-                          </div>
-                        </td>
-                        <td>
-                          <div className={styles.actionButtons}>
-                            <button
-                              className={`${styles.actionButton} ${styles.download}`}
-                              title="下载备份"
-                              onClick={() => downloadFile(backup)}
-                              disabled={backup.status !== "completed"}
-                            >
-                              <FaDownload />
-                            </button>
-                            <button
-                              className={`${styles.actionButton} ${styles.delete}`}
-                              title="删除记录"
-                              onClick={() => deleteRecord(backup)}
-                            >
-                              <FaTrash />
-                            </button>
-                          </div>
+                              {(backup as BackupRecord).completedAt ? (
+                                <div>
+                                  <FaCheckCircle /> {formatToChinaTime(Number((backup as BackupRecord).completedAt))}
+                                </div>
+                              ) : null}
+                            </div>
+                          </td>
+                          <td>
+                            <div className={styles.actionButtons}>
+                              <button
+                                className={`${styles.actionButton} ${styles.download}`}
+                                title="下载备份"
+                                onClick={() => downloadFile(backup)}
+                                disabled={backup.status !== "completed"}
+                              >
+                                <FaDownload />
+                              </button>
+                              <button
+                                className={`${styles.actionButton} ${styles.delete}`}
+                                title="删除记录"
+                                onClick={() => deleteRecord(backup)}
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={7}
+                          style={{
+                            textAlign: "center",
+                            padding: "40px",
+                            color: "var(--text-secondary)",
+                          }}
+                        >
+                          暂无数据
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={7}
-                        style={{
-                          textAlign: "center",
-                          padding: "40px",
-                          color: "var(--text-secondary)",
-                        }}
-                      >
-                        暂无数据
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    )}
+                  </tbody>
+                </table>
+              )
+            ) : loadingExports ? (
+              <div style={{ padding: "60px 0" }}>
+                <Loading text="加载导出列表..." size="large" />
+              </div>
             ) : (
               <table className={`${styles.recordsTable} ${styles.exportRecordsTable}`}>
                 <thead>
@@ -1021,7 +839,7 @@ const DataManagement: React.FC = () => {
                             {exportItem.status === "failed" && "失败"}
                           </span>
                         </td>
-                        <td>{formatDate(exportItem.createdAt)}</td>
+                        <td>{formatToChinaTime(Number(exportItem.createdAt))}</td>
                         <td>
                           <div className={styles.actionButtons}>
                             <button

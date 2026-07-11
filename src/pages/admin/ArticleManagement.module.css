@@ -481,7 +481,6 @@
 /* 分页 */
 .paginationContainer {
   padding: 20px;
-  border-top: 1px solid var(--border-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;

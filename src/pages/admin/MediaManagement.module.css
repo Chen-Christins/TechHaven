@@ -649,7 +649,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-top: 1px solid var(--border-primary);
   flex-wrap: wrap;
   gap: 16px;
 }
