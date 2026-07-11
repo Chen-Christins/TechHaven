@@ -17,7 +17,6 @@ import CommentManagement from "../pages/admin/CommentManagement";
 import MediaManagement from "../pages/admin/MediaManagement";
 import NotificationManagement from "../pages/admin/NotificationManagement";
 import DataManagement from "../pages/admin/DataManagement";
-import Analytics from "../pages/admin/Analytics";
 import Settings from "../pages/admin/Settings";
 import OrganizationManagement from "../pages/admin/OrganizationManagement";
 import OrganizationList from "../pages/organization/OrganizationList";
@@ -59,7 +58,6 @@ const RouterConfig: React.FC = () => {
         <Route path="categories" element={<CategoryManagement />} />
         <Route path="media" element={<MediaManagement />} />
         <Route path="database" element={<DataManagement />} />
-        <Route path="analytics" element={<Analytics />} />
         <Route path="settings" element={<Settings />} />
         <Route path="notifications" element={<NotificationManagement />} />
       </Route>
