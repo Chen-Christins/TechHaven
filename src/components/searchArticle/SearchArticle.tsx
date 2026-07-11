@@ -1,4 +1,5 @@
 import React from "react";
+import { FaSearch } from "react-icons/fa";
 import styles from "./SearchArticle.module.css";
 import SearchBox from "../searchBox/SearchBox";
 
@@ -13,7 +14,9 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch }) => {
 
   return (
     <div className={styles.SearchArticlePanel}>
-      <h3 className={styles.panelTitle}>搜索文章</h3>
+      <h3 className={styles.panelTitle}>
+        <FaSearch className={styles.titleIcon} /> 搜索文章
+      </h3>
       <SearchBox placeholder="搜索文章..." onSearch={handleSearch} />
     </div>
   );

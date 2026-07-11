@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { FaCalendarAlt } from "react-icons/fa";
 import styles from "./Calendar.module.css";
 import { ArticleService } from "@/services/articleService";
 
@@ -69,7 +70,9 @@ const Calendar: React.FC = () => {
 
   return (
     <div className={styles.calendar}>
-      <h3 className={styles.panelTitle}>站点日历</h3>
+      <h3 className={styles.panelTitle}>
+        <FaCalendarAlt className={styles.titleIcon} /> 站点日历
+      </h3>
       <div className={styles.calendarHeader}>
         <button className={styles.monthBtn} onClick={() => changeMonth("prev")} disabled={loading}>
           ←
