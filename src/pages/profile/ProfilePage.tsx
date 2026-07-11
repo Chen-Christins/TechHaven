@@ -215,7 +215,7 @@ const Profile: React.FC = () => {
   const handleFollowToggle = async () => {
     if (!isAuthenticated) {
       message.info("请先登录");
-      navigate("/auth");
+      navigate("/auth?redirect=" + encodeURIComponent(window.location.pathname + window.location.search));
       return;
     }
     if (!id) return;

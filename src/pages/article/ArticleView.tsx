@@ -179,7 +179,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   const handleFollowToggle = async () => {
     if (!isAuthenticated) {
       message.info("请先登录");
-      navigate("/auth");
+      navigate("/auth?redirect=" + encodeURIComponent(window.location.pathname + window.location.search));
       return;
     }
     if (!authorId) return;
@@ -206,7 +206,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   const handleLikeToggle = async () => {
     if (!isAuthenticated) {
       message.info("请先登录");
-      navigate("/auth");
+      navigate("/auth?redirect=" + encodeURIComponent(window.location.pathname + window.location.search));
       return;
     }
     if (!articleId) return;
@@ -228,7 +228,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     if (!trimmed || !articleId) return;
     if (!isAuthenticated) {
       message.info("请先登录");
-      navigate("/auth");
+      navigate("/auth?redirect=" + encodeURIComponent(window.location.pathname + window.location.search));
       return;
     }
     try {
@@ -263,7 +263,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     if (!trimmed || !articleId) return;
     if (!isAuthenticated) {
       message.info("请先登录");
-      navigate("/auth");
+      navigate("/auth?redirect=" + encodeURIComponent(window.location.pathname + window.location.search));
       return;
     }
     try {
@@ -297,7 +297,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   const handleCommentLike = async (commentId: number) => {
     if (!isAuthenticated) {
       message.info("请先登录");
-      navigate("/auth");
+      navigate("/auth?redirect=" + encodeURIComponent(window.location.pathname + window.location.search));
       return;
     }
     try {
