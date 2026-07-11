@@ -58,7 +58,7 @@ const AdminLayout: React.FC = () => {
 
   // 如果用户未登录，重定向到登录页面
   if (!isAuthenticated || !user) {
-    navigate("/auth");
+    navigate("/auth?redirect=" + encodeURIComponent(location.pathname + location.search));
     return null;
   }
 

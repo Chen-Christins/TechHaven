@@ -166,7 +166,12 @@ const GMConsole: React.FC = () => {
         <h2 style={{ margin: 0 }}>无权限访问</h2>
         <p style={{ margin: 0, color: "var(--text-secondary)" }}>请使用管理员账号登录后再试。</p>
         <div style={{ display: "flex", gap: "10px" }}>
-          <Button color="primary" variant="solid" size="medium" onClick={() => navigate("/auth")}>
+          <Button
+            color="primary"
+            variant="solid"
+            size="medium"
+            onClick={() => navigate("/auth?redirect=" + encodeURIComponent(window.location.pathname + window.location.search))}
+          >
             前往登录
           </Button>
           <Button color="primary" variant="ghost" size="medium" onClick={() => navigate("/")}>

@@ -87,7 +87,7 @@ const PersonalCenter: React.FC = () => {
 
   // 处理登录跳转
   const handleLoginRedirect = () => {
-    navigate("/auth");
+    navigate("/auth?redirect=" + encodeURIComponent(window.location.pathname + window.location.search));
   };
 
   // 导航菜单配置

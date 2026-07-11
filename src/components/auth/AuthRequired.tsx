@@ -57,7 +57,10 @@ const AuthRequired: React.FC<AuthRequiredProps> = ({
         <h2 className={styles.title}>{title}</h2>
         <p className={styles.subtext}>{message}</p>
         <div className={styles.actions}>
-          <button onClick={() => navigate("/auth")} className={styles.loginBtn}>
+          <button
+            onClick={() => navigate("/auth?redirect=" + encodeURIComponent(window.location.pathname + window.location.search))}
+            className={styles.loginBtn}
+          >
             <FaSignInAlt />
             {buttonText}
           </button>
