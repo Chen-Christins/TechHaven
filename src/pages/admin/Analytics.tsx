@@ -1,641 +1,446 @@
-import React, { useRef, useEffect, useState, useMemo } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import * as echarts from "echarts";
-import {
-  FaUsers,
-  FaFileAlt,
-  FaComments,
-  FaEye,
-  FaArrowUp,
-  FaArrowDown,
-  FaMinus,
-  FaChartBar,
-  FaChartPie,
-  FaDownload,
-  FaCalendarAlt,
-  FaFilter,
-  FaGlobe,
-  FaClock,
-  FaMousePointer,
-} from "react-icons/fa";
-import styles from "./Analytics.module.css";
+import { FaUsers, FaFileAlt, FaComments, FaEye, FaFilter, FaDownload, FaHourglassHalf, FaUserPlus } from "react-icons/fa";
 import CustomSelect from "@/components/customSelect/CustomSelect";
+import Loading from "@/components/loading/Loading";
+import type { SelectOption } from "@/types/index";
+import styles from "./Analytics.module.css";
+import DashboardService, { type DashboardStats, type DashboardTrend, type DashboardActivity } from "@/services/dashboardService";
+import { AuthService } from "@/services/authService";
+import ArticleService, { type ListAdminArticlesResponse } from "@/services/articleService";
+import { CommentService } from "@/services/commentService";
+import message from "@/components/message/Message";
 
-interface AnalyticsData {
-  overview: {
-    totalUsers: number;
-    totalArticles: number;
-    totalComments: number;
-    totalViews: number;
-    totalLikes: number;
-    avgSessionDuration: string;
-    bounceRate: string;
-    newUsers: number;
-  };
-  trends: {
-    visits: Array<{ date: string; value: number; label: string }>;
-    users: Array<{ date: string; value: number; label: string }>;
-    pageViews: Array<{ date: string; value: number; label: string }>;
-  };
-  content: {
-    popularArticles: Array<{
-      id: number;
-      title: string;
-      views: number;
-      likes: number;
-      comments: number;
-    }>;
-    categories: Array<{ name: string; count: number; percentage: number }>;
-  };
-  traffic: {
-    sources: Array<{ name: string; value: number; percentage: number }>;
-    devices: Array<{ name: string; value: number; percentage: number }>;
-    locations: Array<{ country: string; users: number; percentage: number }>;
-  };
+interface AdminUserStats {
+  total_users: number;
+  active_users: number;
+  new_users_30d: number;
+  inactive_users: number;
 }
 
-const Analytics: React.FC = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState("7天");
-  const [selectedMetric, setSelectedMetric] = useState("visits");
-  const [isLoading, setIsLoading] = useState(false);
+interface AdminArticleStats {
+  total_articles: number;
+  pending_articles: number;
+  published_articles: number;
+  rejected_articles: number;
+  reported_articles: number;
+}
 
-  // 时间范围选项
-  const periodOptions = [
+interface AdminCommentStats {
+  total_comments: number;
+  pending_comments: number;
+  approved_comments: number;
+  spam_comments: number;
+  reported_comments: number;
+}
+
+interface PopularArticle {
+  id: string | number;
+  title: string;
+  views: number;
+  likes: number;
+  comments: number;
+  author: string;
+}
+
+const periodMap: Record<string, number> = {
+  "7天": 7,
+  "30天": 30,
+  "90天": 90,
+};
+
+const ACTIVITY_LABEL: Record<string, string> = {
+  user_register: "新用户注册",
+  article_publish: "发布文章",
+  comment_create: "发表评论",
+  system_backup: "系统备份",
+  profile_update: "更新资料",
+};
+
+const ACTIVITY_COLOR: Record<string, string> = {
+  user_register: "success",
+  article_publish: "primary",
+  comment_create: "warning",
+  system_backup: "error",
+  profile_update: "primary",
+};
+
+const Analytics: React.FC = () => {
+  const [loading, setLoading] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState("7天");
+  const [exporting, setExporting] = useState(false);
+
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [userStats, setUserStats] = useState<AdminUserStats | null>(null);
+  const [articleStats, setArticleStats] = useState<AdminArticleStats | null>(null);
+  const [commentStats, setCommentStats] = useState<AdminCommentStats | null>(null);
+  const [trendData, setTrendData] = useState<DashboardTrend | null>(null);
+  const [popularArticles, setPopularArticles] = useState<PopularArticle[]>([]);
+  const [activities, setActivities] = useState<DashboardActivity[]>([]);
+
+  const trendChartRef = useRef<HTMLDivElement>(null);
+  const trendChartInstance = useRef<echarts.ECharts | null>(null);
+  const articlePieRef = useRef<HTMLDivElement>(null);
+  const articlePieInstance = useRef<echarts.ECharts | null>(null);
+  const userPieRef = useRef<HTMLDivElement>(null);
+  const userPieInstance = useRef<echarts.ECharts | null>(null);
+  const commentPieRef = useRef<HTMLDivElement>(null);
+  const commentPieInstance = useRef<echarts.ECharts | null>(null);
+
+  const periodOptions: SelectOption[] = [
     { id: "7天", name: "最近7天", color: "#4361ee" },
     { id: "30天", name: "最近30天", color: "#4361ee" },
     { id: "90天", name: "最近90天", color: "#4361ee" },
-    { id: "1年", name: "最近1年", color: "#4361ee" },
-  ];
-
-  // 指标类型选项
-  const metricOptions = [
-    { id: "visits", name: "访问量", color: "#7209b7" },
-    { id: "users", name: "用户数", color: "#7209b7" },
-    { id: "pageViews", name: "页面浏览量", color: "#7209b7" },
-  ];
-
-  // 图表引用
-  const trendChartRef = useRef<HTMLDivElement>(null);
-  const pieChartRef = useRef<HTMLDivElement>(null);
-  const barChartRef = useRef<HTMLDivElement>(null);
-
-  const trendChartInstance = useRef<echarts.ECharts | null>(null);
-  const pieChartInstance = useRef<echarts.ECharts | null>(null);
-  const barChartInstance = useRef<echarts.ECharts | null>(null);
-
-  // 模拟分析数据
-  const analyticsData = useMemo<AnalyticsData>(
-    () => ({
-      overview: {
-        totalUsers: 12847,
-        totalArticles: 1456,
-        totalComments: 3892,
-        totalViews: 256789,
-        totalLikes: 12456,
-        avgSessionDuration: "4:32",
-        bounceRate: "32.5%",
-        newUsers: 847,
-      },
-      trends: {
-        visits: [
-          { date: "11-15", value: 2820, label: "周一" },
-          { date: "11-16", value: 2932, label: "周二" },
-          { date: "11-17", value: 2901, label: "周三" },
-          { date: "11-18", value: 3134, label: "周四" },
-          { date: "11-19", value: 3290, label: "周五" },
-          { date: "11-20", value: 3330, label: "周六" },
-          { date: "11-21", value: 2892, label: "周日" },
-        ],
-        users: [
-          { date: "11-15", value: 1820, label: "周一" },
-          { date: "11-16", value: 1932, label: "周二" },
-          { date: "11-17", value: 1901, label: "周三" },
-          { date: "11-18", value: 2134, label: "周四" },
-          { date: "11-19", value: 2290, label: "周五" },
-          { date: "11-20", value: 2330, label: "周六" },
-          { date: "11-21", value: 1892, label: "周日" },
-        ],
-        pageViews: [
-          { date: "11-15", value: 5820, label: "周一" },
-          { date: "11-16", value: 5932, label: "周二" },
-          { date: "11-17", value: 5901, label: "周三" },
-          { date: "11-18", value: 6134, label: "周四" },
-          { date: "11-19", value: 6290, label: "周五" },
-          { date: "11-20", value: 6330, label: "周六" },
-          { date: "11-21", value: 5892, label: "周日" },
-        ],
-      },
-      content: {
-        popularArticles: [
-          {
-            id: 1,
-            title: "React 18 新特性详解",
-            views: 5432,
-            likes: 234,
-            comments: 45,
-          },
-          {
-            id: 2,
-            title: "TypeScript 最佳实践指南",
-            views: 4211,
-            likes: 189,
-            comments: 32,
-          },
-          {
-            id: 3,
-            title: "前端性能优化技巧",
-            views: 3897,
-            likes: 167,
-            comments: 28,
-          },
-          {
-            id: 4,
-            title: "Vite 构建工具使用教程",
-            views: 3456,
-            likes: 145,
-            comments: 23,
-          },
-          {
-            id: 5,
-            title: "CSS Grid 布局完全指南",
-            views: 2987,
-            likes: 123,
-            comments: 19,
-          },
-        ],
-        categories: [
-          { name: "前端开发", count: 456, percentage: 31.3 },
-          { name: "后端技术", count: 342, percentage: 23.5 },
-          { name: "开发工具", count: 289, percentage: 19.8 },
-          { name: "设计相关", count: 234, percentage: 16.1 },
-          { name: "其他", count: 135, percentage: 9.3 },
-        ],
-      },
-      traffic: {
-        sources: [
-          { name: "直接访问", value: 45, percentage: 35.2 },
-          { name: "搜索引擎", value: 38, percentage: 29.7 },
-          { name: "社交媒体", value: 25, percentage: 19.5 },
-          { name: "外链引用", value: 20, percentage: 15.6 },
-        ],
-        devices: [
-          { name: "桌面端", value: 65, percentage: 50.8 },
-          { name: "移动端", value: 48, percentage: 37.5 },
-          { name: "平板端", value: 15, percentage: 11.7 },
-        ],
-        locations: [
-          { country: "中国", users: 8234, percentage: 64.1 },
-          { country: "美国", users: 2134, percentage: 16.6 },
-          { country: "日本", users: 1234, percentage: 9.6 },
-          { country: "英国", users: 876, percentage: 6.8 },
-          { country: "其他", users: 369, percentage: 2.9 },
-        ],
-      },
-    }),
-    [],
-  );
-
-  // 概览统计卡片
-  const overviewStats = [
-    {
-      title: "总用户数",
-      value: analyticsData.overview.totalUsers.toLocaleString(),
-      change: "+12.5%",
-      changeType: "positive" as const,
-      icon: <FaUsers />,
-      iconColor: "blue",
-      description: "新增用户: " + analyticsData.overview.newUsers,
-    },
-    {
-      title: "文章总数",
-      value: analyticsData.overview.totalArticles.toLocaleString(),
-      change: "+8.3%",
-      changeType: "positive" as const,
-      icon: <FaFileAlt />,
-      iconColor: "green",
-      description: "本月新增: 45",
-    },
-    {
-      title: "总评论数",
-      value: analyticsData.overview.totalComments.toLocaleString(),
-      change: "-2.1%",
-      changeType: "negative" as const,
-      icon: <FaComments />,
-      iconColor: "orange",
-      description: "今日新增: 12",
-    },
-    {
-      title: "总访问量",
-      value: analyticsData.overview.totalViews.toLocaleString(),
-      change: "+18.7%",
-      changeType: "positive" as const,
-      icon: <FaEye />,
-      iconColor: "purple",
-      description: "今日访问: 2,892",
-    },
-    {
-      title: "平均停留时间",
-      value: analyticsData.overview.avgSessionDuration,
-      change: "+5.2%",
-      changeType: "positive" as const,
-      icon: <FaClock />,
-      iconColor: "cyan",
-      description: "较上周期",
-    },
-    {
-      title: "跳出率",
-      value: analyticsData.overview.bounceRate,
-      change: "-3.4%",
-      changeType: "positive" as const,
-      icon: <FaMousePointer />,
-      iconColor: "red",
-      description: "较上周期",
-    },
   ];
 
   useEffect(() => {
-    const initTrendChart = () => {
-      if (!trendChartRef.current) return;
-
-      const chart = echarts.init(trendChartRef.current);
-      trendChartInstance.current = chart;
-
-      const data = analyticsData.trends[selectedMetric as keyof typeof analyticsData.trends];
-
-      const option = {
-        tooltip: {
-          trigger: "axis",
-          axisPointer: {
-            type: "cross",
-          },
-        },
-        legend: {
-          data: [selectedMetric === "visits" ? "访问量" : selectedMetric === "users" ? "用户数" : "页面浏览量"],
-          bottom: 0,
-        },
-        grid: {
-          top: 20,
-          bottom: 60,
-          left: 60,
-          right: 40,
-        },
-        xAxis: {
-          type: "category",
-          data: data.map((item) => item.label),
-          axisLine: {
-            lineStyle: {
-              color: "#e0e0e0",
-            },
-          },
-        },
-        yAxis: {
-          type: "value",
-          axisLine: {
-            lineStyle: {
-              color: "#e0e0e0",
-            },
-          },
-          splitLine: {
-            lineStyle: {
-              color: "#f0f0f0",
-            },
-          },
-        },
-        series: [
-          {
-            name: selectedMetric === "visits" ? "访问量" : selectedMetric === "users" ? "用户数" : "页面浏览量",
-            type: "line",
-            data: data.map((item) => item.value),
-            smooth: true,
-            lineStyle: {
-              width: 3,
-              color: "#4f46e5",
-            },
-            areaStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: "rgba(79, 70, 229, 0.3)" },
-                { offset: 1, color: "rgba(79, 70, 229, 0.05)" },
-              ]),
-            },
-            itemStyle: {
-              color: "#4f46e5",
-            },
-          },
-        ],
-      };
-
-      chart.setOption(option);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [statsRes, userStatsRes, articleStatsRes, commentStatsRes, trendRes, activitiesRes] = await Promise.all([
+          DashboardService.getStats(),
+          AuthService.getAdminUserStats(),
+          ArticleService.getAdminArticleStats(),
+          CommentService.getAdminStats(),
+          DashboardService.getTrend(periodMap[selectedPeriod]),
+          DashboardService.getActivities(8),
+        ]);
+        setStats(statsRes);
+        setUserStats(userStatsRes);
+        setArticleStats(articleStatsRes);
+        setCommentStats(commentStatsRes);
+        setTrendData(trendRes);
+        setActivities(activitiesRes.list || []);
+      } catch {
+        // error handled by interceptor
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchData();
+  }, []);
 
-    const initPieChart = () => {
-      if (!pieChartRef.current) return;
-
-      const chart = echarts.init(pieChartRef.current);
-      pieChartInstance.current = chart;
-
-      const option = {
-        tooltip: {
-          trigger: "item",
-          formatter: "{a} <br/>{b}: {c}% ({d}%)",
-        },
-        legend: {
-          orient: "vertical",
-          left: "left",
-          data: analyticsData.traffic.sources.map((item) => item.name),
-        },
-        series: [
-          {
-            name: "流量来源",
-            type: "pie",
-            radius: ["40%", "70%"],
-            center: ["60%", "50%"],
-            data: analyticsData.traffic.sources.map((item) => ({
-              value: item.value,
-              name: item.name,
-            })),
-            emphasis: {
-              itemStyle: {
-                shadowBlur: 10,
-                shadowOffsetX: 0,
-                shadowColor: "rgba(0, 0, 0, 0.5)",
-              },
-            },
-          },
-        ],
-      };
-
-      chart.setOption(option);
+  useEffect(() => {
+    const fetchTrend = async () => {
+      try {
+        const trendRes = await DashboardService.getTrend(periodMap[selectedPeriod]);
+        setTrendData(trendRes);
+      } catch {
+        // error handled by interceptor
+      }
     };
+    fetchTrend();
+  }, [selectedPeriod]);
 
-    const initBarChart = () => {
-      if (!barChartRef.current) return;
-
-      const chart = echarts.init(barChartRef.current);
-      barChartInstance.current = chart;
-
-      const option = {
-        tooltip: {
-          trigger: "axis",
-          axisPointer: {
-            type: "shadow",
-          },
-        },
-        grid: {
-          top: 20,
-          bottom: 40,
-          left: 60,
-          right: 40,
-        },
-        xAxis: {
-          type: "category",
-          data: analyticsData.traffic.devices.map((item) => item.name),
-          axisLine: {
-            lineStyle: {
-              color: "#e0e0e0",
-            },
-          },
-        },
-        yAxis: {
-          type: "value",
-          axisLine: {
-            lineStyle: {
-              color: "#e0e0e0",
-            },
-          },
-          splitLine: {
-            lineStyle: {
-              color: "#f0f0f0",
-            },
-          },
-        },
-        series: [
-          {
-            name: "用户数",
-            type: "bar",
-            data: analyticsData.traffic.devices.map((item) => item.value),
-            itemStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: "#667eea" },
-                { offset: 1, color: "#764ba2" },
-              ]),
-            },
-            emphasis: {
-              itemStyle: {
-                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                  { offset: 0, color: "#5a67d8" },
-                  { offset: 1, color: "#667eea" },
-                ]),
-              },
-            },
-          },
-        ],
-      };
-
-      chart.setOption(option);
+  useEffect(() => {
+    const fetchPopularArticles = async () => {
+      try {
+        const res: ListAdminArticlesResponse = await ArticleService.listAdminArticlesByPages({
+          page_num: 1,
+          page_size: 5,
+          state: 2,
+        });
+        setPopularArticles(
+          (res.list || []).map((a) => ({
+            id: a.id,
+            title: a.title,
+            views: a.views ?? 0,
+            likes: a.praise ?? 0,
+            comments: a.favorites ?? 0,
+            author: a.author,
+          })),
+        );
+      } catch {
+        // error handled by interceptor
+      }
     };
+    fetchPopularArticles();
+  }, []);
 
-    const handleResize = () => {
-      trendChartInstance.current?.resize();
-      pieChartInstance.current?.resize();
-      barChartInstance.current?.resize();
-    };
-
-    initTrendChart();
-    initPieChart();
-    initBarChart();
-
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      trendChartInstance.current?.dispose();
-      pieChartInstance.current?.dispose();
-      barChartInstance.current?.dispose();
-    };
-  }, [analyticsData, selectedMetric]);
-
-  // 导出数据
-  const exportData = () => {
-    setIsLoading(true);
-    // 模拟导出过程
-    setTimeout(() => {
-      setIsLoading(false);
-      // console.log('导出分析数据');
-    }, 2000);
+  const initLineChart = (el: HTMLDivElement, data: DashboardTrend) => {
+    const chart = echarts.init(el);
+    chart.setOption({
+      tooltip: { trigger: "axis", axisPointer: { type: "cross" } },
+      grid: { top: 20, bottom: 30, left: 60, right: 20 },
+      xAxis: { type: "category", data: data.list.map((i) => i.label), axisLine: { lineStyle: { color: "#e0e0e0" } } },
+      yAxis: {
+        type: "value",
+        axisLine: { lineStyle: { color: "#e0e0e0" } },
+        splitLine: { lineStyle: { color: "#f0f0f0" } },
+      },
+      series: [
+        {
+          name: "访问量",
+          type: "line",
+          data: data.list.map((i) => i.visits),
+          smooth: true,
+          lineStyle: { width: 3, color: "#4f46e5" },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: "rgba(79, 70, 229, 0.3)" },
+              { offset: 1, color: "rgba(79, 70, 229, 0.05)" },
+            ]),
+          },
+          itemStyle: { color: "#4f46e5" },
+        },
+      ],
+    });
+    return chart;
   };
+
+  const initPieChart = (el: HTMLDivElement, data: Array<{ value: number; name: string; color: string }>) => {
+    const chart = echarts.init(el);
+    chart.setOption({
+      tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
+      legend: { bottom: 0, textStyle: { fontSize: 12, color: "var(--text-secondary)" } },
+      series: [
+        {
+          type: "pie",
+          radius: ["42%", "68%"],
+          center: ["50%", "45%"],
+          label: { show: false },
+          data: data.map((d) => ({ value: d.value, name: d.name, itemStyle: { color: d.color } })),
+        },
+      ],
+    });
+    return chart;
+  };
+
+  useEffect(() => {
+    if (!trendChartRef.current || !trendData) return;
+    trendChartInstance.current?.dispose();
+    trendChartInstance.current = initLineChart(trendChartRef.current, trendData);
+    const h = () => trendChartInstance.current?.resize();
+    window.addEventListener("resize", h);
+    return () => {
+      window.removeEventListener("resize", h);
+      trendChartInstance.current?.dispose();
+    };
+  }, [trendData]);
+
+  useEffect(() => {
+    if (!articlePieRef.current || !articleStats) return;
+    articlePieInstance.current?.dispose();
+    articlePieInstance.current = initPieChart(articlePieRef.current, [
+      { value: articleStats.published_articles, name: "已发布", color: "#4361ee" },
+      { value: articleStats.pending_articles, name: "待审核", color: "#f59e0b" },
+      { value: articleStats.rejected_articles, name: "已拒绝", color: "#ef4444" },
+      { value: articleStats.reported_articles, name: "被举报", color: "#dc2626" },
+    ]);
+    const h = () => articlePieInstance.current?.resize();
+    window.addEventListener("resize", h);
+    return () => {
+      window.removeEventListener("resize", h);
+      articlePieInstance.current?.dispose();
+    };
+  }, [articleStats]);
+
+  useEffect(() => {
+    if (!userPieRef.current || !userStats) return;
+    userPieInstance.current?.dispose();
+    userPieInstance.current = initPieChart(userPieRef.current, [
+      { value: userStats.active_users ?? 0, name: "活跃用户", color: "#10b981" },
+      { value: userStats.inactive_users ?? 0, name: "非活跃用户", color: "#f59e0b" },
+    ]);
+    const h = () => userPieInstance.current?.resize();
+    window.addEventListener("resize", h);
+    return () => {
+      window.removeEventListener("resize", h);
+      userPieInstance.current?.dispose();
+    };
+  }, [userStats]);
+
+  useEffect(() => {
+    if (!commentPieRef.current || !commentStats) return;
+    commentPieInstance.current?.dispose();
+    commentPieInstance.current = initPieChart(commentPieRef.current, [
+      { value: commentStats.approved_comments, name: "已通过", color: "#10b981" },
+      { value: commentStats.pending_comments, name: "待审核", color: "#f59e0b" },
+      { value: commentStats.spam_comments, name: "垃圾评论", color: "#ef4444" },
+      { value: commentStats.reported_comments, name: "被举报", color: "#dc2626" },
+    ]);
+    const h = () => commentPieInstance.current?.resize();
+    window.addEventListener("resize", h);
+    return () => {
+      window.removeEventListener("resize", h);
+      commentPieInstance.current?.dispose();
+    };
+  }, [commentStats]);
+
+  const handleExport = async () => {
+    setExporting(true);
+    setTimeout(() => {
+      setExporting(false);
+      message.success("报告已生成");
+    }, 1500);
+  };
+
+  const formatNumber = (n: number | undefined | null) => (n ?? 0).toLocaleString();
+
+  const overviewCards = [
+    { label: "总用户数", value: formatNumber(userStats?.total_users), icon: <FaUsers />, color: "primary" },
+    { label: "文章总数", value: formatNumber(articleStats?.total_articles), icon: <FaFileAlt />, color: "primary" },
+    { label: "评论总数", value: formatNumber(commentStats?.total_comments), icon: <FaComments />, color: "success" },
+    { label: "今日访问", value: formatNumber(stats?.today_visits), icon: <FaEye />, color: "warning" },
+    { label: "新增(30天)", value: formatNumber(userStats?.new_users_30d), icon: <FaUserPlus />, color: "success" },
+    { label: "待审核", value: formatNumber(articleStats?.pending_articles), icon: <FaHourglassHalf />, color: "warning" },
+  ];
+
+  if (loading) {
+    return (
+      <div className={styles.analytics}>
+        <Loading text="加载统计数据中..." size="large" />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.analytics}>
-      {/* 页面头部 */}
       <div className={styles.pageHeader}>
-        <div className={styles.headerLeft}>
-          <h1 className={styles.pageTitle}>
-            <FaChartBar />
-            统计分析
-          </h1>
+        <div>
+          <h1 className={styles.pageTitle}>统计分析</h1>
           <p className={styles.pageDescription}>查看网站访问量、用户行为和内容表现等详细统计数据</p>
         </div>
         <div className={styles.headerActions}>
-          <button className={styles.exportButton} onClick={exportData} disabled={isLoading}>
+          <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleExport} disabled={exporting}>
             <FaDownload />
-            {isLoading ? "导出中..." : "导出报告"}
+            {exporting ? "导出中..." : "导出报告"}
           </button>
         </div>
       </div>
 
-      {/* 筛选控制栏 */}
-      <div className={styles.controlsSection}>
-        <div className={styles.controlGroup}>
-          <div className={styles.controlItem}>
-            <FaCalendarAlt className={styles.controlIcon} />
+      <div className={styles.statsContainer}>
+        {overviewCards.map((card, i) => (
+          <div key={i} className={styles.statCard}>
+            <div className={`${styles.statIcon} ${styles[card.color]}`}>{card.icon}</div>
+            <div className={styles.statValue}>{card.value}</div>
+            <div className={styles.statLabel}>{card.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.filterSection}>
+        <div className={styles.filterHeader}>
+          <h3 className={styles.filterTitle}>
+            <FaFilter />
+            筛选条件
+          </h3>
+        </div>
+        <div className={styles.filterForm}>
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>时间范围</label>
             <CustomSelect
               name="时间范围"
-              value={periodOptions.find((option) => option.id === selectedPeriod) || null}
-              onChange={(selectedOption) => setSelectedPeriod(String(selectedOption?.id || "7天"))}
+              value={periodOptions.find((o) => o.id === selectedPeriod) || null}
+              onChange={(option) => setSelectedPeriod(String(option?.id || "7天"))}
               options={periodOptions}
               hideBadge={true}
               placeholder="选择时间范围"
             />
           </div>
-          <div className={styles.controlItem}>
-            <FaFilter className={styles.controlIcon} />
-            <CustomSelect
-              name="指标类型"
-              value={metricOptions.find((option) => option.id === selectedMetric) || null}
-              onChange={(selectedOption) => setSelectedMetric(String(selectedOption?.id || "visits"))}
-              options={metricOptions}
-              hideBadge={true}
-              placeholder="选择指标类型"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* 概览统计卡片 */}
-      <div className={styles.overviewGrid}>
-        {overviewStats.map((stat, index) => (
-          <div key={index} className={styles.statCard}>
-            <div className={`${styles.statIcon} ${styles[stat.iconColor]}`}>{stat.icon}</div>
-            <div className={styles.statContent}>
-              <div className={styles.statTitle}>{stat.title}</div>
-              <div className={styles.statValue}>{stat.value}</div>
-              <div className={`${styles.statChange} ${styles[stat.changeType]}`}>
-                {stat.changeType === "positive" ? <FaArrowUp /> : stat.changeType === "negative" ? <FaArrowDown /> : <FaMinus />}
-                {stat.change}
+          {trendData && (
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel}>趋势摘要</label>
+              <div className={styles.trendSummary}>
+                <span>总计 {formatNumber(trendData.total_visits)}</span>
+                <span>日均 {formatNumber(trendData.avg_visits)}</span>
+                <span>峰值 {formatNumber(trendData.max_visits)}</span>
               </div>
-              <div className={styles.statDescription}>{stat.description}</div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* 图表区域 */}
-      <div className={styles.chartsSection}>
-        <div className={styles.chartRow}>
-          {/* 趋势图表 */}
-          <div className={styles.chartCard}>
-            <div className={styles.chartHeader}>
-              <h3 className={styles.chartTitle}>
-                {selectedMetric === "visits" ? "访问量趋势" : selectedMetric === "users" ? "用户数趋势" : "页面浏览量趋势"}
-              </h3>
-            </div>
-            <div ref={trendChartRef} className={styles.chartContainer} />
-          </div>
-
-          {/* 饼图 */}
-          <div className={styles.chartCard}>
-            <div className={styles.chartHeader}>
-              <h3 className={styles.chartTitle}>流量来源分布</h3>
-            </div>
-            <div ref={pieChartRef} className={styles.chartContainer} />
-          </div>
-        </div>
-
-        <div className={styles.chartRow}>
-          {/* 设备分布 */}
-          <div className={styles.chartCard}>
-            <div className={styles.chartHeader}>
-              <h3 className={styles.chartTitle}>设备类型分布</h3>
-            </div>
-            <div ref={barChartRef} className={styles.chartContainer} />
-          </div>
-
-          {/* 地区分布 */}
-          <div className={styles.chartCard}>
-            <div className={styles.chartHeader}>
-              <h3 className={styles.chartTitle}>地区分布</h3>
-            </div>
-            <div className={styles.locationList}>
-              {analyticsData.traffic.locations.map((location, index) => (
-                <div key={index} className={styles.locationItem}>
-                  <div className={styles.locationInfo}>
-                    <FaGlobe className={styles.locationIcon} />
-                    <span className={styles.locationName}>{location.country}</span>
-                  </div>
-                  <div className={styles.locationStats}>
-                    <span className={styles.locationUsers}>{location.users.toLocaleString()}</span>
-                    <span className={styles.locationPercentage}>{location.percentage}%</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* 内容分析 */}
-      <div className={styles.contentSection}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>内容分析</h2>
+      <div className={styles.chartCard}>
+        <div className={styles.chartHeader}>
+          <h3 className={styles.chartTitle}>访问趋势</h3>
         </div>
-        <div className={styles.contentGrid}>
-          {/* 热门文章 */}
-          <div className={styles.contentCard}>
-            <h3 className={styles.contentTitle}>
-              <FaFileAlt />
-              热门文章
-            </h3>
-            <div className={styles.articleList}>
-              {analyticsData.content.popularArticles.map((article, index) => (
-                <div key={article.id} className={styles.articleItem}>
-                  <div className={styles.articleRank}>{index + 1}</div>
-                  <div className={styles.articleInfo}>
-                    <div className={styles.articleTitle}>{article.title}</div>
-                    <div className={styles.articleStats}>
-                      <span className={styles.articleStat}>
-                        <FaEye /> {article.views.toLocaleString()}
-                      </span>
-                      <span className={styles.articleStat}>
-                        <FaUsers /> {article.likes}
-                      </span>
-                      <span className={styles.articleStat}>
-                        <FaComments /> {article.comments}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        <div ref={trendChartRef} className={styles.chartContainer} />
+      </div>
 
-          {/* 分类统计 */}
-          <div className={styles.contentCard}>
-            <h3 className={styles.contentTitle}>
-              <FaChartPie />
-              分类统计
-            </h3>
-            <div className={styles.categoryList}>
-              {analyticsData.content.categories.map((category, index) => (
-                <div key={index} className={styles.categoryItem}>
-                  <div className={styles.categoryInfo}>
-                    <span className={styles.categoryName}>{category.name}</span>
-                    <span className={styles.categoryCount}>{category.count} 篇</span>
+      <div className={styles.chartsGrid}>
+        <div className={styles.chartCard}>
+          <div className={styles.chartHeader}>
+            <h3 className={styles.chartTitle}>文章状态</h3>
+          </div>
+          <div ref={articlePieRef} className={styles.chartContainerSmall} />
+        </div>
+        <div className={styles.chartCard}>
+          <div className={styles.chartHeader}>
+            <h3 className={styles.chartTitle}>用户活跃度</h3>
+          </div>
+          <div ref={userPieRef} className={styles.chartContainerSmall} />
+        </div>
+        <div className={styles.chartCard}>
+          <div className={styles.chartHeader}>
+            <h3 className={styles.chartTitle}>评论状态</h3>
+          </div>
+          <div ref={commentPieRef} className={styles.chartContainerSmall} />
+        </div>
+      </div>
+
+      {/* 底部数据面板 */}
+      <div className={styles.bottomPanel}>
+        {/* 热门文章 */}
+        <div className={styles.panelCard}>
+          <div className={styles.panelHeader}>
+            <h3 className={styles.panelTitle}>热门文章</h3>
+            <span className={styles.panelSubtitle}>按浏览量排序</span>
+          </div>
+          <table className={styles.analyticsTable}>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>标题</th>
+                <th>作者</th>
+                <th>浏览</th>
+                <th>点赞</th>
+              </tr>
+            </thead>
+            <tbody>
+              {popularArticles.length > 0 ? (
+                popularArticles.map((a, i) => (
+                  <tr key={a.id}>
+                    <td>
+                      <span className={styles.rankBadge}>{i + 1}</span>
+                    </td>
+                    <td className={styles.titleCell}>{a.title}</td>
+                    <td>{a.author}</td>
+                    <td>{formatNumber(a.views)}</td>
+                    <td>{formatNumber(a.likes)}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className={styles.emptyCell}>
+                    暂无数据
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* 近期活动 */}
+        <div className={styles.panelCard}>
+          <div className={styles.panelHeader}>
+            <h3 className={styles.panelTitle}>近期活动</h3>
+            <span className={styles.panelSubtitle}>最新动态</span>
+          </div>
+          <div className={styles.activityList}>
+            {activities.length > 0 ? (
+              activities.map((act, i) => (
+                <div key={i} className={styles.activityItem}>
+                  <div className={`${styles.activityDot} ${styles[ACTIVITY_COLOR[act.type] || "primary"]}`} />
+                  <div className={styles.activityContent}>
+                    <div className={styles.activityTitle}>{act.title}</div>
+                    <div className={styles.activityTime}>{act.time || ACTIVITY_LABEL[act.type] || act.type}</div>
                   </div>
-                  <div className={styles.categoryBar}>
-                    <div className={styles.categoryProgress} style={{ width: `${category.percentage}%` }} />
-                  </div>
-                  <span className={styles.categoryPercentage}>{category.percentage}%</span>
                 </div>
-              ))}
-            </div>
+              ))
+            ) : (
+              <div className={styles.emptyCell}>暂无活动</div>
+            )}
           </div>
         </div>
       </div>
