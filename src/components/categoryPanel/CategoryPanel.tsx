@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { Category } from "@/types/index";
-import { FaChevronDown, FaChevronRight } from "react-icons/fa";
+import { FaChevronDown, FaChevronRight, FaFileAlt, FaEye, FaFolderOpen } from "react-icons/fa";
 import styles from "./CategoryPanel.module.css";
 import CategoryService from "@/services/categoryService";
 import Skeleton from "../skeleton/Skeleton";
@@ -19,6 +19,7 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ selectedCategoryId, onCat
     const fetchCategories = async () => {
       try {
         const response = await CategoryService.queryCategory();
+        console.log("Fetched categories:", response); // 调试输出
         // @ts-ignore
         const list = response.list || [];
 
@@ -31,7 +32,8 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ selectedCategoryId, onCat
           categoryMap.set(item.id, {
             id: item.id,
             name: item.name,
-            count: 0, // 暂时没有文章计数，设为0
+            count: item.article_count || 0,
+            view_count: item.view_count || 0,
             color: item.color,
             children: [],
           });
@@ -74,18 +76,24 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ selectedCategoryId, onCat
 
   return (
     <div className={styles.categoryPanel}>
-      <h3 className={styles.panelTitle}>文章分类</h3>
+      <h3 className={styles.panelTitle}>
+        <FaFolderOpen className={styles.titleIcon} /> 文章分类
+      </h3>
       {loading ? (
-        <div className={styles.emptyPlaceholder}>
+        <div className={styles.skeletonList}>
           {Array.from({ length: 4 }, (_, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0" }}>
-              <Skeleton variant="text" width={100} height={16} />
-              <Skeleton variant="text" width={30} height={14} />
+            <div key={i} className={styles.skeletonRow}>
+              <Skeleton variant="circular" width={8} height={8} />
+              <Skeleton variant="text" width={60 + Math.random() * 60} height={15} />
+              <Skeleton variant="rectangular" width={28} height={18} className={styles.skeletonBadge} />
             </div>
           ))}
         </div>
       ) : categories.length === 0 ? (
-        <div className={styles.emptyPlaceholder}>暂无分类</div>
+        <div className={styles.emptyState}>
+          <FaFolderOpen className={styles.emptyIcon} />
+          <span>暂无分类</span>
+        </div>
       ) : (
         <ul className={styles.categoryList}>
           {categories.map((category) => {
@@ -110,8 +118,18 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ selectedCategoryId, onCat
                     className={`${styles.parentLink} ${selectedCategoryId === category.id ? styles.categorySelected : ""}`}
                     onClick={() => handleCategoryClick(category.id, category.name)}
                   >
+                    <span className={styles.colorDot} style={{ backgroundColor: category.color || "var(--primary)" }} />
                     <span className={styles.parentName}>{category.name}</span>
-                    <span className={styles.parentCount}>{category.count}</span>
+                    <span className={styles.parentMeta}>
+                      <span className={styles.metaItem}>
+                        <FaFileAlt className={styles.metaIcon} />
+                        {category.count}
+                      </span>
+                      <span className={styles.metaItem}>
+                        <FaEye className={styles.metaIcon} />
+                        {category.view_count}
+                      </span>
+                    </span>
                   </span>
                 </div>
 
@@ -125,8 +143,18 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({ selectedCategoryId, onCat
                             className={`${styles.childLink} ${selectedCategoryId === child.id ? styles.categorySelected : ""}`}
                             onClick={() => handleCategoryClick(child.id, child.name)}
                           >
+                            <span className={styles.childDot} style={{ backgroundColor: child.color || "var(--text-tertiary)" }} />
                             <span className={styles.childName}>{child.name}</span>
-                            <span className={styles.childCount}>{child.count}</span>
+                            <span className={styles.childMeta}>
+                              <span className={styles.metaItem}>
+                                <FaFileAlt className={styles.metaIcon} />
+                                {child.count}
+                              </span>
+                              <span className={styles.metaItem}>
+                                <FaEye className={styles.metaIcon} />
+                                {child.view_count}
+                              </span>
+                            </span>
                           </span>
                         </li>
                       ))}

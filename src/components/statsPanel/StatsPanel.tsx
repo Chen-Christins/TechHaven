@@ -73,7 +73,9 @@ const StatsPanel: React.FC = () => {
 
   return (
     <div className={styles.statsPanel}>
-      <h3 className={styles.panelTitle}>访问统计</h3>
+      <h3 className={styles.panelTitle}>
+        <FaChartLine className={styles.titleIcon} /> 访问统计
+      </h3>
       <div className={styles.statsGrid}>
         {statsItems.map((item, index) => (
           <div key={index} className={styles.statItem}>

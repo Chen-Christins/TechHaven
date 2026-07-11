@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FaRss } from "react-icons/fa";
 import styles from "./SubscribeBox.module.css";
 
 const SubscribeBox: React.FC = () => {
@@ -28,7 +29,9 @@ const SubscribeBox: React.FC = () => {
 
   return (
     <div className={styles.subscribeBox}>
-      <h3 className={styles.panelTitle}>订阅更新</h3>
+      <h3 className={styles.panelTitle}>
+        <FaRss className={styles.titleIcon} /> 订阅更新
+      </h3>
       <p className={styles.subscribeDesc}>输入邮箱，获取最新文章推送</p>
       <form onSubmit={handleSubmit} className={styles.subscribeForm}>
         <input

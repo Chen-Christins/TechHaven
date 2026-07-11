@@ -1,4 +1,5 @@
 import React from "react";
+import { FaTags } from "react-icons/fa";
 import styles from "./TagPanel.module.css";
 import type { Tag } from "@/types/index";
 import Skeleton from "../skeleton/Skeleton";
@@ -47,7 +48,9 @@ const TagPanel: React.FC<TagPanelProps> = ({
 
   return (
     <div className={panelClasses} style={panelStyle}>
-      <h3 className={styles.panelTitle}>文章标签</h3>
+      <h3 className={styles.panelTitle}>
+        <FaTags className={styles.titleIcon} /> 文章标签
+      </h3>
       <div className={styles.content}>
         {loading ? (
           // 加载状态显示骨架屏

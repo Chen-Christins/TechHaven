@@ -61,10 +61,11 @@ export interface StatsData {
 
 // 二级分类类型（支持父分类→子分类）
 export interface Category {
-  id: number | string; // 分类唯一标识
-  name: string; // 分类名称
-  count?: number; // 该分类下的文章总数（含子分类）
-  children?: Category[]; // 子分类（可选，二级分类）
+  id: number | string;
+  name: string;
+  count?: number;
+  view_count?: number;
+  children?: Category[];
   color: string;
 }
 
