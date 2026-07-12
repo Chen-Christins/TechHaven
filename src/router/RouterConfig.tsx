@@ -25,9 +25,6 @@ import ArticleViewPage from "../pages/article/ArticleViewPage";
 import AssignmentSubmit from "../pages/assignment/AssignmentSubmit";
 import AssignmentSubmissions from "../pages/assignment/AssignmentSubmissions";
 import ChunkUploadTest from "../pages/test/ChunkUploadTest";
-import GMShell from "../pages/gm/GMShell";
-import GMDashboard from "../pages/gm/GMDashboard";
-import GMProtocol from "../pages/gm/GMProtocol";
 import RdLayout from "../pages/rd-platform/RdLayout";
 import RdDashboard from "../pages/rd-platform/Dashboard";
 import RequirementList from "../pages/rd-platform/RequirementList";
@@ -93,13 +90,6 @@ const RouterConfig: React.FC = () => {
 
         {/* 个人管理中心 */}
         <Route path="/personal" element={<PersonalCenter />} />
-
-        {/* GM 业务控制台（平台入口，支持后续子页） */}
-        <Route path="/gm" element={<GMShell />}>
-          <Route index element={<Navigate to="/gm/dashboard" replace />} />
-          <Route path="dashboard" element={<GMDashboard />} />
-          <Route path="protocol" element={<GMProtocol />} />
-        </Route>
 
         {/* 研发平台 */}
         <Route path="/rd" element={<RdLayout />}>
