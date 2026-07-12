@@ -109,7 +109,7 @@ const OrganizationManagement: React.FC = () => {
           name: item.name,
           type: item.type,
           status: STATUS_NUMBER_MAP_STR[Number(item.status)] as "active" | "inactive",
-          createdAt: dayjs.unix(item.create_time).format("YYYY-MM-DD"),
+          createdAt: dayjs.unix(item.create_time).format("YYYY-MM-DD HH:mm:ss"),
           description: item.description,
           memberCount: item.count, // 如有成员数字段可填
         }),
@@ -800,7 +800,7 @@ const OrganizationManagement: React.FC = () => {
                           </td>
                           <td>{getApplyStatusBadge(item.status)}</td>
                           <td style={{ color: "var(--text-secondary)", fontSize: "13px" }}>
-                            {item.created_at ? dayjs.unix(item.created_at).format("YYYY-MM-DD HH:mm") : "-"}
+                            {item.created_at ? dayjs.unix(item.created_at).format("YYYY-MM-DD HH:mm:ss") : "-"}
                           </td>
                           <td>
                             <div className={styles.actionButtons}>

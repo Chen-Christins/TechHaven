@@ -60,6 +60,7 @@ export interface ListAdminArticlesResponse {
     views: number;
     praise: number;
     favorites: number;
+    comment_count: number;
   }>;
 }
 

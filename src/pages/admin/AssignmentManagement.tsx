@@ -17,6 +17,7 @@ import {
   FaFlag,
 } from "react-icons/fa";
 import DatePicker from "@/components/datePicker/DatePicker";
+import { formatDateTime } from "@/utils/utils";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import Input from "@/components/input/Input";
 import Loading from "@/components/loading/Loading";
@@ -137,27 +138,11 @@ const AssignmentManagement: React.FC = () => {
         courseName: item.subject_name,
         organizationName: item.organization_name || "",
         assignedBy: item.assigned_by || "",
-        deadline: new Date(item.end_time * 1000)
-          .toLocaleString("zh-CN", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false,
-          })
-          .replace(/\//g, "-"),
+        deadline: formatDateTime(item.end_time),
         status: STATE_NUMBER_MAP_STR[Number(item.status)] as "active" | "draft" | "closed",
         submissionCount: 0, // 暂无数据
         totalStudents: 0, // 暂无数据
-        createdAt: new Date(item.create_time * 1000)
-          .toLocaleDateString("zh-CN", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          })
-          .replace(/\//g, "-"),
+        createdAt: formatDateTime(item.create_time),
         description: item.description,
         priority: PRIORITY_NUMBER_MAP_STR[item.priority] as "low" | "medium" | "high" | "urgent",
         maxFileSize: item.file_size,

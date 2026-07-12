@@ -8,6 +8,7 @@ export interface Article {
   favorites: number;
   praise: number;
   views: number;
+  comments?: number;
   publish_time: string;
   update_time: string;
   type: number;

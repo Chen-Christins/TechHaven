@@ -225,7 +225,7 @@ const ArticleManagement: React.FC = () => {
             featured: false, // 占位符，API未提供
             views: article.views ?? 0,
             likes: article.praise ?? 0,
-            comments: article.favorites ?? 0,
+            comments: article.comment_count ?? 0,
             readTime: 0, // 占位符，API未提供
             publishedAt: article.publish_time ? formatToChinaTime(Number(article.publish_time)) : "暂未发布",
             createdAt: formatToChinaTime(Number(article.publish_time)),
