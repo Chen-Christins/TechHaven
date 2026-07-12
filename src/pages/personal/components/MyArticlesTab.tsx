@@ -89,6 +89,7 @@ const MyArticlesTab: React.FC = () => {
               category: article.categories?.map((c: any) => c.name).join("、") || "未分类",
               tags: [],
               categories: article.categories || [],
+              comment_count: article.comment_count ?? 0,
             })),
           );
         } else {
@@ -309,7 +310,7 @@ const MyArticlesTab: React.FC = () => {
                   <FaThumbsUp /> {article.praise}
                 </div>
                 <div className={styles.dataItem}>
-                  <FaComment /> {article.favorites}
+                  <FaComment /> {article.comment_count}
                 </div>
               </div>
               <div className={styles.dateCell}>
