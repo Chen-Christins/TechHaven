@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaHome, FaPen, FaBars, FaSignOutAlt, FaUserCircle, FaBuilding, FaFlask, FaGamepad, FaTimes } from "react-icons/fa";
+import { FaHome, FaPen, FaBars, FaSignOutAlt, FaUserCircle, FaBuilding, FaFlask, FaTimes } from "react-icons/fa";
 import styles from "./Navbar.module.css";
 import LayoutWidthToggle from "../layoutWidthToggle/LayoutWidthToggle";
 import ThemeToggle from "../themeToggle/ThemeToggle";
@@ -96,9 +96,6 @@ const Navbar: React.FC = () => {
     if (path === "/organizations/list") {
       return location.pathname.startsWith("/organizations") || location.pathname.startsWith("/organization");
     }
-    if (path === "/gm") {
-      return location.pathname.startsWith("/gm");
-    }
     if (path === "/rd") {
       return location.pathname.startsWith("/rd");
     }
@@ -107,9 +104,6 @@ const Navbar: React.FC = () => {
 
   const getNavLinks = () => {
     const links = [...navLinks, { label: "研发", icon: <FaFlask />, path: "/rd" }];
-    if (isAuthenticated && user?.role === "管理员") {
-      links.push({ label: "游戏", icon: <FaGamepad />, path: "/gm" });
-    }
     return links;
   };
 
