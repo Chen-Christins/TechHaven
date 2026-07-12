@@ -1,5 +1,13 @@
 module.exports = {
-  "printWidth": 135, //一行的字符数，如果超过会进行换行，默认为80
-  "tabWidth": 2, //一个tab代表几个空格数，默认为2
-  "arrowParens": "always",
-}
+  printWidth: 135,
+  tabWidth: 2,
+  useTabs: false,
+  semi: true,
+  singleQuote: false,
+  jsxSingleQuote: false,
+  quoteProps: "as-needed",
+  trailingComma: "all",
+  bracketSpacing: true,
+  arrowParens: "always",
+  endOfLine: "lf",
+};
