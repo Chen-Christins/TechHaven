@@ -31,6 +31,7 @@ export interface ArticleListItem {
   category: string;
   tags: string[];
   categories?: Array<{ id: number; name: string }>;
+  comment_count: number;
 }
 
 export interface UserProfile {
