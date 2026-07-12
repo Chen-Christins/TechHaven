@@ -318,7 +318,7 @@ const Profile: React.FC = () => {
                       </div>
                       <h3 className={styles.featuredCardTitle}>{article.title}</h3>
                       <p className={styles.featuredCardExcerpt}>
-                        {(article.content || "").substring(0, 120)}
+                        {(article.content || "").replace(/�/g, "").substring(0, 120)}
                         {(article.content || "").length > 120 ? "..." : ""}
                       </p>
                       <div className={styles.featuredCardFooter}>
@@ -395,7 +395,7 @@ const Profile: React.FC = () => {
               </div>
               <h3 className={styles.articleTitle}>{article.title}</h3>
               <p className={styles.articleExcerpt}>
-                {(article.content || "").substring(0, 100)}
+                {(article.content || "").replace(/�/g, "").substring(0, 100)}
                 {(article.content || "").length > 100 ? "..." : ""}
               </p>
               <div className={styles.articleFooter}>
