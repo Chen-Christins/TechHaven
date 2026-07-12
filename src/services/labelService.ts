@@ -52,6 +52,7 @@ export interface LabelInfo {
   color: string;
   description?: string;
   create_time?: string;
+  article_count?: number;
 }
 
 /**

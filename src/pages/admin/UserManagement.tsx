@@ -385,14 +385,12 @@ const UserManagement: React.FC = () => {
     }
   };
 
-  // 格式化日期
+  // 格式化日期（精确到秒，YYYY-MM-DD HH:mm:ss），无效/epoch 时间显示为 -
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("zh-CN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
+    if (isNaN(date.getTime()) || date.getFullYear() <= 1970) return "-";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
   };
 
   // 生成页码数组

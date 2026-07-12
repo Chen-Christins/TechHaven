@@ -10,6 +10,7 @@ import message from "@/components/message/Message";
 import type { SelectOption } from "@/types/index";
 import styles from "./CategoryManagement.module.css";
 import CategoryService from "@/services/categoryService";
+import { formatDateTime } from "@/utils/utils";
 
 interface Category {
   id: string | number;
@@ -139,8 +140,8 @@ const CategoryManagement: React.FC = () => {
         parentId: item.parent_id,
         articleCount: item.article_count || 0,
         views: item.view_count || 0,
-        createdAt: item.create_time ? new Date(item.create_time * 1000).toISOString().split("T")[0] : "",
-        updatedAt: item.update_time ? new Date(item.update_time * 1000).toISOString().split("T")[0] : "",
+        createdAt: item.create_time ? formatDateTime(item.create_time) : "-",
+        updatedAt: item.update_time ? formatDateTime(item.update_time) : "-",
         status: item.status === 1 ? "active" : "inactive",
         level: item.parent_id ? 1 : 0,
         children: [],
@@ -233,9 +234,7 @@ const CategoryManagement: React.FC = () => {
 
       if (editingCategory) {
         setCategories((prev) =>
-          prev.map((cat) =>
-            cat.id === editingCategory.id ? { ...cat, ...formData, updatedAt: new Date().toISOString().split("T")[0] } : cat,
-          ),
+          prev.map((cat) => (cat.id === editingCategory.id ? { ...cat, ...formData, updatedAt: formatDateTime(new Date()) } : cat)),
         );
         message.success("分类已更新");
       } else {
@@ -249,8 +248,8 @@ const CategoryManagement: React.FC = () => {
           parentId: response.parent_id,
           articleCount: 0,
           views: 0,
-          createdAt: new Date().toISOString().split("T")[0],
-          updatedAt: new Date().toISOString().split("T")[0],
+          createdAt: formatDateTime(new Date()),
+          updatedAt: formatDateTime(new Date()),
           status: formData.status,
           level: formData.parentId ? 1 : 0,
         };
@@ -304,9 +303,7 @@ const CategoryManagement: React.FC = () => {
         status: newStatus === "active" ? 1 : 0,
       });
       setCategories((prev) =>
-        prev.map((cat) =>
-          cat.id === category.id ? { ...cat, status: newStatus, updatedAt: new Date().toISOString().split("T")[0] } : cat,
-        ),
+        prev.map((cat) => (cat.id === category.id ? { ...cat, status: newStatus, updatedAt: formatDateTime(new Date()) } : cat)),
       );
     } catch (error) {
       message.error("切换状态失败");
@@ -344,12 +341,7 @@ const CategoryManagement: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("zh-CN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
+    return formatDateTime(dateString);
   };
 
   if (loading) {

@@ -135,6 +135,7 @@ const Profile: React.FC = () => {
             views: item.views ?? 0,
             praise: item.praise ?? 0,
             favorites: item.favorites ?? 0,
+            comments: item.comment_count ?? 0,
             labels: item.labels || [],
             categorys: item.categories || item.categorys || [],
           }));
@@ -146,7 +147,7 @@ const Profile: React.FC = () => {
           const tagColors = ["#61DAFB", "#3178C6", "#339933", "#4FC08D", "#7B68EE", "#FF6B6B"];
           const mappedTags = labelsData.slice(0, 12).map((label: any, i: number) => ({
             name: label.name || `标签${i + 1}`,
-            count: label.count ?? 0,
+            count: label.article_count ?? 0,
             color: label.color || tagColors[i % tagColors.length],
           }));
           setTags(mappedTags);
@@ -199,6 +200,7 @@ const Profile: React.FC = () => {
           views: item.views ?? 0,
           praise: item.praise ?? 0,
           favorites: item.favorites ?? 0,
+          comments: item.comment_count ?? 0,
           labels: item.labels || [],
           categorys: item.categories || item.categorys || [],
         }));
@@ -295,42 +297,50 @@ const Profile: React.FC = () => {
             <h2 className={styles.sectionTitle}>精选文章</h2>
           </div>
           <div className={styles.featuredGrid}>
-            {articles.slice(0, 6).map((article) => (
-              <article
-                key={article.id}
-                className={styles.featuredCard}
-                onClick={() => navigate(`/article/${encodeId(article.id, "article")}`)}
-              >
-                <div className={styles.featuredCardHeader}>
-                  <span className={styles.articleCategoryBadge}>
-                    {Array.isArray(article.categorys) && article.categorys.length > 0
-                      ? typeof article.categorys[0] === "object"
-                        ? (article.categorys[0] as any).name
-                        : article.categorys[0]
-                      : "未分类"}
-                  </span>
-                </div>
-                <h3 className={styles.featuredCardTitle}>{article.title}</h3>
-                <p className={styles.featuredCardExcerpt}>
-                  {(article.content || "").substring(0, 120)}
-                  {(article.content || "").length > 120 ? "..." : ""}
-                </p>
-                <div className={styles.featuredCardFooter}>
-                  <span className={styles.featuredCardDate}>{article.publish_time}</span>
-                  <div className={styles.featuredCardStats}>
-                    <span>
-                      <Eye size={13} /> {article.views}
-                    </span>
-                    <span>
-                      <Heart size={13} /> {article.praise}
-                    </span>
-                    <span>
-                      <MessageSquare size={13} /> {article.favorites}
-                    </span>
-                  </div>
-                </div>
-              </article>
-            ))}
+            {(() => {
+              const featured = articles.slice(0, 6);
+              return (
+                <>
+                  {featured.map((article) => (
+                    <article
+                      key={article.id}
+                      className={styles.featuredCard}
+                      onClick={() => navigate(`/article/${encodeId(article.id, "article")}`)}
+                    >
+                      <div className={styles.featuredCardHeader}>
+                        <span className={styles.articleCategoryBadge}>
+                          {Array.isArray(article.categorys) && article.categorys.length > 0
+                            ? typeof article.categorys[0] === "object"
+                              ? (article.categorys[0] as any).name
+                              : article.categorys[0]
+                            : "未分类"}
+                        </span>
+                      </div>
+                      <h3 className={styles.featuredCardTitle}>{article.title}</h3>
+                      <p className={styles.featuredCardExcerpt}>
+                        {(article.content || "").substring(0, 120)}
+                        {(article.content || "").length > 120 ? "..." : ""}
+                      </p>
+                      <div className={styles.featuredCardFooter}>
+                        <span className={styles.featuredCardDate}>{article.publish_time}</span>
+                        <div className={styles.featuredCardStats}>
+                          <span>
+                            <Eye size={13} /> {article.views}
+                          </span>
+                          <span>
+                            <Heart size={13} /> {article.praise}
+                          </span>
+                          <span>
+                            <MessageSquare size={13} /> {article.comments}
+                          </span>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                  {featured.length % 2 !== 0 && <div className={styles.featuredCardFiller} aria-hidden="true" />}
+                </>
+              );
+            })()}
           </div>
         </div>
       )}
@@ -406,7 +416,7 @@ const Profile: React.FC = () => {
                     <Heart size={14} /> {article.praise}
                   </span>
                   <span>
-                    <MessageSquare size={14} /> {article.favorites}
+                    <MessageSquare size={14} /> {article.comments}
                   </span>
                   <span>
                     <Clock size={14} /> 5分钟
