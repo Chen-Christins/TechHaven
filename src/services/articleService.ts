@@ -27,7 +27,7 @@ export interface ListArticlesResponse {
     praise: number;
     favorites: number;
     categories?: Array<{ id: number; name: string }>;
-	comment_count: number;
+    comment_count: number;
   }>;
 }
 
@@ -159,6 +159,9 @@ export interface UpdateArticleContentParams {
   id: string | number;
   title: string;
   content: string;
+  type?: number;
+  label?: string;
+  category?: string;
 }
 
 /**
@@ -389,6 +392,9 @@ export class ArticleService {
     formData.append("id", String(params.id));
     formData.append("title", params.title);
     formData.append("content", params.content);
+    if (params.type !== undefined) formData.append("type", String(params.type));
+    if (params.label) formData.append("label", params.label);
+    if (params.category) formData.append("category", params.category);
 
     return http.post("/article/update", formData.toString(), {
       headers: {

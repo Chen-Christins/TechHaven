@@ -116,6 +116,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
                 views: item.views ?? 0,
                 praise: item.praise ?? 0,
                 favorites: item.favorites ?? 0,
+                comment_count: 0,
                 category: item.categories?.map((c) => c.name).join("、") || "未分类",
                 tags: [],
                 categories: item.categories || [],

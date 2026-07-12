@@ -416,6 +416,9 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
           id,
           title: formData.title,
           content: formData.content,
+          type: formData.articleType === "original" ? 1 : 2,
+          label: labelIds,
+          category: categoryId,
         });
         message.success("文章更新成功");
       } else {
@@ -458,6 +461,9 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
           id,
           title: formData.title,
           content: formData.content,
+          type: formData.articleType === "original" ? 1 : 2,
+          label: labelIds,
+          category: categoryId,
         });
         message.success("文章更新成功");
         navigate(`/article/${encodeId(id, "article")}`);
@@ -639,95 +645,92 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
             />
           </div>
 
-          {!id && (
-            <>
-              {/* 文章类型 */}
-              <div className={styles.formSection}>
-                <div className={styles.formSectionTitle}>
-                  <i className="bi bi-file-earmark"></i>
-                  文章类型
-                </div>
-                <div className={styles.radioGroup}>
-                  <label className={styles.radioItem}>
-                    <input
-                      type="radio"
-                      className={styles.radioInput}
-                      name="article-type"
-                      value="original"
-                      checked={formData.articleType === "original"}
-                      onChange={() => handleTypeChange("original")}
-                    />
-                    <span className={styles.radioLabel}>原创文章</span>
-                  </label>
-                  <label className={styles.radioItem}>
-                    <input
-                      type="radio"
-                      className={styles.radioInput}
-                      name="article-type"
-                      value="repost"
-                      checked={formData.articleType === "repost"}
-                      onChange={() => handleTypeChange("repost")}
-                    />
-                    <span className={styles.radioLabel}>转载文章</span>
-                  </label>
-                </div>
-              </div>
+          {/* 文章类型 */}
+          <div className={styles.formSection}>
+            <div className={styles.formSectionTitle}>
+              <i className="bi bi-file-earmark"></i>
+              文章类型
+            </div>
+            <div className={styles.radioGroup}>
+              <label className={styles.radioItem}>
+                <input
+                  type="radio"
+                  className={styles.radioInput}
+                  name="article-type"
+                  value="original"
+                  checked={formData.articleType === "original"}
+                  onChange={() => handleTypeChange("original")}
+                />
+                <span className={styles.radioLabel}>原创文章</span>
+              </label>
+              <label className={styles.radioItem}>
+                <input
+                  type="radio"
+                  className={styles.radioInput}
+                  name="article-type"
+                  value="repost"
+                  checked={formData.articleType === "repost"}
+                  onChange={() => handleTypeChange("repost")}
+                />
+                <span className={styles.radioLabel}>转载文章</span>
+              </label>
+            </div>
+          </div>
 
-              {/* 文章分类 */}
-              <div className={styles.formSection}>
-                <div className={styles.formSectionTitle}>
-                  <i className="bi bi-folder"></i>
-                  文章分类
-                </div>
-                <div style={{ position: "relative" }}>
-                  <CustomSelect
-                    name={"分类"}
-                    options={categories}
-                    value={formData.category}
-                    onChange={(selected, _idx) => {
-                      setFormData((prev) => ({ ...prev, category: selected }));
-                    }}
-                  />
-                </div>
-              </div>
+          {/* 文章分类 */}
+          <div className={styles.formSection}>
+            <div className={styles.formSectionTitle}>
+              <i className="bi bi-folder"></i>
+              文章分类
+            </div>
+            <div style={{ position: "relative" }}>
+              <CustomSelect
+                name={"分类"}
+                options={categories}
+                value={formData.category}
+                hideBadge
+                onChange={(selected, _idx) => {
+                  setFormData((prev) => ({ ...prev, category: selected }));
+                }}
+              />
+            </div>
+          </div>
 
-              {/* 文章标签 */}
-              <div className={styles.formSection}>
-                <div className={styles.formSectionTitle}>
-                  <i className="bi bi-tags"></i>
-                  文章标签
-                  <AddButton name="标签" onAdd={handleAddTag} />
+          {/* 文章标签 */}
+          <div className={styles.formSection}>
+            <div className={styles.formSectionTitle}>
+              <i className="bi bi-tags"></i>
+              文章标签
+              <AddButton name="标签" onAdd={handleAddTag} />
+            </div>
+            <div style={{ position: "relative" }}>
+              <CustomSelect
+                name={"标签"}
+                options={tags.filter((tag) => !selectedTags.find((t) => t.id === tag.id))}
+                value={null}
+                onChange={(selected, _idx) => {
+                  if (selected) {
+                    // 多选逻辑，添加到 selectedTags
+                    if (!selectedTags.find((t) => t.id === selected.id)) {
+                      const newTags = [...selectedTags, selected];
+                      setSelectedTags(newTags);
+                      setFormData((prev) => ({ ...prev, tags: newTags }));
+                    }
+                  }
+                }}
+              />
+            </div>
+            <div className={styles.tagsContainer}>
+              {selectedTags.map((tag) => (
+                <div key={tag.id} className={styles.tagItem}>
+                  {tag.name}
+                  <button className={styles.removeTag} onClick={() => handleRemoveTag(tag.id)}>
+                    <i className="bi bi-x"></i>
+                  </button>
                 </div>
-                <div style={{ position: "relative" }}>
-                  <CustomSelect
-                    name={"标签"}
-                    options={tags.filter((tag) => !selectedTags.find((t) => t.id === tag.id))}
-                    value={null}
-                    onChange={(selected, _idx) => {
-                      if (selected) {
-                        // 多选逻辑，添加到 selectedTags
-                        if (!selectedTags.find((t) => t.id === selected.id)) {
-                          const newTags = [...selectedTags, selected];
-                          setSelectedTags(newTags);
-                          setFormData((prev) => ({ ...prev, tags: newTags }));
-                        }
-                      }
-                    }}
-                  />
-                </div>
-                <div className={styles.tagsContainer}>
-                  {selectedTags.map((tag) => (
-                    <div key={tag.id} className={styles.tagItem}>
-                      {tag.name}
-                      <button className={styles.removeTag} onClick={() => handleRemoveTag(tag.id)}>
-                        <i className="bi bi-x"></i>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
+              ))}
+            </div>
+          </div>
 
           {/* 文章内容 */}
           <div className={styles.formSection}>
