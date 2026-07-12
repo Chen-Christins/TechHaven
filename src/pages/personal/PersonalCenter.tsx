@@ -11,8 +11,11 @@ import {
   FaUserCircle,
   FaUserEdit,
   FaUserPlus,
+  FaShieldAlt,
   FaUserFriends,
   FaTasks,
+  FaTrophy,
+  FaBookmark,
 } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Loading from "@/components/loading/Loading";
@@ -34,6 +37,9 @@ import EditProfileTab from "./components/EditProfileTab";
 import FollowingTab from "./components/FollowingTab";
 import FollowerTab from "./components/FollowerTab";
 import MyAssignmentsTab from "./components/MyAssignmentsTab";
+import SecurityTab from "@/pages/user/SecurityTab";
+import AchievementsTab from "@/pages/user/AchievementsTab";
+import BookmarksTab from "@/pages/blog/BookmarksTab";
 
 interface NavItem {
   id: string;
@@ -49,7 +55,18 @@ const PersonalCenter: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "articles" | "assignments" | "tags" | "stats" | "organizations" | "notifications" | "edit" | "following" | "followers"
+    | "articles"
+    | "assignments"
+    | "tags"
+    | "stats"
+    | "organizations"
+    | "notifications"
+    | "edit"
+    | "following"
+    | "followers"
+    | "security"
+    | "achievements"
+    | "bookmarks"
   >("articles");
   const [loading] = useState(false);
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -109,6 +126,24 @@ const PersonalCenter: React.FC = () => {
       label: "编辑资料",
       icon: <FaUserEdit />,
       path: "/personal?tab=edit",
+    },
+    {
+      id: "security",
+      label: "账户安全",
+      icon: <FaShieldAlt />,
+      path: "/personal?tab=security",
+    },
+    {
+      id: "achievements",
+      label: "我的成就",
+      icon: <FaTrophy />,
+      path: "/personal?tab=achievements",
+    },
+    {
+      id: "bookmarks",
+      label: "我的收藏",
+      icon: <FaBookmark />,
+      path: "/personal?tab=bookmarks",
     },
     { id: "tags", label: "我的标签", icon: <FaTag />, path: "/personal?tab=tags" },
     {
@@ -539,6 +574,15 @@ const PersonalCenter: React.FC = () => {
 
             {/* 编辑资料 */}
             {activeTab === "edit" && <EditProfileTab />}
+
+            {/* 账户安全 */}
+            {activeTab === "security" && <SecurityTab />}
+
+            {/* 我的成就 */}
+            {activeTab === "achievements" && <AchievementsTab />}
+
+            {/* 我的收藏 */}
+            {activeTab === "bookmarks" && <BookmarksTab />}
           </div>
 
           {/* Footer */}

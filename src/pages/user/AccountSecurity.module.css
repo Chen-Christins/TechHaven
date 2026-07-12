@@ -1,0 +1,78 @@
+.deviceList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.deviceItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+}
+
+.deviceIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.deviceInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.deviceName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0 0 3px;
+}
+
+.currentTag {
+  font-size: 11px;
+  color: #16a34a;
+  background: #f0fdf4;
+  padding: 1px 8px;
+  border-radius: 6px;
+  font-weight: 400;
+}
+
+.deviceMeta {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.revokeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-primary);
+  background: var(--card-bg);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.revokeBtn:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+}

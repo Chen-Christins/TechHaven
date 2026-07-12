@@ -34,6 +34,8 @@ import MyTickets from "../pages/rd-platform/MyTickets";
 import CodeReviewList from "../pages/rd-platform/CodeReviewList";
 import TicketDetail from "../pages/rd-platform/TicketDetail";
 import TrendAnalysis from "../pages/rd-platform/TrendAnalysis";
+import HelpCenter from "../pages/user/HelpCenter";
+import Messages from "../pages/user/Messages";
 
 const RouterConfig: React.FC = () => {
   return (
@@ -90,6 +92,12 @@ const RouterConfig: React.FC = () => {
 
         {/* 个人管理中心 */}
         <Route path="/personal" element={<PersonalCenter />} />
+
+        {/* 用户系统：帮助中心 */}
+        <Route path="/help" element={<HelpCenter />} />
+
+        {/* 私信会话 */}
+        <Route path="/messages" element={<Messages />} />
 
         {/* 研发平台 */}
         <Route path="/rd" element={<RdLayout />}>

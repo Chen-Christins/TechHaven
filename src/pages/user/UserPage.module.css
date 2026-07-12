@@ -1,0 +1,105 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+}
+
+.tabWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.container {
+  flex: 1;
+  width: 100%;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 28px 1.8rem 48px;
+}
+
+.pageHeader {
+  margin-bottom: 24px;
+}
+
+.pageTitle {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 6px;
+}
+
+.pageDesc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.cardDesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 18px;
+}
+
+.formRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  max-width: 420px;
+}
+
+.formLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.settingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border-primary);
+}
+
+.settingRow:first-of-type {
+  border-top: none;
+}
+
+.settingInfo {
+  min-width: 0;
+}
+
+.settingName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0 0 2px;
+}
+
+.settingHint {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin: 0;
+}

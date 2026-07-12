@@ -1,0 +1,161 @@
+.hero {
+  text-align: center;
+  padding: 24px 0 32px;
+}
+
+.heroIcon {
+  font-size: 44px;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+
+.heroTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 6px;
+}
+
+.heroDesc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 20px;
+}
+
+.heroSearch {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.catRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.catCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.catCard:hover {
+  border-color: var(--primary);
+}
+
+.catIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  font-size: 22px;
+}
+
+.catName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.catCount {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+}
+
+.faqItem {
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.faqItem:last-child {
+  border-bottom: none;
+}
+
+.faqQ {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 0;
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.faqChevron {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition: transform 0.2s;
+}
+
+.faqOpen {
+  transform: rotate(180deg);
+  color: var(--primary);
+}
+
+.faqA {
+  padding: 0 0 16px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.faqEmpty {
+  padding: 32px 0;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+.textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .catRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

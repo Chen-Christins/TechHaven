@@ -1,6 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaHome, FaPen, FaBars, FaSignOutAlt, FaUserCircle, FaBuilding, FaFlask, FaTimes } from "react-icons/fa";
+import {
+  FaHome,
+  FaPen,
+  FaBars,
+  FaSignOutAlt,
+  FaUserCircle,
+  FaBuilding,
+  FaFlask,
+  FaTimes,
+  FaRegComments,
+  FaQuestionCircle,
+} from "react-icons/fa";
 import styles from "./Navbar.module.css";
 import LayoutWidthToggle from "../layoutWidthToggle/LayoutWidthToggle";
 import ThemeToggle from "../themeToggle/ThemeToggle";
@@ -99,11 +110,21 @@ const Navbar: React.FC = () => {
     if (path === "/rd") {
       return location.pathname.startsWith("/rd");
     }
+    if (path === "/help") {
+      return location.pathname === "/help";
+    }
+    if (path === "/messages") {
+      return location.pathname === "/messages";
+    }
     return location.pathname === path;
   };
 
   const getNavLinks = () => {
-    const links = [...navLinks, { label: "研发", icon: <FaFlask />, path: "/rd" }];
+    const links = [
+      ...navLinks,
+      { label: "研发", icon: <FaFlask />, path: "/rd" },
+      { label: "帮助", icon: <FaQuestionCircle />, path: "/help" },
+    ];
     return links;
   };
 
@@ -264,6 +285,17 @@ const Navbar: React.FC = () => {
                       >
                         <FaPen />
                         撰写文章
+                      </div>
+                      <div className={styles.dropdownDivider}></div>
+                      <div
+                        className={styles.dropdownItem}
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate("/messages");
+                        }}
+                      >
+                        <FaRegComments />
+                        私信
                       </div>
                       <div className={styles.dropdownDivider}></div>
                       <button
