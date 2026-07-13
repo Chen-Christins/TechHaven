@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { formatDateTime, formatRelativeTime } from "@/utils/utils";
 import {
   FaSync,
@@ -92,8 +93,26 @@ const CodeReviewList: React.FC = () => {
   const [repos, setRepos] = useState<RepoItem[]>([]);
   const [syncingRepos, setSyncingRepos] = useState<Set<string>>(new Set());
 
-  // 当前选中的仓库
-  const [selectedRepoId, setSelectedRepoId] = useState<string | null>(null);
+  // 当前选中的仓库（与 URL search param 同步）
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedRepoId = searchParams.get("repo") || null;
+  const setSelectedRepoId = useCallback(
+    (repoId: string | null) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (repoId) {
+            next.set("repo", repoId);
+          } else {
+            next.delete("repo");
+          }
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
 
   // view modal
   const [viewModalVisible, setViewModalVisible] = useState(false);
@@ -171,7 +190,7 @@ const CodeReviewList: React.FC = () => {
       if (!initialLoading) {
         setTableLoading(true);
       }
-      await fetchPrs(nextRepoId);
+      await fetchPrs(selectedRepoId);
     } catch {
       message.error("获取数据失败");
     } finally {
