@@ -1,6 +1,6 @@
 import Hashids from "hashids";
 
-export type HashIdScope = "article" | "assignment" | "bug" | "organization" | "requirement" | "task" | "user";
+export type HashIdScope = "article" | "assignment" | "bug" | "organization" | "repo" | "requirement" | "task" | "user";
 
 const BASE_SALT = "kX9mP2vR7wQ4nL8jF5hT3yB6dA1cE0gU";
 const MIN_LENGTH = 52;
