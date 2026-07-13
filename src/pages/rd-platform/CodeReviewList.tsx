@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
+import { encodeId, decodeId } from "@/utils/hashId";
 import { formatDateTime, formatRelativeTime } from "@/utils/utils";
 import {
   FaSync,
@@ -93,16 +94,17 @@ const CodeReviewList: React.FC = () => {
   const [repos, setRepos] = useState<RepoItem[]>([]);
   const [syncingRepos, setSyncingRepos] = useState<Set<string>>(new Set());
 
-  // 当前选中的仓库（与 URL search param 同步）
+  // 当前选中的仓库（与 URL search param 同步，ID 经 hashid 编码）
   const [searchParams, setSearchParams] = useSearchParams();
-  const selectedRepoId = searchParams.get("repo") || null;
+  const repoHash = searchParams.get("repo");
+  const selectedRepoId = repoHash ? String(decodeId(repoHash, "repo") ?? "") : null;
   const setSelectedRepoId = useCallback(
     (repoId: string | null) => {
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
           if (repoId) {
-            next.set("repo", repoId);
+            next.set("repo", encodeId(repoId, "repo"));
           } else {
             next.delete("repo");
           }
