@@ -180,6 +180,13 @@ const CodeReviewList: React.FC = () => {
       const repoList = selectedOrgId ? await fetchRepos() : [];
       setRepos(repoList);
 
+      // 无仓库列表时不修改 selectedRepoId，避免在组织尚未加载时误清空 URL repo 参数
+      if (repoList.length === 0) {
+        setPrs([]);
+        setTotal(0);
+        return;
+      }
+
       const nextRepoId = repoList.some((repo) => repo.id === selectedRepoId) ? selectedRepoId : (repoList[0]?.id ?? null);
       if (nextRepoId !== selectedRepoId) {
         setSelectedRepoId(nextRepoId);
