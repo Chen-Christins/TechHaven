@@ -496,21 +496,6 @@
   overflow: hidden;
 }
 
-.tableHeader {
-  padding: 20px;
-  border-bottom: 1px solid var(--border-primary);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.tableTitle {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
 .tableActions {
   display: flex;
   gap: 8px;
@@ -518,7 +503,7 @@
 
 /* 刷新按钮样式 */
 .refreshButton {
-  padding: 6px 8px;
+  padding: 6px 12px;
   background: none;
   border: 1px solid var(--border-primary);
   border-radius: 4px;
@@ -527,6 +512,7 @@
   font-size: 14px;
   display: flex;
   align-items: center;
+  gap: 6px;
   justify-content: center;
   min-width: 36px;
 }
@@ -537,7 +523,12 @@
   border-color: var(--primary);
 }
 
-.refreshButton.loading {
+.refreshIcon {
+  display: flex;
+  align-items: center;
+}
+
+.refreshButton.loading .refreshIcon {
   animation: rotate 1s linear infinite;
 }
 
@@ -627,8 +618,26 @@
 /* Tab切换按钮 */
 .tabsHeader {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   border-bottom: 1px solid var(--border-primary);
   background-color: var(--bg-secondary);
+}
+
+.tabsNav {
+  display: flex;
+}
+
+.tabsActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 16px;
+}
+
+.tabsCount {
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 
 .tabButton {
@@ -1349,13 +1358,6 @@
   margin-top: 0;
 }
 
-.repoSectionHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
 /* 仓库 Token 徽章 */
 .repoTokenBadge {
   display: inline-flex;
@@ -1393,13 +1395,6 @@
 .repoTokenBadgeNone:hover {
   background: var(--text-tertiary);
   color: #fff;
-}
-
-.sectionTitle {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
 }
 
 .repoCount {
