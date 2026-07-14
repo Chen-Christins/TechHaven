@@ -25,11 +25,13 @@ import type { Member, Task, OrganizationDetail } from "@/types/organization";
 import Avatar from "../avatar/Avatar";
 import styles from "./Organization.module.css";
 import Modal from "../modal/Modal";
-// import Input from '../input/Input';
+import Input from "../input/Input";
+import message from "@/components/message/Message";
 // import DatePicker from '../datePicker/DatePicker';
 // import dayjs from 'dayjs';
 import "dayjs/locale/zh-cn";
 import OrganizationRepos from "./OrganizationRepos";
+import OrganizationService from "@/services/organizationService";
 import Loading from "../loading/Loading";
 
 interface OrganizationTabsProps {
@@ -145,59 +147,131 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
   canManageTask,
   onReposChange,
 }) => {
+  // 仓库添加相关状态
+  const [repoModalVisible, setRepoModalVisible] = React.useState(false);
+  const [repoForm, setRepoForm] = React.useState({ name: "", url: "", token: "" });
+
+  const handleAddRepo = async () => {
+    if (!repoForm.name.trim()) {
+      message.warn("请输入仓库名称");
+      return;
+    }
+    if (!repoForm.url.trim()) {
+      message.warn("请输入仓库地址");
+      return;
+    }
+    if (!repoForm.url.trim().startsWith("https://github.com/")) {
+      message.warn("暂仅支持 GitHub 仓库（https://github.com/...）");
+      return;
+    }
+    try {
+      await OrganizationService.addRepo({
+        org_id: org?.id || "",
+        name: repoForm.name.trim(),
+        url: repoForm.url.trim(),
+        token: repoForm.token.trim() || undefined,
+      });
+      setRepoForm({ name: "", url: "", token: "" });
+      setRepoModalVisible(false);
+      message.success("仓库添加成功");
+      onReposChange?.(1);
+    } catch {
+      message.error("添加仓库失败");
+    }
+  };
+
   return (
     <div className={styles.tableContainer}>
-      {/* Tab切换按钮 */}
+      {/* Tab切换按钮 + 右侧操作区 */}
       <div className={styles.tabsHeader}>
-        <button
-          className={`${styles.tabButton} ${!showPendingRequests && !showTasks && !showRepos ? styles.activeTab : ""}`}
-          onClick={() => onTabChange(false, false, false)}
-        >
-          成员列表
-        </button>
-        {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+        <div className={styles.tabsNav}>
           <button
-            className={`${styles.tabButton} ${showPendingRequests ? styles.activeTab : ""}`}
-            onClick={() => onTabChange(true, false)}
+            className={`${styles.tabButton} ${!showPendingRequests && !showTasks && !showRepos ? styles.activeTab : ""}`}
+            onClick={() => onTabChange(false, false, false)}
           >
-            待处理请求
+            成员列表
           </button>
-        )}
-        {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
-          <button className={`${styles.tabButton} ${showTasks ? styles.activeTab : ""}`} onClick={() => onTabChange(false, true)}>
-            任务列表
-          </button>
-        )}
-        {userRole !== "guest" && (
-          <button
-            className={`${styles.tabButton} ${showRepos ? styles.activeTab : ""}`}
-            onClick={() => onTabChange(false, false, true)}
-          >
-            仓库列表
-          </button>
-        )}
+          {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+            <button
+              className={`${styles.tabButton} ${showPendingRequests ? styles.activeTab : ""}`}
+              onClick={() => onTabChange(true, false)}
+            >
+              待处理请求
+            </button>
+          )}
+          {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+            <button className={`${styles.tabButton} ${showTasks ? styles.activeTab : ""}`} onClick={() => onTabChange(false, true)}>
+              任务列表
+            </button>
+          )}
+          {userRole !== "guest" && (
+            <button
+              className={`${styles.tabButton} ${showRepos ? styles.activeTab : ""}`}
+              onClick={() => onTabChange(false, false, true)}
+            >
+              仓库列表
+            </button>
+          )}
+        </div>
+        <div className={styles.tabsActions}>
+          {!showPendingRequests && !showTasks && !showRepos && (
+            <>
+              <span className={styles.tabsCount}>共 {membersTotal} 个成员</span>
+              <button
+                className={`${styles.refreshButton} ${isRefreshing ? styles.loading : ""}`}
+                title="刷新成员列表"
+                onClick={onRefreshMembers}
+                disabled={isRefreshing}
+              >
+                <span className={styles.refreshIcon}>
+                  <FaSync />
+                </span>
+                刷新
+              </button>
+            </>
+          )}
+          {showPendingRequests && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+            <>
+              <span className={styles.tabsCount}>共 {pendingRequests.length} 个请求</span>
+              <button
+                className={`${styles.refreshButton} ${pendingRequestsLoading ? styles.loading : ""}`}
+                title="刷新待处理请求"
+                onClick={onRefreshPending}
+                disabled={pendingRequestsLoading}
+              >
+                <span className={styles.refreshIcon}>
+                  <FaSync />
+                </span>
+                刷新
+              </button>
+            </>
+          )}
+          {showTasks && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+            <>
+              <button className={styles.refreshButton} onClick={() => onRefreshTasks()} title="刷新任务列表">
+                <span className={styles.refreshIcon}>
+                  <FaSync />
+                </span>
+                刷新
+              </button>
+              <button className={styles.createButton} onClick={onCreateTask}>
+                <FaPlus />
+                创建任务
+              </button>
+            </>
+          )}
+          {showRepos && userRole !== "guest" && (
+            <button className={styles.createButton} onClick={() => setRepoModalVisible(true)}>
+              <FaPlus />
+              添加仓库
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 成员列表视图 */}
       {!showPendingRequests && !showTasks && !showRepos && (
         <>
-          {!(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") ? (
-            <div className={styles.tableHeader}>
-              <h3 className={styles.tableTitle}>成员列表</h3>
-              <div className={styles.tableActions}>
-                <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>共 {membersTotal} 个成员</span>
-                <button
-                  className={`${styles.refreshButton} ${isRefreshing ? styles.loading : ""}`}
-                  title="刷新成员列表"
-                  onClick={onRefreshMembers}
-                  disabled={isRefreshing}
-                  style={{ marginLeft: "8px" }}
-                >
-                  <FaSync />
-                </button>
-              </div>
-            </div>
-          ) : null}
           {isRefreshing && (!members || members.length === 0) ? (
             <div style={{ padding: "40px 0" }}>
               <Loading />
@@ -327,21 +401,6 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
       {/* 待处理请求视图 */}
       {showPendingRequests && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
         <>
-          <div className={styles.tableHeader}>
-            <h3 className={styles.tableTitle}>待处理请求</h3>
-            <div className={styles.tableActions}>
-              <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>共 {pendingRequests.length} 个请求</span>
-              <button
-                className={`${styles.refreshButton} ${pendingRequestsLoading ? styles.loading : ""}`}
-                title="刷新待处理请求"
-                onClick={onRefreshPending}
-                disabled={pendingRequestsLoading}
-                style={{ marginLeft: "8px" }}
-              >
-                <FaSync />
-              </button>
-            </div>
-          </div>
           {pendingRequestsLoading ? (
             <div style={{ padding: "40px 0" }}>
               <Loading />
@@ -443,20 +502,6 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
       {/* 任务列表视图 */}
       {showTasks && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
         <>
-          <div className={styles.tableHeader}>
-            <h3 className={styles.tableTitle}>任务列表</h3>
-            <div className={styles.tableActions}>
-              <button className={styles.refreshButton} onClick={() => onRefreshTasks()} title="刷新任务列表">
-                <FaSync />
-              </button>
-              {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
-                <button className={styles.createButton} onClick={onCreateTask}>
-                  <FaPlus /> 创建任务
-                </button>
-              )}
-            </div>
-          </div>
-
           {tasksLoading ? (
             <div style={{ padding: "40px 0" }}>
               <Loading />
@@ -872,6 +917,55 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
             未选择成员
           </div>
         )}
+      </Modal>
+
+      {/* 添加仓库 Modal */}
+      <Modal
+        visible={repoModalVisible}
+        title="添加仓库"
+        onClose={() => setRepoModalVisible(false)}
+        width={520}
+        footer={
+          <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+            <button className={styles.cancelButton} onClick={() => setRepoModalVisible(false)}>
+              取消
+            </button>
+            <button className={styles.confirmButton} onClick={handleAddRepo}>
+              添加
+            </button>
+          </div>
+        }
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div>
+            <label className={styles.formLabel}>仓库名称 *</label>
+            <Input
+              placeholder="如 frontend-web"
+              value={repoForm.name}
+              onChange={(v) => setRepoForm((prev) => ({ ...prev, name: v }))}
+              size="large"
+            />
+          </div>
+          <div>
+            <label className={styles.formLabel}>仓库地址 *</label>
+            <Input
+              placeholder="仅支持 GitHub：https://github.com/org/repo"
+              value={repoForm.url}
+              onChange={(v) => setRepoForm((prev) => ({ ...prev, url: v }))}
+              size="large"
+            />
+          </div>
+          <div>
+            <label className={styles.formLabel}>GitHub Token（选填）</label>
+            <Input
+              type="password"
+              placeholder="Personal Access Token，用于拉取仓库信息"
+              value={repoForm.token}
+              onChange={(v) => setRepoForm((prev) => ({ ...prev, token: v }))}
+              size="large"
+            />
+          </div>
+        </div>
       </Modal>
     </div>
   );

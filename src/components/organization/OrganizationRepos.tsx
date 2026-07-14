@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaGithub, FaStar, FaExternalLinkAlt, FaPlus, FaTrash, FaKey, FaSync } from "react-icons/fa";
+import { FaGithub, FaStar, FaExternalLinkAlt, FaTrash, FaKey, FaSync } from "react-icons/fa";
 import Modal from "../modal/Modal";
 import Input from "../input/Input";
 import message from "../message/Message";
@@ -70,10 +70,6 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
   const [repos, setRepos] = useState<Repo[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 添加仓库 modal
-  const [modalVisible, setModalVisible] = useState(false);
-  const [form, setForm] = useState({ name: "", url: "", token: "" });
-
   // 配置 Token modal
   const [tokenModalVisible, setTokenModalVisible] = useState(false);
   const [tokenRepo, setTokenRepo] = useState<Repo | null>(null);
@@ -136,50 +132,6 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
       }
     };
   }, [repos]);
-
-  // ---- 添加仓库 ----
-  const handleAddRepo = async () => {
-    if (!form.name.trim()) {
-      message.warn("请输入仓库名称");
-      return;
-    }
-    if (!form.url.trim()) {
-      message.warn("请输入仓库地址");
-      return;
-    }
-    if (!form.url.trim().startsWith("https://github.com/")) {
-      message.warn("暂仅支持 GitHub 仓库（https://github.com/...）");
-      return;
-    }
-    try {
-      const res = await OrganizationService.addRepo({
-        org_id: orgId,
-        name: form.name.trim(),
-        url: form.url.trim(),
-        token: form.token.trim() || undefined,
-      });
-      const newRepo: Repo = {
-        id: String(res.id),
-        name: form.name.trim(),
-        description: "",
-        url: form.url.trim(),
-        language: "",
-        languageColor: "#6c757d",
-        stars: 0,
-        updatedAt: Date.now(),
-        organizationId: orgId,
-        hasToken: !!form.token.trim(),
-        syncStatus: "idle",
-      };
-      setRepos((prev) => [newRepo, ...prev]);
-      setForm({ name: "", url: "", token: "" });
-      setModalVisible(false);
-      message.success("仓库添加成功");
-      onChange?.(1);
-    } catch {
-      message.error("添加仓库失败");
-    }
-  };
 
   // ---- 删除仓库 ----
   const handleDeleteRepo = async (e: React.MouseEvent, repo: Repo) => {
@@ -253,9 +205,6 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
   if (loading) {
     return (
       <div className={styles.repoSection}>
-        <div className={styles.repoSectionHeader}>
-          <h2 className={styles.sectionTitle}>仓库列表</h2>
-        </div>
         <div className={styles.repoGrid}>
           {[1, 2, 3].map((i) => (
             <div key={i} className={styles.repoCard} style={{ opacity: 0.6 }}>
@@ -275,15 +224,6 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
 
   return (
     <div className={styles.repoSection}>
-      <div className={styles.repoSectionHeader}>
-        <h2 className={styles.sectionTitle}>仓库列表</h2>
-        {canManage && (
-          <button className={styles.createButton} onClick={() => setModalVisible(true)}>
-            <FaPlus /> 添加仓库
-          </button>
-        )}
-      </div>
-
       {repos.length === 0 ? (
         <div className={styles.emptyState}>
           <FaGithub size={40} style={{ opacity: 0.3, marginBottom: "12px" }} />
@@ -348,55 +288,6 @@ const OrganizationRepos: React.FC<Props> = ({ orgId, canManage, onChange }) => {
           ))}
         </div>
       )}
-
-      {/* 添加仓库 Modal */}
-      <Modal
-        visible={modalVisible}
-        title="添加仓库"
-        onClose={() => setModalVisible(false)}
-        width={520}
-        footer={
-          <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-            <button className={styles.cancelButton} onClick={() => setModalVisible(false)}>
-              取消
-            </button>
-            <button className={styles.confirmButton} onClick={handleAddRepo}>
-              添加
-            </button>
-          </div>
-        }
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div>
-            <label className={styles.formLabel}>仓库名称 *</label>
-            <Input
-              placeholder="如 frontend-web"
-              value={form.name}
-              onChange={(v) => setForm((prev) => ({ ...prev, name: v }))}
-              size="large"
-            />
-          </div>
-          <div>
-            <label className={styles.formLabel}>仓库地址 *</label>
-            <Input
-              placeholder="仅支持 GitHub：https://github.com/org/repo"
-              value={form.url}
-              onChange={(v) => setForm((prev) => ({ ...prev, url: v }))}
-              size="large"
-            />
-          </div>
-          <div>
-            <label className={styles.formLabel}>GitHub Token（选填）</label>
-            <Input
-              type="password"
-              placeholder="Personal Access Token，用于拉取仓库信息"
-              value={form.token}
-              onChange={(v) => setForm((prev) => ({ ...prev, token: v }))}
-              size="large"
-            />
-          </div>
-        </div>
-      </Modal>
 
       {/* 配置 Token Modal */}
       <Modal
