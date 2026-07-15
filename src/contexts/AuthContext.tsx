@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react";
 import { AuthService } from "../services/authService";
 import { tokenManager, getTokenFromCookie } from "../utils/http";
 import { notificationWS } from "../utils/websocket";
@@ -122,6 +122,59 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setFaviconBadge(0); // 退出登录或未认证时清除 favicon 角标
     }
   }, [isAuthenticated, user]);
+
+  // 跟踪当前 token，供 WS 鉴权错误处理时比对 Cookie 中是否为新 token
+  const tokenRef = useRef<string | null>(null);
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
+
+  // WS 鉴权失败（token 过期 / 不匹配 / 账号异常）时刷新 token 并重连
+  const wsAuthRetry = useRef(0);
+  const WS_AUTH_MAX_RETRY = 2;
+  useEffect(() => {
+    const unsubOpen = notificationWS.onOpen(() => {
+      wsAuthRetry.current = 0;
+    });
+    const unsubError = notificationWS.onServerError(async (err) => {
+      // 账号状态异常（1103），刷新 token 无意义，直接登出
+      if (err.errno === 1103) {
+        clearAuthRuntimeState();
+        return;
+      }
+      // 仅处理 token 相关鉴权错误（1101：过期 / 不匹配）
+      if (err.errno !== 1101) return;
+
+      // 无用户上下文或已达到最大重试次数，放弃并清理登录态
+      if (!user?.id || wsAuthRetry.current >= WS_AUTH_MAX_RETRY) {
+        clearAuthRuntimeState();
+        return;
+      }
+      wsAuthRetry.current += 1;
+
+      // 调用 refresh_token 无感续期，服务端会写入新 cookie
+      try {
+        const res = await AuthService.refreshToken(user.id);
+        if (res.errno === 0 && res.data?.token) {
+          const newToken = res.data.token;
+          tokenRef.current = newToken;
+          setToken(newToken);
+          tokenManager.setToken(newToken);
+          wsAuthRetry.current = 0;
+          // 重连：connect 会重新读取（已被服务端刷新的）S_TOKEN / S_TOKEN_TIME cookie
+          notificationWS.connect(user.id);
+        } else {
+          clearAuthRuntimeState();
+        }
+      } catch {
+        clearAuthRuntimeState();
+      }
+    });
+    return () => {
+      unsubOpen();
+      unsubError();
+    };
+  }, [user]);
 
   // 登录方法
   const login = async (authId: string, password: string) => {

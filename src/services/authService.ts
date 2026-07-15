@@ -217,6 +217,23 @@ export class AuthService {
   }
 
   /**
+   * 刷新 token（无感续期）
+   * @param uid 用户ID（params 优先于 cookie）
+   * @returns 新 token / token_time，并写入新 cookie
+   */
+  static async refreshToken(uid: number | string) {
+    const formData = new URLSearchParams();
+    formData.append("uid", String(uid));
+
+    return http.post<{ uid: string; token: string; token_time: number }>("/user/refresh_token", formData.toString(), {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      withCredentials: REQUIRE_CREDENTIALS,
+    });
+  }
+
+  /**
    * 获取用户信息
    * @param userId 可选，用户ID。不传则获取当前用户信息
    * @returns 用户信息

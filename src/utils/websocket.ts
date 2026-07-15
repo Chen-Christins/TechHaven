@@ -1,5 +1,16 @@
+import { getErrorMsg } from "./errorCodes";
+
 type MessageHandler = (data: any) => void;
 type EventHandler = (event?: Event) => void;
+
+/** WebSocket 服务端错误帧（与 HTTP API 同构的 errno / errstr 格式） */
+export interface WsServerError {
+  errno: number;
+  errstr: string;
+  message: string;
+}
+
+type ServerErrorHandler = (err: WsServerError) => void;
 
 /** 从 Cookie 中读取指定 key 的值 */
 function getCookie(key: string): string | null {
@@ -28,7 +39,10 @@ export class WebSocketClient {
   private openHandlers: Set<EventHandler> = new Set();
   private closeHandlers: Set<EventHandler> = new Set();
   private errorHandlers: Set<EventHandler> = new Set();
+  private serverErrorHandlers: Set<ServerErrorHandler> = new Set();
   private intentionalClose = false;
+  /** 连接时收到鉴权错误帧（如 token 过期），交由上层刷新 token，不再自动重连 */
+  private authFailed = false;
   private pendingSend: string[] = [];
   private uid: string | number | undefined;
 
@@ -61,6 +75,7 @@ export class WebSocketClient {
       return;
     }
     this.intentionalClose = false;
+    this.authFailed = false;
 
     // 页面卸载时标记为主动关闭，避免触发无意义的自动重连调度
     const handleBeforeUnload = () => {
@@ -83,6 +98,7 @@ export class WebSocketClient {
 
     this.ws.onopen = () => {
       console.log("[WS] 连接已建立");
+      this.authFailed = false;
       while (this.pendingSend.length > 0) {
         const msg = this.pendingSend.shift();
         this.ws?.send(msg!);
@@ -93,6 +109,20 @@ export class WebSocketClient {
     this.ws.onmessage = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
+        // 服务端错误帧：携带 errno 且不为 0，按 HTTP API 同样的 errno/errstr 格式解析
+        if (data && typeof data === "object" && typeof data.errno === "number" && data.errno !== 0) {
+          const errstr = typeof data.errstr === "string" ? data.errstr : typeof data.msg === "string" ? data.msg : "";
+          const parsed: WsServerError = {
+            errno: data.errno,
+            errstr,
+            message: getErrorMsg(data.errno, errstr),
+          };
+          // 鉴权类错误（token 过期 / 不匹配 / 账号异常）交由上层刷新 token，不在底层自动重连
+          if (data.errno === 1101 || data.errno === 1103) {
+            this.authFailed = true;
+          }
+          this.serverErrorHandlers.forEach((fn) => fn(parsed));
+        }
         const type = data.type || data.event || "message";
         const handlers = this.messageHandlers.get(type);
         if (handlers) {
@@ -113,7 +143,8 @@ export class WebSocketClient {
     this.ws.onclose = (event: CloseEvent) => {
       console.log("[WS] 连接关闭, code:", event.code, "reason:", event.reason || "(无)");
       this.closeHandlers.forEach((fn) => fn(event));
-      if (!this.intentionalClose) {
+      // 鉴权失败时交由上层处理（刷新 token / 登出），不再触发自动重连
+      if (!this.intentionalClose && !this.authFailed) {
         this.scheduleReconnect();
       }
     };
@@ -178,6 +209,14 @@ export class WebSocketClient {
     this.errorHandlers.add(handler);
     return () => {
       this.errorHandlers.delete(handler);
+    };
+  }
+
+  /** 服务端错误帧回调（errno/errstr 同 HTTP API） */
+  onServerError(handler: ServerErrorHandler): () => void {
+    this.serverErrorHandlers.add(handler);
+    return () => {
+      this.serverErrorHandlers.delete(handler);
     };
   }
 
