@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import styles from "./ProfilePage.module.css";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
@@ -30,6 +30,7 @@ import type { Article, UserProfile } from "@/types/index";
 import type { UserStats } from "@/services/authService";
 import FollowService from "@/services/followService";
 import message from "@/components/message/Message";
+import AchievementsTab from "@/pages/user/AchievementsTab";
 
 function formatDate(timestamp: number | string): string {
   if (!timestamp) return "";
@@ -50,6 +51,7 @@ function formatPublishTime(timestamp: number | string): string {
 const TABS = [
   { key: "overview", label: "概览" },
   { key: "articles", label: "文章" },
+  { key: "achievements", label: "成就" },
   { key: "tags", label: "标签" },
 ] as const;
 
@@ -76,7 +78,12 @@ const Profile: React.FC = () => {
   const [followLoading, setFollowLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
-  const [activeTab, setActiveTab] = useState<TabKey>("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<TabKey>(() => {
+    const tab = searchParams.get("tab") as TabKey | null;
+    if (tab && TABS.some((t) => t.key === tab)) return tab;
+    return "overview";
+  });
 
   const isOwnProfile = isAuthenticated && String(currentUser?.id) === String(id);
 
@@ -469,12 +476,16 @@ const Profile: React.FC = () => {
     </div>
   );
 
+  const renderAchievements = () => (import.meta.env.DEV ? <AchievementsTab /> : null);
+
   const renderMainContent = () => {
     switch (activeTab) {
       case "overview":
         return renderOverview();
       case "articles":
         return renderArticles();
+      case "achievements":
+        return renderAchievements();
       case "tags":
         return renderTags();
       default:
@@ -602,11 +613,14 @@ const Profile: React.FC = () => {
         {/* Main content area */}
         <main className={styles.content}>
           <nav className={styles.contentTabs}>
-            {TABS.map((tab) => (
+            {TABS.filter((t) => import.meta.env.DEV || t.key !== "achievements").map((tab) => (
               <button
                 key={tab.key}
                 className={`${styles.contentTab} ${activeTab === tab.key ? styles.contentTabActive : ""}`}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  setSearchParams({ tab: tab.key }, { replace: true });
+                }}
               >
                 {tab.label}
                 {tab.key === "articles" && articleTotal > 0 && <span className={styles.contentTabCount}>{articleTotal}</span>}
