@@ -127,24 +127,6 @@ const PersonalCenter: React.FC = () => {
       icon: <FaUserEdit />,
       path: "/personal?tab=edit",
     },
-    {
-      id: "security",
-      label: "账户安全",
-      icon: <FaShieldAlt />,
-      path: "/personal?tab=security",
-    },
-    {
-      id: "achievements",
-      label: "我的成就",
-      icon: <FaTrophy />,
-      path: "/personal?tab=achievements",
-    },
-    {
-      id: "bookmarks",
-      label: "我的收藏",
-      icon: <FaBookmark />,
-      path: "/personal?tab=bookmarks",
-    },
     { id: "tags", label: "我的标签", icon: <FaTag />, path: "/personal?tab=tags" },
     {
       id: "stats",
@@ -177,6 +159,30 @@ const PersonalCenter: React.FC = () => {
       path: "/personal?tab=notifications",
     },
   ];
+
+  // 以下为尚未完成的 mock 界面，仅开发环境可见
+  if (import.meta.env.DEV) {
+    navItems.push(
+      {
+        id: "security",
+        label: "账户安全",
+        icon: <FaShieldAlt />,
+        path: "/personal?tab=security",
+      },
+      {
+        id: "achievements",
+        label: "我的成就",
+        icon: <FaTrophy />,
+        path: "/personal?tab=achievements",
+      },
+      {
+        id: "bookmarks",
+        label: "我的收藏",
+        icon: <FaBookmark />,
+        path: "/personal?tab=bookmarks",
+      },
+    );
+  }
 
   // 从 URL 参数读取初始 tab（刷新保持当前tab）
   useEffect(() => {

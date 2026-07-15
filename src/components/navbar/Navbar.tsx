@@ -120,11 +120,10 @@ const Navbar: React.FC = () => {
   };
 
   const getNavLinks = () => {
-    const links = [
-      ...navLinks,
-      { label: "研发", icon: <FaFlask />, path: "/rd" },
-      { label: "帮助", icon: <FaQuestionCircle />, path: "/help" },
-    ];
+    const links = [...navLinks, { label: "研发", icon: <FaFlask />, path: "/rd" }];
+    if (import.meta.env.DEV) {
+      links.push({ label: "帮助", icon: <FaQuestionCircle />, path: "/help" });
+    }
     return links;
   };
 
@@ -287,17 +286,19 @@ const Navbar: React.FC = () => {
                         撰写文章
                       </div>
                       <div className={styles.dropdownDivider}></div>
-                      <div
-                        className={styles.dropdownItem}
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          navigate("/messages");
-                        }}
-                      >
-                        <FaRegComments />
-                        私信
-                      </div>
-                      <div className={styles.dropdownDivider}></div>
+                      {import.meta.env.DEV && (
+                        <div
+                          className={styles.dropdownItem}
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            navigate("/messages");
+                          }}
+                        >
+                          <FaRegComments />
+                          私信
+                        </div>
+                      )}
+                      {import.meta.env.DEV && <div className={styles.dropdownDivider}></div>}
                       <button
                         className={styles.dropdownItem}
                         onClick={() => {

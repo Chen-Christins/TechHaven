@@ -93,11 +93,11 @@ const RouterConfig: React.FC = () => {
         {/* 个人管理中心 */}
         <Route path="/personal" element={<PersonalCenter />} />
 
-        {/* 用户系统：帮助中心 */}
-        <Route path="/help" element={<HelpCenter />} />
+        {/* 用户系统：帮助中心（仅开发环境可见） */}
+        {import.meta.env.DEV && <Route path="/help" element={<HelpCenter />} />}
 
-        {/* 私信会话 */}
-        <Route path="/messages" element={<Messages />} />
+        {/* 私信会话（仅开发环境可见） */}
+        {import.meta.env.DEV && <Route path="/messages" element={<Messages />} />}
 
         {/* 研发平台 */}
         <Route path="/rd" element={<RdLayout />}>

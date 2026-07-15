@@ -1,5 +1,11 @@
+.msgPage {
+  height: 100vh;
+  overflow: hidden;
+}
+
 .wrapper {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
   max-width: var(--page-max-width);
   margin: 0 auto;

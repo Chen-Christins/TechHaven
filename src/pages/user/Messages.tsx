@@ -96,7 +96,7 @@ const Messages: React.FC = () => {
   const filtered = conversations.filter((c) => !search || c.name.includes(search));
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${msgStyles.msgPage}`}>
       <Navbar />
       <div className={msgStyles.wrapper}>
         <div className={`${msgStyles.chatLayout} ${mobileChatOpen ? msgStyles.showChat : ""}`}>
