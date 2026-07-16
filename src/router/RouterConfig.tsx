@@ -16,6 +16,7 @@ import CategoryManagement from "../pages/admin/CategoryManagement";
 import CommentManagement from "../pages/admin/CommentManagement";
 import MediaManagement from "../pages/admin/MediaManagement";
 import NotificationManagement from "../pages/admin/NotificationManagement";
+import FeedbackManagement from "../pages/admin/FeedbackManagement";
 import DataManagement from "../pages/admin/DataManagement";
 import Settings from "../pages/admin/Settings";
 import OrganizationManagement from "../pages/admin/OrganizationManagement";
@@ -59,6 +60,7 @@ const RouterConfig: React.FC = () => {
         <Route path="database" element={<DataManagement />} />
         <Route path="settings" element={<Settings />} />
         <Route path="notifications" element={<NotificationManagement />} />
+        <Route path="feedbacks" element={<FeedbackManagement />} />
       </Route>
 
       {/* 维护模式路由守卫 */}
