@@ -1,72 +1,59 @@
-import React, { useMemo } from "react";
-import { FaFire, FaPenNib, FaComments, FaStar, FaMedal, FaCode, FaHeart } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { FaFire, FaPenNib, FaComments, FaStar, FaMedal, FaCode, FaHeart, FaRocket, FaTrophy } from "react-icons/fa";
 import styles from "./UserPage.module.css";
 import acStyles from "./Achievements.module.css";
+import { AuthService, type AchievementData, type AchievementBadge } from "@/services/authService";
+import message from "@/components/message/Message";
 
-interface Badge {
-  id: string;
-  name: string;
-  desc: string;
-  icon: React.ReactNode;
-  color: string;
-  unlocked: boolean;
-  progress?: string;
-}
-
-const BADGES: Badge[] = [
-  { id: "1", name: "笔耕不辍", desc: "累计发布 50 篇文章", icon: <FaPenNib />, color: "#3b82f6", unlocked: true },
-  { id: "2", name: "百赞达成", desc: "单篇文章获得 100 赞", icon: <FaHeart />, color: "#ef4444", unlocked: true },
-  { id: "3", name: "连续创作", desc: "连续 30 天有贡献", icon: <FaFire />, color: "#f97316", unlocked: true },
-  { id: "4", name: "代码贡献者", desc: "合并 20 个 PR", icon: <FaCode />, color: "#22c55e", unlocked: true },
-  { id: "5", name: "社区之星", desc: "获得 1000 个关注", icon: <FaStar />, color: "#eab308", unlocked: false, progress: "742 / 1000" },
-  {
-    id: "6",
-    name: "评论达人",
-    desc: "发表 500 条评论",
-    icon: <FaComments />,
-    color: "#a855f7",
-    unlocked: false,
-    progress: "318 / 500",
-  },
-];
+const ICON_MAP: Record<string, React.ReactNode> = {
+  pen: <FaPenNib />,
+  heart: <FaHeart />,
+  fire: <FaFire />,
+  code: <FaCode />,
+  star: <FaStar />,
+  comments: <FaComments />,
+  rocket: <FaRocket />,
+  trophy: <FaTrophy />,
+};
 
 const LEVEL_COLORS = ["var(--bg-tertiary)", "#9be9a8", "#40c463", "#30a14e", "#216e39"];
 const WEEKDAYS = ["", "一", "", "三", "", "五", ""];
 const MONTHS = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
 
 const AchievementsTab: React.FC = () => {
-  const { weeks, total } = useMemo(() => {
-    const weeksCount = 53;
-    const grid: number[][] = [];
-    let sum = 0;
-    let seed = 20260101;
-    const rand = () => {
-      seed = (seed * 9301 + 49297) % 233280;
-      return seed / 233280;
-    };
-    for (let w = 0; w < weeksCount; w++) {
-      const col: number[] = [];
-      for (let d = 0; d < 7; d++) {
-        const r = rand();
-        const level = r < 0.45 ? 0 : r < 0.65 ? 1 : r < 0.82 ? 2 : r < 0.94 ? 3 : 4;
-        col.push(level);
-        sum += level;
-      }
-      grid.push(col);
-    }
-    return { weeks: grid, total: sum };
+  const [data, setData] = useState<AchievementData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    AuthService.getAchievements()
+      .then(setData)
+      .catch((err) => message.error(err?.message || "加载成就数据失败"))
+      .finally(() => setLoading(false));
   }, []);
+
+  const stats = data?.stats;
+  const badges: AchievementBadge[] = data?.badges ?? [];
+  const heatmap: number[][] = data?.heatmap ?? [];
+  const totalContributions = stats?.total_contributions ?? 0;
+
+  if (loading) {
+    return (
+      <div className={styles.tabWrap} style={{ textAlign: "center", padding: 60, color: "var(--text-tertiary)" }}>
+        加载中...
+      </div>
+    );
+  }
 
   return (
     <div className={styles.tabWrap}>
       <div className={acStyles.statsRow}>
         {[
-          { label: "总贡献", value: total, icon: <FaFire />, color: "#f97316" },
-          { label: "已发布文章", value: 52, icon: <FaPenNib />, color: "#3b82f6" },
-          { label: "获得点赞", value: "3.2k", icon: <FaHeart />, color: "#ef4444" },
+          { label: "总贡献", value: totalContributions, icon: <FaFire />, color: "#f97316" },
+          { label: "已发布文章", value: stats?.published_articles ?? 0, icon: <FaPenNib />, color: "#3b82f6" },
+          { label: "获得点赞", value: stats?.total_likes ?? 0, icon: <FaHeart />, color: "#ef4444" },
           {
             label: "解锁徽章",
-            value: `${BADGES.filter((b) => b.unlocked).length}/${BADGES.length}`,
+            value: `${stats?.unlocked_badges ?? 0}/${stats?.total_badges ?? 0}`,
             icon: <FaMedal />,
             color: "#eab308",
           },
@@ -87,7 +74,7 @@ const AchievementsTab: React.FC = () => {
         <h2 className={styles.cardTitle}>
           <FaFire /> 贡献热力图
         </h2>
-        <p className={styles.cardDesc}>过去一年共 {total} 次贡献</p>
+        <p className={styles.cardDesc}>过去一年共 {totalContributions} 次贡献</p>
         <div className={acStyles.heatmapScroll}>
           <div className={acStyles.heatmap}>
             <div className={acStyles.months}>
@@ -106,13 +93,13 @@ const AchievementsTab: React.FC = () => {
                 ))}
               </div>
               <div className={acStyles.grid}>
-                {weeks.map((col, wi) => (
+                {heatmap.map((col, wi) => (
                   <div key={wi} className={acStyles.col}>
                     {col.map((level, di) => (
                       <div
                         key={di}
                         className={acStyles.cell}
-                        style={{ background: LEVEL_COLORS[level] }}
+                        style={{ background: LEVEL_COLORS[level] ?? LEVEL_COLORS[0] }}
                         title={`贡献等级 ${level}`}
                       />
                     ))}
@@ -136,10 +123,10 @@ const AchievementsTab: React.FC = () => {
           <FaMedal /> 荣誉徽章
         </h2>
         <div className={acStyles.badgeGrid}>
-          {BADGES.map((b) => (
+          {badges.map((b) => (
             <div key={b.id} className={`${acStyles.badge} ${!b.unlocked ? acStyles.badgeLocked : ""}`}>
               <div className={acStyles.badgeIcon} style={{ color: b.color, background: `${b.color}1a` }}>
-                {b.icon}
+                {ICON_MAP[b.icon] ?? <FaMedal />}
               </div>
               <div className={acStyles.badgeName}>{b.name}</div>
               <div className={acStyles.badgeDesc}>{b.desc}</div>

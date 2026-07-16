@@ -476,7 +476,7 @@ const Profile: React.FC = () => {
     </div>
   );
 
-  const renderAchievements = () => (import.meta.env.DEV ? <AchievementsTab /> : null);
+  const renderAchievements = () => <AchievementsTab />;
 
   const renderMainContent = () => {
     switch (activeTab) {
@@ -613,7 +613,7 @@ const Profile: React.FC = () => {
         {/* Main content area */}
         <main className={styles.content}>
           <nav className={styles.contentTabs}>
-            {TABS.filter((t) => import.meta.env.DEV || t.key !== "achievements").map((tab) => (
+            {TABS.map((tab) => (
               <button
                 key={tab.key}
                 className={`${styles.contentTab} ${activeTab === tab.key ? styles.contentTabActive : ""}`}

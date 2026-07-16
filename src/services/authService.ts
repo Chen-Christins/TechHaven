@@ -420,6 +420,11 @@ export class AuthService {
   /**
    * 获取 AI 接口配置
    */
+  static async getAchievements(): Promise<AchievementData> {
+    const response = await http.get<AchievementData>("/user/achievements");
+    return response.data;
+  }
+
   static async getAiConfig(): Promise<AiConfig | null> {
     const response = await http.get<AiConfig | null>("/user/ai-config");
     return response.data ?? null;
@@ -458,6 +463,30 @@ export interface UserStats {
   total_comments: number;
   total_tags: number;
   total_organizations: number;
+}
+
+export interface AchievementBadge {
+  id: string;
+  name: string;
+  desc: string;
+  icon: string;
+  color: string;
+  unlocked: boolean;
+  progress?: string;
+}
+
+export interface AchievementStats {
+  total_contributions: number;
+  published_articles: number;
+  total_likes: number;
+  unlocked_badges: number;
+  total_badges: number;
+}
+
+export interface AchievementData {
+  stats: AchievementStats;
+  badges: AchievementBadge[];
+  heatmap: number[][];
 }
 
 export default AuthService;

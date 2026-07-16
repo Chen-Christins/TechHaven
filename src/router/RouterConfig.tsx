@@ -6,6 +6,7 @@ import MaintenanceGuard from "../components/maintenance/MaintenanceGuard";
 import IndexPage from "../pages/home/IndexPage";
 import ArticleCreate from "../pages/article/ArticleCreate";
 import Profile from "../pages/profile/ProfilePage";
+import AuthRequired from "../components/auth/AuthRequired";
 import PersonalCenter from "../pages/personal/PersonalCenter";
 import AdminLayout from "../pages/admin/AdminLayout";
 import Dashboard from "../pages/admin/Dashboard";
@@ -90,13 +91,13 @@ const RouterConfig: React.FC = () => {
         {/* 组织详情页 */}
         <Route path="/organization/detail/:id" element={<OrganizationDetail />} />
 
-        <Route path="/profile/:id" element={<Profile />} />
+        <Route path="/profile/:id" element={<AuthRequired><Profile /></AuthRequired>} />
 
         {/* 个人管理中心 */}
         <Route path="/personal" element={<PersonalCenter />} />
 
         {/* 用户系统：帮助中心（仅开发环境可见） */}
-        {import.meta.env.DEV && <Route path="/help" element={<HelpCenter />} />}
+        <Route path="/help" element={<HelpCenter />} />
 
         {/* 私信会话（仅开发环境可见） */}
         {import.meta.env.DEV && <Route path="/messages" element={<Messages />} />}
