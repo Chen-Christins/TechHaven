@@ -244,7 +244,7 @@ const AdminLayout: React.FC = () => {
       items: [
         {
           id: "feedbacks",
-          label: "反馈管理",
+          label: "帮助运营",
           icon: <FaPaperPlane />,
           path: "/admin/feedbacks",
         },

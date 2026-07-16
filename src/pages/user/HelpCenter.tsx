@@ -9,6 +9,7 @@ import {
   FaUsers,
   FaCode,
   FaPaperPlane,
+  FaInbox,
 } from "react-icons/fa";
 import styles from "./UserPage.module.css";
 import helpStyles from "./HelpCenter.module.css";
@@ -120,7 +121,7 @@ const HelpCenter: React.FC = () => {
         </div>
 
         <div className={helpStyles.layout}>
-          <div className={styles.card} style={{ marginBottom: 0 }}>
+          <div className={`${styles.card} ${helpStyles.faqCard}`} style={{ marginBottom: 0 }}>
             <h2 className={styles.cardTitle}>
               <FaBook /> 常见问题
             </h2>
@@ -134,8 +135,19 @@ const HelpCenter: React.FC = () => {
                   {openId === f.id && <div className={helpStyles.faqA}>{f.a}</div>}
                 </div>
               ))}
-              {faqLoading && <div className={helpStyles.faqEmpty}>加载中...</div>}
-              {!faqLoading && filtered.length === 0 && <div className={helpStyles.faqEmpty}>未找到相关问题，试试提交反馈</div>}
+              {faqLoading && (
+                <div className={helpStyles.faqEmpty}>
+                  <FaQuestionCircle className={helpStyles.faqEmptyIcon} />
+                  <span>加载中...</span>
+                </div>
+              )}
+              {!faqLoading && filtered.length === 0 && (
+                <div className={helpStyles.faqEmpty}>
+                  <FaInbox className={helpStyles.faqEmptyIcon} />
+                  <span>{search ? "未找到相关问题" : "暂无常见问题"}</span>
+                  {search && <p className={helpStyles.faqEmptyHint}>试试其他关键词，或提交反馈告诉我们</p>}
+                </div>
+              )}
             </div>
           </div>
 

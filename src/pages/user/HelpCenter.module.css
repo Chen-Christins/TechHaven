@@ -76,12 +76,18 @@
   display: grid;
   grid-template-columns: 1.4fr 1fr;
   gap: 20px;
-  align-items: start;
+  align-items: stretch;
+}
+
+.faqCard {
+  display: flex;
+  flex-direction: column;
 }
 
 .faqList {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .faqItem {
@@ -127,10 +133,27 @@
 }
 
 .faqEmpty {
-  padding: 32px 0;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
   color: var(--text-tertiary);
   font-size: 14px;
+  text-align: center;
+}
+
+.faqEmptyIcon {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.4;
+  color: var(--text-tertiary);
+}
+
+.faqEmptyHint {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--text-tertiary);
 }
 
 .textarea {

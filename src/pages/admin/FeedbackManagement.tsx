@@ -1,5 +1,22 @@
-import React, { useState, useMemo } from "react";
-import { FaPlus, FaTrash, FaQuestionCircle, FaBug, FaLightbulb, FaSyncAlt, FaFilter, FaClipboardList, FaSearch, FaAngleDoubleLeft, FaAngleDoubleRight, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import {
+  FaPlus,
+  FaTrash,
+  FaQuestionCircle,
+  FaEye,
+  FaBug,
+  FaEdit,
+  FaLightbulb,
+  FaSyncAlt,
+  FaFilter,
+  FaClipboardList,
+  FaSearch,
+  FaAngleDoubleLeft,
+  FaAngleDoubleRight,
+  FaChevronLeft,
+  FaChevronRight,
+  FaBook,
+} from "react-icons/fa";
 import styles from "./FeedbackManagement.module.css";
 import Input from "@/components/input/Input";
 import Modal from "@/components/modal/Modal";
@@ -8,59 +25,22 @@ import { confirm } from "@/components/confirm/Confirm";
 import message from "@/components/message/Message";
 import type { SelectOption } from "@/types/index";
 import { formatDateTime } from "@/utils/utils";
+import { HelpService, type FeedbackItem, type HelpFaq } from "@/services/helpService";
+import { OrganizationService } from "@/services/organizationService";
 
-type FeedbackType = "bug" | "feature" | "other";
-
-interface MockFeedback {
-  id: string;
-  type: FeedbackType;
-  content: string;
-  contact?: string;
-  created_at: number;
-}
-
-const FEEDBACK_CONTENTS: { type: FeedbackType; content: string; contact?: string }[] = [
-  {
-    type: "bug",
-    content: "私信页面在移动端偶尔无法展开聊天窗，点击对话列表中任意一项都没有反应，需要刷新页面才能恢复。",
-    contact: "user@example.com",
-  },
-  { type: "feature", content: "希望文章编辑器能支持拖拽上传图片，现在需要手动点按钮选择文件，不太方便。", contact: "小王" },
-  { type: "other", content: "请问后续会支持 Markdown 导出为 PDF 吗？想把自己的文章存档。", contact: "zhang@test.com" },
-  { type: "bug", content: "个人中心的成就热力图颜色在暗色模式下看不清，色差太小了。" },
-  { type: "feature", content: "建议增加文章目录锚点滚动功能，长文章阅读体验会好很多。", contact: "李四" },
-  { type: "bug", content: "评论区的回复功能有 bug，点击回复后会跳转到页面顶部而不是定位到当前评论。" },
-  { type: "feature", content: "希望研发平台的看板可以自定义泳道列，现在的列是固定的不够灵活。", contact: "dev@team.com" },
-  { type: "bug", content: "通知中心的未读数量有时与实际不符，比如点开后角标没及时消失。" },
-  { type: "feature", content: "能否添加 RSS 订阅功能？方便用阅读器追踪更新。", contact: "rss_fan" },
-  { type: "other", content: "科技港湾这个项目开源了吗？想学习一下你们的实现。", contact: "learner@github" },
-  { type: "bug", content: "搜索关键词包含特殊字符时会显示空白结果，例如搜索「C++」什么也不返回。" },
-  { type: "feature", content: "建议在用户主页也展示一下贡献热力图，类似 GitHub profile 那种。", contact: "design@user.com" },
-  { type: "other", content: "日均活跃用户数大概多少？有没有公开的统计数据？" },
-  {
-    type: "bug",
-    content: "文章编辑时偶尔会遇到内容自动滚动到文档顶部的现象，正在写的内容会丢失光标位置。",
-    contact: "editor@blog.com",
-  },
-  { type: "feature", content: "希望通知能支持邮件推送，有时会错过重要消息提醒。", contact: "pm@team.com" },
-  { type: "bug", content: "后台管理页面在 1024px 分辨率下列表显示异常，操作按钮被折叠掉了。", contact: "admin@site.com" },
-  { type: "feature", content: "建议增加代码块的行号显示和高亮语言标签，便于读者识别。" },
-  { type: "bug", content: "重新登录后未读通知角标没有复位，还是显示之前的总数。", contact: "test@test.com" },
-  { type: "other", content: "什么时候支持 OAuth 第三方登录？比如 GitHub 或 Google。" },
-  { type: "feature", content: "想申请成为编辑，有公开的申请渠道吗？", contact: "writer@mail.com" },
-  { type: "bug", content: "个人资料的「我的标签」页加载超时，一整天了还在转圈。" },
-  { type: "feature", content: "文章分类希望能支持无限层级，现在的二级分类不够用。", contact: "cms@user.com" },
-  { type: "other", content: "请问有移动端 App 吗？还是只有 Web 端？", contact: "mobile@user.com" },
-  { type: "bug", content: "组织详情页的成员列表加载不出来，排查后发现是接口返回了 500。", contact: "org_admin" },
-  { type: "feature", content: "建议在编辑器里加一个自动保存功能，防止意外丢失内容。", contact: "writer@blog.com" },
-];
-
-const TYPE_LABELS: Record<FeedbackType | "", string> = {
+const TYPE_LABELS: Record<string, string> = {
   bug: "问题反馈",
   feature: "功能建议",
   other: "其他",
   "": "全部",
 };
+
+const FAQ_CATEGORY_OPTIONS: SelectOption[] = [
+  { id: "入门", name: "入门", color: "#3b82f6" },
+  { id: "账户安全", name: "账户安全", color: "#ef4444" },
+  { id: "组织协作", name: "组织协作", color: "#22c55e" },
+  { id: "研发平台", name: "研发平台", color: "#a855f7" },
+];
 
 const TYPE_OPTIONS: SelectOption[] = [
   { id: "", name: "全部类型", color: "#6b7280" },
@@ -69,63 +49,151 @@ const TYPE_OPTIONS: SelectOption[] = [
   { id: "other", name: "其他", color: "#6b7280" },
 ];
 
-function buildMockFeedbacks(): MockFeedback[] {
-  const now = Date.now();
-  return FEEDBACK_CONTENTS.map((item, i) => ({
-    id: String(i + 1),
-    type: item.type,
-    content: item.content,
-    contact: item.contact || undefined,
-    created_at: Math.floor((now - (FEEDBACK_CONTENTS.length - i) * 86400000 * 3) / 1000),
-  }));
-}
-
-const MOCK_ORGS: SelectOption[] = [
-  { id: "org-1", name: "前端开发组", color: "#3b82f6" },
-  { id: "org-2", name: "后端研发组", color: "#22c55e" },
-  { id: "org-3", name: "产品设计组", color: "#a855f7" },
-  { id: "org-4", name: "质量保障组", color: "#ef4444" },
-  { id: "org-5", name: "运维基础组", color: "#f59e0b" },
-];
-
 const PAGE_SIZE = 10;
 
 const FeedbackManagement: React.FC = () => {
-  const [feedbacks, setFeedbacks] = useState<MockFeedback[]>(buildMockFeedbacks);
+  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [page, setPage] = useState(1);
 
-  const [convertModal, setConvertModal] = useState<{ feedback: MockFeedback; target: "faq" | "requirement" | "bug" } | null>(null);
+  const [convertModal, setConvertModal] = useState<{ feedback: FeedbackItem; target: "faq" | "requirement" | "bug" } | null>(null);
   const [convertForm, setConvertForm] = useState({ title: "", content: "", cat: "", orgId: "", orgName: "" });
   const [converting, setConverting] = useState(false);
+  const [orgOptions, setOrgOptions] = useState<SelectOption[]>([]);
 
-  const stats = useMemo(() => {
-    const total = feedbacks.length;
-    const bug = feedbacks.filter((f) => f.type === "bug").length;
-    const feature = feedbacks.filter((f) => f.type === "feature").length;
-    const other = feedbacks.filter((f) => f.type === "other").length;
-    return { total, bug, feature, other };
-  }, [feedbacks]);
+  // 加载组织列表（供转换弹窗下拉选择）
+  useEffect(() => {
+    OrganizationService.getOrganizationLists({})
+      .then((res) => {
+        const colors = ["#3b82f6", "#22c55e", "#a855f7", "#ef4444", "#f59e0b", "#06b6d4", "#ec4899"];
+        setOrgOptions(
+          (res.list || []).map((org, i) => ({
+            id: String(org.id),
+            name: org.name,
+            color: colors[i % colors.length],
+          })),
+        );
+      })
+      .catch(() => {
+        // 组织列表加载失败不阻塞页面
+      });
+  }, []);
 
+  // --- FAQ 列表 ---
+  const [faqs, setFaqs] = useState<HelpFaq[]>([]);
+  const [faqLoading, setFaqLoading] = useState(false);
+  const [faqSearch, setFaqSearch] = useState("");
+  const [faqEditModal, setFaqEditModal] = useState<HelpFaq | null>(null);
+  const [faqEditForm, setFaqEditForm] = useState({ q: "", a: "", cat: "" });
+  const [faqSaving, setFaqSaving] = useState(false);
+  const [faqPreview, setFaqPreview] = useState<HelpFaq | null>(null);
+
+  const fetchFaqs = useCallback(async () => {
+    setFaqLoading(true);
+    try {
+      const res = await HelpService.getFaqs();
+      setFaqs(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      // 加载失败不阻塞页面
+    } finally {
+      setFaqLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchFaqs();
+  }, [fetchFaqs]);
+
+  const filteredFaqs = useMemo(() => {
+    if (!faqSearch) return faqs;
+    const kw = faqSearch.toLowerCase();
+    return faqs.filter((f) => f.q.toLowerCase().includes(kw) || f.a.toLowerCase().includes(kw) || f.cat.includes(kw));
+  }, [faqs, faqSearch]);
+
+  const handleDeleteFaq = (id: string) => {
+    confirm({
+      title: "删除常见问题",
+      content: "确定要删除这条常见问题吗？",
+      onConfirm: async () => {
+        try {
+          await HelpService.deleteFaq(id);
+          message.success("已删除");
+          setFaqs((prev) => prev.filter((f) => f.id !== id));
+        } catch (err: any) {
+          message.error(err?.message || "删除失败");
+        }
+      },
+    });
+  };
+
+  const openFaqEdit = (faq: HelpFaq) => {
+    setFaqEditForm({ q: faq.q, a: faq.a, cat: faq.cat });
+    setFaqEditModal(faq);
+  };
+
+  const handleFaqEdit = async () => {
+    if (!faqEditModal) return;
+    if (!faqEditForm.q.trim() || !faqEditForm.a.trim()) {
+      message.error("问题和答案不能为空");
+      return;
+    }
+    setFaqSaving(true);
+    try {
+      await HelpService.updateFaq(faqEditModal.id, {
+        q: faqEditForm.q.trim(),
+        a: faqEditForm.a.trim(),
+        cat: faqEditForm.cat,
+      });
+      message.success("已保存");
+      setFaqEditModal(null);
+      fetchFaqs();
+    } catch (err: any) {
+      message.error(err?.message || "保存失败");
+    } finally {
+      setFaqSaving(false);
+    }
+  };
+
+  // 加载反馈列表
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params: { page: number; page_size: number; type?: string } = {
+        page,
+        page_size: PAGE_SIZE,
+      };
+      if (typeFilter) params.type = typeFilter;
+      const res = await HelpService.getFeedbacks(params);
+      setFeedbacks(res.data.list || []);
+      setTotal(res.data.total || 0);
+    } catch (err: any) {
+      message.error(err?.message || "加载反馈列表失败");
+    } finally {
+      setLoading(false);
+    }
+  }, [page, typeFilter]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // 类型筛选变化时重置页码
+  const handleTypeFilterChange = (option: SelectOption | null) => {
+    setTypeFilter((option?.id as string) || "");
+    setPage(1);
+  };
+
+  // 客户端搜索过滤（在当前页内过滤）
   const filtered = useMemo(() => {
-    let list = feedbacks;
-    if (search) {
-      const kw = search.toLowerCase();
-      list = list.filter((f) => f.content.toLowerCase().includes(kw) || f.contact?.toLowerCase().includes(kw));
-    }
-    if (typeFilter) {
-      list = list.filter((f) => f.type === typeFilter);
-    }
-    return list;
-  }, [feedbacks, search, typeFilter]);
+    if (!search) return feedbacks;
+    const kw = search.toLowerCase();
+    return feedbacks.filter((f) => f.content.toLowerCase().includes(kw) || f.contact?.toLowerCase().includes(kw));
+  }, [feedbacks, search]);
 
-  const paged = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
-    return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, page]);
-
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
@@ -148,7 +216,7 @@ const FeedbackManagement: React.FC = () => {
     return pages;
   };
 
-  const openConvert = (feedback: MockFeedback, target: "faq" | "requirement" | "bug") => {
+  const openConvert = (feedback: FeedbackItem, target: "faq" | "requirement" | "bug") => {
     setConvertForm({
       title: feedback.content.slice(0, 40),
       content: feedback.content,
@@ -161,30 +229,73 @@ const FeedbackManagement: React.FC = () => {
 
   const handleConvert = async () => {
     if (!convertModal) return;
+    if (!convertForm.title.trim()) {
+      message.error("请输入标题");
+      return;
+    }
     setConverting(true);
-    await new Promise((r) => setTimeout(r, 600));
-    message.success(
-      convertModal.target === "faq" ? "已转为常见问题" : convertModal.target === "requirement" ? "已转为需求" : "已转为缺陷",
-    );
-    setConverting(false);
-    setConvertModal(null);
+    try {
+      const payload: { title: string; content: string; cat?: string; org_id?: string } = {
+        title: convertForm.title.trim(),
+        content: convertForm.content.trim(),
+      };
+      if (convertModal.target === "faq" && convertForm.cat) {
+        payload.cat = convertForm.cat.trim();
+      }
+      if ((convertModal.target === "requirement" || convertModal.target === "bug") && convertForm.orgId) {
+        payload.org_id = convertForm.orgId;
+      }
+      await HelpService.convertFeedback(convertModal.feedback.id, convertModal.target, payload);
+      message.success(
+        convertModal.target === "faq" ? "已转为常见问题" : convertModal.target === "requirement" ? "已转为需求" : "已转为缺陷",
+      );
+      setConvertModal(null);
+      fetchData();
+      if (convertModal.target === "faq") fetchFaqs();
+    } catch (err: any) {
+      message.error(err?.message || "转换失败");
+    } finally {
+      setConverting(false);
+    }
   };
 
   const handleDelete = (id: string) => {
     confirm({
       title: "删除反馈",
       content: "确定要删除这条反馈吗？此操作不可恢复。",
-      onConfirm: () => {
-        setFeedbacks((prev) => prev.filter((f) => f.id !== id));
-        message.success("已删除");
+      onConfirm: async () => {
+        try {
+          await HelpService.deleteFeedback(id);
+          message.success("已删除");
+          // 如果当前页只剩一条且不是第一页，回到上一页
+          if (feedbacks.length === 1 && page > 1) {
+            setPage((p) => p - 1);
+          } else {
+            fetchData();
+          }
+        } catch (err: any) {
+          message.error(err?.message || "删除失败");
+        }
       },
     });
   };
 
-  const handleRefresh = () => {
-    setFeedbacks(buildMockFeedbacks());
+  const handleRefresh = async () => {
     setPage(1);
-    message.success("已刷新");
+    setSearch("");
+    setTypeFilter("");
+    // 直接请求第一页、无筛选条件的数据
+    setLoading(true);
+    try {
+      const res = await HelpService.getFeedbacks({ page: 1, page_size: PAGE_SIZE });
+      setFeedbacks(res.data.list || []);
+      setTotal(res.data.total || 0);
+    } catch (err: any) {
+      message.error(err?.message || "加载反馈列表失败");
+    } finally {
+      setLoading(false);
+    }
+    fetchFaqs();
   };
 
   const convertTitle =
@@ -194,8 +305,8 @@ const FeedbackManagement: React.FC = () => {
     <div className={styles.feedbackManagement}>
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>反馈管理</h1>
-          <p className={styles.pageDescription}>管理用户提交的反馈，可转为 FAQ、需求或缺陷</p>
+          <h1 className={styles.pageTitle}>帮助运营</h1>
+          <p className={styles.pageDescription}>管理用户反馈与常见问题（FAQ）</p>
         </div>
         <div className={styles.headerActions}>
           <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleRefresh}>
@@ -209,29 +320,8 @@ const FeedbackManagement: React.FC = () => {
           <div className={`${styles.statIcon} ${styles.primary}`}>
             <FaClipboardList />
           </div>
-          <div className={styles.statValue}>{stats.total}</div>
+          <div className={styles.statValue}>{loading ? "..." : total}</div>
           <div className={styles.statLabel}>全部反馈</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={`${styles.statIcon} ${styles.warning}`}>
-            <FaBug />
-          </div>
-          <div className={styles.statValue}>{stats.bug}</div>
-          <div className={styles.statLabel}>问题反馈</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={`${styles.statIcon} ${styles.primary}`}>
-            <FaLightbulb />
-          </div>
-          <div className={styles.statValue}>{stats.feature}</div>
-          <div className={styles.statLabel}>功能建议</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={`${styles.statIcon} ${styles.success}`}>
-            <FaQuestionCircle />
-          </div>
-          <div className={styles.statValue}>{stats.other}</div>
-          <div className={styles.statLabel}>其他</div>
         </div>
       </div>
 
@@ -244,7 +334,14 @@ const FeedbackManagement: React.FC = () => {
         <div className={styles.filterForm}>
           <div className={styles.filterGroup}>
             <label className={styles.filterLabel}>搜索反馈</label>
-            <Input placeholder="搜索反馈内容或联系方式..." value={search} onChange={setSearch} prefix={<FaSearch />} size="large" style={{ minHeight: "46px", height: "50px" }} />
+            <Input
+              placeholder="搜索反馈内容或联系方式..."
+              value={search}
+              onChange={setSearch}
+              prefix={<FaSearch />}
+              size="large"
+              style={{ minHeight: "46px", height: "50px" }}
+            />
           </div>
           <div className={styles.filterGroup}>
             <label className={styles.filterLabel}>反馈类型</label>
@@ -252,7 +349,7 @@ const FeedbackManagement: React.FC = () => {
               name="类型"
               options={TYPE_OPTIONS}
               value={TYPE_OPTIONS.find((o) => o.id === typeFilter) || TYPE_OPTIONS[0]}
-              onChange={(o) => setTypeFilter((o?.id as string) || "")}
+              onChange={handleTypeFilterChange}
               hideBadge={true}
             />
           </div>
@@ -264,10 +361,14 @@ const FeedbackManagement: React.FC = () => {
           <h3 className={styles.tableTitle}>
             <FaClipboardList /> 反馈列表
           </h3>
-          <span style={{ fontSize: 14, color: "var(--text-secondary)" }}>共 {filtered.length} 条</span>
+          <span style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+            共 {total} 条{typeFilter ? `（已筛选）` : ""}
+          </span>
         </div>
 
-        {paged.length === 0 ? (
+        {loading ? (
+          <div className={styles.empty}>加载中...</div>
+        ) : filtered.length === 0 ? (
           <div className={styles.empty}>暂无反馈</div>
         ) : (
           <>
@@ -282,7 +383,7 @@ const FeedbackManagement: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {paged.map((fb) => (
+                {filtered.map((fb) => (
                   <tr key={fb.id}>
                     <td className={styles.contentCell}>{fb.content}</td>
                     <td>
@@ -318,7 +419,7 @@ const FeedbackManagement: React.FC = () => {
             {totalPages >= 1 && (
               <div className={styles.pagination}>
                 <span className={styles.pageInfo}>
-                  显示 {(page - 1) * PAGE_SIZE + 1} - {Math.min(page * PAGE_SIZE, filtered.length)} 条，共 {filtered.length} 条记录
+                  显示 {(page - 1) * PAGE_SIZE + 1} - {Math.min(page * PAGE_SIZE, total)} 条，共 {total} 条记录
                 </span>
                 <div className={styles.pageButtons}>
                   <button className={styles.pageBtn} disabled={page === 1} onClick={() => setPage(1)}>
@@ -354,20 +455,93 @@ const FeedbackManagement: React.FC = () => {
         )}
       </div>
 
+      {/* FAQ 常见问题列表 */}
+      <div className={styles.tableContainer} style={{ marginTop: 24 }}>
+        <div className={styles.tableHeader}>
+          <h3 className={styles.tableTitle}>
+            <FaBook /> 常见问题 (FAQ)
+          </h3>
+          <span style={{ fontSize: 14, color: "var(--text-secondary)" }}>共 {filteredFaqs.length} 条</span>
+        </div>
+        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border-primary)" }}>
+          <Input
+            placeholder="搜索问题或答案..."
+            value={faqSearch}
+            onChange={setFaqSearch}
+            prefix={<FaSearch />}
+            size="large"
+            style={{ maxWidth: 360, minHeight: "42px", height: "46px" }}
+          />
+        </div>
+
+        {faqLoading ? (
+          <div className={styles.empty}>加载中...</div>
+        ) : filteredFaqs.length === 0 ? (
+          <div className={styles.empty}>{faqSearch ? "无匹配结果" : "暂无常见问题"}</div>
+        ) : (
+          <table className={styles.adminTable}>
+            <thead>
+              <tr>
+                <th>问题</th>
+                <th>答案</th>
+                <th>分类</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredFaqs.map((faq) => (
+                <tr key={faq.id}>
+                  <td className={styles.contentCell}>{faq.q}</td>
+                  <td className={styles.contentCell}>{faq.a.length > 60 ? faq.a.slice(0, 60) + "..." : faq.a}</td>
+                  <td>
+                    <span className={styles.typeBadge} style={{ background: "#dbeafe", color: "#2563eb" }}>
+                      {faq.cat}
+                    </span>
+                  </td>
+                  <td>
+                    <div className={styles.actionButtons}>
+                      <button className={styles.actionButton} onClick={() => setFaqPreview(faq)} title="预览">
+                        <FaEye />
+                      </button>
+                      <button className={styles.actionButton} onClick={() => openFaqEdit(faq)} title="编辑">
+                        <FaEdit />
+                      </button>
+                      <button
+                        className={`${styles.actionButton} ${styles.delete}`}
+                        onClick={() => handleDeleteFaq(faq.id)}
+                        title="删除"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
       {convertModal && (
         <Modal visible onClose={() => setConvertModal(null)} title={convertTitle}>
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>标题</label>
-            <Input className={styles.formInput} value={convertForm.title} onChange={(v) => setConvertForm((f) => ({ ...f, title: v }))} />
+            <Input
+              className={styles.formInput}
+              value={convertForm.title}
+              onChange={(v) => setConvertForm((f) => ({ ...f, title: v }))}
+            />
           </div>
           {convertModal.target === "faq" && (
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>分类</label>
-              <Input
-                className={styles.formInput}
-                value={convertForm.cat}
-                onChange={(v) => setConvertForm((f) => ({ ...f, cat: v }))}
-                placeholder="如：入门、账户安全"
+              <CustomSelect
+                name="分类"
+                options={FAQ_CATEGORY_OPTIONS}
+                value={FAQ_CATEGORY_OPTIONS.find((o) => o.id === convertForm.cat) ?? null}
+                onChange={(option) => setConvertForm((f) => ({ ...f, cat: String(option?.id ?? "") }))}
+                placeholder="选择 FAQ 分类"
+                hideBadge={true}
               />
             </div>
           )}
@@ -376,16 +550,27 @@ const FeedbackManagement: React.FC = () => {
               <label className={styles.formLabel}>指派组织</label>
               <CustomSelect
                 name="org"
-                options={MOCK_ORGS}
-                value={MOCK_ORGS.find((o) => o.id === convertForm.orgId) ?? null}
-                onChange={(option) => setConvertForm((f) => ({ ...f, orgId: String(option?.id ?? ""), orgName: option?.name ?? "" }))}
-                placeholder="选择目标组织"
+                options={orgOptions}
+                value={orgOptions.find((o) => o.id === convertForm.orgId) ?? null}
+                onChange={(option) =>
+                  setConvertForm((f) => ({
+                    ...f,
+                    orgId: String(option?.id ?? ""),
+                    orgName: option?.name ?? "",
+                  }))
+                }
+                placeholder="选择目标组织（可选）"
+                hideBadge={true}
               />
             </div>
           )}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>内容</label>
-            <textarea className={styles.formTextarea} value={convertForm.content} onChange={(e) => setConvertForm((f) => ({ ...f, content: e.target.value }))} />
+            <textarea
+              className={styles.formTextarea}
+              value={convertForm.content}
+              onChange={(e) => setConvertForm((f) => ({ ...f, content: e.target.value }))}
+            />
           </div>
           <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 20 }}>
             <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setConvertModal(null)}>
@@ -400,6 +585,77 @@ const FeedbackManagement: React.FC = () => {
                 </>
               )}
             </button>
+          </div>
+        </Modal>
+      )}
+
+      {faqEditModal && (
+        <Modal visible onClose={() => setFaqEditModal(null)} title="编辑常见问题">
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>问题</label>
+            <Input
+              className={styles.formInput}
+              value={faqEditForm.q}
+              onChange={(v) => setFaqEditForm((f) => ({ ...f, q: v }))}
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>答案</label>
+            <textarea
+              className={styles.formTextarea}
+              value={faqEditForm.a}
+              onChange={(e) => setFaqEditForm((f) => ({ ...f, a: e.target.value }))}
+              style={{ minHeight: 150 }}
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>分类</label>
+            <CustomSelect
+              name="分类"
+              options={FAQ_CATEGORY_OPTIONS}
+              value={FAQ_CATEGORY_OPTIONS.find((o) => o.id === faqEditForm.cat) ?? null}
+              onChange={(option) => setFaqEditForm((f) => ({ ...f, cat: String(option?.id ?? "") }))}
+              placeholder="选择分类"
+              hideBadge={true}
+            />
+          </div>
+          <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 20 }}>
+            <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setFaqEditModal(null)}>
+              取消
+            </button>
+            <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleFaqEdit} disabled={faqSaving}>
+              {faqSaving ? "保存中..." : "保存"}
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {faqPreview && (
+        <Modal visible onClose={() => setFaqPreview(null)} title="预览常见问题" size="large">
+          <div style={{ marginBottom: 16 }}>
+            <span
+              className={styles.typeBadge}
+              style={{ background: "#dbeafe", color: "#2563eb", fontSize: 13, padding: "4px 12px" }}
+            >
+              {faqPreview.cat}
+            </span>
+          </div>
+          <h3 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 12px" }}>
+            {faqPreview.q}
+          </h3>
+          <div
+            style={{
+              fontSize: 14,
+              lineHeight: 1.8,
+              color: "var(--text-secondary)",
+              whiteSpace: "pre-wrap",
+              padding: "16px",
+              background: "var(--bg-secondary)",
+              borderRadius: 8,
+              border: "1px solid var(--border-primary)",
+            }}
+          >
+            {faqPreview.a}
           </div>
         </Modal>
       )}
