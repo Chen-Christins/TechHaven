@@ -120,10 +120,7 @@ const Navbar: React.FC = () => {
   };
 
   const getNavLinks = () => {
-    const links = [...navLinks, { label: "研发", icon: <FaFlask />, path: "/rd" }];
-    if (import.meta.env.DEV) {
-      links.push({ label: "帮助", icon: <FaQuestionCircle />, path: "/help" });
-    }
+    const links = [...navLinks, { label: "研发", icon: <FaFlask />, path: "/rd" }, { label: "帮助", icon: <FaQuestionCircle />, path: "/help" }];
     return links;
   };
 

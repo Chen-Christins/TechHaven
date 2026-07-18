@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   FaQuestionCircle,
   FaSearch,
@@ -9,6 +9,7 @@ import {
   FaUsers,
   FaCode,
   FaPaperPlane,
+  FaInbox,
 } from "react-icons/fa";
 import styles from "./UserPage.module.css";
 import helpStyles from "./HelpCenter.module.css";
@@ -19,43 +20,7 @@ import Button from "@/components/button/Button";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import message from "@/components/message/Message";
 import type { SelectOption } from "../../types";
-
-interface Faq {
-  id: string;
-  q: string;
-  a: string;
-  cat: string;
-}
-
-const FAQS: Faq[] = [
-  {
-    id: "1",
-    cat: "入门",
-    q: "如何发布我的第一篇文章？",
-    a: "登录后点击导航栏的「写文章」，使用 Markdown 编辑器撰写内容，填写标题、分类与标签后点击发布即可。",
-  },
-  {
-    id: "2",
-    cat: "入门",
-    q: "支持哪些 Markdown 语法？",
-    a: "支持 GFM 全套语法，包括代码高亮、表格、任务列表，以及 KaTeX 数学公式和 Mermaid 图表。",
-  },
-  {
-    id: "3",
-    cat: "账户安全",
-    q: "为什么登录信息不保存在浏览器？",
-    a: "为防止 Token 被篡改，平台采用内存态存储敏感数据，关闭页面后需重新认证，这是有意的安全设计。",
-  },
-  { id: "4", cat: "账户安全", q: "如何开启两步验证？", a: "前往「账户安全」页面，打开「两步验证」开关并按提示绑定验证器即可。" },
-  { id: "5", cat: "组织协作", q: "如何加入一个组织？", a: "在「组织列表」中找到目标组织并提交加入申请，等待管理员审批通过。" },
-  { id: "6", cat: "研发平台", q: "研发平台需要什么权限才能访问？", a: "你需要加入至少一个组织，并在组织内具有报告者及以上角色。" },
-  {
-    id: "7",
-    cat: "研发平台",
-    q: "看板上的卡片如何流转状态？",
-    a: "直接拖拽卡片到目标列即可修改状态，支持需求、缺陷与任务的统一管理。",
-  },
-];
+import { HelpService, type HelpFaq } from "../../services/helpService";
 
 const CATEGORIES = [
   { name: "入门", icon: <FaRocket />, color: "#3b82f6" },
@@ -72,21 +37,52 @@ const feedbackTypes: SelectOption[] = [
 
 const HelpCenter: React.FC = () => {
   const [search, setSearch] = useState("");
-  const [openId, setOpenId] = useState<string | null>(FAQS[0].id);
+  const [faqs, setFaqs] = useState<HelpFaq[]>([]);
+  const [faqLoading, setFaqLoading] = useState(true);
+  const [openId, setOpenId] = useState<string | null>(null);
   const [fbType, setFbType] = useState("bug");
   const [fbContent, setFbContent] = useState("");
   const [fbContact, setFbContact] = useState("");
+  const [fbSubmitting, setFbSubmitting] = useState(false);
 
-  const filtered = useMemo(() => (search ? FAQS.filter((f) => f.q.includes(search) || f.a.includes(search)) : FAQS), [search]);
+  useEffect(() => {
+    HelpService.getFaqs()
+      .then((res) => {
+        const list = res.data || [];
+        console.log("Fetched FAQs:", list); // Debugging line
+        setFaqs(list);
+        if (list.length > 0) setOpenId(list[0].id);
+      })
+      .catch(() => message.error("加载常见问题失败"))
+      .finally(() => setFaqLoading(false));
+  }, []);
 
-  const submitFeedback = () => {
+  const filtered = useMemo(() => (search ? faqs.filter((f) => f.q.includes(search) || f.a.includes(search)) : faqs), [search, faqs]);
+
+  const submitFeedback = async () => {
     if (!fbContent.trim()) {
       message.warn("请填写反馈内容");
       return;
     }
-    message.success("反馈已提交，感谢你的建议！");
-    setFbContent("");
-    setFbContact("");
+    setFbSubmitting(true);
+    try {
+      const res = await HelpService.submitFeedback({
+        type: fbType as "bug" | "feature" | "other",
+        content: fbContent.trim(),
+        contact: fbContact.trim() || undefined,
+      });
+      if (res.errno === 0) {
+        message.success("反馈已提交，感谢你的建议！");
+        setFbContent("");
+        setFbContact("");
+      } else {
+        message.error(res.msg || "提交失败，请稍后再试");
+      }
+    } catch {
+      message.error("提交失败，请检查网络");
+    } finally {
+      setFbSubmitting(false);
+    }
   };
 
   return (
@@ -111,7 +107,7 @@ const HelpCenter: React.FC = () => {
 
         <div className={helpStyles.catRow}>
           {CATEGORIES.map((c) => {
-            const count = FAQS.filter((f) => f.cat === c.name).length;
+            const count = faqs.filter((f) => f.cat === c.name).length;
             return (
               <div key={c.name} className={helpStyles.catCard} onClick={() => setSearch("")}>
                 <div className={helpStyles.catIcon} style={{ color: c.color, background: `${c.color}1a` }}>
@@ -125,7 +121,7 @@ const HelpCenter: React.FC = () => {
         </div>
 
         <div className={helpStyles.layout}>
-          <div className={styles.card} style={{ marginBottom: 0 }}>
+          <div className={`${styles.card} ${helpStyles.faqCard}`} style={{ marginBottom: 0 }}>
             <h2 className={styles.cardTitle}>
               <FaBook /> 常见问题
             </h2>
@@ -139,7 +135,19 @@ const HelpCenter: React.FC = () => {
                   {openId === f.id && <div className={helpStyles.faqA}>{f.a}</div>}
                 </div>
               ))}
-              {filtered.length === 0 && <div className={helpStyles.faqEmpty}>未找到相关问题，试试提交反馈</div>}
+              {faqLoading && (
+                <div className={helpStyles.faqEmpty}>
+                  <FaQuestionCircle className={helpStyles.faqEmptyIcon} />
+                  <span>加载中...</span>
+                </div>
+              )}
+              {!faqLoading && filtered.length === 0 && (
+                <div className={helpStyles.faqEmpty}>
+                  <FaInbox className={helpStyles.faqEmptyIcon} />
+                  <span>{search ? "未找到相关问题" : "暂无常见问题"}</span>
+                  {search && <p className={helpStyles.faqEmptyHint}>试试其他关键词，或提交反馈告诉我们</p>}
+                </div>
+              )}
             </div>
           </div>
 
@@ -172,7 +180,7 @@ const HelpCenter: React.FC = () => {
               <label className={styles.formLabel}>联系方式（选填）</label>
               <Input placeholder="邮箱或其他联系方式" value={fbContact} onChange={setFbContact} size="large" />
             </div>
-            <Button color="primary" onClick={submitFeedback}>
+            <Button color="primary" onClick={submitFeedback} loading={fbSubmitting}>
               <FaPaperPlane style={{ marginRight: 6 }} /> 提交反馈
             </Button>
           </div>

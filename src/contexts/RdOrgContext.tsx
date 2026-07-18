@@ -99,6 +99,23 @@ export const RdOrgProvider: React.FC<{ children: ReactNode; initialOrgId?: strin
     return map;
   }, [orgs]);
 
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "16px",
+          color: "var(--text-secondary)",
+        }}
+      >
+        加载组织信息...
+      </div>
+    );
+  }
+
   return (
     <RdOrgContext.Provider
       value={{ orgs, userOrgIds, isAdmin, loading, orgNameMap, maxOrgRole, currentOrgRole, selectedOrgId, setSelectedOrgId }}

@@ -15,6 +15,7 @@ import {
   FaClipboardList,
   FaBuilding,
   FaBell,
+  FaPaperPlane,
 } from "react-icons/fa";
 import styles from "./AdminLayout.module.css";
 import ThemeToggle from "@/components/themeToggle/ThemeToggle";
@@ -235,6 +236,17 @@ const AdminLayout: React.FC = () => {
           label: "系统设置",
           icon: <FaCog />,
           path: "/admin/settings",
+        },
+      ],
+    },
+    {
+      title: "运营管理",
+      items: [
+        {
+          id: "feedbacks",
+          label: "帮助运营",
+          icon: <FaPaperPlane />,
+          path: "/admin/feedbacks",
         },
       ],
     },

@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import type { CustomSelectProps, SelectOption } from "@/types/index";
 import styles from "./CustomSelect.module.css";
 
@@ -18,8 +19,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const [selectedOption, setSelectedOption] = useState<SelectOption | null>(value || null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // 同步外部value变化
@@ -31,10 +34,17 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     }
   }, [value, options]);
 
-  // 点击外部关闭下拉框
+  const closeDropdown = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  // 点击外部关闭下拉框（包括 portal 渲染的下拉框）
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const insideContainer = containerRef.current?.contains(target);
+      const insideDropdown = dropdownRef.current?.contains(target);
+      if (!insideContainer && !insideDropdown) {
         closeDropdown();
       }
     };
@@ -43,7 +53,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
-  }, []);
+  }, [closeDropdown]);
 
   const toggleDropdown = () => {
     if (disabled) return;
@@ -59,25 +69,26 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       const rect = containerRef.current.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom;
       const spaceAbove = rect.top;
-      const dropdownHeight = 320; // Approximate max height including padding
+      const dropdownHeight = 320;
 
+      const pos = { left: rect.left, width: rect.width, top: 0 };
       if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+        // 向上展开
         setOpenUpwards(true);
+        pos.top = rect.top - 5; // 下拉框底部对齐到容器顶部上方 5px
       } else {
+        // 向下展开
         setOpenUpwards(false);
+        pos.top = rect.bottom + 5;
       }
+      setDropdownPos(pos);
     }
 
     setIsOpen(true);
     setSearchTerm("");
-    // 延迟focus以确保dropdown已经打开
     setTimeout(() => {
       searchInputRef.current?.focus();
     }, 0);
-  };
-
-  const closeDropdown = () => {
-    setIsOpen(false);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,40 +141,55 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         </div>
       </div>
 
-      {/* 下拉框 */}
-      <div className={`${styles.dropdown} ${isOpen ? styles.dropdownOpen : ""} ${openUpwards ? styles.dropdownUp : ""}`}>
-        <div className={styles.search}>
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder={`搜索${name}...`}
-            className={styles.searchInput}
-            value={searchTerm}
-            onChange={handleSearchChange}
-          />
-        </div>
-        <div className={styles.options}>
-          {filteredOptions.length === 0 ? (
-            <div className={styles.noResults}>未找到匹配的{name}</div>
-          ) : (
-            filteredOptions.map((option) => (
-              <div
-                key={option.id}
-                className={`${styles.option} ${selectedOption?.id === option.id ? styles.optionSelected : ""}`}
-                onClick={() => selectOption(option)}
-              >
-                {option.avatar ? (
-                  <img className={styles.avatar} src={option.avatar} alt="" />
-                ) : (
-                  option.color && <div className={styles.tagColor} style={{ backgroundColor: option.color }} />
-                )}
-                <div className={styles.optionText}>{option.name}</div>
-                {showDate && option.date && <div className={styles.optionCount}>{option.date}</div>}
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+      {/* 下拉框 (Portal 到 body，避免父级 overflow 裁切) */}
+      {isOpen &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            className={`${styles.dropdown} ${styles.dropdownOpen} ${openUpwards ? styles.dropdownUp : ""}`}
+            style={{
+              position: "fixed",
+              top: openUpwards ? "auto" : dropdownPos.top,
+              bottom: openUpwards ? window.innerHeight - dropdownPos.top : "auto",
+              left: dropdownPos.left,
+              width: dropdownPos.width,
+              zIndex: 99999,
+            }}
+          >
+            <div className={styles.search}>
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder={`搜索${name}...`}
+                className={styles.searchInput}
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+            </div>
+            <div className={styles.options}>
+              {filteredOptions.length === 0 ? (
+                <div className={styles.noResults}>未找到匹配的{name}</div>
+              ) : (
+                filteredOptions.map((option) => (
+                  <div
+                    key={option.id}
+                    className={`${styles.option} ${selectedOption?.id === option.id ? styles.optionSelected : ""}`}
+                    onClick={() => selectOption(option)}
+                  >
+                    {option.avatar ? (
+                      <img className={styles.avatar} src={option.avatar} alt="" />
+                    ) : (
+                      option.color && <div className={styles.tagColor} style={{ backgroundColor: option.color }} />
+                    )}
+                    <div className={styles.optionText}>{option.name}</div>
+                    {showDate && option.date && <div className={styles.optionCount}>{option.date}</div>}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
 
       {/* 选中标签 */}
       {selectedOption && !hideBadge && (
