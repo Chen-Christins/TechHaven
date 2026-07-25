@@ -593,11 +593,7 @@ const FeedbackManagement: React.FC = () => {
         <Modal visible onClose={() => setFaqEditModal(null)} title="编辑常见问题">
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>问题</label>
-            <Input
-              className={styles.formInput}
-              value={faqEditForm.q}
-              onChange={(v) => setFaqEditForm((f) => ({ ...f, q: v }))}
-            />
+            <Input className={styles.formInput} value={faqEditForm.q} onChange={(v) => setFaqEditForm((f) => ({ ...f, q: v }))} />
           </div>
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>答案</label>
@@ -633,16 +629,11 @@ const FeedbackManagement: React.FC = () => {
       {faqPreview && (
         <Modal visible onClose={() => setFaqPreview(null)} title="预览常见问题" size="large">
           <div style={{ marginBottom: 16 }}>
-            <span
-              className={styles.typeBadge}
-              style={{ background: "#dbeafe", color: "#2563eb", fontSize: 13, padding: "4px 12px" }}
-            >
+            <span className={styles.typeBadge} style={{ background: "#dbeafe", color: "#2563eb", fontSize: 13, padding: "4px 12px" }}>
               {faqPreview.cat}
             </span>
           </div>
-          <h3 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 12px" }}>
-            {faqPreview.q}
-          </h3>
+          <h3 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 12px" }}>{faqPreview.q}</h3>
           <div
             style={{
               fontSize: 14,
