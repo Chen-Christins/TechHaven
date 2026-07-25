@@ -91,7 +91,14 @@ const RouterConfig: React.FC = () => {
         {/* 组织详情页 */}
         <Route path="/organization/detail/:id" element={<OrganizationDetail />} />
 
-        <Route path="/profile/:id" element={<AuthRequired><Profile /></AuthRequired>} />
+        <Route
+          path="/profile/:id"
+          element={
+            <AuthRequired>
+              <Profile />
+            </AuthRequired>
+          }
+        />
 
         {/* 个人管理中心 */}
         <Route path="/personal" element={<PersonalCenter />} />

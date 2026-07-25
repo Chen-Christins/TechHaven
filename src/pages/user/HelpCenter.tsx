@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaQuestionCircle,
   FaSearch,
@@ -10,6 +11,9 @@ import {
   FaCode,
   FaPaperPlane,
   FaInbox,
+  FaLock,
+  FaSignInAlt,
+  FaArrowLeft,
 } from "react-icons/fa";
 import styles from "./UserPage.module.css";
 import helpStyles from "./HelpCenter.module.css";
@@ -19,6 +23,8 @@ import Input from "@/components/input/Input";
 import Button from "@/components/button/Button";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import message from "@/components/message/Message";
+import Loading from "@/components/loading/Loading";
+import { useAuth } from "@/contexts/AuthContext";
 import type { SelectOption } from "../../types";
 import { HelpService, type HelpFaq } from "../../services/helpService";
 
@@ -36,6 +42,8 @@ const feedbackTypes: SelectOption[] = [
 ];
 
 const HelpCenter: React.FC = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [search, setSearch] = useState("");
   const [faqs, setFaqs] = useState<HelpFaq[]>([]);
   const [faqLoading, setFaqLoading] = useState(true);
@@ -85,9 +93,34 @@ const HelpCenter: React.FC = () => {
     }
   };
 
-  return (
-    <div className={styles.page}>
-      <Navbar />
+  const renderContent = () => {
+    if (authLoading) {
+      return <Loading size="medium" text="验证登录状态..." />;
+    }
+    if (!isAuthenticated) {
+      return (
+        <div className={styles.container}>
+          <div className={helpStyles.authGate}>
+            <div className={helpStyles.authIconCircle}>
+              <FaLock />
+            </div>
+            <h2 className={helpStyles.authTitle}>请先登录</h2>
+            <p className={helpStyles.authSubtext}>您需要登录后才能查看帮助中心。</p>
+            <div className={helpStyles.authActions}>
+              <button onClick={() => navigate("/auth?redirect=" + encodeURIComponent("/help"))} className={helpStyles.authBtn}>
+                <FaSignInAlt />
+                立即登录
+              </button>
+              <button onClick={() => navigate(-1)} className={helpStyles.authBackBtn}>
+                <FaArrowLeft />
+                返回上一页
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return (
       <div className={styles.container}>
         <div className={helpStyles.hero}>
           <FaQuestionCircle className={helpStyles.heroIcon} />
@@ -186,6 +219,13 @@ const HelpCenter: React.FC = () => {
           </div>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <div className={styles.page}>
+      <Navbar />
+      {renderContent()}
       <Footer startYear={2025} />
     </div>
   );
