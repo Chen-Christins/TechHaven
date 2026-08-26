@@ -46,25 +46,43 @@ interface NavItem {
   path: string;
 }
 
+type TabId =
+  | "articles"
+  | "assignments"
+  | "tags"
+  | "stats"
+  | "organizations"
+  | "notifications"
+  | "edit"
+  | "following"
+  | "followers"
+  | "security"
+  | "bookmarks";
+
+const TAB_IDS: TabId[] = [
+  "articles",
+  "assignments",
+  "tags",
+  "stats",
+  "organizations",
+  "notifications",
+  "edit",
+  "following",
+  "followers",
+  "security",
+  "bookmarks",
+];
+
 const PersonalCenter: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, isAuthenticated, logout, loading: authLoading } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    | "articles"
-    | "assignments"
-    | "tags"
-    | "stats"
-    | "organizations"
-    | "notifications"
-    | "edit"
-    | "following"
-    | "followers"
-    | "security"
-    | "bookmarks"
-  >("articles");
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    const tab = searchParams.get("tab");
+    return TAB_IDS.includes(tab as TabId) ? (tab as TabId) : "articles";
+  });
   const [loading] = useState(false);
   const [stats, setStats] = useState<UserStats | null>(null);
 
