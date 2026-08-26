@@ -38,6 +38,7 @@ import TicketDetail from "../pages/rd-platform/TicketDetail";
 import TrendAnalysis from "../pages/rd-platform/TrendAnalysis";
 import HelpCenter from "../pages/user/HelpCenter";
 import Messages from "../pages/user/Messages";
+import ProductList from "../pages/product/ProductList";
 
 const RouterConfig: React.FC = () => {
   return (
@@ -90,6 +91,9 @@ const RouterConfig: React.FC = () => {
         <Route path="/organizations/list" element={<OrganizationList />} />
         {/* 组织详情页 */}
         <Route path="/organization/detail/:id" element={<OrganizationDetail />} />
+
+        {/* 产品包列表（仅开发环境可见） */}
+        {import.meta.env.DEV && <Route path="/products" element={<ProductList />} />}
 
         <Route
           path="/profile/:id"

@@ -107,10 +107,6 @@ const EditProfileTab: React.FC = () => {
 
   return (
     <div>
-      <div className={styles.pageHeader}>
-        <h2 className={styles.pageTitle}>编辑资料</h2>
-      </div>
-
       <div className={styles.editSections}>
         <div className={styles.editRow}>
           {/* 基本信息 */}

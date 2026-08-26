@@ -44,7 +44,6 @@
   border: 1px solid var(--border-primary);
   border-radius: 12px;
   cursor: pointer;
-  transition: border-color 0.15s;
 }
 
 .catCard:hover {
@@ -117,7 +116,6 @@
 .faqChevron {
   flex-shrink: 0;
   color: var(--text-tertiary);
-  transition: transform 0.2s;
 }
 
 .faqOpen {
