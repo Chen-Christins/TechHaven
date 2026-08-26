@@ -3,15 +3,7 @@
 .datePicker {
   position: relative;
   display: inline-block;
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    "PingFang SC",
-    "Microsoft YaHei",
-    sans-serif;
+  font-family: var(--font-family);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 

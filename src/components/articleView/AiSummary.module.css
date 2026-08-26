@@ -234,7 +234,7 @@
   padding: 1px 6px;
   border-radius: 4px;
   font-size: 0.85em;
-  font-family: "SF Mono", "Fira Code", monospace;
+  font-family: var(--font-mono);
   color: #e83e8c;
 }
 

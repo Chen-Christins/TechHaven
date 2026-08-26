@@ -49,6 +49,9 @@
             } else {
                 document.documentElement.classList.remove('dark');
             }
+            const savedPreset = localStorage.getItem('theme-preset');
+            const validPresets = ['default', 'time', 'monochrome', 'mint', 'ocean', 'sakura', 'cyberpunk', 'gold', 'lavender'];
+            document.documentElement.setAttribute('data-skin', validPresets.includes(savedPreset) ? savedPreset : 'default');
         })();
     </script>
 </head>

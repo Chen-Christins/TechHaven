@@ -9,6 +9,7 @@ import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import TagPanel from "@/components/tagPanel/TagPanel";
 import SearchPanel from "@/components/searchArticle/SearchArticle";
+import ThemeStylePanel from "@/components/themeStylePanel/ThemeStylePanel";
 import BackToTop from "@/components/backToTop/BackToTop";
 import LabelService from "@/services/labelService";
 import PageSkeleton from "@/components/pageSkeleton/PageSkeleton";
@@ -87,6 +88,8 @@ const IndexPage: React.FC = () => {
 
           {/* 右侧：侧边栏 */}
           <div className={styles.rightColumn}>
+            {/* 主题风格选择 */}
+            <ThemeStylePanel />
             {/* 标签面板可能仍在加载，显示局部加载状态 */}
             <SearchPanel onSearch={(keyword) => setSearchKeyword(keyword)} />
             <TagPanel
