@@ -221,7 +221,7 @@
   width: 100%;
   resize: none;
   color: var(--text-primary);
-  font-family: "Fira Code", "JetBrains Mono", "Courier New", monospace;
+  font-family: var(--font-mono);
   font-size: 14px;
   tab-size: 2;
 }
@@ -239,7 +239,7 @@
 }
 
 .markdownPreview {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-family);
   background-color: var(--card-bg);
   color: var(--text-primary);
 }
@@ -663,7 +663,7 @@
   color: var(--primary);
   padding: 2px 4px;
   border-radius: 3px;
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
 }
 
@@ -792,7 +792,7 @@
   padding: 12px;
   overflow-x: auto;
   margin: 0;
-  font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1.4;
   color: var(--text-primary);
@@ -895,7 +895,7 @@
   border-radius: 6px !important;
   padding: 0.2em 0.4em !important;
   font-size: 0.85em !important;
-  font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace !important;
+  font-family: var(--font-mono) !important;
   border: 1px solid rgba(59, 130, 246, 0.3) !important;
   display: inline !important;
   white-space: nowrap !important;
@@ -958,7 +958,7 @@
   padding: 16px;
   overflow-x: auto;
   margin: 0;
-  font-family: "SFMono-Regular", Consolas, "Monaco", "Liberation Mono", "Menlo", monospace;
+  font-family: var(--font-mono);
   font-size: 14px;
   line-height: 1.5;
   color: var(--text-primary);

@@ -2,10 +2,27 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
 
+// 主题风格（skin），与明暗色正交：data-skin="default" | "time" | ...
+export type ThemePreset = "default" | "time" | "monochrome" | "mint" | "ocean" | "sakura" | "cyberpunk" | "gold" | "lavender";
+
+export const PRESET_KEYS: ThemePreset[] = [
+  "default",
+  "time",
+  "monochrome",
+  "mint",
+  "ocean",
+  "sakura",
+  "cyberpunk",
+  "gold",
+  "lavender",
+];
+
 interface ThemeContextType {
   theme: Theme;
+  preset: ThemePreset;
   toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
+  setPreset: (preset: ThemePreset) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -36,6 +53,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
     return "light";
   });
+  const [preset, setPreset] = useState<ThemePreset>(() => {
+    const savedPreset = localStorage.getItem("theme-preset");
+    return PRESET_KEYS.includes(savedPreset as ThemePreset) ? (savedPreset as ThemePreset) : "default";
+  });
 
   useEffect(() => {
     // 立即更新 DOM 上的 data-theme 属性和 class
@@ -53,6 +74,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       localStorage.removeItem("theme");
     }
   }, [theme, hasManualTheme]);
+
+  // 更新 DOM 上的 data-skin 属性（主题风格）
+  useEffect(() => {
+    document.documentElement.setAttribute("data-skin", preset);
+    localStorage.setItem("theme-preset", preset);
+  }, [preset]);
 
   // 监听系统主题变化
   useEffect(() => {
@@ -81,8 +108,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   const value: ThemeContextType = {
     theme,
+    preset,
     toggleTheme,
     setTheme,
+    setPreset,
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

@@ -27,6 +27,7 @@ import ArticleViewPage from "../pages/article/ArticleViewPage";
 import AssignmentSubmit from "../pages/assignment/AssignmentSubmit";
 import AssignmentSubmissions from "../pages/assignment/AssignmentSubmissions";
 import ChunkUploadTest from "../pages/test/ChunkUploadTest";
+import SampleThemeStylePanel from "../sample/ThemeStylePanel";
 import RdLayout from "../pages/rd-platform/RdLayout";
 import RdDashboard from "../pages/rd-platform/Dashboard";
 import RequirementList from "../pages/rd-platform/RequirementList";
@@ -85,6 +86,7 @@ const RouterConfig: React.FC = () => {
 
         {/* 测试页面（仅开发环境可见） */}
         {import.meta.env.DEV && <Route path="/test/chunk-upload" element={<ChunkUploadTest />} />}
+        {import.meta.env.DEV && <Route path="/test/theme-style-panel" element={<SampleThemeStylePanel />} />}
 
         {/* 用户组织列表页 */}
         <Route path="/organizations/list" element={<OrganizationList />} />
