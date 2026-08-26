@@ -101,9 +101,9 @@ const ArticleList: React.FC<ArticleListProps> = ({ labelId, labelName, categoryI
 
         if (cancelled) return;
 
-        setTotalArticles(res.total);
+        setTotalArticles(res.total ?? 0);
         setArticles(
-          res.list.map(
+          (res.list || []).map(
             (item) =>
               ({
                 id: item.id,
