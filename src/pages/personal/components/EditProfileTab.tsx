@@ -20,7 +20,9 @@ const EditProfileTab: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || "https://picsum.photos/id/64/200");
   const [avatarInput, setAvatarInput] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [savingAvatar, setSavingAvatar] = useState(false);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -47,7 +49,7 @@ const EditProfileTab: React.FC = () => {
       message.warn("请输入有效的 HTTP/HTTPS 链接");
       return;
     }
-    setSaving(true);
+    setSavingAvatar(true);
     try {
       await AuthService.updateUserProfile(undefined, undefined, undefined, undefined, undefined, trimmed);
       setAvatarUrl(trimmed);
@@ -56,7 +58,7 @@ const EditProfileTab: React.FC = () => {
     } catch (err: any) {
       message.error(err?.message || "头像更新失败");
     } finally {
-      setSaving(false);
+      setSavingAvatar(false);
     }
   };
 
@@ -66,14 +68,14 @@ const EditProfileTab: React.FC = () => {
       return;
     }
 
-    setSaving(true);
+    setSavingProfile(true);
     try {
       await AuthService.updateUserProfile(name.trim(), undefined, motto.trim(), website.trim(), undefined, avatarUrl, github.trim());
       message.success("个人资料已更新");
     } catch (err: any) {
       message.error(err?.message || "保存失败");
     } finally {
-      setSaving(false);
+      setSavingProfile(false);
     }
   };
 
@@ -91,7 +93,7 @@ const EditProfileTab: React.FC = () => {
       return;
     }
 
-    setSaving(true);
+    setSavingPassword(true);
     try {
       await AuthService.updateUserProfile(undefined, newPassword, undefined, undefined, currentPassword);
       message.success("密码已修改，下次登录时生效");
@@ -101,7 +103,7 @@ const EditProfileTab: React.FC = () => {
     } catch (err: any) {
       message.error(err?.message || "修改密码失败");
     } finally {
-      setSaving(false);
+      setSavingPassword(false);
     }
   };
 
@@ -142,9 +144,9 @@ const EditProfileTab: React.FC = () => {
                     placeholder={user?.avatar || "https://example.com/avatar.jpg"}
                     style={{ flex: 1 }}
                   />
-                  <button type="button" className={styles.editSaveBtn} onClick={handleApplyAvatarUrl} style={{ whiteSpace: "nowrap" }}>
+                  <button type="button" className={styles.editSaveBtn} onClick={handleApplyAvatarUrl} disabled={savingAvatar} style={{ whiteSpace: "nowrap" }}>
                     <FaLink size={12} />
-                    应用
+                    {savingAvatar ? "应用中..." : "应用"}
                   </button>
                 </div>
               </div>
@@ -214,9 +216,9 @@ const EditProfileTab: React.FC = () => {
                   />
                 </div>
               </div>
-              <button className={styles.editSaveBtn} onClick={handleSaveProfile} disabled={saving}>
+              <button className={styles.editSaveBtn} onClick={handleSaveProfile} disabled={savingProfile}>
                 <FaSave />
-                {saving ? "保存中..." : "保存修改"}
+                {savingProfile ? "保存中..." : "保存修改"}
               </button>
 
               <div className={styles.editDivider} />
@@ -256,9 +258,9 @@ const EditProfileTab: React.FC = () => {
                   />
                 </div>
               </div>
-              <button className={styles.editSaveBtn} onClick={handleChangePassword} disabled={saving}>
+              <button className={styles.editSaveBtn} onClick={handleChangePassword} disabled={savingPassword}>
                 <FaLock />
-                {saving ? "修改中..." : "修改密码"}
+                {savingPassword ? "修改中..." : "修改密码"}
               </button>
             </div>
           </div>
