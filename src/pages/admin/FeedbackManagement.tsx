@@ -385,17 +385,23 @@ const FeedbackManagement: React.FC = () => {
               <tbody>
                 {filtered.map((fb) => (
                   <tr key={fb.id}>
-                    <td className={styles.contentCell}>{fb.content}</td>
-                    <td>
+                    <td className={styles.contentCell} data-label="反馈内容">
+                      {fb.content}
+                    </td>
+                    <td data-label="类型">
                       <span
                         className={`${styles.typeBadge} ${styles[`type${fb.type.charAt(0).toUpperCase() + fb.type.slice(1)}` as keyof typeof styles] || ""}`}
                       >
                         {TYPE_LABELS[fb.type]}
                       </span>
                     </td>
-                    <td className={styles.contactCell}>{fb.contact || "-"}</td>
-                    <td className={styles.timeCell}>{formatDateTime(fb.created_at)}</td>
-                    <td>
+                    <td className={styles.contactCell} data-label="联系方式">
+                      {fb.contact || "-"}
+                    </td>
+                    <td className={styles.timeCell} data-label="时间">
+                      {formatDateTime(fb.created_at)}
+                    </td>
+                    <td data-label="操作">
                       <div className={styles.actionButtons}>
                         <button className={styles.actionButton} onClick={() => openConvert(fb, "faq")} title="转为 FAQ">
                           <FaQuestionCircle />
@@ -491,14 +497,18 @@ const FeedbackManagement: React.FC = () => {
             <tbody>
               {filteredFaqs.map((faq) => (
                 <tr key={faq.id}>
-                  <td className={styles.contentCell}>{faq.q}</td>
-                  <td className={styles.contentCell}>{faq.a.length > 60 ? faq.a.slice(0, 60) + "..." : faq.a}</td>
-                  <td>
+                  <td className={styles.contentCell} data-label="问题">
+                    {faq.q}
+                  </td>
+                  <td className={styles.contentCell} data-label="答案">
+                    {faq.a.length > 60 ? faq.a.slice(0, 60) + "..." : faq.a}
+                  </td>
+                  <td data-label="分类">
                     <span className={styles.typeBadge} style={{ background: "#dbeafe", color: "#2563eb" }}>
                       {faq.cat}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="操作">
                     <div className={styles.actionButtons}>
                       <button className={styles.actionButton} onClick={() => setFaqPreview(faq)} title="预览">
                         <FaEye />

@@ -284,3 +284,33 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 20px 0 24px;
+  }
+
+  .heroTitle {
+    font-size: 22px;
+  }
+
+  .catCard {
+    padding: 16px 12px;
+  }
+
+  .authGate {
+    padding: 2.5rem 1.25rem 2rem;
+    margin: 2rem auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .catRow {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .catCard {
+    padding: 14px 10px;
+  }
+}

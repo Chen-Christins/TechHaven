@@ -102,3 +102,20 @@
   color: var(--text-tertiary);
   margin: 0;
 }
+
+/* 移动端间距适配 */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 1rem 32px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 16px 0.8rem 24px;
+  }
+}

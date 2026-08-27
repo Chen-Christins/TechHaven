@@ -229,6 +229,7 @@
   background: var(--bg-secondary);
   border-radius: 12px;
   border-left: 4px solid var(--primary);
+  white-space: pre-wrap;
 }
 
 .memberSection {
@@ -719,15 +720,72 @@
     padding: 1.5rem;
   }
 
+  /* 移动端：表格转为卡片布局，避免横向滚动 */
   .usersTable {
     display: block;
-    overflow-x: auto;
-    min-width: 600px;
+    width: 100%;
   }
 
-  .usersTable th,
+  .usersTable thead {
+    display: none;
+  }
+
+  .usersTable tbody,
+  .usersTable tr {
+    display: block;
+    width: 100%;
+  }
+
+  .usersTable tr {
+    margin-bottom: 16px;
+    border: 1px solid var(--border-primary);
+    border-radius: 10px;
+    padding: 4px 12px;
+    background: var(--card-bg);
+  }
+
+  .usersTable tbody tr:hover {
+    background: var(--card-bg);
+  }
+
   .usersTable td {
-    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 4px;
+    text-align: right;
+    border-bottom: 1px solid var(--border-secondary);
+  }
+
+  .usersTable tbody tr td:last-child {
+    border-bottom: none;
+  }
+
+  .usersTable td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: left;
+  }
+
+  .usersTable td:nth-child(1) {
+    padding-left: 4px;
+    justify-content: flex-start;
+  }
+
+  .usersTable td:nth-child(1)::before {
+    display: none;
+  }
+
+  .usersTable td:nth-child(1) .userInfo {
+    justify-content: flex-start;
+  }
+
+  .actionButtons {
+    justify-content: flex-end;
   }
 
   .joinBtn {
@@ -745,9 +803,30 @@
     flex-wrap: wrap;
   }
 
+  .tabsActions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    padding: 8px 16px;
+    width: 100%;
+  }
+
   .tabButton {
     padding: 10px 16px;
     font-size: 13px;
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .paginationInfo {
+    text-align: center;
+  }
+
+  .paginationControls {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }
 

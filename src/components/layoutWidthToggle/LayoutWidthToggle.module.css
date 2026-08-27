@@ -34,10 +34,6 @@
 
 @media (max-width: 768px) {
   .toggle {
-    padding: 0 10px;
-  }
-
-  .label {
     display: none;
   }
 }
