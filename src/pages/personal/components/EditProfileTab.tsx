@@ -144,7 +144,13 @@ const EditProfileTab: React.FC = () => {
                     placeholder={user?.avatar || "https://example.com/avatar.jpg"}
                     style={{ flex: 1 }}
                   />
-                  <button type="button" className={styles.editSaveBtn} onClick={handleApplyAvatarUrl} disabled={savingAvatar} style={{ whiteSpace: "nowrap" }}>
+                  <button
+                    type="button"
+                    className={styles.editSaveBtn}
+                    onClick={handleApplyAvatarUrl}
+                    disabled={savingAvatar}
+                    style={{ whiteSpace: "nowrap" }}
+                  >
                     <FaLink size={12} />
                     {savingAvatar ? "应用中..." : "应用"}
                   </button>

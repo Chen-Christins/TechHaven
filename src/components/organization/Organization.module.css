@@ -229,6 +229,7 @@
   background: var(--bg-secondary);
   border-radius: 12px;
   border-left: 4px solid var(--primary);
+  white-space: pre-wrap;
 }
 
 .memberSection {
