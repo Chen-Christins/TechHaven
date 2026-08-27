@@ -3,10 +3,15 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease,
-    border-color 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+/* 表单控件字体统一继承主题字体（原生控件默认不继承，需显式指定） */
+input,
+button,
+textarea,
+select {
+  font-family: inherit;
 }
 
 /* CSS 变量定义 - 浅色主题 */
@@ -19,6 +24,12 @@
   --font-serif: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", "Source Han Serif SC", serif;
   --font-mono:
     "JetBrains Mono", "SFMono-Regular", "SF Mono", "Fira Code", Consolas, "Liberation Mono", Menlo, "Courier New", monospace;
+  --font-neutral: "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-rounded: "Hiragino Maru Gothic ProN", "Yuanti SC", "PingFang SC", "Microsoft YaHei", "Verdana", sans-serif;
+  --font-kai: "Kaiti SC", "STKaiti", "KaiTi", "BiauKai", "DFKai-SB", serif;
+  --font-fangsong: "STFangsong", "FangSong", "FangSong_GB2312", "Noto Serif SC", serif;
+  --font-serif-luxury:
+    "Didot", "Bodoni MT", "Baskerville", Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
   --font-family: var(--font-sans);
 
   /* 基础颜色 */
@@ -414,6 +425,8 @@
 /* ========== 极简黑白（data-skin="monochrome"） ========== */
 
 [data-skin="monochrome"] {
+  --font-family: var(--font-neutral);
+
   --bg-primary: #fafafa;
   --bg-secondary: #f2f2f2;
   --bg-tertiary: #e8e8e8;
@@ -568,6 +581,8 @@
 /* ========== 护眼豆绿（data-skin="mint"） ========== */
 
 [data-skin="mint"] {
+  --font-family: var(--font-rounded);
+
   --bg-primary: #f4f7f0;
   --bg-secondary: #edf2e7;
   --bg-tertiary: #e2ead9;
@@ -722,6 +737,8 @@
 /* ========== 海洋蓝（data-skin="ocean"） ========== */
 
 [data-skin="ocean"] {
+  --font-family: var(--font-sans);
+
   --bg-primary: #f0f6fb;
   --bg-secondary: #e8f1f8;
   --bg-tertiary: #dbeaf4;
@@ -876,6 +893,8 @@
 /* ========== 樱花粉（data-skin="sakura"） ========== */
 
 [data-skin="sakura"] {
+  --font-family: var(--font-kai);
+
   --bg-primary: #fff5f7;
   --bg-secondary: #fbebee;
   --bg-tertiary: #f7dfe4;
@@ -1030,6 +1049,8 @@
 /* ========== 赛博朋克（data-skin="cyberpunk"） ========== */
 
 [data-skin="cyberpunk"] {
+  --font-family: var(--font-sans);
+
   --bg-primary: #f4f2ff;
   --bg-secondary: #ece9ff;
   --bg-tertiary: #e0daf8;
@@ -1184,6 +1205,8 @@
 /* ========== 暗金奢华（data-skin="gold"） ========== */
 
 [data-skin="gold"] {
+  --font-family: var(--font-serif-luxury);
+
   --bg-primary: #faf6ee;
   --bg-secondary: #f3ecdd;
   --bg-tertiary: #e9dfc8;
@@ -1338,6 +1361,8 @@
 /* ========== 薰衣草紫（data-skin="lavender"） ========== */
 
 [data-skin="lavender"] {
+  --font-family: var(--font-fangsong);
+
   --bg-primary: #f7f5ff;
   --bg-secondary: #efecff;
   --bg-tertiary: #e4dff8;
@@ -1498,6 +1523,71 @@
   font-family: var(--font-serif);
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+
+/* 各主题 - 标题字体 */
+[data-skin="monochrome"] h1,
+[data-skin="monochrome"] h2,
+[data-skin="monochrome"] h3,
+[data-skin="monochrome"] .page-title,
+[data-skin="monochrome"] .panel-title {
+  font-family: var(--font-neutral);
+  font-weight: 700;
+}
+
+[data-skin="mint"] h1,
+[data-skin="mint"] h2,
+[data-skin="mint"] h3,
+[data-skin="mint"] .page-title,
+[data-skin="mint"] .panel-title {
+  font-family: var(--font-rounded);
+  font-weight: 600;
+}
+
+[data-skin="ocean"] h1,
+[data-skin="ocean"] h2,
+[data-skin="ocean"] h3,
+[data-skin="ocean"] .page-title,
+[data-skin="ocean"] .panel-title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+[data-skin="sakura"] h1,
+[data-skin="sakura"] h2,
+[data-skin="sakura"] h3,
+[data-skin="sakura"] .page-title,
+[data-skin="sakura"] .panel-title {
+  font-family: var(--font-kai);
+  font-weight: 600;
+}
+
+[data-skin="cyberpunk"] h1,
+[data-skin="cyberpunk"] h2,
+[data-skin="cyberpunk"] h3,
+[data-skin="cyberpunk"] .page-title,
+[data-skin="cyberpunk"] .panel-title {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+[data-skin="gold"] h1,
+[data-skin="gold"] h2,
+[data-skin="gold"] h3,
+[data-skin="gold"] .page-title,
+[data-skin="gold"] .panel-title {
+  font-family: var(--font-serif-luxury);
+  font-weight: 700;
+}
+
+[data-skin="lavender"] h1,
+[data-skin="lavender"] h2,
+[data-skin="lavender"] h3,
+[data-skin="lavender"] .page-title,
+[data-skin="lavender"] .panel-title {
+  font-family: var(--font-fangsong);
+  font-weight: 600;
 }
 
 /* 设置根元素样式 */

@@ -58,7 +58,7 @@ const RouterConfig: React.FC = () => {
         <Route path="organizations" element={<OrganizationManagement />} />
         <Route path="comments" element={<CommentManagement />} />
         <Route path="categories" element={<CategoryManagement />} />
-        <Route path="media" element={<MediaManagement />} />
+        {import.meta.env.DEV && <Route path="media" element={<MediaManagement />} />}
         <Route path="database" element={<DataManagement />} />
         <Route path="settings" element={<Settings />} />
         <Route path="notifications" element={<NotificationManagement />} />
