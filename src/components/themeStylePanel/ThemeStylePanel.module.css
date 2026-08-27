@@ -70,7 +70,7 @@
 .previewHeader {
   font-size: 6px;
   font-weight: 700;
-  font-family: var(--font-serif, Georgia, serif);
+  font-family: var(--font-serif);
   letter-spacing: -0.02em;
   line-height: 1;
 }

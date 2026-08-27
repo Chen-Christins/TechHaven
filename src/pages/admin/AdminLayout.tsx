@@ -214,12 +214,16 @@ const AdminLayout: React.FC = () => {
           icon: <FaTags />,
           path: "/admin/categories",
         },
-        {
-          id: "media",
-          label: "媒体库",
-          icon: <FaImages />,
-          path: "/admin/media",
-        },
+        ...(import.meta.env.DEV
+          ? [
+              {
+                id: "media",
+                label: "媒体库",
+                icon: <FaImages />,
+                path: "/admin/media",
+              },
+            ]
+          : []),
         {
           id: "database",
           label: "数据管理",

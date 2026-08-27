@@ -1063,7 +1063,7 @@
 
 .mermaidDiagram .node text {
   fill: var(--text-primary);
-  font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+  font-family: var(--font-family);
 }
 
 .mermaidDiagram .edgePath .path {
@@ -1088,7 +1088,7 @@
 
 [data-theme="dark"] .mermaidDiagram .node text {
   fill: #1f2937;
-  font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+  font-family: var(--font-family);
 }
 
 [data-theme="dark"] .mermaidDiagram .edgePath .path {

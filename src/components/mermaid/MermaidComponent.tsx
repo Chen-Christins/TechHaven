@@ -7,7 +7,7 @@ mermaid.initialize({
   startOnLoad: false,
   theme: "default",
   securityLevel: "loose",
-  fontFamily: "monospace",
+  fontFamily: "var(--font-mono)",
   fontSize: 14,
   flowchart: {
     useMaxWidth: true,
