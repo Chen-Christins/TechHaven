@@ -440,14 +440,97 @@
   .headerActions {
     width: 100%;
   }
+
+  .statsContainer {
+    grid-template-columns: 1fr;
+  }
+
   .filterForm {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
-  .adminTable th,
+
+  /* 表格转为卡片布局，避免横向溢出被裁切 */
+  .adminTable,
+  .adminTable tbody,
+  .adminTable tr,
   .adminTable td {
-    padding: 10px 12px;
+    display: block;
+    width: 100%;
   }
+
+  .adminTable thead {
+    display: none;
+  }
+
+  .adminTable tr {
+    border: 1px solid var(--border-primary);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    padding: 4px 12px;
+    background: var(--card-bg);
+  }
+
+  .adminTable tbody tr:hover td {
+    background: transparent;
+  }
+
+  .adminTable td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 4px;
+    text-align: right;
+    border-bottom: 1px solid var(--border-secondary);
+  }
+
+  .adminTable tbody tr td:last-child {
+    border-bottom: none;
+  }
+
+  .adminTable td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: left;
+  }
+
+  .adminTable td.contentCell {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: left;
+  }
+
+  .adminTable td.contentCell::before {
+    margin-bottom: 4px;
+  }
+
+  .adminTable td:first-child {
+    padding-left: 4px;
+  }
+
   .contentCell {
-    max-width: 200px;
+    max-width: none;
+  }
+
+  .actionButtons {
+    justify-content: flex-end;
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .pageInfo {
+    text-align: center;
+  }
+
+  .pageButtons {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }

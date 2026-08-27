@@ -300,7 +300,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                           </div>
                         </div>
                       </td>
-                      <td>
+                      <td data-label="角色">
                         <span
                           className={`${styles.roleBadge} ${member.role === "组织管理员" ? styles.admin : member.role === "研发主管" ? styles.moderator : styles.user}`}
                         >
@@ -312,14 +312,14 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                           {member.role || "普通成员"}
                         </span>
                       </td>
-                      <td>
+                      <td data-label="状态">
                         <span className={`${styles.statusBadge} ${member.status === "active" ? styles.active : styles.inactive}`}>
                           <span className={styles.statusIndicator}></span>
                           {member.status === "active" ? "活跃" : "非活跃"}
                         </span>
                       </td>
-                      <td>{member.joinTime || "-"}</td>
-                      <td>
+                      <td data-label="加入时间">{member.joinTime || "-"}</td>
+                      <td data-label="操作">
                         <div className={styles.actionButtons}>
                           <button
                             className={`${styles.actionButton} ${styles.viewButton}`}
@@ -427,8 +427,8 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                           </div>
                         </div>
                       </td>
-                      <td>{request.joinTime || "-"}</td>
-                      <td>
+                      <td data-label="申请时间">{request.joinTime || "-"}</td>
+                      <td data-label="操作">
                         <div className={styles.actionButtons}>
                           <button
                             className={`${styles.actionButton} ${styles.acceptButton}`}
@@ -564,7 +564,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                           </div>
                         </div>
                       </td>
-                      <td style={{ textAlign: "center" }}>
+                      <td data-label="优先级" style={{ textAlign: "center" }}>
                         <span className={`${styles.priorityBadge} ${styles[task.priority]}`}>
                           <FaFlag />
                           {task.priority === "low" && "低"}
@@ -573,7 +573,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                           {task.priority === "urgent" && "紧急"}
                         </span>
                       </td>
-                      <td style={{ textAlign: "center" }}>
+                      <td data-label="负责人" style={{ textAlign: "center" }}>
                         {task.assignee_name || (
                           <span
                             style={{
@@ -585,7 +585,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                           </span>
                         )}
                       </td>
-                      <td style={{ textAlign: "center" }}>
+                      <td data-label="截止时间" style={{ textAlign: "center" }}>
                         {task.due_date ? (
                           <span
                             style={{
@@ -610,7 +610,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                           </span>
                         )}
                       </td>
-                      <td style={{ textAlign: "center" }}>
+                      <td data-label="状态" style={{ textAlign: "center" }}>
                         <span className={`${styles.statusBadge} ${styles[task.status]}`}>
                           {task.status === "draft" && <FaHourglassHalf />}
                           {task.status === "draft" && "草稿"}
@@ -620,7 +620,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                           {task.status === "closed" && "已关闭"}
                         </span>
                       </td>
-                      <td style={{ textAlign: "center" }}>
+                      <td data-label="操作" style={{ textAlign: "center" }}>
                         <div className={styles.actionButtons} style={{ justifyContent: "center" }}>
                           <button className={styles.actionButton} title="查看详情" onClick={() => onViewTask(task)}>
                             <FaEye />
