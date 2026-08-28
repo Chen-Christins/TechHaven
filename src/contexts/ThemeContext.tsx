@@ -2,20 +2,10 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
 
-// 主题风格（skin），与明暗色正交：data-skin="default" | "time" | ...
-export type ThemePreset = "default" | "time" | "monochrome" | "mint" | "ocean" | "sakura" | "cyberpunk" | "gold" | "lavender";
+// 主题风格（skin），与明暗色正交：data-skin="time" | ...
+export type ThemePreset = "time" | "monochrome" | "mint" | "ocean" | "sakura" | "cyberpunk" | "gold" | "lavender";
 
-export const PRESET_KEYS: ThemePreset[] = [
-  "default",
-  "time",
-  "monochrome",
-  "mint",
-  "ocean",
-  "sakura",
-  "cyberpunk",
-  "gold",
-  "lavender",
-];
+export const PRESET_KEYS: ThemePreset[] = ["time", "monochrome", "mint", "ocean", "sakura", "cyberpunk", "gold", "lavender"];
 
 interface ThemeContextType {
   theme: Theme;
@@ -55,7 +45,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   });
   const [preset, setPreset] = useState<ThemePreset>(() => {
     const savedPreset = localStorage.getItem("theme-preset");
-    return PRESET_KEYS.includes(savedPreset as ThemePreset) ? (savedPreset as ThemePreset) : "default";
+    return PRESET_KEYS.includes(savedPreset as ThemePreset) ? (savedPreset as ThemePreset) : "time";
   });
 
   useEffect(() => {

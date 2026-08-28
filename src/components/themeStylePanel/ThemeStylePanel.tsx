@@ -5,14 +5,6 @@ import styles from "./ThemeStylePanel.module.css";
 
 const PRESETS: { key: ThemePreset; name: string; desc: string; bg: string; header: string; accent: string }[] = [
   {
-    key: "default",
-    name: "默认",
-    desc: "现代扁平风",
-    bg: "#f8fafc",
-    header: "#1e293b",
-    accent: "#3b82f6",
-  },
-  {
     key: "time",
     name: "时代周刊",
     desc: "纸刊衬线风",
