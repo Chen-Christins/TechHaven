@@ -1,9 +1,11 @@
-name: Build and Deploy Plathform
+name: Deploy and Release
 
 on:
   push:
-    branches: ["master"]
-  workflow_dispatch:
+    tags: ["v*"]
+
+permissions:
+  contents: write
 
 jobs:
   build-and-deploy:
@@ -15,13 +17,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build VitePress site
+      - name: Build site
         run: npm run build
 
       - name: Check build artifacts
@@ -29,10 +31,10 @@ jobs:
           test -d ./dist
           test "$(ls -A ./dist)"
 
-      - name: Generate version tag and compute paths
+      - name: Compute deploy paths
         id: deploy
         run: |
-          VERSION="dist-$(date +%Y%m%d-%H%M%S)"
+          VERSION="${{ github.ref_name }}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           DEPLOY_PATH="${{ secrets.DEPLOY_PATH }}"
           RELEASES_DIR="$(dirname "$DEPLOY_PATH")/releases"
@@ -87,9 +89,9 @@ jobs:
             ln -sfn "$RELEASES_DIR/$VERSION" "$DEPLOY_PATH"
             echo "🔗 Symlink switched → $VERSION"
 
-            # 只保留最近 5 个版本，删除旧版本
+            # 只保留最近 5 个 tag 版本，删除旧版本
             cd "$RELEASES_DIR" 2>/dev/null || exit 0
-            REMOVED=$(ls -1d dist-* 2>/dev/null | sort | head -n -5)
+            REMOVED=$(ls -1d v* 2>/dev/null | sort -V | head -n -5)
             if [ -n "$REMOVED" ]; then
               echo "$REMOVED" | xargs rm -rf
               echo "🧹 Cleaned old versions:"
@@ -99,4 +101,20 @@ jobs:
             echo "✅ Deployed: $VERSION"
             echo "📁 Active: $(readlink -f "$DEPLOY_PATH")"
             echo "📦 Kept versions:"
-            ls -1d dist-* 2>/dev/null | sed 's/^/   /' || echo "   (none)"
+            ls -1d v* 2>/dev/null | sed 's/^/   /' || echo "   (none)"
+
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          TAG="${{ github.ref_name }}"
+          awk -v tag="$TAG" 'BEGIN{f=0} /^## /{if(f)exit} $0 ~ ("^## +\\[" tag "\\]"){f=1} f{print}' CHANGELOG.md > release_notes.md
+          if [ ! -s release_notes.md ]; then
+            echo "见 CHANGELOG.md" > release_notes.md
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body_path: release_notes.md
