@@ -10,6 +10,7 @@ import Footer from "@/components/footer/Footer";
 import TagPanel from "@/components/tagPanel/TagPanel";
 import SearchPanel from "@/components/searchArticle/SearchArticle";
 import ThemeStylePanel from "@/components/themeStylePanel/ThemeStylePanel";
+import DailyQuote from "@/components/dailyQuote/DailyQuote";
 import BackToTop from "@/components/backToTop/BackToTop";
 import LabelService from "@/services/labelService";
 import PageSkeleton from "@/components/pageSkeleton/PageSkeleton";
@@ -88,6 +89,8 @@ const IndexPage: React.FC = () => {
 
           {/* 右侧：侧边栏 */}
           <div className={styles.rightColumn}>
+            {/* 每日名言 */}
+            <DailyQuote />
             {/* 主题风格选择 */}
             <ThemeStylePanel />
             {/* 标签面板可能仍在加载，显示局部加载状态 */}
@@ -111,7 +114,7 @@ const IndexPage: React.FC = () => {
                 }
               }}
             />
-            <SubscribeBox />
+            {import.meta.env.DEV && <SubscribeBox />}
             <CategoryPanel
               selectedCategoryId={selectedCategoryId}
               onCategoryClick={(id, name) => {

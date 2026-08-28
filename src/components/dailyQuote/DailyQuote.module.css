@@ -1,0 +1,90 @@
+.dailyQuote {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.2rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-primary);
+  margin-bottom: 0.5rem;
+}
+
+.panelTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 0.7rem;
+}
+
+.titleIcon {
+  font-size: 0.9rem;
+  color: var(--primary);
+  opacity: 0.75;
+}
+
+.refreshBtn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.2rem;
+  border-radius: 4px;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.refreshBtn:hover:not(:disabled) {
+  color: var(--primary);
+  background-color: var(--hover-bg);
+}
+
+.refreshBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+}
+
+.quoteBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.content {
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+  margin: 0;
+  word-break: break-word;
+}
+
+.meta {
+  align-self: flex-end;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
