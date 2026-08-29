@@ -47,6 +47,21 @@ export default defineConfig(({ mode }) => {
                         });
                     },
                 },
+                // Gateway 代理（R1 接线）：浏览器只发相对路径 /gateway/*，Authorization 由代理注入，
+                // 浏览器不持有网关管理 token（ARCHITECTURE §6；生产由 Web BFF 承担同一职责）
+                "^/gateway": {
+                    target: env.VITE_GATEWAY_URL || "http://127.0.0.1:3091",
+                    changeOrigin: true,
+                    secure: false,
+                    headers: {
+                        authorization: `Bearer ${env.VITE_GATEWAY_TOKEN || ""}`,
+                    },
+                    configure: (proxy) => {
+                        proxy.on("error", (err, _req, _res) => {
+                            console.log(timeStamp(), "网关代理错误:", err.message);
+                        });
+                    },
+                },
                 "^/api/v1": {
                     target: apiTarget,
                     changeOrigin: true,

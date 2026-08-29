@@ -16,6 +16,8 @@ import Avatar from "../components/avatar/Avatar";
 import Loading from "../components/loading/Loading";
 import Skeleton from "../components/skeleton/Skeleton";
 import message from "../components/message/Message";
+import { AgentGatewayClient } from "../services/agentGatewayClient";
+import type { EventEnvelope } from "../../contracts";
 import styles from "./AgentSessionPanel.module.css";
 
 /**
@@ -36,7 +38,7 @@ type PermissionDecision = "approve" | "reject";
 
 type EngineEventListener = (event: EngineEvent) => void;
 
-interface MockSessionHandle {
+interface SessionHandle {
   sid: string;
   start(): void;
   subscribe(listener: EngineEventListener): () => void;
@@ -77,8 +79,9 @@ const randomToken = (length: number) => Array.from({ length }, () => "0123456789
  *   → [批准] running → tool_call(update_ticket_status) → tool_result → chunk → succeeded
  *   → [拒绝] chunk → cancelled
  */
-function createMockSession(): MockSessionHandle {
+function createMockSession(onSid: (sid: string) => void): SessionHandle {
   const sid = `ses_${randomToken(12)}`;
+  onSid(sid);
   const listeners = new Set<EngineEventListener>();
   const decisions = new Map<string, PermissionDecision>();
   const decisionResolvers = new Map<string, () => void>();
@@ -189,6 +192,98 @@ function createMockSession(): MockSessionHandle {
   };
 }
 
+/** 事件信封 → 面板 UI 事件（seq/ts 还原自信封；payload 为契约可辨识联合） */
+const toUiEvent = (env: EventEnvelope): EngineEvent => {
+  const { seq, type, occurredAt, payload } = env;
+  switch (type) {
+    case "assistant_chunk":
+      return { type, seq, ts: occurredAt, text: payload.text };
+    case "tool_call":
+      return { type, seq, ts: occurredAt, tool: payload.tool, argsDigest: payload.argsDigest, args: payload.args };
+    case "tool_result":
+      return { type, seq, ts: occurredAt, tool: payload.tool, ok: payload.ok, summary: payload.summary };
+    case "permission_request":
+      return { type, seq, ts: occurredAt, requestId: payload.requestId, tool: payload.tool, reason: payload.reason };
+    case "status_change":
+      return { type, seq, ts: occurredAt, status: payload.status, detail: payload.detail };
+    case "error":
+      return { type, seq, ts: occurredAt, message: payload.message };
+  }
+};
+
+/**
+ * 真实 Gateway 会话（driver=gateway）：创建会话 → SSE 订阅事件信封印 → UI 事件；
+ * 审批/取消经 HTTP API 转发。POST 鉴权头由 Vite 代理注入（浏览器不持有网关 token）。
+ */
+function createGatewaySession(onSid: (sid: string) => void): SessionHandle {
+  const client = new AgentGatewayClient();
+  const listeners = new Set<EngineEventListener>();
+  let disposed = false;
+  let disposeStream: (() => void) | null = null;
+  let syntheticSeq = 9000; // 本地合成事件（连接失败等）独立编号，避免与流内 seq 冲突
+  let sid = "";
+
+  const emit = (event: EngineEvent) => {
+    if (!disposed) listeners.forEach((listener) => listener(event));
+  };
+  const emitError = (message: string) => {
+    emit({ type: "error", seq: ++syntheticSeq, ts: new Date().toISOString(), message });
+  };
+
+  const handle: SessionHandle = {
+    sid,
+    start() {
+      void (async () => {
+        try {
+          const created = await client.createSession({
+            orgId: 1,
+            subjectType: "bug",
+            subjectId: "bug_1",
+            prompt: "演示：读取缺陷 bug_1 并分析，如需修复请先申请权限。",
+          });
+          if (disposed) {
+            await client.cancel(created.sid).catch(() => undefined);
+            return;
+          }
+          sid = created.sid;
+          handle.sid = created.sid;
+          onSid(created.sid);
+          disposeStream = client.subscribeEvents(created.sid, {
+            onEvent: (env) => emit(toUiEvent(env)),
+            onEnd: (reason) => {
+              if (disposed) return;
+              if (reason === "failed") emitError("网关事件流中断且重连失败（网关可能未启动）");
+            },
+          });
+        } catch (err) {
+          if (disposed) return;
+          emitError(
+            `网关连接失败：${err instanceof Error ? err.message : String(err)}（请确认 Gateway 已启动，并用 ?driver=gateway 访问）`,
+          );
+        }
+      })();
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    answerPermission(requestId, decision) {
+      void client
+        .answerPermission(sid || handle.sid, requestId, decision)
+        .catch((err) => emitError(`审批应答失败：${err instanceof Error ? err.message : String(err)}`));
+    },
+    dispose() {
+      disposed = true;
+      disposeStream?.();
+      if (sid) void client.cancel(sid).catch(() => undefined);
+      listeners.clear();
+    },
+  };
+  return handle;
+}
+
 const formatTime = (ts: string) => {
   const date = new Date(ts);
   return Number.isNaN(date.getTime()) ? "--:--:--" : date.toLocaleTimeString("zh-CN", { hour12: false });
@@ -201,11 +296,13 @@ const SampleAgentSessionPanel: React.FC = () => {
   const [status, setStatus] = useState<SessionStatus>("queued");
   const [events, setEvents] = useState<EngineEvent[]>([]);
   const [decisions, setDecisions] = useState<Record<string, PermissionDecision>>({});
-  const sessionRef = useRef<MockSessionHandle | null>(null);
+  const sessionRef = useRef<SessionHandle | null>(null);
   const scrollBodyRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const session = createMockSession();
+    // ?driver=gateway 接真实 Gateway（mock 为默认）；DEV 专用样例页
+    const driver = new URLSearchParams(window.location.search).get("driver");
+    const session = driver === "gateway" ? createGatewaySession(setSid) : createMockSession(setSid);
     sessionRef.current = session;
     setSid(session.sid);
     setStatus("queued");
@@ -241,7 +338,7 @@ const SampleAgentSessionPanel: React.FC = () => {
     sessionRef.current?.answerPermission(requestId, decision);
     setDecisions((prev) => ({ ...prev, [requestId]: decision }));
     if (decision === "approve") {
-      message.success("已批准工具调用，mock 流继续执行");
+      message.success("已批准工具调用，会话继续执行");
     } else {
       message.warn("已拒绝工具调用，会话即将取消");
     }
@@ -341,9 +438,9 @@ const SampleAgentSessionPanel: React.FC = () => {
     <div className={styles.page}>
       <h2 className={styles.title}>Agent 会话面板</h2>
       <p className={styles.desc}>
-        Agent Gateway 会话面板样例（TH-RFC-001 §05.4）：演示会话状态徽标、事件流、工具卡片与权限审批交互。 事件类型与{" "}
-        <span className={styles.descMono}>services/techhaven-gateway/src/types.ts</span> 的 EngineEvent union 同构，由内置 mock
-        会话驱动，未连接真实 gateway。
+        Agent Gateway 会话面板样例（TH-RFC-001 §05.4）：演示会话状态徽标、事件流、工具卡片与权限审批交互。默认由内置 mock
+        会话驱动；追加 <span className={styles.descMono}>?driver=gateway</span> 接真实 Gateway（SSE 事件信封，见根{" "}
+        <span className={styles.descMono}>contracts/</span>，鉴权头由 Vite 代理注入）。
       </p>
 
       <section className={styles.panel}>
@@ -385,7 +482,7 @@ const SampleAgentSessionPanel: React.FC = () => {
 
         <footer className={styles.footer}>
           <FaInfoCircle aria-hidden="true" />
-          <span>DEV 样例页：真实接线（HTTP + SSE）在业务集成阶段完成。</span>
+          <span>DEV 样例页：mock 驱动（默认）；?driver=gateway 经 Vite 代理接本机 Gateway（mock 驱动引擎）。</span>
           <span className={styles.footerMono}>
             POST /v1/sessions · GET /v1/sessions/:sid/events (SSE) · POST /v1/sessions/:sid/permission
           </span>

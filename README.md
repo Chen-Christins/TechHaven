@@ -29,7 +29,7 @@ TechHaven 采用“模块化产品域 + Web BFF 逻辑边界 + Agent 控制面/�
 - 数据层：`docs/agent-db/schema.sql`（agent 身份/日志/提案/语义/记忆）+ `docs/agent-db/seed-semantics.sql`（语义层种子数据）
 - `services/techhaven-mcp/`：7 个工具（6 读 1 写）、scoped token、staged proposal、状态机、JSONL 审计与可选 PG 镜像；direct/staged mock smoke 为 9+11 项。
 - `services/techhaven-gateway/`：runner adapter、HTTP/SSE、配额、看门狗、事件 JSONL 与 PG loader；mock driver smoke 为 22 项。
-- 前端 `/test/agent-session-panel`：DEV 样例页，**仍是本地 mock，未连接真实 Gateway**。
+- 前端 `/test/agent-session-panel`：DEV 样例页。默认本地 mock；追加 `?driver=gateway` 经 Vite 代理接本机 Gateway（`services/techhaven-gateway`，mock 驱动引擎；鉴权头由代理注入，浏览器不持有网关 token）。客户端见 `src/services/agentGatewayClient.ts`，契约见 `contracts/`。
 
 当前准确成熟度：Agent 工具面和控制面已 `implemented + verified-mock`；真实产品后端、live dsh、live PostgreSQL、前端真实接线和多租户沙箱尚未达到 `verified-integration`。禁止把 mock 冒烟表述为生产完成。
 
