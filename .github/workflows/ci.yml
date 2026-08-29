@@ -2,12 +2,13 @@ name: CI Build Check
 
 on:
   push:
-    branches: ["master"]
+    branches: ["master", "feature/agent-engine"]
   pull_request:
-    branches: ["master"]
+    branches: ["master", "feature/agent-engine"]
 
 jobs:
-  build:
+  frontend:
+    name: Frontend build & test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -22,10 +23,68 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build site
+      - name: Type check & build site
         run: npm run build
+
+      - name: Run unit tests (Mermaid 安全回归 / HTTP 1101)
+        run: npm test
+
+      - name: Check bundle size budget
+        run: node scripts/check-bundle-size.mjs
 
       - name: Check build artifacts
         run: |
           test -d ./dist
           test "$(ls -A ./dist)"
+
+  mcp:
+    name: techhaven-mcp typecheck & smoke
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/techhaven-mcp
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: services/techhaven-mcp/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Run mock smoke (direct + staged)
+        run: npm run smoke
+
+  gateway:
+    name: techhaven-gateway typecheck & smoke
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/techhaven-gateway
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: services/techhaven-gateway/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Run mock smoke
+        run: npm run smoke
