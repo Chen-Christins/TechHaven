@@ -12,6 +12,12 @@
 
 import type { CreateSessionRequest, CreateSessionResponse, EventEnvelope, OkResponse, SessionDetailResponse } from "../../contracts";
 
+/**
+ * 全局 fetch 的绑定副本：部分浏览器/WebView 对「解引用后的 fetch」直接调用会抛
+ * Illegal invocation（fetch 要求 this 是 Window/Global）。一律用绑定副本，杜绝环境差异。
+ */
+const boundFetch: typeof fetch = fetch.bind(globalThis);
+
 const RETRY_BASE_MS = 1000;
 const RETRY_MAX_MS = 8000;
 const RETRY_LIMIT = 5;
@@ -39,7 +45,7 @@ export class AgentGatewayClient {
   private readonly fetchImpl: typeof fetch;
 
   /** base 为网关 API 前缀（开发经 Vite 代理；不直接暴露绝对地址给浏览器） */
-  constructor(base = "/gateway", fetchImpl: typeof fetch = fetch) {
+  constructor(base = "/gateway", fetchImpl: typeof fetch = boundFetch) {
     this.base = base;
     this.fetchImpl = fetchImpl;
   }
