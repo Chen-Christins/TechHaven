@@ -56,6 +56,8 @@ export default defineConfig(({ mode }) => {
                     headers: {
                         authorization: `Bearer ${env.VITE_GATEWAY_TOKEN || ""}`,
                     },
+                    // 剥掉 /gateway 前缀：网关只识别 /v1/sessions 等路径
+                    rewrite: (path) => path.replace(/^\/gateway/, ""),
                     configure: (proxy) => {
                         proxy.on("error", (err, _req, _res) => {
                             console.log(timeStamp(), "网关代理错误:", err.message);
