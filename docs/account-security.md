@@ -3,6 +3,8 @@
 入口：个人中心（`/personal?tab=security`）→ 账户安全 Tab。
 对应组件：`src/pages/user/SecurityTab.tsx`（外壳 `src/pages/user/AccountSecurity.tsx` 已废弃，仅保留 Tab）。
 
+> 实现状态：`implemented (local mock)`。2FA、异地登录提醒和设备下线仅修改组件内状态；下述接口是目标契约，尚未接入服务层，也未做 live 后端验证。
+
 ## 数据模型
 
 ```ts

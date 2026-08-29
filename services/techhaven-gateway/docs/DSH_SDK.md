@@ -1,5 +1,7 @@
 # dsh SDK 真实 API 考察（供 `src/drivers/dsh.ts` 实现依据）
 
+> 架构决策更新（TH-RFC-001 v0.2）：本文是 v0.1.2-alpha.1 源码勘察记录，不是 live 集成证明。由于 SDK 线协议不能编程式应答权限或取消单个在途 turn，TechHaven 产品域写入以服务端 proposal/policy 为权威；runner 内部权限无法可靠应答时必须 fail-closed。推进门禁见 [`docs/ROADMAP.md`](../../../docs/ROADMAP.md) 的 R1/R2。
+
 - 考察基线：**dsh v0.1.2-alpha.1**（GitHub `deepseek-ai/deepseek-harness`，tag `dsh-v0.1.2-alpha.1`，commit `cd5ef8148158c3a752a658978873241fdf8e2bbc`，浅克隆源码阅读）。
 - 考察方式：源码阅读 + 包清单 + README；文内「出处」均为该仓库内相对路径 `文件:行`。
 - 本文所有结论均标注出处；**无法从源码确认的点集中在文末「未验证清单」**。

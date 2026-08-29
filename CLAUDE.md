@@ -6,14 +6,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm run dev          # 启动 Vite 开发服务器
-npm run build        # TypeScript 类型检查 (tsc -b) + Vite 生产构建
+npm run build        # TypeScript 类型检查 (tsc --noEmit) + Vite 生产构建
 npm run preview      # 本地预览 dist/
-npm run lint         # ESLint 检查
-npm run lint:fix     # ESLint 自动修复 src/ 下文件
+npm test             # vitest 单测（Mermaid 安全回归 / HTTP 1101 状态同步）
 npm run format       # Prettier 格式化 src/ 下所有文件
 ```
 
+> 项目**未接入 ESLint**，仅使用 Prettier 做格式化。不要使用 `npm run lint` / `npm run lint:fix`，这两个脚本不存在。
+
 ## 架构概览
+
+跨模块工作以 `docs/ARCHITECTURE.md` 为架构基线、`docs/ROADMAP.md` 为阶段和退出门禁、`docs/TH-RFC-001-agent-engine.md` 为 Agent 决策记录。当前 Agent 能力是 `verified-mock`，不是生产完成。
 
 ### Provider 嵌套层级（App.tsx）
 
@@ -37,6 +40,8 @@ BrowserRouter → ThemeProvider → AuthProvider → LayoutWidthProvider → Sit
 - WebSocket 客户端封装在 `src/utils/websocket.ts`（`WebSocketClient` 类），支持自动重连（指数退避，最多 50 次，最长间隔 30s）、消息类型分发、Cookie 鉴权
 - 通知 WebSocket 是全局单例 `notificationWS`，**连接生命周期绑定在 AuthContext 中** — 登录成功自动 connect，登出自动 disconnect，不会随路由切换重连
 - WebSocket 路径通过 `VITE_WS_URL` 环境变量配置
+
+> 安全边界：当前实现把 JavaScript 可读取的 Cookie token 放进 WebSocket 查询参数，这不是目标形态。新工作不得继续复制该方式；目标方案见 `docs/ARCHITECTURE.md` 的 Browser → BFF 安全边界。
 
 ### 路由结构
 
@@ -72,6 +77,18 @@ BrowserRouter → ThemeProvider → AuthProvider → LayoutWidthProvider → Sit
 | `^/file(.*)` | `apiTarget` | 文件上传/下载代理，timeout 100s，禁用 agent |
 
 代理目标由 `VITE_API_BASE_URL` 环境变量控制，默认 `http://127.0.0.1:8088`。
+
+## Agent 子项目验证
+
+```bash
+cd services/techhaven-mcp
+npm run typecheck && npm run smoke
+
+cd ../techhaven-gateway
+npm run typecheck && npm run smoke
+```
+
+状态报告必须区分 `implemented`、`verified-mock` 和 `verified-integration`。live dsh、真实域后端和真实 PostgreSQL 尚未验证时，不得写“已完成集成”。
 
 ### 主题与布局
 

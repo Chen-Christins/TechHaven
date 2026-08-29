@@ -1,275 +1,226 @@
-# TH-RFC-001 · TechHaven × DeepSeek Harness 集成架构设计
+# TH-RFC-001 · TechHaven Agent 集成架构决策
 
-> **状态** 已采纳 · 实施中（P0 完成、P1 完成、P2 部分完成）｜ **日期** 2026-08-29 ｜ **起草** TechHaven 工程组 ｜ **关联** AGENTS.md · dsh v0.1.2-alpha.1
->
-> **进度快照（2026-08-29）**：P0 全部完成（MCP Server 7 工具 + dsh 挂载手册）；P1 完成（Agent Gateway + staged 写提案审批流 + 前端样例页 `/test/agent-session-panel` 待浏览器确认）；P2 部分完成（语义层/提案/事件落 PG、分级审批、装载器；容器沙箱、正式配额与成本看板待办）。实施代码见 `services/techhaven-mcp`、`services/techhaven-gateway`，数据层见 `docs/agent-db/`。
+> **版本** v0.2
+> **状态** 已采纳 · 迁移中
+> **日期** 2026-08-29
+> **架构基线** `docs/ARCHITECTURE.md`
+> **推进计划** `docs/ROADMAP.md`
+> **引擎勘察** `services/techhaven-gateway/docs/DSH_SDK.md`
 
-## 摘要
+## 1. 摘要
 
-**外壳归 TechHaven · 引擎归 dsh · 协议是边界**
+TechHaven 保持产品外壳、域模型和数据主权，将 dsh 视为**可替换的外部 runner**。平台经 Agent Control Plane 驱动 runner，经 TechHaven MCP 把受控业务工具提供给 agent。产品域写入由服务端策略、proposal 状态机和域后端共同强制，不能由模型提示、MCP annotations 或当前 dsh SDK 的权限事件决定。
 
-TechHaven 保持产品外壳、品牌与数据主权，将 DeepSeek Harness（dsh）作为**可替换的 agent 引擎进程**，通过版本化协议嵌入。Agent 以结构化工具（MCP）读写研发平台——不操作 UI；用户从工单/看板派发任务并观察执行，结果回写工单与趋势。集成分四个阶段推进，每一步可逆；dsh 全程保持外部依赖身份，不做代码合并、不做进程内装配。
+当前代码已通过 MCP direct/staged 与 Gateway mock 冒烟，但前端、真实产品后端、live dsh 和 PostgreSQL 仍未形成真实端到端闭环。因此本 RFC 将此前“P1 完成”修正为：**控制面与工具面已实现并在 mock 上验证，真实集成尚在推进**。
 
-## 01 背景与问题
+## 2. 问题
 
-**TechHaven 现状**：研发 × 博客一体化平台前端（React 19 + TS + Vite，约 4.1 万行，46 个自研组件），后端独立部署于 techhaven.website。已有的可复用基建：内存态 Token 认证（`TokenManager`）、WebSocket 单例 `notificationWS`（登录连/登出断、指数退避重连）、组织切换语义（`RdOrgContext`）、HashID 防`枚举`、AI 摘要 SSE 通道与 `AiConfig`（openai/claude/glm）。
+TechHaven 已拥有博客与研发管理面，但缺少可控的 Agent 执行面。直接把 agent 嵌入产品进程、让 agent 操作 UI 或把用户凭据传进 runner，都会扩大故障和安全边界；另一方面，过早拆成大量微服务会增加当前团队的部署与一致性成本。
 
-**缺口**：平台拥有"管理面"（需求/缺陷/任务/评审/工单/趋势），没有"执行面"——agent 无法真正修 bug、跑测试、回写结果。这正是 dsh（DeepSeek Harness，Cordis 插件架构的 agent 运行时）的领域。
+需要同时解决：
 
-**dsh 关键事实**（截至 v0.1.2-alpha.1，2026-08 勘察）：
+- 从工单派发、观察、审批和回写；
+- 组织隔离、最小权限、幂等和审计；
+- dsh alpha 契约变化与运行时故障隔离；
+- 事件回放、断线恢复、配额和成本；
+- mock PoC 到真实后端、数据库和沙箱的渐进迁移。
 
-- 官方集成通道三条：`packages/sdk`（TS/Python 客户端以**子进程**方式拉起 `dsh`，JSON-RPC 驱动会话与事件流）、`packages/acp`（Agent Client Protocol，编程式管理会话与**权限应答**）、`packages/mcp/mcp-client`（挂载外部 MCP server，使其工具成为 agent 原生工具）。
-- 自身 Web UI 只是 API Gateway（Typert `@Remote`）的一个 client——第三方可以做自己的 client。
-- alpha 版本，官方明示 compatibility-breaking changes；MIT 许可。
+## 3. 目标与非目标
 
-## 02 目标与非目标
+### 3.1 目标
 
-| 编号 | 目标（G）/ 非目标（N） | 说明 |
-| --- | --- | --- |
-| G1 | 平台内派发与观察 | 用户从工单/缺陷详情一键派发 agent，在 TechHaven 界面内看到执行流与产物。 |
-| G2 | 结构化工具读写 | agent 通过 MCP 工具读写研发平台（有权限、可审计），**不**通过点页面操作。 |
-| G3 | 结果回流 | agent 的结论、diff、测试结果自动关联回工单/缺陷/趋势数据。 |
-| G4 | 外壳主权 | 品牌、交互、数据模型 100% TechHaven；用户全程不感知 dsh 存在。 |
-| G5 | 引擎可替换 | 协议即插槽：未来可换其他 agent runtime 而外壳与域服务不动。 |
-| N1 | 不做代码合并 | 不 fork、不把 dsh 源码并入仓库（理由见 ADR-02）。 |
-| N2 | 不做 UI 自动化 | 不引入 computer-use 式点击操作平台界面（理由见 ADR-04）。 |
-| N3 | 首期不做多租户云端执行 | P1 引擎跑在用户本地；容器/E2B 沙箱放到 P2（见 §05.5）。 |
-| N4 | 不暴露 dsh Web UI | dsh 自带 Web UI 绑定 `127.0.0.1:3080`，仅限本地调试，不面向终端用户。 |
+| 编号 | 目标                                                   |
+| ---- | ------------------------------------------------------ |
+| G1   | 用户从 TechHaven 工单上下文派发并观察 Agent 会话。     |
+| G2   | Agent 只通过结构化、版本化、可审计的工具读写产品域。   |
+| G3   | 每个写操作可追溯到策略或人工决定，并由域后端再次授权。 |
+| G4   | runner、产品域、控制面和浏览器凭据相互隔离。           |
+| G5   | mock、dsh 或未来 runtime 通过同一 Runner Port 替换。   |
+| G6   | 事件可持久化、回放、去重和关联 trace。                 |
+| G7   | 每一阶段可验证、可回滚，并有明确停止条件。             |
 
-## 03 决策记录（ADR）
+### 3.2 非目标
 
-### ADR-01：dsh 以受管引擎进程 + 协议方式嵌入
+| 编号 | 非目标                                                       |
+| ---- | ------------------------------------------------------------ |
+| N1   | 不 fork dsh，不把其源码合并进 TechHaven。                    |
+| N2   | 不在产品后端进程内 import dsh runtime。                      |
+| N3   | 不通过 UI 自动化完成已有产品 API 能表达的操作。              |
+| N4   | 当前不拆产品域微服务，不引入消息总线或服务网格。             |
+| N5   | 不把 mock 冒烟、静态 SQL 核对或文档设计称为生产完成。        |
+| N6   | 不承诺 MCP Tasks、ACP、插件寄宿或云沙箱，除非后续 RFC 验证。 |
 
-**结论：采纳**
+## 4. 决策记录
 
-TechHaven 后端经 `dsh` TypeScript SDK（JSON-RPC）拉起并驱动引擎子进程；前端与域服务完全不改归属。理由：线协议是 dsh 唯一版本化承诺的稳定面；引擎独立进程提供故障隔离、安全爆炸半径收窄与独立伸缩。
+### ADR-01：受管 runner 进程 + Runner Port
 
-### ADR-02：代码合并 / fork dsh 进 TechHaven 仓库
+**决定**：Gateway/Control Plane 只依赖 `EngineDriver` 端口；mock 和 dsh 是 adapter。dsh 以独立进程运行，每个会话显式创建和释放。
 
-**结论：否决**
+**理由**：隔离进程故障和依赖变化；可在无 dsh 环境下测试；未来替换 runtime 不影响 SPA、域后端或 MCP。
 
-dsh 是 8953 文件的 alpha monorepo，官方明示 breaking changes。fork 意味着"合并跑步机 vs 永久分叉"二选一，且维护对象比自身代码库大一个数量级。若确需改内核行为，优先用官方 patches 机制（其仓库自身即用 `patches/`）。
+**后果**：必须维护 adapter contract test；dsh 版本/profile/事件映射需要精确记录。
 
-### ADR-03：进程内装配（把 dsh 包 import 进后端进程）
+### ADR-02：双向协议边界
 
-**结论：否决**
+**决定**：
 
-绑定 dsh 最不稳定的内部面（Cordis 进程内 API 无兼容承诺）；agent 崩溃即产品进程崩溃；agent 可执行代码，进程内直通产品 token、DB 连接与其他租户数据；dsh 的进程级沙箱（landlock）也要求危险物待在独立进程里。
+- 人到 Agent：SPA → Web BFF → Agent Control Plane → Runner Port；
+- Agent 到平台：runner → TechHaven MCP → 产品域 API。
 
-### ADR-04：Agent 以 UI 自动化方式操作平台
+**理由**：驱动流和工具流的授权、容量与版本节奏不同，必须独立演进。
 
-**结论：否决**
+### ADR-03：MCP 是 anti-corruption layer，不是第二份域模型
 
-拥有 API 的产品不需要 agent 猜 DOM：每次改版即失效、无法细粒度授权、无法审计。一切"agent 操作 TechHaven"的需求一律翻译为 MCP 工具（ADR-05）。
+**决定**：MCP 负责协议、schema、身份、工具策略、幂等和域 API 适配；工单状态机的权威定义仍在产品域后端。
 
-### ADR-05：双向集成：SDK 驱动流 + MCP 工具流
+**理由**：避免前端、MCP 和后端各自维护状态规则，产生合法迁移漂移。
 
-**结论：采纳**
+**后果**：当前 `stateMachine.ts` 只作为 fail-closed 前置校验；真实联调时必须由域后端返回版本化状态机/错误契约并通过 contract test。
 
-方向 A（TechHaven → agent）：Agent Gateway 经 SDK 开会话、订阅事件。方向 B（agent → TechHaven）：自建 TechHaven MCP Server，把工单/需求/缺陷领域操作暴露为带权限的工具。理由：两条流各自独立演进，均落在版本化协议上。
+### ADR-04：产品审批状态机是写权限权威
 
-### ADR-06：渐进路线，预留"插件形态"收敛选项
+**决定**：高风险写工具统一走持久化 proposal。批准后由服务端 worker 重新校验并执行，模型查询仅用于观察状态。
 
-**结论：采纳**
+**理由**：dsh v0.1.2-alpha.1 SDK 线协议没有权限应答方法；把 UI 批准映射成未实际送达引擎的决定会制造错误安全感。服务端 proposal 能提供幂等、过期、并发控制和完整审计。
 
-按 §09 分四阶段推进，每阶段独立可交付、可回退。若未来需要"同运行时"深度融合（Cordis 插件寄宿），仅在 P3 作为**评估项**，不作为承诺。理由：在 alpha 生态上，可逆性优先于深度。
+**迁移**：当前 `get_proposal` 触发应用的实现保留为 PoC 兼容路径；R1 必须迁移为批准后服务端主动应用。
 
-## 04 总体架构
+### ADR-05：模块化单体 + BFF 逻辑边界
 
-系统分三层：**外壳**（TechHaven SPA，不变）、**产品后端**（域服务 + 两个新增组件）、**引擎层**（dsh 引擎进程，按会话一次性拉起）。层与层之间只有两条数据流：驱动流（人→agent）与工具流（agent→平台）。
+**决定**：产品域后端保持模块化单体；先在现有后端/同源代理中建立 Web BFF 逻辑边界，不立即新增独立部署服务。
 
-```mermaid
-flowchart TB
-    subgraph SHELL["外壳 SHELL — 不变"]
-        SPA["TechHaven SPA<br/>工单详情 · 看板 · 博客"]
-        PANEL["Agent 会话面板（新）<br/>事件流 · 审批卡 · 运行历史"]
-    end
+**理由**：当前只有一个 Web 客户端，独立 BFF 会增加运维跳数；但浏览器会话、聚合、限流和内部地址隐藏仍需要清晰边界。
 
-    subgraph BE["产品后端 — techhaven.website"]
-        TOKEN["agent token（scoped PAT）签发与校验"]
-        DOMAIN["域服务<br/>工单/需求/缺陷/趋势"]
-        GATEWAY["Agent Gateway（新）<br/>引擎生命周期 · 事件桥 · 审批"]
-        MCP["TechHaven MCP Server（新）<br/>结构化工具 · 持有凭据"]
-    end
+**拆分触发条件**：出现差异显著的第二客户端、独立发布/扩缩容需求或故障隔离数据后，再单独评估。
 
-    subgraph ENGINE["引擎层 — 按会话一次性拉起 · 可替换"]
-        DSH["dsh 引擎进程<br/>agent loop · 工具执行 · 沙箱（landlock）"]
-    end
+### ADR-06：PostgreSQL 逐步成为 Agent 平面权威存储
 
-    SPA -->|"驱动流"| GATEWAY
-    PANEL <-->|"WS 事件·审批"| GATEWAY
-    GATEWAY -->|"SDK JSON-RPC"| DSH
-    DSH -->|"工具流：MCP 调用（agent token）"| MCP
-    MCP -->|"域 API（服务端凭据，密钥不进引擎）"| DOMAIN
-    BE -.->|"协议边界（版本化 · SDK JSON-RPC / MCP）"| ENGINE
+**决定**：生产目标中 session/event/proposal/tool-call 以 PostgreSQL 为权威；JSONL 退为本地 spool、调试导出与短时降级缓冲。
 
-    classDef newComp stroke:#2f81f7,stroke-width:2px
-    classDef annot fill:none,stroke:#8fa4af,stroke-dasharray:4 3,stroke-width:1px
-    class GATEWAY,MCP,PANEL,DSH newComp
-    class TOKEN annot
-    linkStyle 0,2,3 stroke:#2f81f7,stroke-width:1.5px
-    linkStyle 5 stroke:#e5534b,stroke-width:1.5px,stroke-dasharray:6 4
+**理由**：JSONL 无法可靠承担多进程审批、并发写、索引查询、唯一约束和恢复流程。
+
+**迁移**：通过双写对账和幂等 loader 渐进迁移，不允许两个权威源同时接受写。
+
+### ADR-07：OpenTelemetry 统一观测语义
+
+**决定**：BFF、Control Plane、MCP、runner adapter 和域 API 传播 W3C trace context；运行日志、指标、trace 与审计分离但可通过 ID 关联。
+
+**理由**：JSONL 和 stderr 能证明 PoC 流程，却不足以定位跨服务延迟、重试风暴和组织级容量问题。
+
+### ADR-08：按门禁而非日期推进
+
+**决定**：采用 `planned → implemented → verified-mock → verified-integration → pilot → production` 状态模型；路线见 `docs/ROADMAP.md`。
+
+**理由**：防止把“代码存在”误写成“真实集成完成”，并让每阶段可独立停止或回滚。
+
+## 5. 权限与凭据模型
+
+### 5.1 浏览器
+
+- 目标为同源 BFF + `HttpOnly/Secure/SameSite` Cookie；
+- Agent token、Gateway 管理 token、域服务 token 不进入浏览器；
+- WebSocket/SSE 校验 Origin、CSRF、会话过期和每消息权限；
+- token 不放入 URL、事件、日志或前端持久存储。
+
+### 5.2 Agent token
+
+最小 claims：
+
+| claim     | 含义                              |
+| --------- | --------------------------------- |
+| `aud`     | 目标 MCP server/resource          |
+| `sid`     | 单次会话                          |
+| `org`     | 单组织                            |
+| `scopes`  | `rd:read` / `rd:write` 等最小集合 |
+| `iat/exp` | 签发和过期                        |
+| `jti`     | 唯一 ID，用于吊销和重放检测       |
+
+Inbound agent token 不能透传给产品域 API；MCP 使用独立服务身份调用域后端。
+
+### 5.3 工具风险
+
+| 类别              | 默认策略                                                |
+| ----------------- | ------------------------------------------------------- |
+| 只读、封闭世界    | 免人工审批，仍做 org/scope/速率限制                     |
+| 可逆写            | staged，人工或组织策略批准，要求幂等键                  |
+| 破坏性/外部世界写 | 默认禁止；单独 RFC 和高强度审批后才开放                 |
+| 文件、命令、网络  | runner sandbox/profile 控制；SDK 无法应答时 fail-closed |
+
+MCP tool annotations 只帮助 UI 和模型理解风险，服务端策略引擎不得信任来自不可信 server 的 annotations。
+
+## 6. 生命周期与事件
+
+会话状态保持：
+
+```text
+queued → running → awaiting_permission → running → succeeded
+            │                │
+            ├──────────────→ failed
+            └──────────────→ cancelled
 ```
 
-*图 1 · 总体架构与两条数据流。蓝色为新增组件（Agent Gateway、TechHaven MCP Server、会话面板、引擎进程）；红色虚线为协议边界——边界之下的一切对产品不可见、可替换。工具流经 MCP Server 而非直连域服务：凭据只在服务端，agent 只持 scoped token。*
+约束：
 
-## 05 组件设计
+- 终态不可复活；重试创建新 session，并关联 parent session；
+- 事件信封包含 `schemaVersion/eventId/sessionId/orgId/seq/type/occurredAt/traceId/payload`；
+- `seq` 会话内递增，`sid + seq` 唯一；SSE `Last-Event-ID` 与它对齐；
+- 前端断线只影响观察，不影响服务端会话；
+- approval 超时默认拒绝；session 超时 cancel + dispose；
+- runner 崩溃必须产生终态和最后可用诊断，不静默悬空。
 
-### 05.1 Agent Gateway（新 · 后端）
+## 7. 当前工具目录
 
-唯一的引擎出入口。职责边界：
+| 工具                   | 类型 | 当前状态        | 目标治理                                   |
+| ---------------------- | ---- | --------------- | ------------------------------------------ |
+| `get_ticket`           | 读   | `verified-mock` | contract test + 真实域 API                 |
+| `list_my_tickets`      | 读   | `verified-mock` | 服务端分页与组织隔离                       |
+| `search_requirements`  | 读   | `verified-mock` | 查询上限、超时和审计                       |
+| `get_trend_summary`    | 读   | `verified-mock` | 冻结指标口径，不在 MCP 临时聚合 200 条列表 |
+| `get_semantics`        | 读   | `verified-mock` | live PG 策展和版本化                       |
+| `get_proposal`         | 读   | `verified-mock` | 仅查询状态，不负责触发应用                 |
+| `update_ticket_status` | 写   | `verified-mock` | proposal worker + 域状态机 + 幂等键        |
 
-| 职责 | 设计要点 |
-| --- | --- |
-| 引擎生命周期 | 经 dsh SDK 以**命名 profile + 最小 patches**拉起引擎子进程；每会话一次性进程，结束即 `dispose()`；引擎版本与 profile 由 Gateway 统一下发，前端不可指定。 |
-| 会话管理 | `open / send / steer / cancel`；会话记录落库（§06）；用户中断映射为 ACP cancel。 |
-| 事件桥接 | `session/event`（assistant/chunk、tool activity、状态迁移）→ TechHaven 既有 `notificationWS` 频道，前端零新增连接。 |
-| 权限中继 | 引擎权限请求 → `awaiting_permission` 状态 + 前端审批卡 → 用户应答回传；超时默认拒绝。 |
-| 配额与限流 | 每用户并发会话数、单会话时长与 token 预算、工具调用频次；超限取消并记账。 |
-| 审计 | 每次工具调用（含参数摘要与权限决定）写 `agent_audit_log`。 |
+`add_ticket_comment`、`create_bug` 等不再写入“下一阶段默认交付”，必须在单工具风险评审后进入计划。
 
-### 05.2 Agent 身份与令牌（新 · 后端）
+## 8. 验证要求
 
-- agent 不复用用户会话 Cookie；由 Gateway 签发 **agent token（scoped PAT）**：绑定单次会话、单组织（对齐 `RdOrgContext` 语义）、读写分离 scope。
-- 所有出参 ID 一律经现有 hashId scope 编码，防止枚举与越权探测。
-- token 短时效（≤ 会话时长），随会话结束吊销；写操作另有工具级状态机校验（§07）。
+### 8.1 当前已验证
 
-### 05.3 TechHaven MCP Server（新 · 后端）
+- MCP direct：9 项 mock smoke；
+- MCP staged：11 项 mock smoke；
+- Gateway：22 项 mock smoke；
+- MCP/Gateway TypeScript typecheck。
 
-P0 工具目录（只读优先，写工具带幂等约束）：
+### 8.2 当前未验证
 
-| 工具 | 类型 | 输入要点 | 权限 | 幂等 / 防护 |
-| --- | --- | --- | --- | --- |
-| `get_ticket` | `读` | ticket hashId | 本组织成员 | — |
-| `list_my_tickets` | `读` | 状态/类型过滤 | 本组织成员 | 分页上限 50 |
-| `search_requirements` | `读` | 关键词、优先级 | 本组织成员 | 分页上限 50 |
-| `get_trend_summary` | `读` | 时间窗 | 本组织成员 | 预聚合只读 |
-| `update_ticket_status` | `写` | ticket、目标状态、原因 | 写 scope + 状态机合法迁移 | 非法迁移拒绝；P1 需人审批 |
-| `add_ticket_comment` | `写` | ticket、markdown 正文 | 写 scope | 幂等键（会话+去重窗口） |
-| `create_bug` | `写` | 标题、复现步骤、严重级 | 写 scope | 同会话同标题去重窗口 10min |
+- 根前端正式构建与自动化测试基线；
+- 前端到真实 Gateway；
+- live dsh spawn/prompt/event/close；
+- dsh 权限应答与单 turn cancel（当前协议明确不可用）；
+- MCP 到真实产品域 API；
+- live PostgreSQL DDL、并发、恢复和 loader；
+- 多组织沙箱、网络隔离、渗透和容量。
 
-MCP Server 部署在产品后端侧：它持有真正的服务端凭据调用域 API；引擎侧只见 agent token。资源（resources）与提示（prompts）暂不暴露，仅 Tools。
+详细退出门禁不得在本 RFC 复制维护，以 `docs/ROADMAP.md` 为唯一来源。
 
-### 05.4 前端接入面（新 · SPA）
+## 9. 风险登记
 
-- **派发入口**：工单/缺陷详情页「派发给 Agent」按钮 → 选择目标与上下文（默认带入工单描述、关联仓库）→ 创建会话。
-- **Agent 会话面板**：渲染驱动流事件（token 流、工具卡片、状态徽标）；权限审批卡（允许一次 / 本会话始终允许 / 拒绝）。全部使用自研组件库（Modal / message / TagPanel 等），遵循 AGENTS.md 组件流程：`src/sample` 测试页 → DEV 路由确认 → 集成 → `npm run build` + `npm run format`。
-- **运行历史**：个人中心新增 Tab，按 subject（工单/缺陷）聚合历史会话与产物。
+| 风险                         | 概率 | 影响 | 当前处理                                                 |
+| ---------------------------- | ---- | ---- | -------------------------------------------------------- |
+| dsh alpha 契约变化           | 高   | 高   | adapter 单点、精确版本、contract/live smoke、可回退 mock |
+| UI 批准与引擎实际权限脱节    | 高   | 高   | 产品 proposal 权威；runner 权限 fail-closed              |
+| 多份状态机漂移               | 高   | 高   | 域后端权威 + contract test                               |
+| JSONL 多进程竞争/恢复困难    | 中   | 高   | PG 权威迁移 + spool + 幂等装载                           |
+| token 泄露或 confused deputy | 中   | 高   | audience、短 TTL、独立上游凭据、禁止 passthrough         |
+| 重试风暴/慢依赖级联          | 中   | 高   | timeout、单层 retry budget、circuit breaker、bulkhead    |
+| 前端包过大                   | 高   | 中   | 路由 lazy、重依赖按需加载、体积预算                      |
+| 文档再次漂移                 | 中   | 中   | 状态词、门禁、CI 文档检查、事实/目标分离                 |
 
-### 05.5 引擎运行环境
+## 10. 方案演进
 
-| 阶段 | 执行位置 | 说明 |
-| --- | --- | --- |
-| P0–P1 | 用户本地（开发者机） | Gateway 下发 profile，本机拉起引擎；符合 dsh 设计场景；零沙箱运维成本。 |
-| P2 | 容器 / E2B 云沙箱 | 每会话一次性容器：无网络出站白名单外、只挂载授权仓库、资源限额；Gateway 编排多实例。 |
+| 版本 | 变更                                                                                                              |
+| ---- | ----------------------------------------------------------------------------------------------------------------- |
+| v0.1 | 确立外壳/引擎/协议边界、SDK 驱动流 + MCP 工具流和 P0–P3 路线。                                                    |
+| v0.2 | 修正成熟度；采用模块化单体 + BFF 逻辑边界、Ports & Adapters、产品 proposal 权威、PG 权威迁移、OTel 和门禁式路线。 |
 
-版本策略：dsh 以 npm **精确版本**锁死；SDK 调用收敛在 Gateway 单一 adapter 模块内，上游升级只允许触碰该模块。
-
-## 06 数据模型
-
-| 实体 | 关键字段 | 说明 |
-| --- | --- | --- |
-| `agent_sessions` | id, user_id, org_id, engine_version, profile, status, quota_used, created_at, ended_at | 一次引擎会话；status 见图 2 状态机。 |
-| `agent_runs` | session_id, subject_type, subject_id, prompt_ref, result_ref | 会话与业务对象的关联；subject ∈ {ticket, bug, requirement, repo}。 |
-| `agent_audit_log` | session_id, actor, tool, args_digest, decision, latency, ts | append-only；审计与趋势分析的数据源。 |
-
-```mermaid
-stateDiagram-v2
-    queued --> running: spawn
-    running --> awaiting_permission: 请求权限
-    awaiting_permission --> running: 批准
-    running --> succeeded: 完成（无人工步骤时直达）
-    running --> failed: 引擎崩溃/异常
-    awaiting_permission --> failed: 超时=拒绝
-    running --> cancelled: 用户取消
-
-    awaiting_permission : 前端审批卡 · 超时=拒绝
-```
-
-*图 2 · agent 会话状态机。仅 `awaiting_permission` 需要人；其余路径全自动。failed 会话可由用户重派（新会话，不复活旧进程）。*
-
-## 07 安全设计
-
-| 威胁 | 等级 | 对策 |
-| --- | --- | --- |
-| agent 越权写（跨组织/非法状态） | 高 | scoped PAT 绑定组织与 scope；MCP Server 侧域状态机校验；密钥只在服务端，引擎永不持有。 |
-| 提示注入 → 诱导危险工具调用 | 高 | P1 所有写工具一律人审批（awaiting_permission）；工具白名单按会话下发；无文件系统/网络类危险工具进入目录。 |
-| 引擎进程逃逸 / 供应链风险（alpha 依赖） | 中 | 引擎独立进程 + P2 容器沙箱（出站白名单、只挂授权仓库）；版本精确锁定，adapter 单点升级面。 |
-| 审计缺失 / 事后不可追责 | 中 | `agent_audit_log` append-only：每次工具调用记录 actor=agent-token、参数摘要、权限决定。 |
-| 成本失控（token / 会话数） | 中 | 配额三层面：并发、时长、token 预算；超限 cancel 并在面板明示原因。 |
-
-延续 TechHaven 既有约定（AGENTS.md）：敏感数据内存优先；agent token 不入 localStorage，仅存 Gateway 侧内存与引擎进程环境。
-
-## 08 生命周期与容错
-
-- **正常路径**：派发 → Gateway 校验配额与权限 → spawn 引擎（SDK，profile 下发）→ open session → 发送 prompt（工单上下文 + 目标）→ 事件流回传 → 终态 → dispose 引擎 → 结果回写 `agent_runs`。
-- **引擎崩溃**：进程退出被 Gateway 捕获 → 会话标记 `failed`（含退出码与末条事件）→ 通知用户；重派 = 新会话，禁止复活旧引擎。
-- **连接中断**：前端 WS 断线复用 `notificationWS` 既有指数退避；事件以 `agent_sessions` 为游标补拉，不依赖前端在线。
-- **超时**：审批超时默认拒绝（安全侧倾斜）；会话总时长到限 → cancel + dispose。
-
-## 09 路线图
-
-### P0：PoC · 工具流先行（1–2 周）
-
-后端：agent token 签发（最小实现）+ TechHaven MCP Server（表 §05.3 前 4 个读工具 + `update_ticket_status`）。引擎：手动配置 dsh 挂载 MCP Server，终端演示。
-
-- **交付**：MCP Server 代码 + dsh 配置样例 + 演示录屏。
-
-> **验收**：agent 读取指定工单上下文并完成一次合法状态更新；非法迁移被拒绝并留审计记录。
-
-### P1：核心集成 · 驱动流上线（3–4 周）
-
-Agent Gateway（生命周期/事件桥/审批/配额/审计）；前端会话面板 + 派发入口 + 运行历史（遵循 AGENTS.md 组件流程）；引擎本地执行。写工具全量接入人审批。
-
-- **交付**：可用的端到端体验（工单 → agent → 回写），灰度对象：组织内自愿用户。
-
-> **验收**：一次含权限审批的完整修 bug 会话；前端断线重连后事件补拉无丢失；审计记录完整。
-
-### P2：生产化 · 云沙箱与治理（4–6 周）
-
-容器/E2B 沙箱执行；审批策略分级（只读免审批、写需审批、危险操作目录外禁止）；趋势分析接入 `agent_audit_log`；成本报表。
-
-- **交付**：多组织可用的生产配置 + 运营看板。
-
-> **验收**：沙箱内引擎无白名单外出站；配额超限路径全部可观测。
-
-### P3：收敛选项 · 深度形态评估（按需评估）
-
-仅当出现硬需求（如同运行时低延迟工具调用、深度定制 dsh 内核）时，评估 Cordis 插件寄宿或 patches 路线；否则维持引擎进程形态。
-
-- **交付**：评估备忘录，含升级面与回退方案。
-
-## 10 风险登记
-
-| 风险 | 可能性 | 影响 | 缓解 |
-| --- | --- | --- | --- |
-| dsh alpha 频繁 breaking，SDK 协议变动 | 高 | 中 | 精确版本锁定；adapter 单模块收敛；升级窗口纳入迭代计划，不为追新而升级。 |
-| 后端排期不可控（本方案依赖后端三个新组件） | 高 | 高 | P0 可由前端团队以最小 MCP Server（Node）先行验证；Gateway 拆分为可独立交付的里程碑。 |
-| 多租户安全设计不足导致越权 | 中 | 高 | 写工具默认人审批；scoped PAT + 状态机校验；上线前专项渗透测试（P2 门槛）。 |
-| agent 产出质量不稳定，用户信任受损 | 中 | 中 | 产物回写始终可人工驳回；运行历史透明（含完整事件回放）；失败会话不静默。 |
-| LLM/沙箱成本超预算 | 中 | 中 | 配额三层面 + 按组织计费口径；成本看板随 P2 上线。 |
-
-## 11 附录
-
-### A · dsh 集成面参考（v0.1.2-alpha.1 勘察结论）
-
-| 通道 | 位置（dsh 仓库） | 本方案用途 |
-| --- | --- | --- |
-| SDK（JSON-RPC） | `packages/sdk/protocol · client` | Gateway 拉起与驱动引擎（方向 A） |
-| ACP | `packages/acp/acp` | 编程式会话管理与权限应答（备选，P2 评估） |
-| MCP client | `packages/mcp/mcp-client` | 引擎挂载 TechHaven MCP Server（方向 B） |
-| API Gateway | `docs/api-gateway.md` | 自研 client 的范式参考（不采用其 Web UI，N4） |
-| e2b / sandbox | `packages/e2b · sandbox` | P2 云沙箱执行候选 |
-
-### B · 术语表
-
-| 术语 | 定义 |
-| --- | --- |
-| 外壳 / Shell | TechHaven 自己的产品面：SPA、域后端、品牌与数据模型。 |
-| 引擎 / Engine | dsh 运行时进程，按会话一次性拉起与销毁，对用户不可见。 |
-| 驱动流 | 人 → agent：派发、事件观察、权限审批（经 Gateway 与 WS）。 |
-| 工具流 | agent → 平台：经 MCP Server 的结构化读写（持 agent token）。 |
-| profile / patch | dsh 的命名运行配置与最小补丁集；由 Gateway 统一下发。 |
-| agent token | 绑定单会话/单组织、读写分离的短期 scoped PAT。 |
-
-变更记录：v0.1（2026-08-29）初稿——确立"外壳/引擎/协议边界"架构、六条 ADR、P0–P3 路线。评审通过后升级 **已采纳** 并冻结 ADR。
+架构来源与安全规范集中维护在 `docs/ARCHITECTURE.md`，避免本 RFC 重复一份易漂移的链接清单。

@@ -7,12 +7,26 @@
 ## [Unreleased]
 
 ### 新增
-- Agent 集成（TH-RFC-001，P0–P1 完成、P2 部分完成）：设计文档 `docs/TH-RFC-001-agent-engine.md`；agent 平面数据层 `docs/agent-db/`（schema v0.2 + 语义层种子）。
+- 架构基线 `docs/ARCHITECTURE.md`：采用模块化产品域、Web BFF 逻辑边界、Ports & Adapters、Agent 控制面/执行面分离、服务端 proposal 权威、PostgreSQL 权威迁移和 OpenTelemetry 观测模型。
+- 推进计划 `docs/ROADMAP.md`：以 `planned → implemented → verified-mock → verified-integration → pilot → production` 状态和 R0–R5 退出门禁替代按阶段名称宣布完成。
+- Agent 集成（TH-RFC-001，当前 `implemented + verified-mock`）：决策文档 `docs/TH-RFC-001-agent-engine.md`；agent 数据平面 `docs/agent-db/`（schema v0.2 + 语义层种子）。
 - `services/techhaven-mcp/`：MCP Server（7 工具：get_ticket / list_my_tickets / search_requirements / get_trend_summary / get_semantics / get_proposal / update_ticket_status），agent token（HMAC、单会话+单组织+读写 scope），staged 写提案审批流（提案→人批→应用），审计 JSONL+PG 双写，语义层 mock/DB 双 Provider，dsh 挂载手册（真实 mcp-client 配置，含环境变量剥离陷阱）。
 - `services/techhaven-gateway/`：Agent Gateway——引擎生命周期、HTTP API + SSE 事件桥（Last-Event-ID 回放、慢客户端背压）、权限中继、per-org 配额/空闲看门狗/终态 TTL 淘汰；事件 JSONL→PG 装载器（`npm run load`，幂等）。
 - 前端样例页 `/test/agent-session-panel`（DEV）：Agent 会话面板（事件流/工具卡片/权限审批卡），复用自研组件库；待浏览器确认后集成业务页。
 
+### 新增
+- 根前端单测基线（vitest）：Mermaid 安全严格模式与恶意注入回归、HTTP 1101 未授权状态同步回归（`npm test`）。
+- CI 三 job：root（build + test + 体积预算）、techhaven-mcp（typecheck + smoke）、techhaven-gateway（typecheck + smoke），触发覆盖 master 与 feature/agent-engine。
+- `scripts/check-bundle-size.mjs`：主入口 gzip 体积预算（R0 退出门禁）。
+
 ### 变更
+- `.gitattributes`：`* text=auto eol=lf`，统一行尾与 prettier `endOfLine: "lf"`，消除 Windows 下 Prettier 运行后的全树漂移。
+- Mermaid `securityLevel` 由 `loose` 改为 `strict`（标签内 HTML/脚本不再渲染成可执行标记），配置抽至 `mermaidConfig.ts` 供组件与回归测试共用。
+- README 移除「`src/sample/Input.tsx` 残留 antd icons 阻断构建」说明（已修复并纳入构建回归）。
+- TH-RFC-001 升级至 v0.2，修正此前“P1 完成”的过度表述：当前仅证明 mock/离线闭环，真实前端、产品后端、dsh 和 PostgreSQL 集成仍待验证。
+- 明确生产目标中 PostgreSQL 为 Agent 会话/事件/提案/工具审计的权威存储，JSONL 退为本地 spool、调试导出和有限降级缓冲。
+- 明确产品 proposal/策略引擎是写权限权威；当前 dsh SDK 不支持编程式权限应答时，runner 权限必须 fail-closed。
+- 同步根 README、Agent 服务文档、数据层文档和开发约定中的架构状态与验证边界。
 - `docs/agent-db/schema.sql` v0.2：`agent_write_proposals` 增加 `proposal_ref TEXT UNIQUE` 列。
 
 ## [v1.0.1] - 2026-08-31

@@ -2,6 +2,8 @@
 
 把 TechHaven 的 MCP Server（`services/techhaven-mcp`，stdio）挂到 DeepSeek Harness（dsh）上做端到端演示的操作手册。本文所有 dsh 侧的配置键名、命令、文件路径均摘自 dsh 官方文档原文并逐条标注出处；dsh 文档未提及的能力一律标「文档未提及，未经验证」。
 
+> 状态边界：本文是 mock/离线挂载手册，目标是提升到 `verified-integration`，不代表 live dsh 已跑通。产品架构与权限权威见 [`docs/ARCHITECTURE.md`](../../../docs/ARCHITECTURE.md) 和 [`docs/TH-RFC-001-agent-engine.md`](../../../docs/TH-RFC-001-agent-engine.md)；真实 dsh 门禁见 [`docs/ROADMAP.md`](../../../docs/ROADMAP.md) 的 R2。
+
 配套文件：`dsh-mcp-config.example.yml`（可直接粘贴的挂载配置）。
 
 ---

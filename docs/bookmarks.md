@@ -4,6 +4,8 @@
 对应组件：`src/pages/blog/BookmarksTab.tsx`（外壳 `src/pages/blog/Bookmarks.tsx` 已废弃，仅保留 Tab）。
 共享 mock：`src/pages/blog/mockBlog.ts` 的 `MOCK_ARTICLES` / `BlogArticle`。
 
+> 实现状态：`implemented (local mock)`。收藏夹、稍后读及删除/已读操作都保存在组件内存中；下述接口是目标契约，尚未接入服务层，也未做 live 后端验证。
+
 ## 数据模型
 
 ```ts

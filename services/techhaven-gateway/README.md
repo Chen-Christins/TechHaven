@@ -1,10 +1,13 @@
 # techhaven-gateway
 
-TechHaven Agent Gateway（TH-RFC-001 §05.1）—— 引擎生命周期 / 会话管理 / 事件桥（SSE）/ 权限中继 / 基础配额。
-零运行时依赖起步（`pg` 仅为可选的落库装载器引入），中文注释，TypeScript ESM Node16 strict。
+TechHaven Agent Control Plane 的当前实现：runner 生命周期、会话管理、SSE 事件桥、权限中继和基础配额。
+
+> 当前状态：`implemented + verified-mock`。22 项 mock driver 冒烟通过；前端真实接线、live dsh、live PostgreSQL 和生产沙箱尚未验证。架构见 `../../docs/ARCHITECTURE.md`，决策见 `../../docs/TH-RFC-001-agent-engine.md`，门禁见 `../../docs/ROADMAP.md`。
 
 数据流：`driver.startSession`（后台）→ 事件泵消费 `handle.events()` → 内存缓存 + `gateway.jsonl` 落盘 → SSE 订阅者。
 终态（succeeded / failed / cancelled）后 dispose 引擎句柄并关闭 SSE；空闲超时由看门狗合成 failed 终态——「会话不悬空」。
+
+这是当前 PoC 数据流。目标状态是 PostgreSQL 持久会话/事件/proposal，JSONL 作为 spool；Gateway 只承载控制面，不复制产品域状态机。
 
 ## 快速开始
 
@@ -28,6 +31,8 @@ npm run load         # gateway.jsonl → PostgreSQL 装载（见下「事件落�
 | `TECHHAVEN_DB_URL` | 仅 `npm run load` 消费；网关运行时不读 |
 
 ## JSONL 行格式（`gateway.jsonl`，append-only）
+
+当前 JSONL 是 mock/离线冒烟与装载器的输入。它不提供多进程一致性、在线查询或生产恢复保证；R2 将 PG 提升为权威存储。
 
 | kind | 内容 | 说明 |
 |---|---|---|
@@ -73,7 +78,7 @@ Windows PowerShell 下设置环境变量：`$env:TECHHAVEN_DB_URL = "postgres://
 techhaven-mcp 侧（DB 双写见 `services/techhaven-mcp/src/audit/dbSink.ts`，其 session 维度绑定
 MCP 自有会话与 identity）。gateway 的 permission 行只是「用户应答」的中继留痕，若在本侧再写
 `agent_tool_calls` / `agent_write_proposals` 会造成双份审计与外键语义错位（gateway 侧并无
-args_digest / risk_level / proposal 等权威字段）。审计留痕仍以 JSONL 为准。
+args_digest / risk_level / proposal 等权威字段）。当前审计留痕仍在 JSONL；生产目标由 MCP tool-call/proposal 权威表承担，Gateway permission 行只保留中继关联。
 
 ### 装载目标 ↔ JSONL 来源 ↔ schema 出处（交叉核对表）
 
@@ -88,3 +93,14 @@ args_digest / risk_level / proposal 等权威字段）。审计留痕仍以 JSON
 > 逐列静态核对（按 schema v0.2 口径核对，与 `services/techhaven-mcp/src/proposals/dbSink.ts`
 > 的「schema.sql v0.2」引用一致；schema.sql 文件头仍标注 v0.1，版本号未同步），未在真实实例
 > 上执行过 DDL / 装载。首次上库请先在测试库跑 `schema.sql`，再执行 `npm run load` 验证。
+
+在完成 `../../docs/ROADMAP.md` R2 的迁移、并发、补写和恢复门禁前，不得把 loader 标记为 `verified-integration`。
+
+## 目标演进
+
+- R1：共享事件 contract、前端真实 SSE、服务端 proposal worker、重启恢复；
+- R2：PG 权威、JSONL spool、真实域 API 和 live dsh；
+- R3：单组织本地 runner 试点、OpenTelemetry、runbook；
+- R4：多组织沙箱、bulkhead、retry budget、SLO 和安全门禁。
+
+dsh SDK 的权限应答与取消限制见 `docs/DSH_SDK.md`。产品域写审批由 TechHaven proposal/policy 掌权，不把 dsh `approval/asked` 事件当作授权事实。

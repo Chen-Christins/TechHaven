@@ -1,12 +1,15 @@
-# TechHaven Agent 平面数据层设计
+# TechHaven Agent 数据平面
 
-**输入**：《TDSQL Nexa：面向 Agent 的统一数据平面！》（DTCC 2026 发布解读）+ TH-RFC-001《TechHaven × dsh 集成架构》§06
-**产出**：[`schema.sql`](./schema.sql)（PostgreSQL 14+ DDL）——agent 平面的元数据与治理层
-**相关实现**：`services/techhaven-mcp`（工具流 P0 骨架，含 DB 审计双写）
+**架构基线**：`docs/ARCHITECTURE.md`
+**推进门禁**：`docs/ROADMAP.md` R2
+**产出**：[`schema.sql`](./schema.sql)（PostgreSQL 14+ DDL）与 [`seed-semantics.sql`](./seed-semantics.sql)
+**当前状态**：`implemented`，尚未在 live PostgreSQL 完成 DDL、迁移、并发、恢复和 loader 验证
 
 ## 一句话定位
 
-文章说「Agent = LLM + Context + Tool + Control」。我们的 **Tool** 已由 `services/techhaven-mcp` 实现；本设计补上另外两块的**数据底子**：Control（身份/配额/审计/事前守护）与 Context（mini 语义层）。**域数据不搬**——工单/需求/缺陷仍归产品后端，本层只存元数据，靠 ID 引用。
+本数据平面承载 Agent Control（身份、会话、配额、审批、审计）与 Context（mini 语义层）的元数据。**域数据不搬**：工单、需求、缺陷、用户和组织仍归产品后端，本层只存引用和 Agent 运行事实。
+
+当前实现仍以 JSONL 完成离线 PoC 交接，并可选镜像 PostgreSQL；生产目标相反：PostgreSQL 是会话、事件、提案和工具审计的权威来源，JSONL 只作为本地 spool、调试导出和数据库短时不可用时的有限缓冲。迁移采用双写对账和幂等补写，不允许两个权威源同时接受写。
 
 ## 文章概念 → 本设计的映射
 
@@ -22,7 +25,7 @@
 | **窒息**：脉冲式负载、资源隔离 | 配额四指标（并发/时长/日会话/日调用）+ 引擎一次性进程（架构层） | `agent_quotas` |
 | **进化困难**：克隆/回滚/时光机 | 我们的对应物：写提案未批准=零副作用（天然回滚）+ 事件流可重放 | `agent_write_proposals` `agent_events` |
 | **Agent Memory**（团队记忆 60%→80% 成功率） | 个体/团队两级记忆，团队记忆 = `identity_id IS NULL` | `agent_memory` |
-| LangFuse 案例：Agent Trace 可观测 | `agent_events` 即 Trace，支持会话重放 | `agent_events` |
+| Trace 可观测 | `agent_events` 保存业务事件；分布式 trace 由 OpenTelemetry 承担，两者以 trace ID 关联 | `agent_events` |
 
 ## 明确不做的事（边界）
 
@@ -32,13 +35,13 @@
 
 ## 与 services/techhaven-mcp 的衔接
 
-| 现状（P0 代码） | 本设计就位后 |
+| 当前实现 | R2 目标 |
 |---|---|
-| JSONL 审计（`audit.ts`） | **已实现双写**：`TECHHAVEN_DB_URL` 非空时同步写 `agent_tool_calls`（JSONL 永远保留为降级通道） |
-| CLI 手动签发 token | 台账落 `agent_tokens`（存指纹不存密钥）；签发服务化仍归 P1 Gateway |
-| 状态机直写 | **staged 写模式已实现**（`TECHHAVEN_WRITE_MODE=staged`）：写操作走提案暂存 → 人工 `npm run proposal -- approve` → 应用；**P2 提案落库已实现**：JSONL 事件流仍为权威存储，DB 就绪时镜像 `agent_write_proposals` 表（`proposal_ref` 映射提案字符串 ID） |
-| 工具硬编码 | 注册进 `tool_catalog` + `org_tool_policy` 治理（P2 先以 `TECHHAVEN_WRITE_STAGED_TOOLS` 做分级审批过渡：仅清单内写工具走提案） |
-| agent 只能读物理字段含义 | `get_semantics` 工具：agent 从「猜 schema」变「查口径」；**P2 DB Provider 已实现**（`semantic_*` 表替代 mock），表数据待人工策展 |
+| JSONL 审计（`audit.ts`）+ 可选 PG 双写 | PG `agent_tool_calls` 权威；JSONL 为 spool；按 call ID 幂等补写 |
+| CLI 手动签发 token | `agent_tokens` 只存指纹/jti/状态；签发、吊销和 audience 校验服务化 |
+| staged proposal；批准后由 `get_proposal` 查询触发应用 | PG proposal 权威；批准后由服务端 worker 主动、幂等应用 |
+| `TECHHAVEN_WRITE_STAGED_TOOLS` 环境清单 | `tool_catalog` + `org_tool_policy` 服务端策略 |
+| mock/DB 双 Provider | live PG 策展数据、版本化语义和 contract test |
 
 ## 状态机与约束
 
@@ -46,7 +49,9 @@
 - 写提案 `expires_at` 未决自动过期 = 默认拒绝（安全侧倾斜，同图 2 审批超时语义）。
 - `agent_events (session_id, seq)` 唯一 = 会话内事件可重放、不丢序。
 
-## 保留策略
+## 候选保留策略
+
+以下数值是待法务、隐私、容量和恢复评审的初始候选，不是已上线策略：
 
 | 表 | 保留 | 理由 |
 |---|---|---|
@@ -56,8 +61,21 @@
 | `agent_tokens` | 过期后 30 天 | 台账可核 |
 | `agent_memory` | 按组织治理 | 陈旧经验会误导 agent，靠 `expires_at` |
 
-## 落地顺序建议
+## 落地顺序
 
-1. **P0.5**：后端建表（Control 侧：identities/tokens/sessions/runs/tool_calls），MCP server 双写审计（已实现，设 `TECHHAVEN_DB_URL` 即启用）。
-2. **P1**：`agent_write_proposals` 上线，写工具全部改走审批；Gateway 管理会话生命周期。
-3. **P2**：语义层落库（`semantic_*` 表替代 mock）+ 配额生效；`agent_memory` 团队记忆。
+1. **R0/R1**：冻结事件/proposal/token contract，补齐纯域和 adapter 测试。
+2. **R2.1**：在测试 PostgreSQL 执行 schema、migration、seed、loader 和备份恢复。
+3. **R2.2**：JSONL→PG 双写对账；验证幂等键、并发批准、重复事件和补写。
+4. **R2.3**：切换 PG 为 session/event/proposal/tool-call 权威，JSONL 改 spool；保留回滚开关。
+5. **R3+**：基于实际调用量启用配额、语义策展和保留策略；`agent_memory` 另行风险评审后再启用。
+
+## live PostgreSQL 验收清单
+
+- [ ] `schema.sql` 在空库和已有 v0.1 库均可迁移；
+- [ ] `seed-semantics.sql` 可重复执行或有明确一次性策略；
+- [ ] loader 重跑不产生重复 session/event；
+- [ ] 两个并发批准者只能有一个成功应用 proposal；
+- [ ] 数据库短暂失败时不产生未经审计的域写；
+- [ ] 恢复后 spool 可幂等补写并完成对账；
+- [ ] 备份恢复后 session、event、proposal 和审计关联完整；
+- [ ] 敏感字段、token、prompt 和个人数据保留符合策略。

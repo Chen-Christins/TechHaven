@@ -3,6 +3,8 @@
 入口：管理后台 → 运营管理 → 反馈管理（`/admin/feedbacks`，dev-only）。
 对应组件：`src/pages/admin/FeedbackManagement.tsx`。
 
+> 实现状态：`implemented (client-wired)`。反馈、FAQ 与转换操作已通过 `HelpService` 调用服务端接口，组织选项通过 `OrganizationService` 获取；本轮只核对静态调用链，live 后端、权限和事务一致性仍为 `unverified`。
+
 ## 数据模型
 
 ```ts
@@ -76,6 +78,6 @@ interface FeedbackItem {
 
 ## 备注
 
-- 当前页面使用 mock 数据（`buildMockFeedbacks`），后端接口未实现。
-- 分页、搜索、类型筛选均为前端过滤 mock 数据，待后端接口就绪后替换为服务端分页查询。
+- 反馈列表已使用服务端分页、搜索和类型筛选；FAQ 搜索仍在前端对已加载列表进行过滤。
+- “转 FAQ / 需求 / Bug”依赖服务端保证幂等与事务一致性，进入试点前需按 [`ROADMAP.md`](ROADMAP.md) R2 做 live 集成验证。
 - 支持的反馈类型常量见 `TYPE_LABELS`、`TYPE_OPTIONS`。

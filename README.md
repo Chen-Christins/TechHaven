@@ -19,15 +19,19 @@ TechHaven 是一个面向技术团队的知识与协作平台前端，将技术�
 - 基于 SSE 的流式 AI 摘要。
 - 文章发布审核及后台内容管理。
 
-## Agent 集成（TH-RFC-001）
+## 架构与 Agent 集成
 
-平台在「博客 × 研发」之上引入了 Agent 能力：外壳归 TechHaven、引擎归 dsh、协议（SDK JSON-RPC / MCP）是边界。设计文档与实施现状：
+TechHaven 采用“模块化产品域 + Web BFF 逻辑边界 + Agent 控制面/执行面分离 + Ports & Adapters”。外壳和域数据归 TechHaven，dsh 是可替换 runner，SDK/MCP 是协议边界。
 
-- 设计：`docs/TH-RFC-001-agent-engine.md`（六条 ADR、架构图、路线图 P0–P3）
+- 架构基线：`docs/ARCHITECTURE.md`（当前事实、目标边界、安全、数据、可观测性与测试）
+- 推进计划：`docs/ROADMAP.md`（R0–R5、状态定义、退出门禁与指标）
+- 决策记录：`docs/TH-RFC-001-agent-engine.md`（TH-RFC-001 v0.2）
 - 数据层：`docs/agent-db/schema.sql`（agent 身份/日志/提案/语义/记忆）+ `docs/agent-db/seed-semantics.sql`（语义层种子数据）
-- `services/techhaven-mcp/`——MCP Server（工具流）：7 个工具（6 读 1 写）、agent token、staged 写提案审批流、审计 JSONL+PG 双写、语义层 mock/DB 双 Provider；含真实 dsh 挂载手册（`dsh/ATTACH.md`），`npm run smoke` 两套冒烟（9+11 项）
-- `services/techhaven-gateway/`——Agent Gateway（驱动流）：引擎生命周期、HTTP API + SSE 事件桥、权限中继、配额/看门狗/TTL；事件 JSONL→PG 装载器（`npm run load`）；`npm run smoke` 22 项
-- 前端：`/test/agent-session-panel`（DEV，`src/sample/AgentSessionPanel.tsx`）——会话面板样例页，走 AGENTS.md 组件流程，**待浏览器确认后集成业务页**
+- `services/techhaven-mcp/`：7 个工具（6 读 1 写）、scoped token、staged proposal、状态机、JSONL 审计与可选 PG 镜像；direct/staged mock smoke 为 9+11 项。
+- `services/techhaven-gateway/`：runner adapter、HTTP/SSE、配额、看门狗、事件 JSONL 与 PG loader；mock driver smoke 为 22 项。
+- 前端 `/test/agent-session-panel`：DEV 样例页，**仍是本地 mock，未连接真实 Gateway**。
+
+当前准确成熟度：Agent 工具面和控制面已 `implemented + verified-mock`；真实产品后端、live dsh、live PostgreSQL、前端真实接线和多租户沙箱尚未达到 `verified-integration`。禁止把 mock 冒烟表述为生产完成。
 
 ### 社区互动
 
@@ -103,6 +107,18 @@ npm run dev
 ```
 
 启动后以 Vite 输出的本地地址为准。
+
+Agent 子项目分别安装依赖和验证：
+
+```bash
+cd services/techhaven-mcp
+npm ci && npm run typecheck && npm run smoke
+
+cd ../techhaven-gateway
+npm ci && npm run typecheck && npm run smoke
+```
+
+> R0 稳定基线已落地：根 `npm run build` / `npm test`（vitest）与两个 Agent 服务的 typecheck + smoke 均纳入 CI（`.github/workflows/ci.yml`）；`scripts/check-bundle-size.mjs` 检查主入口 gzip 体积预算。
 
 ## 环境变量
 
