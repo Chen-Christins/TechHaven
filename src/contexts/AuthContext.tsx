@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react";
 import { AuthService } from "../services/authService";
-import { tokenManager, getTokenFromCookie } from "../utils/http";
+import { tokenManager, getTokenFromCookie, setUnauthorizedHandler } from "../utils/http";
 import { notificationWS } from "../utils/websocket";
 import { setFaviconBadge } from "../utils/favicon";
 import { resetNotificationState } from "../utils/notificationState";
@@ -77,6 +77,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     resetNotificationState();
     setFaviconBadge(0);
   };
+
+  // 用 ref 持有最新实现，避免注册一次的 effect 捕获到过期的清理函数
+  const clearAuthRuntimeStateRef = useRef(clearAuthRuntimeState);
+  clearAuthRuntimeStateRef.current = clearAuthRuntimeState;
+
+  // 把登录态清理注册给 HTTP 层：收到 1101 时同步清空 AuthContext，
+  // 避免只清 tokenManager 导致「UI 显示已登录但请求全部失败」的状态分裂
+  useEffect(() => {
+    setUnauthorizedHandler(() => clearAuthRuntimeStateRef.current());
+    return () => setUnauthorizedHandler(null);
+  }, []);
 
   // 初始化认证状态
   useEffect(() => {
