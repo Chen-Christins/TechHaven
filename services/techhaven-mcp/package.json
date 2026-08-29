@@ -20,6 +20,7 @@
     "@modelcontextprotocol/sdk": "^1.17.0",
     "hashids": "^2.3.0",
     "pg": "^8.13.1",
+    "techhaven-contracts": "file:../../contracts",
     "zod": "^3.25.76"
   },
   "devDependencies": {

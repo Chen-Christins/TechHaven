@@ -16,7 +16,8 @@
     "smoke": "npm run build && tsx src/smoke.ts"
   },
   "dependencies": {
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "techhaven-contracts": "file:../../contracts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

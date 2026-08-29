@@ -20,7 +20,9 @@ import { log } from "../log.js";
  */
 
 /** 提案状态：pending → approved → applied；或 pending → rejected / expired（未决过期 = 默认拒绝） */
-export type ProposalStatus = "pending" | "approved" | "rejected" | "applied" | "expired";
+/** 提案状态单源：techhaven-contracts（控制面共享契约，见根 contracts/README.md） */
+import type { ProposalStatus } from "techhaven-contracts";
+export type { ProposalStatus };
 
 /** 单条提案的当前全量快照（created 事件携带，后续事件只改状态不改内容） */
 export interface ProposalDetail {

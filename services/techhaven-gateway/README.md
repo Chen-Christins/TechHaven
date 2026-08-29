@@ -5,6 +5,7 @@ TechHaven Agent Control Plane 的当前实现：runner 生命周期、会话管�
 > 当前状态：`implemented + verified-mock`。22 项 mock driver 冒烟通过；前端真实接线、live dsh、live PostgreSQL 和生产沙箱尚未验证。架构见 `../../docs/ARCHITECTURE.md`，决策见 `../../docs/TH-RFC-001-agent-engine.md`，门禁见 `../../docs/ROADMAP.md`。
 
 数据流：`driver.startSession`（后台）→ 事件泵消费 `handle.events()` → 内存缓存 + `gateway.jsonl` 落盘 → SSE 订阅者。
+SSE 数据帧为**事件信封**（`EventEnvelope`，`id:`=seq，data 含 schemaVersion/eventId/sessionId/orgId/seq/type/occurredAt/traceId/payload，见仓库根 `contracts/` 与 TH-RFC-001 §6）；JSONL 行仍存引擎事件原始形态。
 终态（succeeded / failed / cancelled）后 dispose 引擎句柄并关闭 SSE；空闲超时由看门狗合成 failed 终态——「会话不悬空」。
 
 这是当前 PoC 数据流。目标状态是 PostgreSQL 持久会话/事件/proposal，JSONL 作为 spool；Gateway 只承载控制面，不复制产品域状态机。
@@ -99,6 +100,7 @@ args_digest / risk_level / proposal 等权威字段）。当前审计留痕仍�
 ## 目标演进
 
 - R1：共享事件 contract、前端真实 SSE、服务端 proposal worker、重启恢复；
+（R1 进度 2026-08-29：共享契约包 `contracts/` 与 SSE 信封化已完成并冒烟；前端真实 SSE、proposal worker、重启恢复进行中）
 - R2：PG 权威、JSONL spool、真实域 API 和 live dsh；
 - R3：单组织本地 runner 试点、OpenTelemetry、runbook；
 - R4：多组织沙箱、bulkhead、retry budget、SLO 和安全门禁。

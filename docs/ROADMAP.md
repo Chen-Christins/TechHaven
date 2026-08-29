@@ -71,6 +71,12 @@
 
 ### R1：契约与真实控制面接线（预计 2–3 周）
 
+> **R1 进度（2026-08-29）**：共享契约包 `contracts/`（类型单源：引擎事件/事件信封/会话/提案/API 形态，
+> 双服务经 `file:../../contracts` 消费并过 typecheck+smoke）；Gateway SSE 已升级为事件信封
+> （schemaVersion/eventId/sessionId/orgId/seq/type/occurredAt/traceId/payload，TH-RFC-001 §6）。
+> **剩余**：前端 Gateway client（SSE 续传/取消/审批）与面板接线、proposal 服务端 worker（见 ADR-04 迁移）、
+> 断线/重启恢复门禁验证。
+
 目标：前端通过稳定契约使用真实 Gateway，但仍可选择 mock driver。
 
 工作项：

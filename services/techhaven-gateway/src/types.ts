@@ -1,18 +1,32 @@
 /**
  * 引擎驱动接口契约（TH-RFC-001 §05.1）。
- * 本文件为 Gateway 与引擎驱动（drivers/mock.ts 以及另一位同事交付的 drivers/dsh.ts）
- * 的共享契约：以下定义逐字冻结，改动需双方同步评审。
+ *
+ * 类型单源已迁移至 `techhaven-contracts`（仓库根契约包，见 contracts/README.md）：
+ * 本文件仅保留重导出与「逐字冻结」的说明。跨驱动（mock / dsh）与 Gateway、
+ * SPA 消费的引擎事件 / 事件信封 / 会话视图 / API 形态都以契约包为准。
  */
 
-export type SessionStatus = "queued" | "running" | "awaiting_permission" | "succeeded" | "failed" | "cancelled";
+import type { EngineEvent, EventEnvelope } from "techhaven-contracts";
 
-export type EngineEvent =
-  | { type: "assistant_chunk"; seq: number; ts: string; text: string }
-  | { type: "tool_call";      seq: number; ts: string; tool: string; argsDigest: string; args?: unknown }
-  | { type: "tool_result";    seq: number; ts: string; tool: string; ok: boolean; summary?: string }
-  | { type: "permission_request"; seq: number; ts: string; requestId: string; tool: string; reason?: string }
-  | { type: "status_change";  seq: number; ts: string; status: SessionStatus; detail?: string }
-  | { type: "error";          seq: number; ts: string; message: string };
+export type {
+  SessionStatus,
+  EngineEvent,
+  EngineEventPayload,
+  EventEnvelope,
+  SessionView,
+  CreateSessionRequest,
+  CreateSessionResponse,
+  ListSessionsResponse,
+  SessionDetailResponse,
+  AnswerPermissionRequest,
+  OkResponse,
+  ErrorEnvelope,
+  ProposalStatus,
+  ProposalLifecycleEvent,
+} from "techhaven-contracts";
+
+/** 引擎事件载荷的荷载形状不可变：driver 输出 → 信封 payload 的直接来源 */
+// 契约包里的 EngineEvent/EventEnvelope 定义为唯一事实源，改动需双方同步评审（见 contracts/README.md）。
 
 export interface EngineSessionHandle {
   events(): AsyncIterable<EngineEvent>;                       // 会话全量事件流（含历史回放）

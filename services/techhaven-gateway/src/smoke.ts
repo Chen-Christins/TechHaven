@@ -10,7 +10,7 @@ import { spawn } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { EngineEvent } from "./types.js";
+import type { EventEnvelope } from "./types.js";
 
 const PORT = 3097;
 const TOKEN = "smoke-token";
@@ -78,7 +78,7 @@ async function waitReady(timeoutMs = 10_000): Promise<boolean> {
 }
 
 interface SseItem {
-  event?: EngineEvent;
+  event?: EventEnvelope;
   end?: boolean;
 }
 
@@ -129,7 +129,7 @@ class SseReader {
           this.eventName = null;
           this.dataLines = [];
           if (name === "end") return { end: true };
-          if (payload) return { event: JSON.parse(payload) as EngineEvent };
+          if (payload) return { event: JSON.parse(payload) as EventEnvelope };
         }
         continue; // 其余行（如 id:）忽略
       }
@@ -139,8 +139,6 @@ class SseReader {
     }
   }
 }
-
-type PermissionRequestEvent = Extract<EngineEvent, { type: "permission_request" }>;
 
 async function main(): Promise<void> {
   const failures: string[] = [];
@@ -201,26 +199,26 @@ async function main(): Promise<void> {
     );
     const reader = new SseReader(sseRes);
     sse = reader;
-    const seen: EngineEvent[] = [];
-    let perm: PermissionRequestEvent | undefined;
-    while (!perm) {
+    const seen: EventEnvelope[] = [];
+    let permRequestId: string | undefined;
+    while (!permRequestId) {
       const item = await withTimeout(reader.next(), 15_000, "等待 permission_request");
       if (item.end) break;
       if (!item.event) continue;
       seen.push(item.event);
-      if (item.event.type === "permission_request") perm = item.event;
+      if (item.event.type === "permission_request") permRequestId = item.event.payload.requestId;
     }
     check("SSE 见到 assistant_chunk", seen.some((e) => e.type === "assistant_chunk"), JSON.stringify(seen.map((e) => e.type)));
     check(
       "SSE 见到 tool_call mcp__techhaven__get_ticket",
-      seen.some((e) => e.type === "tool_call" && e.tool === "mcp__techhaven__get_ticket"),
+      seen.some((e) => e.type === "tool_call" && e.payload.tool === "mcp__techhaven__get_ticket"),
       JSON.stringify(seen.map((e) => e.type)),
     );
-    check("SSE 收到 permission_request", perm !== undefined, JSON.stringify(seen.map((e) => e.type)));
+    check("SSE 收到 permission_request", permRequestId !== undefined, JSON.stringify(seen.map((e) => e.type)));
 
     // 4. 审批通过 → 读到 succeeded → 流以 event: end 收尾
     const approved = await api("POST", `/v1/sessions/${sid}/permission`, {
-      body: { requestId: perm?.requestId ?? "", decision: "approve" },
+      body: { requestId: permRequestId ?? "", decision: "approve" },
     });
     check("POST permission approve → 200 ok", approved.status === 200 && approved.json?.ok === true, JSON.stringify(approved.json));
     let succeeded = false;
@@ -231,7 +229,7 @@ async function main(): Promise<void> {
         streamEnded = true;
         break;
       }
-      if (item.event?.type === "status_change" && item.event.status === "succeeded") succeeded = true;
+      if (item.event?.type === "status_change" && item.event.payload.status === "succeeded") succeeded = true;
     }
     check("approve 后收到 status_change succeeded", succeeded);
     const tail = streamEnded ? { end: true } : await withTimeout(reader.next(), 15_000, "等待 event: end");
@@ -273,7 +271,7 @@ async function main(): Promise<void> {
     check("JSONL 含本会话 event 行", lines.some((l) => l.includes('"kind":"event"') && l.includes(sid)));
     check(
       "JSONL 含 permission 审计行",
-      lines.some((l) => l.includes('"kind":"permission"') && (perm ? l.includes(perm.requestId) : false)),
+      lines.some((l) => l.includes('"kind":"permission"') && (permRequestId ? l.includes(permRequestId) : false)),
     );
   } catch (err) {
     failures.push(String(err));

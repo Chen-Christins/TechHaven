@@ -11,8 +11,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Config } from "./config.js";
 import { log } from "./log.js";
 import { isRecord } from "./util.js";
-import { GatewayError, sessionView, type SessionEventSubscriber, type SessionRecord, type SessionRegistry } from "./sessions.js";
-import type { EngineEvent } from "./types.js";
+import { GatewayError, sessionView, toEnvelopeJson, type SessionEventSubscriber, type SessionRecord, type SessionRegistry } from "./sessions.js";
 
 /** 请求体上限 1MB */
 const MAX_BODY_BYTES = 1024 * 1024;
@@ -113,11 +112,6 @@ function parseCreateBody(body: unknown): { orgId: number; subjectType?: string; 
   };
 }
 
-/** SSE 帧构造（缓存回放路径用；实时路径的帧串由 registry 序列化一次后复用） */
-function sseFrame(ev: EngineEvent): string {
-  return `id: ${ev.seq}\ndata: ${JSON.stringify(ev)}\n\n`;
-}
-
 /** GET /v1/sessions/:sid/events —— SSE 事件桥 */
 function handleEventsStream(req: IncomingMessage, url: URL, record: SessionRecord, registry: SessionRegistry, res: ServerResponse): void {
   const afterRaw = url.searchParams.get("after");
@@ -159,7 +153,7 @@ function handleEventsStream(req: IncomingMessage, url: URL, record: SessionRecor
 
   // 1) 先补发 seq>after 的缓存事件，再订阅 —— 两步之间无 await，单线程下不会漏事件
   for (const ev of record.events) {
-    if (ev.seq > after) writeFrame(sseFrame(ev));
+    if (ev.seq > after) writeFrame(`id: ${ev.seq}\ndata: ${toEnvelopeJson(record, ev)}\n\n`);
   }
 
   let closed = false;

@@ -13,7 +13,25 @@ import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { log } from "./log.js";
 import { errorMessage, nowIso } from "./util.js";
-import type { EngineDriver, EngineEvent, EngineSessionHandle, SessionStatus } from "./types.js";
+import type { EngineDriver, EngineEvent, EngineEventPayload, EngineSessionHandle, EventEnvelope, SessionStatus } from "./types.js";
+
+/** 事件信封（TH-RFC-001 §6）：seq/type/occurredAt 上提，payload 保留事件其余字段；SSE 数据帧装信封，JSONL 仍装引擎事件 */
+export function toEnvelopeJson(record: SessionRecord, ev: EngineEvent): string {
+  const { seq, type, ts, ...payload } = ev;
+  // type ↔ payload 的关联来自同一个 ev（构造不变量），离散联合的关联性由约定保证
+  const envelope = {
+    schemaVersion: 1,
+    eventId: `${record.sid}:${seq}`,
+    sessionId: record.sid,
+    orgId: record.orgId,
+    seq,
+    type,
+    occurredAt: ts,
+    traceId: "",
+    payload: payload as EngineEventPayload,
+  } as EventEnvelope;
+  return JSON.stringify(envelope);
+}
 
 /** 带 HTTP 语义的业务错误（http.ts 统一映射为 {error}） */
 export class GatewayError extends Error {
@@ -372,7 +390,7 @@ export class SessionRegistry {
     insertBySeq(record, ev);
     // 每事件只 JSON.stringify 一次：eventJson 复用于 SSE 帧串与 JSONL 行串各一份，分发不再逐订阅者序列化
     const eventJson = JSON.stringify(ev);
-    const frame = `id: ${ev.seq}\ndata: ${eventJson}\n\n`;
+    const frame = `id: ${ev.seq}\ndata: ${toEnvelopeJson(record, ev)}\n\n`;
     this.appendJsonl(`{"kind":"event","sid":${JSON.stringify(record.sid)},"event":${eventJson}}`);
     // 看门狗：任何事件都证明会话活跃，重置空闲计时
     this.resetIdleTimer(record);
