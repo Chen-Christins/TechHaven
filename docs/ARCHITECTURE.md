@@ -21,17 +21,17 @@
 
 - React 19 + TypeScript + Vite SPA，包含博客、社区、组织、作业、研发平台和管理后台。
 - HTTP Service 层、Auth/Theme/Layout/SiteSettings/RdOrg Context、自研 UI 组件库、通知 WebSocket。
-- `services/techhaven-mcp`：7 个 MCP 工具、session/org/scope 绑定 token、状态机、direct/staged 写、JSONL 审计、可选 PostgreSQL 镜像。
-- `services/techhaven-gateway`：mock/dsh driver adapter、HTTP API、SSE 回放、权限中继、配额、看门狗、JSONL 事件和 PostgreSQL 装载器。
-- Agent 数据 schema v0.2 与语义层种子。
+- `services/techhaven-mcp`：7 个 MCP 工具、session/org/scope 绑定 token、状态机、direct/staged 写，以及可切换的 JSONL/PG proposal repository。
+- `services/techhaven-gateway`：mock/dsh driver adapter、HTTP API、SSE 回放、权限中继、配额、看门狗，以及 JSONL/PG session-event 权威适配器。
+- Agent 数据 schema v0.3、v0.2→v0.3 migration、语义层种子、loader、对账与环境门控 PG smoke。
 
 ### 2.2 尚未完成或未验证
 
-- 前端 Agent 会话面板仍由本地 mock 剧本驱动，未连接 Gateway。
+- 前端 Agent 会话面板已实现本地 mock 与 `?driver=gateway` 双路径，并具备 SSE 事件信封消费、同页断线续传、标签页刷新后同 SID 全量回放、取消与审批调用；浏览器到本机 Gateway(mock runner) 的创建/刷新/批准/拒绝及 Gateway 强制重启自动续传已实测。它仍是 DEV 样例页，不等于真实 dsh/产品后端集成。
 - MCP `http` 模式尚未与真实产品后端完成凭据、状态机和趋势接口联调。
 - dsh driver 仅按 v0.1.2-alpha.1 契约静态实现，未做 live dsh 端到端验证；该 SDK 线协议当前不能编程式应答权限，也不能取消单个在途 turn。
-- PostgreSQL schema、事件装载、语义 Provider 和提案镜像尚未在真实 PostgreSQL 实例完成 DDL、迁移、恢复和并发验证。
-- 根前端当前正式 `npm run build` 被残留的 `@ant-design/icons` 导入阻断；自动化测试和 Agent 服务 CI 尚未建立。
+- PostgreSQL 权威代码已实现，但本机无可用实例；DDL、迁移、loader、并发与恢复尚未取得 live PostgreSQL 证据。
+- 根前端构建、Vitest 安全/认证回归、路由分包与三 job CI 已建立；干净 checkout 的 CI 结果仍是发布门禁的一部分。
 
 因此，当前 Agent 能力的准确成熟度是：**离线 PoC 闭环通过，真实集成尚未完成**。
 
@@ -161,10 +161,12 @@ MCP 是产品域的 anti-corruption layer 和工具 adapter：
 
 当前 JSONL 适合离线 PoC 和故障取证，但不适合作为多进程审批与生产查询的权威存储。目标状态：
 
-- PostgreSQL：`agent_sessions`、`agent_events`、`agent_write_proposals`、`agent_tool_calls` 的权威来源；
+- PostgreSQL：authoritative 模式下 `agent_sessions`、`agent_events`、`agent_write_proposals` 的权威来源；`agent_tool_calls` 仍处于镜像迁移阶段；
 - JSONL：本地 write-ahead spool、调试导出和数据库暂时不可用时的有限缓冲；
 - 数据库恢复后通过幂等装载补写，按 `sid + seq`、`proposal_ref`、`call_id` 去重；
 - 迁移期执行双写比对，但不允许两个方向同时接受写入。
+
+当前实现的 fail-closed 约束：Gateway 事件在 PG 提交后才进入内存/SSE，组织配额由 advisory transaction lock 串行化；MCP proposal 在事务行锁内完成批准与 worker 应用。JSONL 兼容模式仍用于离线 mock，不等于多实例保证。
 
 ### 5.2 事件信封
 
@@ -187,7 +189,8 @@ MCP 是产品域的 anti-corruption layer 和工具 adapter：
 约束：
 
 - `seq` 在会话内严格递增，数据库唯一约束防重；
-- SSE `Last-Event-ID` 与 `seq` 对齐；客户端按 event ID 幂等消费；
+- SSE `Last-Event-ID` 与 `seq` 对齐；客户端在信任边界校验 EventEnvelope，并按 `sid + seq` 幂等消费；
+- PoC 单实例重启从 JSONL 重建历史事件；终态延续剩余 TTL，无法恢复 runner 句柄的活动会话明确追加 failed，原始 prompt 不落日志并以占位文本返回；
 - payload 只新增可选字段；破坏性变更提升 `schemaVersion`；
 - token、完整 prompt、密钥和不必要的个人数据不得进入事件或日志。
 

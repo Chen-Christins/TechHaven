@@ -23,3 +23,14 @@ dist-ssr
 *.sln
 *.sw?
 .vscode
+
+# Local agent / assistant tooling (never commit)
+.agent/
+.agents/
+.claude/
+.codex/
+AGENTS.md
+CLAUDE.md
+
+# Local release checklist generated during pre-push verification
+ship-log.md

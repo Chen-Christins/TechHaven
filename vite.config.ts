@@ -4,103 +4,113 @@ import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, process.cwd(), "");
-    const apiTarget = env.VITE_API_BASE_URL || "http://127.0.0.1:8088";
+  const env = loadEnv(mode, process.cwd(), "");
+  const apiTarget = env.VITE_API_BASE_URL || "http://127.0.0.1:8088";
 
-    const timeStamp = () => {
-      const d = new Date();
-      const ns = process.hrtime()[1];
-      const us = Math.floor(ns / 1000)
-        .toString()
-        .padStart(6, "0");
-      return `[${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}.${us}]`;
-    };
+  const timeStamp = () => {
+    const d = new Date();
+    const ns = process.hrtime()[1];
+    const us = Math.floor(ns / 1000)
+      .toString()
+      .padStart(6, "0");
+    return `[${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}.${us}]`;
+  };
 
-    return {
-        plugins: [react()],
-        resolve: {
-            alias: {
-                "@": path.resolve(__dirname, "src"),
-            },
+  return {
+    plugins: [react()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "src"),
+      },
+    },
+    server: {
+      host: true,
+      proxy: {
+        // SSE 流式端点 — 必须放在通用 /api/v1 规则之前
+        "^/api/v1/article/ai-summary": {
+          target: apiTarget,
+          changeOrigin: true,
+          secure: false,
+          timeout: 120000,
+          configure: (proxy) => {
+            proxy.on("error", (err, _req, _res) => {
+              console.log(timeStamp(), "SSE代理错误:", err.message);
+            });
+            proxy.on("proxyReq", (_proxyReq, req) => {
+              console.log(timeStamp(), "SSE代理请求:", req.method, req.url);
+            });
+            proxy.on("proxyRes", (proxyRes, req) => {
+              console.log(
+                timeStamp(),
+                "SSE代理响应:",
+                proxyRes.statusCode,
+                req.url,
+                "| CT:",
+                proxyRes.headers["content-type"],
+                "| TE:",
+                proxyRes.headers["transfer-encoding"],
+              );
+              // 不改动 socket/stream，让 http-proxy 自动 pipe
+            });
+          },
         },
-        server: {
-            host: true,
-            proxy: {
-                // SSE 流式端点 — 必须放在通用 /api/v1 规则之前
-                "^/api/v1/article/ai-summary": {
-                    target: apiTarget,
-                    changeOrigin: true,
-                    secure: false,
-                    timeout: 120000,
-                    configure: (proxy) => {
-                        proxy.on("error", (err, _req, _res) => {
-                            console.log(timeStamp(), "SSE代理错误:", err.message);
-                        });
-                        proxy.on("proxyReq", (_proxyReq, req) => {
-                            console.log(timeStamp(), "SSE代理请求:", req.method, req.url);
-                        });
-                        proxy.on("proxyRes", (proxyRes, req) => {
-                            console.log(timeStamp(), "SSE代理响应:", proxyRes.statusCode, req.url,
-                                "| CT:", proxyRes.headers["content-type"],
-                                "| TE:", proxyRes.headers["transfer-encoding"]);
-                            // 不改动 socket/stream，让 http-proxy 自动 pipe
-                        });
-                    },
-                },
-                // Gateway 代理（R1 接线）：浏览器只发相对路径 /gateway/*，Authorization 由代理注入，
-                // 浏览器不持有网关管理 token（ARCHITECTURE §6；生产由 Web BFF 承担同一职责）
-                "^/gateway": {
-                    target: env.VITE_GATEWAY_URL || "http://127.0.0.1:3091",
-                    changeOrigin: true,
-                    secure: false,
-                    headers: {
-                        authorization: `Bearer ${env.VITE_GATEWAY_TOKEN || ""}`,
-                    },
-                    // 剥掉 /gateway 前缀：网关只识别 /v1/sessions 等路径
-                    rewrite: (path) => path.replace(/^\/gateway/, ""),
-                    configure: (proxy) => {
-                        proxy.on("error", (err, _req, _res) => {
-                            console.log(timeStamp(), "网关代理错误:", err.message);
-                        });
-                    },
-                },
-                "^/api/v1": {
-                    target: apiTarget,
-                    changeOrigin: true,
-                    secure: false,
-                    configure: (proxy, _options) => {
-                        proxy.on("error", (err, _req, _res) => {
-                            console.log(timeStamp(), "代理错误:", err);
-                        });
-                        proxy.on("proxyReq", (proxyReq, req, _res) => {
-                            console.log(timeStamp(), "代理请求:", req.method, req.url, "→ 转发到:", proxyReq.path);
-                        });
-                        proxy.on("proxyRes", (proxyRes, req, _res) => {
-                            console.log(timeStamp(), "代理响应:", proxyRes.statusCode, req.url);
-                        });
-                    },
-                },
-                "^/file(.*)": {
-                    target: apiTarget,
-                    changeOrigin: true,
-                    secure: false,
-                    timeout: 100000,
-                    agent: false,
-                    configure: (proxy, _options) => {
-                        proxy.on("error", (err, _req, _res) => {
-                            console.log(timeStamp(), "文件代理错误:", err);
-                        });
-                        proxy.on("proxyReq", (proxyReq, req, _res) => {
-                            console.log(timeStamp(), "文件代理请求:", req.method, req.url, "→ 转发到:", proxyReq.path);
-                            // 设置连接保持活跃
-                            proxyReq.setHeader("Connection", "keep-alive");
-                        });
-                        proxy.on("proxyRes", (proxyRes, req, _res) => {
-                            console.log(timeStamp(), "文件代理响应:", proxyRes.statusCode, req.url);
-                        });
-                    },
-                },
-            },
+        // Gateway 代理（R1 接线）：浏览器只发相对路径 /gateway/*，Authorization 由代理注入，
+        // 浏览器不持有网关管理 token（ARCHITECTURE §6；生产由 Web BFF 承担同一职责）
+        "^/gateway": {
+          target: env.VITE_GATEWAY_URL || "http://127.0.0.1:3091",
+          changeOrigin: true,
+          secure: false,
+          headers: {
+            authorization: `Bearer ${env.TECHHAVEN_GATEWAY_PROXY_TOKEN || ""}`,
+          },
+          // 剥掉 /gateway 前缀：网关只识别 /v1/sessions 等路径
+          rewrite: (path) => path.replace(/^\/gateway/, ""),
+          configure: (proxy) => {
+            proxy.on("error", (err, _req, res) => {
+              console.log(timeStamp(), "网关代理错误:", err.message);
+              // 上游 SSE 被重启/重置时必须结束浏览器侧响应，否则 fetch reader 会永久悬挂，
+              // AgentGatewayClient 无法进入 after=<lastSeq> 重连分支。生产 BFF 需保持同一语义。
+              res.destroy();
+            });
+          },
         },
-    };
+        "^/api/v1": {
+          target: apiTarget,
+          changeOrigin: true,
+          secure: false,
+          configure: (proxy, _options) => {
+            proxy.on("error", (err, _req, _res) => {
+              console.log(timeStamp(), "代理错误:", err);
+            });
+            proxy.on("proxyReq", (proxyReq, req, _res) => {
+              console.log(timeStamp(), "代理请求:", req.method, req.url, "→ 转发到:", proxyReq.path);
+            });
+            proxy.on("proxyRes", (proxyRes, req, _res) => {
+              console.log(timeStamp(), "代理响应:", proxyRes.statusCode, req.url);
+            });
+          },
+        },
+        "^/file(.*)": {
+          target: apiTarget,
+          changeOrigin: true,
+          secure: false,
+          timeout: 100000,
+          agent: false,
+          configure: (proxy, _options) => {
+            proxy.on("error", (err, _req, _res) => {
+              console.log(timeStamp(), "文件代理错误:", err);
+            });
+            proxy.on("proxyReq", (proxyReq, req, _res) => {
+              console.log(timeStamp(), "文件代理请求:", req.method, req.url, "→ 转发到:", proxyReq.path);
+              // 设置连接保持活跃
+              proxyReq.setHeader("Connection", "keep-alive");
+            });
+            proxy.on("proxyRes", (proxyRes, req, _res) => {
+              console.log(timeStamp(), "文件代理响应:", proxyRes.statusCode, req.url);
+            });
+          },
+        },
+      },
+    },
+  };
 });

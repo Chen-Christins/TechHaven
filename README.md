@@ -19,6 +19,8 @@ TechHaven 是一个面向技术团队的知识与协作平台前端，将技术�
 - 基于 SSE 的流式 AI 摘要。
 - 文章发布审核及后台内容管理。
 
+> 项目还封装了完整的自定义 UI 组件库（`src/components/`），业务开发时应优先复用现有组件与 CSS 变量。
+
 ## 架构与 Agent 集成
 
 TechHaven 采用“模块化产品域 + Web BFF 逻辑边界 + Agent 控制面/执行面分离 + Ports & Adapters”。外壳和域数据归 TechHaven，dsh 是可替换 runner，SDK/MCP 是协议边界。
@@ -26,12 +28,18 @@ TechHaven 采用“模块化产品域 + Web BFF 逻辑边界 + Agent 控制面/�
 - 架构基线：`docs/ARCHITECTURE.md`（当前事实、目标边界、安全、数据、可观测性与测试）
 - 推进计划：`docs/ROADMAP.md`（R0–R5、状态定义、退出门禁与指标）
 - 决策记录：`docs/TH-RFC-001-agent-engine.md`（TH-RFC-001 v0.2）
-- 数据层：`docs/agent-db/schema.sql`（agent 身份/日志/提案/语义/记忆）+ `docs/agent-db/seed-semantics.sql`（语义层种子数据）
-- `services/techhaven-mcp/`：7 个工具（6 读 1 写）、scoped token、staged proposal、状态机、JSONL 审计与可选 PG 镜像；direct/staged mock smoke 为 9+11 项。
-- `services/techhaven-gateway/`：runner adapter、HTTP/SSE、配额、看门狗、事件 JSONL 与 PG loader；mock driver smoke 为 22 项。
-- 前端 `/test/agent-session-panel`：DEV 样例页。默认本地 mock；追加 `?driver=gateway` 经 Vite 代理接本机 Gateway（`services/techhaven-gateway`，mock 驱动引擎；鉴权头由代理注入，浏览器不持有网关 token）。客户端见 `src/services/agentGatewayClient.ts`，契约见 `contracts/`。
+- 数据层：`docs/agent-db/schema.sql`（schema v0.3）+ v0.2→v0.3 migration + 语义层种子数据。
+- `services/techhaven-mcp/`：7 个工具、scoped token、staged proposal、JSONL/PG 可切换权威 repository；direct/staged/HTTP contract smoke 为 9+11+6 项，另有环境门控 PG 并发 smoke。
+- `services/techhaven-gateway/`：runner adapter、HTTP/SSE、配额、JSONL/PG session-event 权威、loader 与 reconcile；mock driver smoke 为 35 项，另有环境门控 PG 恢复 smoke。
+- 前端 `/test/agent-session-panel`：DEV 样例页。默认本地 mock；追加 `?driver=gateway` 经 Vite 代理接本机 Gateway（`services/techhaven-gateway`，mock 驱动引擎；鉴权头由代理注入，浏览器不持有网关 token）。活动 SID 在单标签页会话内做轻量检查点，刷新后查询同一会话并全量回放 UI；同页网络断线则按 `after=<lastSeq>` 增量续传。客户端见 `src/services/agentGatewayClient.ts`，契约见 `contracts/`。
 
-当前准确成熟度：Agent 工具面和控制面已 `implemented + verified-mock`；真实产品后端、live dsh、live PostgreSQL、前端真实接线和多租户沙箱尚未达到 `verified-integration`。禁止把 mock 冒烟表述为生产完成。
+当前准确成熟度：Agent 工具面、控制面和 DEV Agent 面板已 `implemented + verified-mock`；PG 权威、并发锁、迁移/对账/live smoke 为 `implemented`。浏览器 mock runner 链路已实测；真实产品后端、live dsh、live PostgreSQL 和多租户沙箱尚未达到 `verified-integration`。禁止把编译或 mock 冒烟表述为生产完成。
+
+### feature/agent-engine 提交边界
+
+该分支提交完整的前端改进、共享契约、MCP/Gateway 服务、数据库 schema/migration、离线测试与说明文档。以下内容不进入版本库：本地 Agent/助手配置（`.agent/`、`.agents/`、`.claude/`、`.codex/`、`AGENTS.md`、`CLAUDE.md`）、构建产物、日志、依赖目录、运行态 JSONL/数据库凭据及发布检查日志。开发代理令牌使用不带 `VITE_` 前缀的 `TECHHAVEN_GATEWAY_PROXY_TOKEN`，只由 Vite 配置进程注入代理请求头，不属于客户端环境变量。
+
+本次分支可通过无外部依赖的 build、unit test 与 mock/contract smoke 作为提交门禁；`smoke:pg`、真实 dsh 和带 service identity 的产品域联调必须在具备对应运行时与凭据的测试环境单独执行。该分支不是生产部署完成声明。
 
 ### 社区互动
 
@@ -104,6 +112,10 @@ git clone https://github.com/Chen-Christins/TechHaven.git
 cd TechHaven
 npm ci
 npm run dev
+npm run build      # tsc 类型检查 + vite 生产构建
+npm run preview    # 本地预览 dist/
+npm test           # vitest 单测（Mermaid、鉴权脱敏、Gateway client 等回归）
+npm run format     # Prettier 格式化 src/
 ```
 
 启动后以 Vite 输出的本地地址为准。
@@ -112,24 +124,29 @@ Agent 子项目分别安装依赖和验证：
 
 ```bash
 cd services/techhaven-mcp
-npm ci && npm run typecheck && npm run smoke
+npm ci && npm run typecheck && npm test && npm run smoke
 
 cd ../techhaven-gateway
-npm ci && npm run typecheck && npm run smoke
+npm ci && npm run typecheck && npm test && npm run smoke
 ```
 
-> R0 稳定基线已落地：根 `npm run build` / `npm test`（vitest）与两个 Agent 服务的 typecheck + smoke 均纳入 CI（`.github/workflows/ci.yml`）；`scripts/check-bundle-size.mjs` 检查主入口 gzip 体积预算。
+两个服务的 `npm test` 是纯域单测（Node 内置 `node:test` + `tsx`，无新增依赖、无需外部实例）；
+`npm run smoke` 是 mock/离线的端到端冒烟。PG 相关门禁（`smoke:pg`）另需 `TECHHAVEN_TEST_DB_URL`。
+
+> R0 稳定基线已落地：根 `npm run build` / `npm test`（vitest）与两个 Agent 服务的 typecheck + test + smoke 均纳入 CI（`.github/workflows/ci.yml`）；`scripts/check-bundle-size.mjs` 检查主入口 gzip 体积预算。
 
 ## 环境变量
 
 项目按 Vite 模式读取 `.env.development` 和 `.env.production`。
 
-| 变量                       | 作用                                                      |
-| -------------------------- | --------------------------------------------------------- |
-| `VITE_API_BASE_URL`        | API 直连地址，或 Vite 开发代理的目标地址                  |
-| `VITE_WS_URL`              | WebSocket 服务基础地址                                    |
-| `VITE_USE_PROXY`           | 为字符串 `"true"` 时，HTTP 请求使用同源 `/api/v1`         |
-| `VITE_REQUIRE_CREDENTIALS` | 为字符串 `"true"` 时，为 Axios 请求启用 `withCredentials` |
+| 变量                              | 作用                                                               |
+| --------------------------------- | ------------------------------------------------------------------ |
+| `VITE_API_BASE_URL`               | API 直连地址，或 Vite 开发代理的目标地址                           |
+| `VITE_WS_URL`                     | WebSocket 服务基础地址                                             |
+| `VITE_USE_PROXY`                  | 为字符串 `"true"` 时，HTTP 请求使用同源 `/api/v1`                  |
+| `VITE_REQUIRE_CREDENTIALS`        | 为字符串 `"true"` 时，为 Axios 请求启用 `withCredentials`          |
+| `VITE_GATEWAY_URL`                | 本机 Gateway 地址，仅作为 Vite 开发代理目标                         |
+| `TECHHAVEN_GATEWAY_PROXY_TOKEN`   | Vite 代理注入的 Gateway Bearer；不得改成 `VITE_` 前缀或用于生产     |
 
 ### 请求模式
 
@@ -139,6 +156,13 @@ npm ci && npm run typecheck && npm run smoke
 - WebSocket 会在 `VITE_WS_URL` 后连接通知与在线状态端点。
 
 所有 `VITE_*` 环境变量都会暴露给浏览器，禁止在其中保存密码、私钥、服务端密钥或其他敏感信息。本地覆盖配置可以放在被 Git 忽略的 `.env.local` 或 `.env.*.local` 中。
+
+### 开发代理路径
+
+- `^/api/v1/article/ai-summary`：AI 摘要 SSE 流式端点（需置于通用规则之前）
+- `^/gateway`：Agent Gateway；移除 `/gateway` 前缀并在代理侧注入 Bearer 头
+- `^/api/v1`：通用 API
+- `^/file(.*)`：文件服务
 
 ## 常用命令
 
@@ -195,6 +219,18 @@ TechHaven/
 | `/help`                    | 帮助中心             | 公共页面                         |
 
 除 `/auth` 和 `/admin/*` 外，其余路由受 `MaintenanceGuard` 保护。`/assignments` 会重定向到 `/personal?tab=assignments`。
+
+## 文档地图
+
+| 文档                                         | 作用                             |
+| -------------------------------------------- | -------------------------------- |
+| `docs/ARCHITECTURE.md`                       | 当前与目标架构的单一入口         |
+| `docs/ROADMAP.md`                            | 阶段、门禁、状态和指标的单一入口 |
+| `docs/TH-RFC-001-agent-engine.md`            | Agent 架构决策与取舍             |
+| `docs/agent-db/README.md`                    | Agent 数据平面现状与迁移边界     |
+| `services/techhaven-mcp/README.md`           | MCP 工具面运行与验证             |
+| `services/techhaven-gateway/README.md`       | Agent 控制面运行与验证           |
+| `services/techhaven-gateway/docs/DSH_SDK.md` | dsh SDK 源码勘察与未验证清单     |
 
 开发环境还会挂载 `/messages`、`/test/*` 和 `/admin/media` 等演示或验证页面。
 

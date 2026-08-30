@@ -2,44 +2,67 @@
 
 TechHaven Agent Control Plane 的当前实现：runner 生命周期、会话管理、SSE 事件桥、权限中继和基础配额。
 
-> 当前状态：`implemented + verified-mock`。22 项 mock driver 冒烟通过；前端真实接线、live dsh、live PostgreSQL 和生产沙箱尚未验证。架构见 `../../docs/ARCHITECTURE.md`，决策见 `../../docs/TH-RFC-001-agent-engine.md`，门禁见 `../../docs/ROADMAP.md`。
+> 当前状态：`implemented + verified-mock`。35 项 mock driver 子进程冒烟通过（含 SSE 断线/重启回放、无缺口/无重复、活动态失败收敛与取消终态）；浏览器经 Vite 代理的创建、刷新、批准/拒绝及进程重启续传已用 mock runner 实测。live dsh、live PostgreSQL 和生产沙箱尚未验证。架构见 `../../docs/ARCHITECTURE.md`，决策见 `../../docs/TH-RFC-001-agent-engine.md`，门禁见 `../../docs/ROADMAP.md`。
 
-数据流：`driver.startSession`（后台）→ 事件泵消费 `handle.events()` → 内存缓存 + `gateway.jsonl` 落盘 → SSE 订阅者。
+数据流：`driver.startSession`（后台）→ 事件泵消费 `handle.events()` → 权威存储提交 → 内存缓存 + JSONL spool → SSE 订阅者。默认 `jsonl` 权威保持 PoC 兼容；`postgres` 模式先提交 PG，失败时不向 SSE 宣布未落库事实。
 SSE 数据帧为**事件信封**（`EventEnvelope`，`id:`=seq，data 含 schemaVersion/eventId/sessionId/orgId/seq/type/occurredAt/traceId/payload，见仓库根 `contracts/` 与 TH-RFC-001 §6）；JSONL 行仍存引擎事件原始形态。
 终态（succeeded / failed / cancelled）后 dispose 引擎句柄并关闭 SSE；空闲超时由看门狗合成 failed 终态——「会话不悬空」。
 
-这是当前 PoC 数据流。目标状态是 PostgreSQL 持久会话/事件/proposal，JSONL 作为 spool；Gateway 只承载控制面，不复制产品域状态机。
+Gateway 只承载控制面，不复制产品域状态机；proposal 权威位于 techhaven-mcp/审批服务，Gateway PG 只承载 session/event。
 
 ## 快速开始
 
 ```bash
 npm install
-npm run build        # tsc -p tsconfig.json（编译 src/ 到 dist/）
+npm run typecheck    # tsc --noEmit（覆盖 src/**/*.test.ts）
+npm test             # 纯域单测（node:test + tsx，无新增依赖，无需外部实例）
+npm run build        # tsc -p tsconfig.build.json（编译 src/ 到 dist/，排除 *.test.ts）
 npm run dev          # tsx src/index.ts
-npm run smoke        # build + 端到端冒烟（spawn dist/index.js，22 项检查）
+npm run smoke        # build + 端到端冒烟（spawn/restart dist/index.js，35 项检查）
 npm run load         # gateway.jsonl → PostgreSQL 装载（见下「事件落库」）
+npm run reconcile    # JSONL spool ↔ PG session/event 对账
+npm run db:migrate -- --mode fresh --seed
+npm run smoke:pg     # 需要 TECHHAVEN_TEST_DB_URL 的 live PG 门禁
 ```
+
+`npm test` 覆盖 34 项不需要外部实例的纯逻辑：`src/config.test.ts`（环境变量校验的必填项 / 枚举 / 端口与配额边界 / `dbSchema` 标识符注入防护）、
+`src/channel.test.ts`（`EventChannel` 的回放与单趟游标、close 唤醒挂起消费者、close 后 push 静默丢弃、waiter 不泄漏）、
+`src/sessions.test.ts`（SSE 信封 §6 契约：seq/type/occurredAt 上提且 payload 不重复；`sessionView` 剥离句柄/订阅者/事件缓存）、
+`src/util.test.ts`（共享工具与 `sha256Hex16` 跨服务固定向量）。
+
+构建用 `tsconfig.build.json` 排除 `*.test.ts`，`dist/` 内不含测试产物；`npm run typecheck` 仍覆盖测试文件。
 
 ## 配置（见 `.env.example`）
 
-| 变量 | 说明 |
-|---|---|
-| `TECHHAVEN_GATEWAY_TOKEN` | Bearer 令牌（必填，缺失拒绝启动） |
-| `TECHHAVEN_GATEWAY_PORT` | HTTP 监听端口（默认 3091） |
-| `TECHHAVEN_ENGINE_DRIVER` | `mock` / `dsh`（默认 mock） |
-| `TECHHAVEN_GATEWAY_DATA_DIR` | JSONL 落盘目录（默认 `./data`，文件名固定 `gateway.jsonl`） |
-| `TECHHAVEN_MAX_SESSIONS_PER_ORG` | 单组织活动会话配额（默认 3） |
-| `TECHHAVEN_DB_URL` | 仅 `npm run load` 消费；网关运行时不读 |
+| 变量                             | 说明                                                        |
+| -------------------------------- | ----------------------------------------------------------- |
+| `TECHHAVEN_GATEWAY_TOKEN`        | Bearer 令牌（必填，缺失拒绝启动）                           |
+| `TECHHAVEN_GATEWAY_PORT`         | HTTP 监听端口（默认 3091）                                  |
+| `TECHHAVEN_ENGINE_DRIVER`        | `mock` / `dsh`（默认 mock）                                 |
+| `TECHHAVEN_GATEWAY_DATA_DIR`     | JSONL 落盘目录（默认 `./data`，文件名固定 `gateway.jsonl`） |
+| `TECHHAVEN_GATEWAY_STORE`        | `jsonl` / `postgres`（默认 jsonl）                          |
+| `TECHHAVEN_GATEWAY_DB_URL`       | store=postgres 时必填；连接失败拒绝启动                     |
+| `TECHHAVEN_GATEWAY_DB_SCHEMA`    | PostgreSQL schema（默认 public）                            |
+| `TECHHAVEN_MAX_SESSIONS_PER_ORG` | 单组织活动会话配额（默认 3）                                |
+| `TECHHAVEN_DB_URL`               | loader/migration 兼容变量                                   |
 
 ## JSONL 行格式（`gateway.jsonl`，append-only）
 
-当前 JSONL 是 mock/离线冒烟与装载器的输入。它不提供多进程一致性、在线查询或生产恢复保证；R2 将 PG 提升为权威存储。
+`jsonl` 模式下它是单实例 PoC 权威并负责重启恢复；`postgres` 模式下它只接收已提交事件的 spool/调试副本，启动恢复只读 PG。原始 prompt 始终不落日志/数据库，恢复视图返回固定占位文本。
 
-| kind | 内容 | 说明 |
-|---|---|---|
-| `session` | `{ sid, patch: { status, orgId?, subjectType?, subjectId?, note? } }` | patch 行只在 create（全量归属 + 状态）与注册表释放收尾（status + note）时写；中途状态变化不写 patch 行 |
-| `event` | `{ sid, event: <EngineEvent> }` | 引擎事件流（assistant_chunk / tool_call / tool_result / permission_request / status_change / error），事件行不含归属字段 |
-| `permission` | `{ sid, orgId, requestId, decision, ts }` | 权限应答审计行（`orgId` 供装载器按组织归档） |
+## PostgreSQL 权威模式
+
+- 会话创建在事务内获取组织级 advisory lock，再按 PG 活动会话数检查配额，防多实例并发穿透；
+- `agent_events (session_id, seq)` 唯一，事件提交成功后才更新内存并推送 SSE；
+- 重启从 PG 重建历史；无法恢复 runner 句柄的活动会话追加唯一 failed 事件；
+- PG 连接或事务失败时 fail-closed，不把 JSONL 提升成第二个可写权威；
+- `npm run reconcile` 比对 spool 与 PG 的 session/status/seq，差异时退出码为 2。
+
+| kind         | 内容                                                                  | 说明                                                                                                                     |
+| ------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `session`    | `{ sid, patch: { status, orgId?, subjectType?, subjectId?, note? } }` | patch 行只在 create（全量归属 + 状态）与注册表释放收尾（status + note）时写；中途状态变化不写 patch 行                   |
+| `event`      | `{ sid, event: <EngineEvent> }`                                       | 引擎事件流（assistant_chunk / tool_call / tool_result / permission_request / status_change / error），事件行不含归属字段 |
+| `permission` | `{ sid, orgId, requestId, decision, ts }`                             | 权限应答审计行（`orgId` 供装载器按组织归档）                                                                             |
 
 ## 事件落库
 
@@ -83,25 +106,22 @@ args_digest / risk_level / proposal 等权威字段）。当前审计留痕仍�
 
 ### 装载目标 ↔ JSONL 来源 ↔ schema 出处（交叉核对表）
 
-| 装载目标表 | JSONL 来源行 | schema 出处（文件:节） |
-|---|---|---|
-| `agent_identities` | `kind:"session"` patch 行（`orgId`；name/kind/created_by 为装载器固定值） | `docs/agent-db/schema.sql` §1 Control（agent_identities） |
-| `agent_sessions` | `kind:"session"` patch 行（sid / orgId / status / 归属）+ `kind:"event"` 行（started_at / ended_at / 最新 status 推导） | `docs/agent-db/schema.sql` §2 会话 / 运行 / 事件流（agent_sessions） |
-| `agent_events` | `kind:"event"` 行（`event` 去 seq/ts/type 后整体为 payload） | `docs/agent-db/schema.sql` §2 会话 / 运行 / 事件流（agent_events） |
-| （不落库）`agent_tool_calls` | `kind:"permission"` 行 —— 只计数跳过，原因见上 | `docs/agent-db/schema.sql` §3 Control（agent_tool_calls，权威台账在 techhaven-mcp 侧） |
+| 装载目标表                   | JSONL 来源行                                                                                                            | schema 出处（文件:节）                                                                 |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `agent_identities`           | `kind:"session"` patch 行（`orgId`；name/kind/created_by 为装载器固定值）                                               | `docs/agent-db/schema.sql` §1 Control（agent_identities）                              |
+| `agent_sessions`             | `kind:"session"` patch 行（sid / orgId / status / 归属）+ `kind:"event"` 行（started_at / ended_at / 最新 status 推导） | `docs/agent-db/schema.sql` §2 会话 / 运行 / 事件流（agent_sessions）                   |
+| `agent_events`               | `kind:"event"` 行（`event` 去 seq/ts/type 后整体为 payload）                                                            | `docs/agent-db/schema.sql` §2 会话 / 运行 / 事件流（agent_events）                     |
+| （不落库）`agent_tool_calls` | `kind:"permission"` 行 —— 只计数跳过，原因见上                                                                          | `docs/agent-db/schema.sql` §3 Control（agent_tool_calls，权威台账在 techhaven-mcp 侧） |
 
-> **未经 live PostgreSQL 验证**（本机无 Docker/PG）：SQL 仅按 `docs/agent-db/schema.sql`
-> 逐列静态核对（按 schema v0.2 口径核对，与 `services/techhaven-mcp/src/proposals/dbSink.ts`
-> 的「schema.sql v0.2」引用一致；schema.sql 文件头仍标注 v0.1，版本号未同步），未在真实实例
-> 上执行过 DDL / 装载。首次上库请先在测试库跑 `schema.sql`，再执行 `npm run load` 验证。
+> **仍未经 live PostgreSQL 验证**：本机无 Docker/PG。schema v0.3、v0.2→v0.3 migration、loader、reconcile 和两套 `smoke:pg` 已实现并通过 TypeScript 构建，但必须在 PostgreSQL 14+ 测试实例实跑后才能升级状态。
 
 在完成 `../../docs/ROADMAP.md` R2 的迁移、并发、补写和恢复门禁前，不得把 loader 标记为 `verified-integration`。
 
 ## 目标演进
 
 - R1：共享事件 contract、前端真实 SSE、服务端 proposal worker、重启恢复；
-（R1 进度 2026-08-29：共享契约包 `contracts/` 与 SSE 信封化已完成并冒烟；前端真实 SSE、proposal worker、重启恢复进行中）
-- R2：PG 权威、JSONL spool、真实域 API 和 live dsh；
+  （R1 进度 2026-08-29：共享契约、SSE 信封、前端 Gateway client/DEV 接线、浏览器刷新/重连、JSONL 单实例重启恢复和 MCP proposal worker 已通过 mock 门禁）
+- R2：PG 权威代码、JSONL spool、迁移/对账/live 门控已 `implemented`；真实 PG、域 API 和 live dsh 仍待 `verified-integration`；
 - R3：单组织本地 runner 试点、OpenTelemetry、runbook；
 - R4：多组织沙箱、bulkhead、retry budget、SLO 和安全门禁。
 

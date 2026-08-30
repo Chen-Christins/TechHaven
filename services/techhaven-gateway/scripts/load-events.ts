@@ -1,5 +1,5 @@
 /**
- * Agent Trace 落库装载器（P2）：把网关事件 JSONL 批量导入 PostgreSQL（agent-plane schema v0.2）。
+ * Agent Trace 落库装载器（R2）：把网关事件 JSONL 批量导入 PostgreSQL（agent-plane schema v0.3）。
  *
  * 用法：
  *   TECHHAVEN_DB_URL=postgres://... npm run load                     # 读 ./data/gateway.jsonl
@@ -14,7 +14,7 @@
  * 当前格式（首行 patch 带全量归属字段 orgId/subjectType/subjectId）。旧数据缺 org →
  * 用 --org 兜底并计数警告。
  *
- * 明确标注：本装载器未经 live PostgreSQL 验证（本机无 Docker/PG），SQL 按 schema v0.2 逐列核对。
+ * 明确标注：本装载器未经 live PostgreSQL 验证（本机无 Docker/PG），SQL 按 schema v0.3 逐列核对。
  */
 import { createInterface } from "node:readline";
 import { createReadStream, existsSync } from "node:fs";
@@ -219,7 +219,7 @@ async function main(): Promise<void> {
   console.log(`事件       : ${eventsLoaded}`);
   console.log(`permission 行跳过 : ${permissionRows}（权威台账在 techhaven-mcp）`);
   console.log(`解析/装载失败   : ${parseFailures}`);
-  console.log(`（本装载器未经 live PostgreSQL 验证，SQL 对照 schema v0.2；幂等，可重跑）`);
+  console.log(`（本装载器未经 live PostgreSQL 验证，SQL 对照 schema v0.3；幂等，可重跑）`);
 }
 
 main().catch((err) => {

@@ -4,8 +4,8 @@
  *
  * 剧本（每会话一次性"引擎"）：
  *   running → 读上下文 chunk → tool_call get_ticket → tool_result
- *   → chunk（建议改状态）→ permission_request【挂起等应答】
- *     approve → tool_call update_ticket_status → tool_result → chunk → succeeded
+ *   → chunk（建议改状态）→ awaiting_permission → permission_request【挂起等应答】
+ *     approve → running → tool_call update_ticket_status → tool_result → chunk → succeeded
  *     reject  → chunk（已取消）→ cancelled
  *   cancel() 任意时刻触发 → cancelled；dispose() 随时幂等终止。
  *
@@ -118,7 +118,13 @@ class MockSession implements EngineSessionHandle {
 
       const readArgs = { kind: "bug", orgId: this.opts.orgId };
       await this.checkpoint();
-      this.push({ type: "tool_call", ...this.stamp(), tool: "mcp__techhaven__get_ticket", argsDigest: sha256Hex16(readArgs), args: readArgs });
+      this.push({
+        type: "tool_call",
+        ...this.stamp(),
+        tool: "mcp__techhaven__get_ticket",
+        argsDigest: sha256Hex16(readArgs),
+        args: readArgs,
+      });
 
       await this.checkpoint();
       this.push({ type: "tool_result", ...this.stamp(), tool: "mcp__techhaven__get_ticket", ok: true, summary: "读取到 1 张缺陷" });
@@ -127,6 +133,7 @@ class MockSession implements EngineSessionHandle {
       this.push({ type: "assistant_chunk", ...this.stamp(), text: "建议将状态变更为 accepted，需要批准。" });
 
       const requestId = `req_${randomBytes(6).toString("hex")}`;
+      this.push({ type: "status_change", ...this.stamp(), status: "awaiting_permission", detail: "等待人工审批" });
       this.push({
         type: "permission_request",
         ...this.stamp(),
@@ -144,10 +151,23 @@ class MockSession implements EngineSessionHandle {
       }
 
       if (decision.decision === "approve") {
+        this.push({ type: "status_change", ...this.stamp(), status: "running", detail: "审批通过，继续执行" });
         const writeArgs = { kind: "bug", to_status: "accepted", reason: decision.note ?? "agent 建议：复现确认，接受进入处理" };
-        this.push({ type: "tool_call", ...this.stamp(), tool: "mcp__techhaven__update_ticket_status", argsDigest: sha256Hex16(writeArgs), args: writeArgs });
+        this.push({
+          type: "tool_call",
+          ...this.stamp(),
+          tool: "mcp__techhaven__update_ticket_status",
+          argsDigest: sha256Hex16(writeArgs),
+          args: writeArgs,
+        });
         await this.checkpoint();
-        this.push({ type: "tool_result", ...this.stamp(), tool: "mcp__techhaven__update_ticket_status", ok: true, summary: "缺陷状态已变更为 accepted" });
+        this.push({
+          type: "tool_result",
+          ...this.stamp(),
+          tool: "mcp__techhaven__update_ticket_status",
+          ok: true,
+          summary: "缺陷状态已变更为 accepted",
+        });
         this.push({ type: "assistant_chunk", ...this.stamp(), text: "已完成。" });
         this.emitTerminal("succeeded");
       } else {

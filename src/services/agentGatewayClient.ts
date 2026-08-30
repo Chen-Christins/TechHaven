@@ -22,10 +22,21 @@ const RETRY_BASE_MS = 1000;
 const RETRY_MAX_MS = 8000;
 const RETRY_LIMIT = 5;
 
+export interface AgentGatewayClientOptions {
+  /** 重连初始等待；测试可设为 0，生产默认 1s */
+  retryBaseMs?: number;
+  /** 单次重连等待上限 */
+  retryMaxMs?: number;
+  /** 连续无有效新事件的最大重连次数 */
+  retryLimit?: number;
+}
+
 export type EventStreamEnd = "completed" | "failed";
 
 export interface EventStreamHandlers {
   onEvent(env: EventEnvelope): void;
+  /** 收到畸形、跨会话或不符合共享契约的数据帧；该帧不会进入业务事件流 */
+  onProtocolError?(message: string): void;
   /** 流正常关闭（终态 + event: end）或重试耗尽（failed，此时无终态事件兜底请自行合成） */
   onEnd(reason: EventStreamEnd): void;
 }
@@ -40,14 +51,61 @@ export class GatewayRequestError extends Error {
   }
 }
 
+const SESSION_STATUSES = new Set(["queued", "running", "awaiting_permission", "succeeded", "failed", "cancelled"]);
+
+/** 跨 HTTP/SSE 信任边界的最小运行时校验；避免把 `as EventEnvelope` 当成输入验证。 */
+function isEventEnvelope(value: unknown): value is EventEnvelope {
+  if (!value || typeof value !== "object") return false;
+  const env = value as Record<string, unknown>;
+  if (
+    env.schemaVersion !== 1 ||
+    typeof env.eventId !== "string" ||
+    typeof env.sessionId !== "string" ||
+    typeof env.orgId !== "number" ||
+    typeof env.seq !== "number" ||
+    !Number.isInteger(env.seq) ||
+    env.seq <= 0 ||
+    typeof env.occurredAt !== "string" ||
+    typeof env.traceId !== "string" ||
+    !env.payload ||
+    typeof env.payload !== "object"
+  ) {
+    return false;
+  }
+  if (env.eventId !== `${env.sessionId}:${env.seq}`) return false;
+  const payload = env.payload as Record<string, unknown>;
+  switch (env.type) {
+    case "assistant_chunk":
+      return typeof payload.text === "string";
+    case "tool_call":
+      return typeof payload.tool === "string" && typeof payload.argsDigest === "string";
+    case "tool_result":
+      return typeof payload.tool === "string" && typeof payload.ok === "boolean";
+    case "permission_request":
+      return typeof payload.requestId === "string" && typeof payload.tool === "string";
+    case "status_change":
+      return typeof payload.status === "string" && SESSION_STATUSES.has(payload.status);
+    case "error":
+      return typeof payload.message === "string";
+    default:
+      return false;
+  }
+}
+
 export class AgentGatewayClient {
   private readonly base: string;
   private readonly fetchImpl: typeof fetch;
+  private readonly retryBaseMs: number;
+  private readonly retryMaxMs: number;
+  private readonly retryLimit: number;
 
   /** base 为网关 API 前缀（开发经 Vite 代理；不直接暴露绝对地址给浏览器） */
-  constructor(base = "/gateway", fetchImpl: typeof fetch = boundFetch) {
+  constructor(base = "/gateway", fetchImpl: typeof fetch = boundFetch, options: AgentGatewayClientOptions = {}) {
     this.base = base;
     this.fetchImpl = fetchImpl;
+    this.retryBaseMs = Math.max(0, options.retryBaseMs ?? RETRY_BASE_MS);
+    this.retryMaxMs = Math.max(this.retryBaseMs, options.retryMaxMs ?? RETRY_MAX_MS);
+    this.retryLimit = Math.max(0, Math.trunc(options.retryLimit ?? RETRY_LIMIT));
   }
 
   /** 规范化响应：非 2xx 抛 GatewayRequestError（错误体 {error}） */
@@ -114,7 +172,6 @@ export class AgentGatewayClient {
         if (!res.ok) throw new GatewayRequestError(res.status, `事件流失败 (HTTP ${res.status})`);
         if (!res.body) throw new GatewayRequestError(500, "事件流无响应体");
 
-        retries = 0;
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buf = "";
@@ -134,21 +191,23 @@ export class AgentGatewayClient {
           }
           if (!data) return;
           try {
-            const env = JSON.parse(data) as EventEnvelope;
+            const parsed: unknown = JSON.parse(data);
+            if (!isEventEnvelope(parsed)) {
+              handlers.onProtocolError?.("事件帧不符合 EventEnvelope 契约");
+              return;
+            }
+            const env = parsed;
+            if (env.sessionId !== sid) {
+              handlers.onProtocolError?.(`事件帧 sessionId 不匹配（期望 ${sid}）`);
+              return;
+            }
+            // 断线边界允许服务端再次回放最后一帧；按 sid + seq 幂等消费，杜绝重复 UI/副作用。
+            if (env.seq <= lastSeq) return;
             lastSeq = env.seq;
+            retries = 0; // 只有收到有效新事件才证明连接恢复；空 200 流不能无限重置重试预算
             handlers.onEvent(env);
           } catch {
-            handlers.onEvent({
-              schemaVersion: 1,
-              eventId: `${sid}:bad-frame`,
-              sessionId: sid,
-              orgId: 0,
-              seq: lastSeq + 1,
-              type: "error",
-              occurredAt: new Date().toISOString(),
-              traceId: "",
-              payload: { message: "事件帧解析失败" },
-            });
+            handlers.onProtocolError?.("事件帧 JSON 解析失败");
           }
         };
 
@@ -180,24 +239,28 @@ export class AgentGatewayClient {
         // 流自然断开但未见 event: end（网关重启/网络断）：指数退避重连，续传 after=lastSeq
         if (!closed) {
           retries += 1;
-          if (retries > RETRY_LIMIT) {
+          if (retries > this.retryLimit) {
             closed = true;
             handlers.onEnd("failed");
             return;
           }
-          await new Promise((resolve) => setTimeout(resolve, Math.min(RETRY_BASE_MS * 2 ** retries, RETRY_MAX_MS)));
+          await new Promise((resolve) =>
+            setTimeout(resolve, Math.min(this.retryBaseMs * 2 ** Math.max(0, retries - 1), this.retryMaxMs)),
+          );
           if (!closed) void attempt();
         }
       } catch (err) {
         if (closed) return;
         if (err instanceof Error && err.name === "AbortError") return;
         retries += 1;
-        if (retries > RETRY_LIMIT) {
+        if (retries > this.retryLimit) {
           closed = true;
           handlers.onEnd("failed");
           return;
         }
-        await new Promise((resolve) => setTimeout(resolve, Math.min(RETRY_BASE_MS * 2 ** retries, RETRY_MAX_MS)));
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.min(this.retryBaseMs * 2 ** Math.max(0, retries - 1), this.retryMaxMs)),
+        );
         if (!closed) void attempt();
       }
     };

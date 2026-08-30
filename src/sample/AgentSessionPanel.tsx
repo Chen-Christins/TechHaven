@@ -1,16 +1,16 @@
 /**
  * Agent 会话面板测试样例页（DEV 专用，TH-RFC-001 §05.4）
  *
- * 用内置 mock 事件流驱动 UI，演示 Agent Gateway 会话面板的完整交互：
+ * 默认用内置 mock 事件流驱动 UI；`?driver=gateway` 经同源代理连接本机 Gateway：
  * 状态徽标（queued/running/awaiting_permission/succeeded/failed/cancelled）、
  * 事件流（assistant_chunk / tool_call / tool_result / permission_request / status_change / error）、
  * 以及核心的权限审批卡（批准 / 拒绝 → mock 流继续或取消）。
  *
- * 不真实连接 gateway（POST /v1/sessions 等），真实接线在业务集成阶段完成。
+ * 这是 DEV 验证页，不替代正式业务页与生产 BFF 集成门禁。
  */
 import React, { useEffect, useRef, useState, type ReactNode } from "react";
 import SimpleBar from "simplebar-react";
-import { FaCheckCircle, FaInfoCircle, FaRedo, FaShieldAlt, FaTimesCircle, FaWrench } from "react-icons/fa";
+import { FaBolt, FaCheckCircle, FaInfoCircle, FaRedo, FaShieldAlt, FaTimesCircle, FaWrench } from "react-icons/fa";
 import Button from "../components/button/Button";
 import Avatar from "../components/avatar/Avatar";
 import Loading from "../components/loading/Loading";
@@ -43,6 +43,9 @@ interface SessionHandle {
   start(): void;
   subscribe(listener: EngineEventListener): () => void;
   answerPermission(requestId: string, decision: PermissionDecision, note?: string): void;
+  /** 用户显式放弃当前会话（如点击重新运行）时才调用。 */
+  cancel(): void;
+  /** 仅释放当前页面观察资源；不得把页面卸载误当成用户取消。 */
   dispose(): void;
 }
 
@@ -184,6 +187,11 @@ function createMockSession(onSid: (sid: string) => void): SessionHandle {
         resolve();
       }
     },
+    cancel() {
+      disposed = true;
+      listeners.clear();
+      decisionResolvers.clear();
+    },
     dispose() {
       disposed = true;
       listeners.clear();
@@ -211,17 +219,37 @@ const toUiEvent = (env: EventEnvelope): EngineEvent => {
   }
 };
 
+/** React StrictMode 会短暂双挂载 DEV 页面；共享创建 Promise，避免并发 POST 生成两场会话。 */
+let gatewayCreateInFlight: Promise<string> | null = null;
+
 /**
  * 真实 Gateway 会话（driver=gateway）：创建会话 → SSE 订阅事件信封印 → UI 事件；
  * 审批/取消经 HTTP API 转发。POST 鉴权头由 Vite 代理注入（浏览器不持有网关 token）。
  */
 function createGatewaySession(onSid: (sid: string) => void): SessionHandle {
+  const checkpointKey = "techhaven:dev-agent-session";
   const client = new AgentGatewayClient();
   const listeners = new Set<EngineEventListener>();
   let disposed = false;
   let disposeStream: (() => void) | null = null;
   let syntheticSeq = 9000; // 本地合成事件（连接失败等）独立编号，避免与流内 seq 冲突
   let sid = "";
+
+  const readCheckpoint = (): string => {
+    try {
+      return window.sessionStorage.getItem(checkpointKey) ?? "";
+    } catch {
+      return "";
+    }
+  };
+  const writeCheckpoint = (value: string): void => {
+    try {
+      if (value) window.sessionStorage.setItem(checkpointKey, value);
+      else window.sessionStorage.removeItem(checkpointKey);
+    } catch {
+      // 禁用 storage 时退化为每次新建会话；不影响主链路
+    }
+  };
 
   const emit = (event: EngineEvent) => {
     if (!disposed) listeners.forEach((listener) => listener(event));
@@ -235,21 +263,49 @@ function createGatewaySession(onSid: (sid: string) => void): SessionHandle {
     start() {
       void (async () => {
         try {
-          const created = await client.createSession({
-            orgId: 1,
-            subjectType: "bug",
-            subjectId: "bug_1",
-            prompt: "演示：读取缺陷 bug_1 并分析，如需修复请先申请权限。",
-          });
+          let targetSid = readCheckpoint();
+          if (targetSid) {
+            const previous = await client.getSession(targetSid).catch(() => null);
+            if (!previous || ["succeeded", "failed", "cancelled"].includes(previous.status)) {
+              writeCheckpoint("");
+              targetSid = "";
+            }
+          }
+          if (!targetSid) {
+            if (!gatewayCreateInFlight) {
+              gatewayCreateInFlight = client
+                .createSession({
+                  orgId: 1,
+                  subjectType: "bug",
+                  subjectId: "bug_1",
+                  prompt: "演示：读取缺陷 bug_1 并分析，如需修复请先申请权限。",
+                })
+                .then((created) => created.sid)
+                .finally(() => {
+                  gatewayCreateInFlight = null;
+                });
+            }
+            targetSid = await gatewayCreateInFlight;
+            writeCheckpoint(targetSid);
+          }
           if (disposed) {
-            await client.cancel(created.sid).catch(() => undefined);
+            // React StrictMode/HMR/页面卸载都可能在异步创建完成前释放本观察端；
+            // 此处只停止接线，不把观察端生命周期误判为用户取消。下一挂载可凭 checkpoint 恢复。
             return;
           }
-          sid = created.sid;
-          handle.sid = created.sid;
-          onSid(created.sid);
-          disposeStream = client.subscribeEvents(created.sid, {
-            onEvent: (env) => emit(toUiEvent(env)),
+          sid = targetSid;
+          handle.sid = targetSid;
+          onSid(targetSid);
+          // 刷新后全量回放当前会话，重建审批卡与历史；同一页面内断线仍由 client 按 after=<lastSeq> 增量续传。
+          disposeStream = client.subscribeEvents(targetSid, {
+            onEvent: (env) => {
+              if (env.type === "status_change" && ["succeeded", "failed", "cancelled"].includes(env.payload.status)) {
+                writeCheckpoint("");
+                gatewayCreateInFlight = null;
+              }
+              emit(toUiEvent(env));
+            },
+            onProtocolError: (message) => emitError(`网关事件协议错误：${message}`),
             onEnd: (reason) => {
               if (disposed) return;
               if (reason === "failed") emitError("网关事件流中断且重连失败（网关可能未启动）");
@@ -274,10 +330,14 @@ function createGatewaySession(onSid: (sid: string) => void): SessionHandle {
         .answerPermission(sid || handle.sid, requestId, decision)
         .catch((err) => emitError(`审批应答失败：${err instanceof Error ? err.message : String(err)}`));
     },
+    cancel() {
+      writeCheckpoint("");
+      gatewayCreateInFlight = null;
+      if (sid) void client.cancel(sid).catch(() => undefined);
+    },
     dispose() {
       disposed = true;
       disposeStream?.();
-      if (sid) void client.cancel(sid).catch(() => undefined);
       listeners.clear();
     },
   };
@@ -290,6 +350,7 @@ const formatTime = (ts: string) => {
 };
 
 const SampleAgentSessionPanel: React.FC = () => {
+  const isGatewayDriver = new URLSearchParams(window.location.search).get("driver") === "gateway";
   // runId 变化时重开一场 mock 会话（重新演示）
   const [runId, setRunId] = useState(0);
   const [sid, setSid] = useState("");
@@ -301,8 +362,7 @@ const SampleAgentSessionPanel: React.FC = () => {
 
   useEffect(() => {
     // ?driver=gateway 接真实 Gateway（mock 为默认）；DEV 专用样例页
-    const driver = new URLSearchParams(window.location.search).get("driver");
-    const session = driver === "gateway" ? createGatewaySession(setSid) : createMockSession(setSid);
+    const session = isGatewayDriver ? createGatewaySession(setSid) : createMockSession(setSid);
     sessionRef.current = session;
     setSid(session.sid);
     setStatus("queued");
@@ -320,7 +380,7 @@ const SampleAgentSessionPanel: React.FC = () => {
       session.dispose();
       sessionRef.current = null;
     };
-  }, [runId]);
+  }, [isGatewayDriver, runId]);
 
   // 新事件到达后自动滚到底部
   useEffect(() => {
@@ -331,6 +391,7 @@ const SampleAgentSessionPanel: React.FC = () => {
   }, [events]);
 
   const handleRestart = () => {
+    sessionRef.current?.cancel();
     setRunId((n) => n + 1);
   };
 
@@ -348,11 +409,14 @@ const SampleAgentSessionPanel: React.FC = () => {
     switch (event.type) {
       case "assistant_chunk":
         return (
-          <div className={styles.chunkRow}>
-            <Avatar name="TechHaven Agent" size={28} />
+          <div className={styles.chunkRow} data-event-type="assistant_chunk">
+            <Avatar name="TechHaven Agent" size={32} />
             <div className={styles.chunkBody}>
+              <div className={styles.chunkMeta}>
+                <span>TechHaven Agent</span>
+                <span className={styles.chunkTime}>{formatTime(event.ts)}</span>
+              </div>
               <div className={styles.chunkBubble}>{event.text}</div>
-              <span className={styles.chunkTime}>{formatTime(event.ts)}</span>
             </div>
           </div>
         );
@@ -388,24 +452,43 @@ const SampleAgentSessionPanel: React.FC = () => {
         const decision = decisions[event.requestId];
         return (
           <div className={styles.permissionCard}>
+            <div className={styles.permEyebrow}>需要你的确认</div>
             <div className={styles.permTitle}>
               <FaShieldAlt aria-hidden="true" />
-              <span>权限审批</span>
+              <span>批准一次受控写操作</span>
               <span className={styles.toolName}>{event.tool}</span>
               <span className={styles.toolTime}>{formatTime(event.ts)}</span>
             </div>
             {event.reason && <p className={styles.permReason}>{event.reason}</p>}
+            <p className={styles.permHint}>批准仅适用于本次提案；拒绝后不会改变当前工单状态。</p>
             {decision ? (
               <div className={`${styles.permDecision} ${decision === "approve" ? styles.permDecisionOk : styles.permDecisionNo}`}>
                 {decision === "approve" ? <FaCheckCircle aria-hidden="true" /> : <FaTimesCircle aria-hidden="true" />}
-                <span>{decision === "approve" ? "已批准 · mock 流已继续" : "已拒绝 · 会话已取消"}</span>
+                <span>
+                  {decision === "approve"
+                    ? isGatewayDriver
+                      ? "已批准 · Gateway 会话继续"
+                      : "已批准 · 本地会话继续"
+                    : "已拒绝 · 会话已取消"}
+                </span>
               </div>
             ) : (
               <div className={styles.permActions}>
-                <Button color="success" size="small" onClick={() => handleDecision(event.requestId, "approve")}>
-                  批准
+                <Button
+                  className={styles.actionButton}
+                  color="success"
+                  size="small"
+                  onClick={() => handleDecision(event.requestId, "approve")}
+                >
+                  批准并继续
                 </Button>
-                <Button color="error" variant="outline" size="small" onClick={() => handleDecision(event.requestId, "reject")}>
+                <Button
+                  className={styles.actionButton}
+                  color="error"
+                  variant="light"
+                  size="small"
+                  onClick={() => handleDecision(event.requestId, "reject")}
+                >
                   拒绝
                 </Button>
               </div>
@@ -436,32 +519,62 @@ const SampleAgentSessionPanel: React.FC = () => {
 
   return (
     <div className={styles.page}>
-      <h2 className={styles.title}>Agent 会话面板</h2>
-      <p className={styles.desc}>
-        Agent Gateway 会话面板样例（TH-RFC-001 §05.4）：演示会话状态徽标、事件流、工具卡片与权限审批交互。默认由内置 mock
-        会话驱动；追加 <span className={styles.descMono}>?driver=gateway</span> 接真实 Gateway（SSE 事件信封，见根{" "}
-        <span className={styles.descMono}>contracts/</span>，鉴权头由 Vite 代理注入）。
-      </p>
+      <header className={styles.hero}>
+        <div className={styles.eyebrow}>
+          <span className={styles.eyebrowDot} aria-hidden="true" />
+          Agent Control Plane · R1
+        </div>
+        <h1 className={styles.title}>每一次执行，都清晰可控。</h1>
+        <p className={styles.desc}>
+          观察 Agent 的思考与工具调用，在写入发生前完成审批，并保留完整的会话轨迹。 当前页面用于验证 Gateway 事件信封与权限交互。
+        </p>
+      </header>
 
-      <section className={styles.panel}>
+      <section className={styles.panel} aria-label="Agent 会话运行面板">
         <header className={styles.header}>
-          <span className={`${styles.badge} ${styles[`badge--${STATUS_TONE[status]}`]}`}>
-            <span className={`${styles.badgeDot} ${status === "running" ? styles.badgeDotPulse : ""}`} />
-            {STATUS_LABEL[status]}
-          </span>
-          <span className={styles.sid} title={sid}>
-            {sid || "ses_…"}
-          </span>
-          <span className={styles.spacer} />
-          <Button color="secondary" variant="outline" size="small" onClick={handleRestart}>
+          <div className={styles.sessionIdentity}>
+            <div className={styles.agentMark} aria-hidden="true">
+              <FaBolt />
+            </div>
+            <div className={styles.sessionCopy}>
+              <div className={styles.sessionTitleRow}>
+                <h2 className={styles.sessionTitle}>工单协作会话</h2>
+                <span className={`${styles.badge} ${styles[`badge--${STATUS_TONE[status]}`]}`} role="status">
+                  <span className={`${styles.badgeDot} ${status === "running" ? styles.badgeDotPulse : ""}`} />
+                  {STATUS_LABEL[status]}
+                </span>
+              </div>
+              <span className={styles.sid} title={sid}>
+                {sid || "正在创建会话…"}
+              </span>
+            </div>
+          </div>
+          <Button className={styles.restartButton} color="secondary" variant="light" size="small" onClick={handleRestart}>
             <FaRedo aria-hidden="true" />
-            重新演示
+            重新运行
           </Button>
         </header>
 
+        <div className={styles.contextBar} aria-label="会话概况">
+          <div className={styles.contextItem}>
+            <span className={styles.contextLabel}>运行驱动</span>
+            <strong>{isGatewayDriver ? "Gateway" : "Local Mock"}</strong>
+          </div>
+          <div className={styles.contextDivider} aria-hidden="true" />
+          <div className={styles.contextItem}>
+            <span className={styles.contextLabel}>事件数量</span>
+            <strong>{events.length}</strong>
+          </div>
+          <div className={styles.contextDivider} aria-hidden="true" />
+          <div className={styles.contextItem}>
+            <span className={styles.contextLabel}>最后更新</span>
+            <strong>{events.length > 0 ? formatTime(events[events.length - 1].ts) : "等待中"}</strong>
+          </div>
+        </div>
+
         <div className={styles.stream}>
           <SimpleBar scrollableNodeProps={{ ref: scrollBodyRef }} style={{ maxHeight: 440 }} autoHide={false}>
-            <div className={styles.timeline}>
+            <div className={styles.timeline} aria-live="polite" aria-label="会话事件流">
               {events.length === 0 && (
                 <div className={styles.streamSkeleton}>
                   <Skeleton variant="text" lines={3} height={14} />
@@ -473,7 +586,7 @@ const SampleAgentSessionPanel: React.FC = () => {
               {status === "running" && (
                 <div className={styles.streamLoadingRow}>
                   <Loading size="small" text="" />
-                  <span>mock 引擎输出中…</span>
+                  <span>{isGatewayDriver ? "Gateway 正在返回事件…" : "本地引擎正在输出…"}</span>
                 </div>
               )}
             </div>
@@ -481,11 +594,15 @@ const SampleAgentSessionPanel: React.FC = () => {
         </div>
 
         <footer className={styles.footer}>
-          <FaInfoCircle aria-hidden="true" />
-          <span>DEV 样例页：mock 驱动（默认）；?driver=gateway 经 Vite 代理接本机 Gateway（mock 驱动引擎）。</span>
-          <span className={styles.footerMono}>
-            POST /v1/sessions · GET /v1/sessions/:sid/events (SSE) · POST /v1/sessions/:sid/permission
-          </span>
+          <div className={styles.footerNote}>
+            <FaInfoCircle aria-hidden="true" />
+            <span>
+              {isGatewayDriver
+                ? "Gateway 验证模式：经同源 Vite 代理连接本机控制面，浏览器不持有管理 token。"
+                : "演示模式：使用内置事件流，不会对真实工单产生写入。追加 ?driver=gateway 可切换本机 Gateway。"}
+            </span>
+          </div>
+          <span className={styles.footerMono}>SSE · versioned envelope · staged approval</span>
         </footer>
       </section>
     </div>

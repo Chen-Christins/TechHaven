@@ -1,6 +1,6 @@
 /**
  * P1 端到端冒烟：spawn dist/index.js（mock 驱动），走 HTTP + SSE 全闭环，
- * 验证鉴权 / 会话创建 / 事件桥 / 权限中继 / 终态 / 配额 / 审计 JSONL（TH-RFC-001 §05.1）。
+ * 验证鉴权 / 会话创建 / 事件桥 / 断线与进程重启回放 / 权限中继 / 取消 / 终态 / 配额 / 审计 JSONL（TH-RFC-001 §05.1）。
  *
  *   npm run smoke    （先 build，再以客户端身份驱动真实网关进程）
  *
@@ -147,21 +147,38 @@ async function main(): Promise<void> {
     if (!cond) failures.push(name);
   };
 
-  const child = spawn(process.execPath, [join(ROOT, "dist", "index.js")], {
-    cwd: ROOT,
-    env: {
-      ...process.env,
-      TECHHAVEN_GATEWAY_TOKEN: TOKEN,
-      TECHHAVEN_GATEWAY_PORT: String(PORT),
-      TECHHAVEN_ENGINE_DRIVER: "mock",
-      TECHHAVEN_GATEWAY_DATA_DIR: `./${SMOKE_DATA_DIR}`,
-    },
-    stdio: ["ignore", "ignore", "pipe"],
-  });
+  const spawnGateway = () =>
+    spawn(process.execPath, [join(ROOT, "dist", "index.js")], {
+      cwd: ROOT,
+      env: {
+        ...process.env,
+        TECHHAVEN_GATEWAY_TOKEN: TOKEN,
+        TECHHAVEN_GATEWAY_PORT: String(PORT),
+        TECHHAVEN_ENGINE_DRIVER: "mock",
+        TECHHAVEN_GATEWAY_DATA_DIR: `./${SMOKE_DATA_DIR}`,
+      },
+      stdio: ["ignore", "ignore", "pipe"],
+    });
+  const stopGateway = async (processToStop: ReturnType<typeof spawn>): Promise<void> => {
+    if (processToStop.exitCode !== null) return;
+    processToStop.kill("SIGTERM");
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(resolve, 3_000);
+      processToStop.once("exit", () => {
+        clearTimeout(timer);
+        resolve();
+      });
+    });
+  };
+
+  let child = spawnGateway();
   let stderr = "";
-  child.stderr.on("data", (d: Buffer) => {
-    stderr += d.toString();
-  });
+  const captureStderr = (): void => {
+    child.stderr.on("data", (d: Buffer) => {
+      stderr += d.toString();
+    });
+  };
+  captureStderr();
 
   let sseRes: Response | undefined;
   let sse: SseReader | undefined;
@@ -187,7 +204,11 @@ async function main(): Promise<void> {
     const created = await api("POST", "/v1/sessions", {
       body: { orgId: 1, subjectType: "bug", subjectId: "bug_1", prompt: "读取缺陷并修复" },
     });
-    check("POST /v1/sessions → 201 且返回 sid", created.status === 201 && typeof created.json?.sid === "string", JSON.stringify(created.json));
+    check(
+      "POST /v1/sessions → 201 且返回 sid",
+      created.status === 201 && typeof created.json?.sid === "string",
+      JSON.stringify(created.json),
+    );
     const sid = created.json.sid as string;
 
     // 3. SSE：读到 permission_request（顺带断言见到 assistant_chunk / tool_call get_ticket）
@@ -197,7 +218,7 @@ async function main(): Promise<void> {
       (sseRes.headers.get("content-type") ?? "").includes("text/event-stream"),
       sseRes.headers.get("content-type") ?? "无",
     );
-    const reader = new SseReader(sseRes);
+    let reader = new SseReader(sseRes);
     sse = reader;
     const seen: EventEnvelope[] = [];
     let permRequestId: string | undefined;
@@ -208,7 +229,11 @@ async function main(): Promise<void> {
       seen.push(item.event);
       if (item.event.type === "permission_request") permRequestId = item.event.payload.requestId;
     }
-    check("SSE 见到 assistant_chunk", seen.some((e) => e.type === "assistant_chunk"), JSON.stringify(seen.map((e) => e.type)));
+    check(
+      "SSE 见到 assistant_chunk",
+      seen.some((e) => e.type === "assistant_chunk"),
+      JSON.stringify(seen.map((e) => e.type)),
+    );
     check(
       "SSE 见到 tool_call mcp__techhaven__get_ticket",
       seen.some((e) => e.type === "tool_call" && e.payload.tool === "mcp__techhaven__get_ticket"),
@@ -216,21 +241,42 @@ async function main(): Promise<void> {
     );
     check("SSE 收到 permission_request", permRequestId !== undefined, JSON.stringify(seen.map((e) => e.type)));
 
-    // 4. 审批通过 → 读到 succeeded → 流以 event: end 收尾
+    // 4. 主动断开观察连接；断线期间审批让会话继续，随后 after=<lastSeq> 回放缺失尾部
+    const resumeAfter = Math.max(...seen.map((event) => event.seq));
+    await reader.close();
     const approved = await api("POST", `/v1/sessions/${sid}/permission`, {
       body: { requestId: permRequestId ?? "", decision: "approve" },
     });
     check("POST permission approve → 200 ok", approved.status === 200 && approved.json?.ok === true, JSON.stringify(approved.json));
+    sseRes = await fetch(`${BASE}/v1/sessions/${sid}/events?after=${resumeAfter}`, { headers: authHeaders() });
+    reader = new SseReader(sseRes);
+    sse = reader;
     let succeeded = false;
     let streamEnded = false;
+    const resumed: EventEnvelope[] = [];
     while (!succeeded && !streamEnded) {
       const item = await withTimeout(reader.next(), 15_000, "等待 succeeded");
       if (item.end) {
         streamEnded = true;
         break;
       }
-      if (item.event?.type === "status_change" && item.event.payload.status === "succeeded") succeeded = true;
+      if (item.event) {
+        resumed.push(item.event);
+        if (item.event.type === "status_change" && item.event.payload.status === "succeeded") succeeded = true;
+      }
     }
+    const resumedSeqs = resumed.map((event) => event.seq);
+    check(
+      "SSE after 续传只回放断点后的事件",
+      resumedSeqs.length > 0 && resumedSeqs.every((seq) => seq > resumeAfter),
+      JSON.stringify({ resumeAfter, resumedSeqs }),
+    );
+    check("SSE 续传事件无重复 seq", new Set(resumedSeqs).size === resumedSeqs.length, JSON.stringify(resumedSeqs));
+    check(
+      "SSE 续传事件 seq 连续无缺口",
+      resumedSeqs.every((seq, index) => seq === resumeAfter + index + 1),
+      JSON.stringify({ resumeAfter, resumedSeqs }),
+    );
     check("approve 后收到 status_change succeeded", succeeded);
     const tail = streamEnded ? { end: true } : await withTimeout(reader.next(), 15_000, "等待 event: end");
     check("终态后 SSE 以 event: end 关闭", tail.end === true, JSON.stringify(tail));
@@ -243,7 +289,99 @@ async function main(): Promise<void> {
       JSON.stringify(detail.json),
     );
 
-    // 6. 配额：org2 连开 3 个（默认 maxSessionsPerOrg=3）→ 第 4 个 → 429
+    // 6. 重启恢复：终态历史应可查询/完整回放；被中断的运行态会话明确收敛为 failed
+    const interruptedCreated = await api("POST", "/v1/sessions", {
+      body: { orgId: 4, prompt: "重启中断恢复验证" },
+    });
+    const interruptedSid = interruptedCreated.json?.sid as string;
+    const interruptedRes = await fetch(`${BASE}/v1/sessions/${interruptedSid}/events`, { headers: authHeaders() });
+    const interruptedReader = new SseReader(interruptedRes);
+    let interruptedLastSeq = 0;
+    let interruptedAtPermission = false;
+    while (!interruptedAtPermission) {
+      const item = await withTimeout(interruptedReader.next(), 15_000, "等待重启中断会话到达审批点");
+      if (item.end) break;
+      if (!item.event) continue;
+      interruptedLastSeq = item.event.seq;
+      interruptedAtPermission = item.event.type === "permission_request";
+    }
+    await interruptedReader.close();
+    check("重启前运行态会话到达 awaiting_permission", interruptedAtPermission && interruptedLastSeq > 0);
+
+    await stopGateway(child);
+    stderr = "";
+    child = spawnGateway();
+    captureStderr();
+    if (!(await waitReady())) throw new Error(`网关重启后未就绪\n${stderr.slice(-2000)}`);
+    check("Gateway 使用同一 JSONL 目录重启成功", true);
+
+    const recoveredDetail = await api("GET", `/v1/sessions/${sid}`);
+    check(
+      "重启后终态会话仍可查询",
+      recoveredDetail.status === 200 && recoveredDetail.json?.status === "succeeded",
+      JSON.stringify(recoveredDetail.json),
+    );
+    const recoveredRes = await fetch(`${BASE}/v1/sessions/${sid}/events`, { headers: authHeaders() });
+    const recoveredReader = new SseReader(recoveredRes);
+    const recoveredSeqs: number[] = [];
+    for (;;) {
+      const item = await withTimeout(recoveredReader.next(), 15_000, "等待重启后历史回放结束");
+      if (item.end) break;
+      if (item.event) recoveredSeqs.push(item.event.seq);
+    }
+    const expectedSeqs = [...seen, ...resumed].map((event) => event.seq);
+    check(
+      "重启后 SSE 完整回放历史且无重复",
+      JSON.stringify(recoveredSeqs) === JSON.stringify(expectedSeqs),
+      JSON.stringify({ recoveredSeqs, expectedSeqs }),
+    );
+
+    const interruptedDetail = await api("GET", `/v1/sessions/${interruptedSid}`);
+    check(
+      "重启后被中断会话收敛为 failed",
+      interruptedDetail.status === 200 && interruptedDetail.json?.status === "failed",
+      JSON.stringify(interruptedDetail.json),
+    );
+    const interruptedTailRes = await fetch(`${BASE}/v1/sessions/${interruptedSid}/events?after=${interruptedLastSeq}`, {
+      headers: authHeaders(),
+    });
+    const interruptedTailReader = new SseReader(interruptedTailRes);
+    const interruptedTail = await withTimeout(interruptedTailReader.next(), 15_000, "等待重启 failed 终态事件");
+    check(
+      "重启后中断会话续传唯一 failed 终态",
+      interruptedTail.event?.type === "status_change" &&
+        interruptedTail.event.seq === interruptedLastSeq + 1 &&
+        interruptedTail.event.payload.status === "failed",
+      JSON.stringify(interruptedTail),
+    );
+    const interruptedEnd = await withTimeout(interruptedTailReader.next(), 15_000, "等待重启 failed 流结束");
+    check("重启后中断会话 SSE 正常 end", interruptedEnd.end === true, JSON.stringify(interruptedEnd));
+
+    // 7. 取消闭环：API 幂等成功，SSE 收到 cancelled，详情同步终态
+    const cancelCreated = await api("POST", "/v1/sessions", {
+      body: { orgId: 3, prompt: "取消闭环验证" },
+    });
+    const cancelSid = cancelCreated.json?.sid as string;
+    const cancelRes = await fetch(`${BASE}/v1/sessions/${cancelSid}/events`, { headers: authHeaders() });
+    const cancelReader = new SseReader(cancelRes);
+    sse = cancelReader;
+    const cancelled = await api("POST", `/v1/sessions/${cancelSid}/cancel`);
+    check("POST cancel → 200 ok", cancelled.status === 200 && cancelled.json?.ok === true, JSON.stringify(cancelled.json));
+    let sawCancelled = false;
+    let cancelEnded = false;
+    while (!cancelEnded) {
+      const item = await withTimeout(cancelReader.next(), 15_000, "等待 cancelled / end");
+      if (item.end) {
+        cancelEnded = true;
+        break;
+      }
+      if (item.event?.type === "status_change" && item.event.payload.status === "cancelled") sawCancelled = true;
+    }
+    check("cancel 后 SSE 收到 status_change cancelled", sawCancelled);
+    const cancelDetail = await api("GET", `/v1/sessions/${cancelSid}`);
+    check("cancel 后会话详情 status=cancelled", cancelDetail.json?.status === "cancelled", JSON.stringify(cancelDetail.json));
+
+    // 8. 配额：org2 连开 3 个（默认 maxSessionsPerOrg=3）→ 第 4 个 → 429
     const placeholders: string[] = [];
     for (let i = 0; i < 3; i++) {
       const r = await api("POST", "/v1/sessions", { body: { orgId: 2, prompt: `配额占位会话 #${i + 1}` } });
@@ -251,24 +389,31 @@ async function main(): Promise<void> {
     }
     check("org2 连开 3 个会话成功", placeholders.length === 3, `实际 ${placeholders.length}`);
     const over = await api("POST", "/v1/sessions", { body: { orgId: 2, prompt: "应被配额拒绝" } });
-    check("第 4 个会话 → 429 配额超限", over.status === 429 && typeof over.json?.error === "string", `收到 ${over.status} ${JSON.stringify(over.json)}`);
+    check(
+      "第 4 个会话 → 429 配额超限",
+      over.status === 429 && typeof over.json?.error === "string",
+      `收到 ${over.status} ${JSON.stringify(over.json)}`,
+    );
     for (const pid of placeholders) {
       const c = await api("POST", `/v1/sessions/${pid}/cancel`);
       check(`取消占位会话 ${pid} → 200`, c.status === 200 && c.json?.ok === true, `收到 ${c.status}`);
     }
 
-    // 7. 401 / 404
+    // 9. 401 / 404
     const noAuth = await fetch(`${BASE}/v1/sessions`);
     check("无 token 访问业务接口 → 401", noAuth.status === 401, `收到 ${noAuth.status}`);
     const missing = await api("GET", "/v1/sessions/s_does_not_exist");
     check("未知 sid → 404", missing.status === 404, `收到 ${missing.status}`);
 
-    // 8. 审计 JSONL：存在，含 event 行与 permission 审计行
+    // 10. 审计 JSONL：存在，含 event 行与 permission 审计行
     const jsonlPath = join(ROOT, SMOKE_DATA_DIR, "gateway.jsonl");
     const jsonl = existsSync(jsonlPath) ? readFileSync(jsonlPath, "utf8") : "";
     const lines = jsonl.split("\n").filter((l) => l.trim().length > 0);
     check("gateway.jsonl 存在且非空", lines.length > 0, jsonlPath);
-    check("JSONL 含本会话 event 行", lines.some((l) => l.includes('"kind":"event"') && l.includes(sid)));
+    check(
+      "JSONL 含本会话 event 行",
+      lines.some((l) => l.includes('"kind":"event"') && l.includes(sid)),
+    );
     check(
       "JSONL 含 permission 审计行",
       lines.some((l) => l.includes('"kind":"permission"') && (permRequestId ? l.includes(permRequestId) : false)),
@@ -281,14 +426,7 @@ async function main(): Promise<void> {
 
   // 收尾：断开 SSE（走迭代器 return 协议释放流锁）、终止网关进程
   await sse?.close();
-  child.kill();
-  await new Promise<void>((resolve) => {
-    const timer = setTimeout(resolve, 2_000);
-    child.once("exit", () => {
-      clearTimeout(timer);
-      resolve();
-    });
-  });
+  await stopGateway(child);
 
   console.log(failures.length === 0 ? "\nGATEWAY SMOKE PASS" : `\nGATEWAY SMOKE FAIL（${failures.length} 项）`);
   process.exit(failures.length === 0 ? 0 : 1);

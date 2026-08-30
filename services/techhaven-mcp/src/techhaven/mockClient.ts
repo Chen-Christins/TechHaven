@@ -26,14 +26,102 @@ interface Seed {
 }
 
 const SEEDS: Seed[] = [
-  { id: 1, kind: "requirement", title: "文章编辑器支持 Mermaid 图表导出为 PNG", description: "编辑器内 Mermaid 预览已可用，需要增加导出能力，方便文章插图与作业报告使用。", status: "new", priority: "high", assignee: "chen", creator: "chen", createdDaysAgo: 3, updatedDaysAgo: 3 },
-  { id: 2, kind: "requirement", title: "研发看板趋势数据支持 CSV 导出", description: "趋势分析页增加导出按钮，按时间窗导出聚合结果。", status: "developing", priority: "medium", assignee: "dev01", creator: "chen", createdDaysAgo: 12, updatedDaysAgo: 2 },
-  { id: 3, kind: "requirement", title: "组织作业模块移动端适配", description: "作业发布与提交页在小屏下的布局适配。", status: "testing", priority: "low", assignee: "dev02", creator: "dev01", createdDaysAgo: 25, updatedDaysAgo: 5 },
-  { id: 1, kind: "bug", title: "KaTeX 公式在暗色主题下对比度不足", description: "暗色主题下行内公式颜色继承正文色，部分符号几乎不可见。复现：暗色主题打开含公式的文章。", status: "new", priority: "urgent", assignee: "", creator: "dev02", createdDaysAgo: 1, updatedDaysAgo: 1 },
-  { id: 2, kind: "bug", title: "分片上传中断后无法断点续传", description: "网络波动导致上传中断后重试从头开始，期望按分片续传。", status: "accepted", priority: "high", assignee: "chen", creator: "dev01", createdDaysAgo: 8, updatedDaysAgo: 4 },
-  { id: 3, kind: "bug", title: "WebSocket 重连后通知重复弹窗", description: "指数退避重连成功后，未读通知被重复投递，message 连续弹出两次。", status: "processing", priority: "medium", assignee: "dev01", creator: "chen", createdDaysAgo: 20, updatedDaysAgo: 1 },
-  { id: 1, kind: "task", title: "升级 Vite 至 8.1 并验证构建产物", description: "升级构建链，确认 dist 产物体积与 Sourcemap 正常。", status: "todo", priority: "medium", assignee: "chen", creator: "chen", createdDaysAgo: 6, updatedDaysAgo: 6 },
-  { id: 2, kind: "task", title: "为评论树组件补充边界用例", description: "深层嵌套、删除中间节点、折叠态三个场景补进 sample 测试页。", status: "doing", priority: "low", assignee: "dev02", creator: "dev01", createdDaysAgo: 15, updatedDaysAgo: 2 },
+  {
+    id: 1,
+    kind: "requirement",
+    title: "文章编辑器支持 Mermaid 图表导出为 PNG",
+    description: "编辑器内 Mermaid 预览已可用，需要增加导出能力，方便文章插图与作业报告使用。",
+    status: "new",
+    priority: "high",
+    assignee: "chen",
+    creator: "chen",
+    createdDaysAgo: 3,
+    updatedDaysAgo: 3,
+  },
+  {
+    id: 2,
+    kind: "requirement",
+    title: "研发看板趋势数据支持 CSV 导出",
+    description: "趋势分析页增加导出按钮，按时间窗导出聚合结果。",
+    status: "developing",
+    priority: "medium",
+    assignee: "dev01",
+    creator: "chen",
+    createdDaysAgo: 12,
+    updatedDaysAgo: 2,
+  },
+  {
+    id: 3,
+    kind: "requirement",
+    title: "组织作业模块移动端适配",
+    description: "作业发布与提交页在小屏下的布局适配。",
+    status: "testing",
+    priority: "low",
+    assignee: "dev02",
+    creator: "dev01",
+    createdDaysAgo: 25,
+    updatedDaysAgo: 5,
+  },
+  {
+    id: 1,
+    kind: "bug",
+    title: "KaTeX 公式在暗色主题下对比度不足",
+    description: "暗色主题下行内公式颜色继承正文色，部分符号几乎不可见。复现：暗色主题打开含公式的文章。",
+    status: "new",
+    priority: "urgent",
+    assignee: "",
+    creator: "dev02",
+    createdDaysAgo: 1,
+    updatedDaysAgo: 1,
+  },
+  {
+    id: 2,
+    kind: "bug",
+    title: "分片上传中断后无法断点续传",
+    description: "网络波动导致上传中断后重试从头开始，期望按分片续传。",
+    status: "accepted",
+    priority: "high",
+    assignee: "chen",
+    creator: "dev01",
+    createdDaysAgo: 8,
+    updatedDaysAgo: 4,
+  },
+  {
+    id: 3,
+    kind: "bug",
+    title: "WebSocket 重连后通知重复弹窗",
+    description: "指数退避重连成功后，未读通知被重复投递，message 连续弹出两次。",
+    status: "processing",
+    priority: "medium",
+    assignee: "dev01",
+    creator: "chen",
+    createdDaysAgo: 20,
+    updatedDaysAgo: 1,
+  },
+  {
+    id: 1,
+    kind: "task",
+    title: "升级 Vite 至 8.1 并验证构建产物",
+    description: "升级构建链，确认 dist 产物体积与 Sourcemap 正常。",
+    status: "todo",
+    priority: "medium",
+    assignee: "chen",
+    creator: "chen",
+    createdDaysAgo: 6,
+    updatedDaysAgo: 6,
+  },
+  {
+    id: 2,
+    kind: "task",
+    title: "为评论树组件补充边界用例",
+    description: "深层嵌套、删除中间节点、折叠态三个场景补进 sample 测试页。",
+    status: "doing",
+    priority: "low",
+    assignee: "dev02",
+    creator: "dev01",
+    createdDaysAgo: 15,
+    updatedDaysAgo: 2,
+  },
 ];
 
 const seeds: TicketRecord[] = SEEDS.map((s) => ({
@@ -67,10 +155,7 @@ export class MockTechHavenClient implements TechHavenClient {
     const pageSize = Math.min(Math.max(opts.pageSize ?? 20, 1), 50);
     const page = Math.max(opts.page ?? 1, 1);
     const filtered = this.all().filter(
-      (t) =>
-        t.orgId === orgId &&
-        (!opts.kind || t.kind === opts.kind) &&
-        (!opts.status || t.status === opts.status),
+      (t) => t.orgId === orgId && (!opts.kind || t.kind === opts.kind) && (!opts.status || t.status === opts.status),
     );
     const start = (page - 1) * pageSize;
     return { total: filtered.length, page, pageSize, items: filtered.slice(start, start + pageSize) };
@@ -121,6 +206,7 @@ export class MockTechHavenClient implements TechHavenClient {
     id: number,
     toStatus: string,
     _reason: string,
+    _options?: { idempotencyKey?: string },
   ): Promise<TicketRecord> {
     const found = await this.getTicket(orgId, kind, id);
     if (!found) {

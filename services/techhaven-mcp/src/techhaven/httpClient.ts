@@ -18,6 +18,7 @@ interface HttpOpts {
   apiBaseUrl: string;
   serviceToken: string;
   fetchImpl?: typeof fetch;
+  timeoutMs?: number;
 }
 
 const KIND_PATH: Record<TicketKind, string> = {
@@ -30,22 +31,33 @@ export class HttpTechHavenClient implements TechHavenClient {
   private base: string;
   private serviceToken: string;
   private fetchImpl: typeof fetch;
+  private timeoutMs: number;
 
   constructor(opts: HttpOpts) {
     this.base = opts.apiBaseUrl.replace(/\/+$/, "");
     this.serviceToken = opts.serviceToken;
     this.fetchImpl = opts.fetchImpl ?? fetch;
+    this.timeoutMs = opts.timeoutMs ?? 5_000;
   }
 
   private async call<T>(path: string, init?: RequestInit): Promise<T> {
-    const res = await this.fetchImpl(`${this.base}${path}`, {
-      ...init,
-      headers: {
-        "Content-Type": "application/json",
-        ...(this.serviceToken ? { Authorization: `Bearer ${this.serviceToken}` } : {}),
-        ...init?.headers,
-      },
-    });
+    const timeoutSignal = AbortSignal.timeout(this.timeoutMs);
+    const signal = init?.signal ? AbortSignal.any([init.signal, timeoutSignal]) : timeoutSignal;
+    let res: Response;
+    try {
+      res = await this.fetchImpl(`${this.base}${path}`, {
+        ...init,
+        signal,
+        headers: {
+          "Content-Type": "application/json",
+          ...(this.serviceToken ? { Authorization: `Bearer ${this.serviceToken}` } : {}),
+          ...init?.headers,
+        },
+      });
+    } catch (error) {
+      if (timeoutSignal.aborted) throw new DomainError("UPSTREAM_TIMEOUT", `后端超时：${path}`);
+      throw new DomainError("UPSTREAM_UNAVAILABLE", `后端不可用：${path}`);
+    }
     if (!res.ok) {
       throw new DomainError("HTTP_ERROR", `后端 ${res.status}：${path}`);
     }
@@ -69,19 +81,13 @@ export class HttpTechHavenClient implements TechHavenClient {
     return this.fetchDetail(orgId, kind, id);
   }
 
-  private async listKind(
-    orgId: number,
-    kind: TicketKind,
-    params: Record<string, string | number | undefined>,
-  ): Promise<TicketPage> {
+  private async listKind(orgId: number, kind: TicketKind, params: Record<string, string | number | undefined>): Promise<TicketPage> {
     const q = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) {
       if (v !== undefined && v !== "") q.set(k, String(v));
     }
     q.set("org_id", String(orgId));
-    const raw = await this.call<{ list?: Record<string, unknown>[]; total?: number }>(
-      `/rd/${KIND_PATH[kind]}?${q.toString()}`,
-    );
+    const raw = await this.call<{ list?: Record<string, unknown>[]; total?: number }>(`/rd/${KIND_PATH[kind]}?${q.toString()}`);
     const items = (raw.list ?? []).map((r) => mapRaw(kind, orgId, r));
     return {
       total: raw.total ?? items.length,
@@ -98,9 +104,7 @@ export class HttpTechHavenClient implements TechHavenClient {
     const kinds: TicketKind[] = opts.kind ? [opts.kind] : ["requirement", "bug", "task"];
     const pageSize = Math.min(Math.max(opts.pageSize ?? 20, 1), 50);
     const pages = await Promise.all(
-      kinds.map((k) =>
-        this.listKind(orgId, k, { status: opts.status, page: opts.page, page_size: pageSize }),
-      ),
+      kinds.map((k) => this.listKind(orgId, k, { status: opts.status, page: opts.page, page_size: pageSize })),
     );
     const items = pages.flatMap((p) => p.items).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     return {
@@ -153,14 +157,16 @@ export class HttpTechHavenClient implements TechHavenClient {
     kind: TicketKind,
     id: number,
     toStatus: string,
-    _reason: string,
+    reason: string,
+    options?: { idempotencyKey?: string },
   ): Promise<TicketRecord> {
     const current = await this.fetchDetail(orgId, kind, id);
     if (!current) throw new DomainError("NOT_FOUND", `未找到 ${kind} #${id}（组织 ${orgId}）`);
     assertTransition(kind, current.status, toStatus as TicketRecord["status"]);
     await this.call(`/rd/${KIND_PATH[kind]}/edit`, {
       method: "POST",
-      body: JSON.stringify({ id, status: toStatus, org_id: orgId }),
+      headers: options?.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : undefined,
+      body: JSON.stringify({ id, status: toStatus, org_id: orgId, reason }),
     });
     const updated = await this.fetchDetail(orgId, kind, id);
     return updated ?? current;

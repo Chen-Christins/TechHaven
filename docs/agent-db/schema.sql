@@ -1,5 +1,5 @@
 -- ============================================================================
--- TechHaven Agent 平面数据层 · Schema v0.2
+-- TechHaven Agent 平面数据层 · Schema v0.3
 -- 依据：TH-RFC-001 §06 的扩展 + 《TDSQL Nexa：面向 Agent 的统一数据平面》理念
 -- 范围：只覆盖「agent 平面」的元数据与治理层；
 --       域数据（requirements/bugs/tasks/users/organizations）仍归产品后端所有，
@@ -10,6 +10,12 @@
 -- ---------------------------------------------------------------------------
 -- 0. 枚举
 -- ---------------------------------------------------------------------------
+CREATE TABLE agent_schema_migrations (
+  version      TEXT PRIMARY KEY,
+  description TEXT        NOT NULL,
+  applied_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TYPE agent_session_status AS ENUM (
   'queued', 'running', 'awaiting_permission', 'succeeded', 'failed', 'cancelled'
 );
@@ -139,7 +145,8 @@ CREATE INDEX idx_tool_calls_session  ON agent_tool_calls (session_id);
 
 CREATE TABLE agent_write_proposals (
   id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  proposal_ref TEXT            UNIQUE,              -- techhaven-mcp 提案字符串 ID 与 BIGINT 主键的映射（v0.2）
+  proposal_ref TEXT            NOT NULL UNIQUE,     -- techhaven-mcp 提案字符串 ID；PG 权威并发键（v0.3）
+  request_key  TEXT            NOT NULL,            -- sid+工具+对象+变更摘要；MCP 响应重试去重
   session_id   BIGINT          NOT NULL REFERENCES agent_sessions(id),
   org_id       BIGINT          NOT NULL,
   tool_name    TEXT            NOT NULL,
@@ -153,7 +160,8 @@ CREATE TABLE agent_write_proposals (
   apply_note   TEXT,
   applied_at   TIMESTAMPTZ,
   expires_at   TIMESTAMPTZ      NOT NULL,            -- 未决自动过期 = 默认拒绝（安全侧倾斜）
-  created_at   TIMESTAMPTZ      NOT NULL DEFAULT now()
+  created_at   TIMESTAMPTZ      NOT NULL DEFAULT now(),
+  UNIQUE (session_id, request_key)
 );
 CREATE INDEX idx_proposals_pending ON agent_write_proposals (org_id, status)
   WHERE status = 'pending';
@@ -288,6 +296,9 @@ ORDER BY c.created_at DESC;
 -- ---------------------------------------------------------------------------
 -- 11. 变更记录
 -- ---------------------------------------------------------------------------
--- v0.2 (2026-08-29)：agent_write_proposals 增加 proposal_ref TEXT UNIQUE
---   （techhaven-mcp 提案字符串 ID 与 BIGINT 主键的映射；提案 JSONL 事件流仍为权威存储，DB 为镜像）。
---   已有库的增量迁移：ALTER TABLE agent_write_proposals ADD COLUMN proposal_ref TEXT UNIQUE;
+INSERT INTO agent_schema_migrations (version, description)
+VALUES ('0.3', 'PostgreSQL authoritative proposal/session/event baseline')
+ON CONFLICT (version) DO NOTHING;
+
+-- v0.3 (2026-08-29)：proposal_ref 升为 NOT NULL 权威并发键；增加 request_key 去重与 migration ledger。
+-- v0.2 (2026-08-29)：agent_write_proposals 增加 proposal_ref TEXT UNIQUE。

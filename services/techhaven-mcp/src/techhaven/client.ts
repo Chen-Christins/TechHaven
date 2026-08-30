@@ -16,10 +16,7 @@ export class DomainError extends Error {
  */
 export interface TechHavenClient {
   getTicket(orgId: number, kind: TicketKind, id: number): Promise<TicketRecord | null>;
-  listTickets(
-    orgId: number,
-    opts: { kind?: TicketKind; status?: string; page?: number; pageSize?: number },
-  ): Promise<TicketPage>;
+  listTickets(orgId: number, opts: { kind?: TicketKind; status?: string; page?: number; pageSize?: number }): Promise<TicketPage>;
   searchRequirements(
     orgId: number,
     opts: { query?: string; priority?: string; page?: number; pageSize?: number },
@@ -31,5 +28,6 @@ export interface TechHavenClient {
     id: number,
     toStatus: string,
     reason: string,
+    options?: { idempotencyKey?: string },
   ): Promise<TicketRecord>;
 }

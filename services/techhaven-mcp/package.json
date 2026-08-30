@@ -8,13 +8,15 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
+    "test": "tsx --test \"src/**/*.test.ts\"",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "token": "tsx src/cli.ts",
     "proposal": "tsx src/proposalCli.ts",
-    "smoke": "npm run build && tsx src/smoke.ts && tsx src/smoke.staged.ts"
+    "smoke": "npm run build && tsx src/smoke.ts && tsx src/smoke.staged.ts && tsx src/smoke.http.ts",
+    "smoke:pg": "npm run build && tsx src/smoke.pg.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.0",

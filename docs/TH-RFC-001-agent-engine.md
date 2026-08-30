@@ -11,7 +11,7 @@
 
 TechHaven 保持产品外壳、域模型和数据主权，将 dsh 视为**可替换的外部 runner**。平台经 Agent Control Plane 驱动 runner，经 TechHaven MCP 把受控业务工具提供给 agent。产品域写入由服务端策略、proposal 状态机和域后端共同强制，不能由模型提示、MCP annotations 或当前 dsh SDK 的权限事件决定。
 
-当前代码已通过 MCP direct/staged 与 Gateway mock 冒烟，但前端、真实产品后端、live dsh 和 PostgreSQL 仍未形成真实端到端闭环。因此本 RFC 将此前“P1 完成”修正为：**控制面与工具面已实现并在 mock 上验证，真实集成尚在推进**。
+当前代码已通过 MCP direct/staged 与 Gateway mock 冒烟；前端 Gateway client 和 DEV 双路径面板已实现。PG 权威 proposal/session/event、事务并发控制、migration、loader/reconcile 与环境门控 live smoke 也已实现，但本机没有 PostgreSQL 实例。真实产品后端、live dsh 和 PostgreSQL 仍未形成真实端到端闭环。因此当前准确表述仍是：**控制面与工具面已实现并在 mock 上验证，PG 权威路径为 implemented，真实集成尚在推进**。
 
 ## 2. 问题
 
@@ -83,7 +83,7 @@ TechHaven 已拥有博客与研发管理面，但缺少可控的 Agent 执行面
 
 **理由**：dsh v0.1.2-alpha.1 SDK 线协议没有权限应答方法；把 UI 批准映射成未实际送达引擎的决定会制造错误安全感。服务端 proposal 能提供幂等、过期、并发控制和完整审计。
 
-**迁移**：当前 `get_proposal` 触发应用的实现保留为 PoC 兼容路径；R1 必须迁移为批准后服务端主动应用。
+**迁移进度**：批准后由 MCP 服务端 proposal worker 主动重校验并应用；`get_proposal` 已改为纯查询。PG repository 已用事务行锁串行化并发批准和 worker 应用，并提供 live PG smoke；真实实例与真实域幂等仍待 R2 验证。
 
 ### ADR-05：模块化单体 + BFF 逻辑边界
 
@@ -188,13 +188,15 @@ queued → running → awaiting_permission → running → succeeded
 
 - MCP direct：9 项 mock smoke；
 - MCP staged：11 项 mock smoke；
-- Gateway：22 项 mock smoke；
+- MCP HTTP adapter：6 项离线 contract smoke（service identity、org、幂等键、错误与超时）；
+- Gateway：35 项 mock smoke（含 SSE 断线/进程重启回放、连续性、活动态失败收敛与取消终态）；
+- 前端 Gateway client：默认 4 项契约回归 + 1 项环境门控的真实 Gateway 刷新式重连回归；浏览器 mock 链路已验证创建、待审批、批准/拒绝终态；
 - MCP/Gateway TypeScript typecheck。
+- PG 权威 adapter、migration、reconcile 与 live smoke 已通过编译；这是 `implemented` 证据，不是 live PG 证据。
 
 ### 8.2 当前未验证
 
-- 根前端正式构建与自动化测试基线；
-- 前端到真实 Gateway；
+- PostgreSQL 权威存储下的 live 重启/并发恢复，以及批准/应用竞态实跑；
 - live dsh spawn/prompt/event/close；
 - dsh 权限应答与单 turn cancel（当前协议明确不可用）；
 - MCP 到真实产品域 API；

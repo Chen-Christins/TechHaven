@@ -63,9 +63,30 @@ export interface ProposalEvent {
  * 查询结果：未知 id 返回 { status: "unknown", detail: null }；
  * 其余状态 detail 必有。用可辨识联合让调用方 switch 时获得窄化。
  */
-export type ProposalState =
-  | { status: ProposalStatus; detail: ProposalDetail }
-  | { status: "unknown"; detail: null };
+export type ProposalState = { status: ProposalStatus; detail: ProposalDetail } | { status: "unknown"; detail: null };
+
+export type MaybePromise<T> = T | Promise<T>;
+
+export interface ProposalApplyOutcome {
+  status: "applied" | "rejected";
+  note?: string;
+}
+
+/**
+ * proposal 权威存储端口。JSONL 实现保持同步，PostgreSQL 实现使用异步事务；
+ * 调用方统一 await，避免把具体持久化机制泄漏到工具和 worker。
+ */
+export interface ProposalRepository {
+  create(detail: Omit<ProposalDetail, "id" | "expiresAt">): MaybePromise<ProposalDetail>;
+  appendEvent(event: Exclude<ProposalEventType, "created">, id: string, actor: string, note?: string): MaybePromise<void>;
+  getState(id: string): MaybePromise<ProposalState>;
+  list(): MaybePromise<Array<{ detail: ProposalDetail; status: ProposalStatus }>>;
+  /**
+   * 仅当提案仍为 approved 时执行回调并原子写入终态。
+   * PostgreSQL 实现以 SELECT ... FOR UPDATE 串行化多个 worker；JSONL 仅保证单进程。
+   */
+  applyApproved(id: string, apply: (detail: ProposalDetail) => Promise<ProposalApplyOutcome>): Promise<boolean>;
+}
 
 /** 状态推进优先级：只允许沿优先级单向推进，防止文件被手改/竞争导致状态回退 */
 const STATUS_RANK: Record<ProposalStatus, number> = {
@@ -102,7 +123,7 @@ export interface ProposalSinkLike {
   onEvent(event: ProposalEvent): Promise<void>;
 }
 
-export class ProposalStore {
+export class ProposalStore implements ProposalRepository {
   constructor(
     private file: string,
     private ttlMinutes: number,
@@ -139,12 +160,7 @@ export class ProposalStore {
    * 会先触发过期判定（pending 超时 → 自动补记 expired），因此不能对已过期提案批准；
    * 状态不允许回退（如对 rejected 再 approve）时抛错——调用方（CLI/工具）应先 getState 判断。
    */
-  appendEvent(
-    event: Exclude<ProposalEventType, "created">,
-    id: string,
-    actor: string,
-    note?: string,
-  ): void {
+  appendEvent(event: Exclude<ProposalEventType, "created">, id: string, actor: string, note?: string): void {
     const state = this.getState(id); // 复用查询：含 pending → expired 的自动过期补记
     if (state.status === "unknown" || state.detail === null) {
       throw new Error(`提案不存在：${id}`);
@@ -208,6 +224,14 @@ export class ProposalStore {
       out.push({ detail: state.detail, status });
     }
     return out;
+  }
+
+  async applyApproved(id: string, apply: (detail: ProposalDetail) => Promise<ProposalApplyOutcome>): Promise<boolean> {
+    const state = this.getState(id);
+    if (state.status !== "approved" || state.detail === null) return false;
+    const outcome = await apply(state.detail);
+    this.appendEvent(outcome.status, id, "system", outcome.note);
+    return true;
   }
 
   /**

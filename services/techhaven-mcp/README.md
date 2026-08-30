@@ -2,12 +2,14 @@
 
 TechHaven 研发平台的 MCP adapter。它把工单/需求/缺陷操作暴露为结构化工具，是 TH-RFC-001 的「工具流」（agent → TechHaven）边界。
 
-> 当前状态：`implemented + verified-mock`。6 读 + 1 写、direct/staged、token、审计和可选 PG adapter 已实现；真实产品后端与 live PostgreSQL 尚未验证。架构见 `../../docs/ARCHITECTURE.md`，决策见 `../../docs/TH-RFC-001-agent-engine.md`，门禁见 `../../docs/ROADMAP.md`。
+> 当前状态：`implemented + verified-mock`。6 读 + 1 写、direct/staged、token、审计、PG 权威 proposal repository 与并发 worker 串行化已实现；真实产品后端与 live PostgreSQL 尚未验证。架构见 `../../docs/ARCHITECTURE.md`，决策见 `../../docs/TH-RFC-001-agent-engine.md`，门禁见 `../../docs/ROADMAP.md`。
 
 ## 快速开始
 
 ```bash
 npm install
+npm run typecheck
+npm test          # 纯域单测（node:test + tsx，无新增依赖，无需外部实例）
 npm run build
 
 # 1) 签发一个 agent token（绑定 org 1，读写 scope，2 小时时效）
@@ -18,14 +20,22 @@ TECHHAVEN_TOKEN_SECRET=dev-only-secret-change-me \
 TECHHAVEN_TOKEN_SECRET=dev-only-secret-change-me npm run smoke
 ```
 
-smoke 通过只证明 **mock/离线工具流**：握手 → 列工具 → 读工单 → 合法状态迁移 → 非法迁移拒绝 → hashId 错误；随后验证 staged proposal → 人工批准 → `get_proposal` 应用 → 幂等。它不证明真实域 API、live dsh 或 PostgreSQL 已完成集成。
+`npm test` 覆盖无外部依赖的纯逻辑：`src/domain/stateMachine.test.ts`（工单状态机合法/非法迁移、终态、未知状态安全降级）与 `src/auth/agentToken.test.ts`（签发/校验往返、错误密钥、格式畸形、payload 篡改、过期、scope/sid/org 校验、TTL 解析）。它用 Node 内置 `node:test` 驱动，**不引入任何新依赖**，也不需要 PostgreSQL 或真实域后端。
+
+> 构建用 `tsconfig.build.json` 排除 `*.test.ts`，因此 `dist/` 内不含测试产物；`npm run typecheck` 仍覆盖测试文件。
+
+smoke 通过只证明 **mock/离线工具流**：9 项 direct、11 项 staged，以及 6 项 HTTP adapter contract（service Bearer、org、幂等键、errno、超时）。它不证明真实域 API、live dsh 或 PostgreSQL 已完成集成。
 
 ## 运行模式
 
-| 模式 | 说明 |
-|---|---|
-| `TECHHAVEN_BACKEND=mock`（默认） | 内置 8 条演示数据（3 需求 + 3 缺陷 + 2 任务，org 1），零依赖跑通全流程 |
-| `TECHHAVEN_BACKEND=http` | 调真实后端 `/rd/*`（端点对齐前端 `rdPlatformService.ts`）。需要 `TECHHAVEN_SERVICE_TOKEN`（服务端到服务端凭据）；**待朋友侧 P0 交付后联调** |
+| 模式                             | 说明                                                                                                                                        |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TECHHAVEN_BACKEND=mock`（默认） | 内置 8 条演示数据（3 需求 + 3 缺陷 + 2 任务，org 1），零依赖跑通全流程                                                                      |
+| `TECHHAVEN_BACKEND=http`         | 调真实后端 `/rd/*`（端点对齐前端 `rdPlatformService.ts`）。需要 `TECHHAVEN_SERVICE_TOKEN`（服务端到服务端凭据）；**待朋友侧 P0 交付后联调** |
+
+HTTP 模式默认 5 秒超时，可用 `TECHHAVEN_API_TIMEOUT_MS` 设置 100–60000 ms；网络错误归一为 `UPSTREAM_UNAVAILABLE`，超时归一为 `UPSTREAM_TIMEOUT`，均失败关闭。
+
+默认域 API 基址为 `https://techhaven.website/api/v1`。本轮匿名探测确认 `/rd/tasks` 路由存在并返回统一结构的 `errno=1101`（未登录）；这只验证路由/错误壳，不证明 service Bearer 已被后端接受。
 
 agent token 只用于本服务与引擎之间的鉴权与审计，**不会**传给后端；后端调用使用独立的服务凭据。这落实了设计文档「凭据只在服务端，agent 只持 scoped token」的原则。
 
@@ -39,11 +49,11 @@ dsh 侧通过 mcp-client 把本服务挂为外部工具源（stdio 方式，toke
   "command": "node",
   "args": ["/绝对路径/techhaven-mcp/dist/index.js"],
   "env": {
-    "TECHHAVEN_AGENT_TOKEN": "thm_v1....",        // 每会话签发一次
+    "TECHHAVEN_AGENT_TOKEN": "thm_v1....", // 每会话签发一次
     "TECHHAVEN_TOKEN_SECRET": "dev-only-secret-change-me",
     "TECHHAVEN_BACKEND": "mock",
-    "TECHHAVEN_AUDIT_FILE": "./audit/agent-audit.jsonl"
-  }
+    "TECHHAVEN_AUDIT_FILE": "./audit/agent-audit.jsonl",
+  },
 }
 ```
 
@@ -51,14 +61,14 @@ dsh 侧通过 mcp-client 把本服务挂为外部工具源（stdio 方式，toke
 
 ## 工具目录（7 工具 = 6 读 + 1 写）
 
-| 工具 | scope | 说明 |
-|---|---|---|
-| `get_ticket` | rd:read | 读单张工单详情（kind: requirement/bug/task，hashId 入参） |
-| `list_my_tickets` | rd:read | 列本组织工单，可按类型/状态过滤，单页上限 50 |
-| `search_requirements` | rd:read | 按关键词/优先级搜需求 |
-| `get_trend_summary` | rd:read | 近 N 天趋势摘要（各类型 open/closed、窗口内新建/关闭） |
-| `get_semantics` | rd:read | 语义层读取：字段业务含义与指标口径（查数/改数前先读口径） |
-| `get_proposal` | rd:read | 查询写提案状态；当前 PoC 中批准后再调它会触发应用 |
+| 工具                   | scope    | 说明                                                                            |
+| ---------------------- | -------- | ------------------------------------------------------------------------------- |
+| `get_ticket`           | rd:read  | 读单张工单详情（kind: requirement/bug/task，hashId 入参）                       |
+| `list_my_tickets`      | rd:read  | 列本组织工单，可按类型/状态过滤，单页上限 50                                    |
+| `search_requirements`  | rd:read  | 按关键词/优先级搜需求                                                           |
+| `get_trend_summary`    | rd:read  | 近 N 天趋势摘要（各类型 open/closed、窗口内新建/关闭）                          |
+| `get_semantics`        | rd:read  | 语义层读取：字段业务含义与指标口径（查数/改数前先读口径）                       |
+| `get_proposal`         | rd:read  | 只查询写提案状态；批准后由 server worker 主动应用                               |
 | `update_ticket_status` | rd:write | 变更状态；**非法迁移一律拒绝**；必须附原因；staged 且列入分级审批清单时先建提案 |
 
 `add_ticket_comment`、`create_bug` 等后续工具不是既定交付；每个写工具需单独完成风险、幂等、审批和域契约评审。
@@ -67,10 +77,10 @@ dsh 侧通过 mcp-client 把本服务挂为外部工具源（stdio 方式，toke
 
 `TECHHAVEN_WRITE_MODE` 控制写工具（目前是 `update_ticket_status`）的生效方式：
 
-| 模式 | 行为 |
-|---|---|
-| `direct`（默认） | 变更直接生效（P0 现状，行为不变） |
-| `staged` | 变更先存为**提案**（pending，带过期时间），人工批准后才由 server 应用 |
+| 模式             | 行为                                                                  |
+| ---------------- | --------------------------------------------------------------------- |
+| `direct`（默认） | 变更直接生效（P0 现状，行为不变）                                     |
+| `staged`         | 变更先存为**提案**（pending，带过期时间），人工批准后才由 server 应用 |
 
 staged 流程（文字版时序）：
 
@@ -79,12 +89,12 @@ agent 调 update_ticket_status（合法迁移）
   → server 校验 scope + 状态机，创建提案（pending，TECHHAVEN_PROPOSAL_TTL_MINUTES 内有效），
     返回 { proposal: { id, status: "pending", to_status, expires_at } }   —— 变更未生效
   → 人工执行 `npm run proposal -- approve <id>`（或 reject / 放任过期）
-  → agent 调 get_proposal { id }
-  → server 检测到 approved：重读工单当前状态、重新过状态机 → 应用变更，补记 applied 事件
+  → server proposal worker 检测到 approved：重读工单当前状态、重新过状态机 → 应用变更，补记 applied 事件
+  → agent 可调用 get_proposal { id } 查询状态；查询本身不触发写入
   → 返回 { id, status: "applied", updated: {...} }
 ```
 
-以上是**当前 PoC 行为**。目标流程在 R1 改为：批准后由服务端 worker 主动重新校验并幂等应用，`get_proposal` 只查询状态，模型轮询不再是写入生效的必要条件。
+以上流程同时支持两种存储门禁：默认 `TECHHAVEN_DB_MODE=mirror` 保持 JSONL PoC 兼容；`TECHHAVEN_DB_MODE=authoritative` 时 `agent_write_proposals` 是唯一权威，连接或事务失败会拒绝启动/写入，不会回退到另一份可写真相。authoritative 模式强制 `TECHHAVEN_WRITE_MODE=staged`，禁止绕过 proposal 的 direct 写。
 
 要点：
 
@@ -93,9 +103,9 @@ agent 调 update_ticket_status（合法迁移）
 - **未决过期 = 默认拒绝**（安全侧倾斜）：`TECHHAVEN_PROPOSAL_TTL_MINUTES`（默认 30 分钟）内未批准即 expired。
 - **幂等**：已 applied 的提案重复查询不会重复应用。
 - **分级审批过渡**：staged 模式下只有列入 `TECHHAVEN_WRITE_STAGED_TOOLS`（默认 `update_ticket_status`）的写工具走提案；目标由 `tool_catalog` / `org_tool_policy` 服务端策略取代环境清单。
-- 提案事件（created/approved/rejected/applied/expired，含操作者）落 `TECHHAVEN_PROPOSALS_FILE`（JSONL，append-only）；人工用 `npm run proposal -- list / approve / reject` 处理。
+- mirror 模式的提案事件落 `TECHHAVEN_PROPOSALS_FILE`；authoritative 模式的人工 CLI 需要同时设置 `TECHHAVEN_DB_URL`、`TECHHAVEN_APPROVAL_ORG_ID`，可选 `TECHHAVEN_APPROVER_ID`，直接事务更新 PG。
 
-风险与边界：**当前 PoC** 以 JSONL proposal 为权威，适用单 server + 偶发 CLI；不适用于生产并发审批。目标在 R2 迁移为 PostgreSQL 权威、JSONL spool，详见 `../../docs/agent-db/README.md`。
+PG repository 通过 `SELECT ... FOR UPDATE` 在域幂等调用期间持有 proposal 行锁：两个批准者只有一个能从 pending 推进，多个 worker 只有一个执行域写回调。该实现已通过编译和 JSONL 回归；live 并发证据需运行 `TECHHAVEN_TEST_DB_URL=... npm run smoke:pg` 后才能标记 `verified-integration`。
 
 ## 工单状态机（须与后端对齐后冻结）
 
@@ -115,12 +125,12 @@ task:        todo → doing → done → closed                    （doing 可�
 
 ## 与 docs/agent-db 的衔接
 
-`TECHHAVEN_DB_URL` 非空时，由 `PgContext`（`src/db/context.ts`）统一建连接池并 bootstrap `agent_identities` / `agent_sessions`，供三条落地路径共用；任一环节失败整体降级为「仅 JSONL 审计 + mock 语义层 + 提案只落 JSONL」：
+`TECHHAVEN_DB_URL` 非空时，由 `PgContext` 统一建连接池并 bootstrap `agent_identities` / `agent_sessions`。`TECHHAVEN_DB_MODE=mirror` 保持兼容降级；`authoritative` 要求 DB 必须可用，并把 proposal 切到 PG 权威 repository：
 
-| 能力 | DB 落点 | 状态 |
-|---|---|---|
-| 审计双写 | `agent_tool_calls`（当前 JSONL 主、DB 镜像） | `implemented`，live PG 未验证 |
-| 写提案落库 | `agent_write_proposals`（`proposal_ref` 映射字符串 ID） | `implemented`，live PG/并发未验证 |
+| 能力               | DB 落点                                                                 | 状态                              |
+| ------------------ | ----------------------------------------------------------------------- | --------------------------------- |
+| 审计双写           | `agent_tool_calls`（当前 JSONL 主、DB 镜像）                            | `implemented`，live PG 未验证     |
+| 写提案权威         | `agent_write_proposals`（`proposal_ref` 并发键、事务行锁）              | `implemented`，live PG/并发未验证 |
 | 语义层 DB Provider | `semantic_objects` / `semantic_fields` / `semantic_metrics`（60s 缓存） | `implemented`，live PG/策展未验证 |
 
 分级审批：staged 写模式下仅 `TECHHAVEN_WRITE_STAGED_TOOLS` 清单中的写工具走提案审批；后续 `tool_catalog` / `org_tool_policy` 就位后，该清单改由组织级工具策略驱动。
@@ -141,6 +151,8 @@ src/
   proposalCli.ts      # 写提案人工审批 CLI（list / approve / reject）
   smoke.ts            # 端到端冒烟测试（direct 模式）
   smoke.staged.ts     # 端到端冒烟测试（staged 写模式：提案 → 人批 → 应用）
+  smoke.http.ts       # HTTP adapter 离线契约（身份、组织、幂等、错误、超时）
+  smoke.pg.ts         # 环境门控的 live PG DDL/并发/失败关闭测试
   config.ts           # 环境变量解析
   audit.ts            # JSONL 审计
   hashid.ts           # TechHaven hashId 镜像（同盐同长度）
@@ -149,6 +161,8 @@ src/
   domain/             # 领域类型与工单状态机
   audit/dbSink.ts     # 审计 DB 双写（agent_tool_calls）
   proposals/store.ts  # 当前 PoC 写提案存储（JSONL append-only）
+  proposals/pgStore.ts# PG 权威 proposal repository（事务并发控制）
+  proposals/worker.ts # 批准后主动重校验、应用与恢复对账
   proposals/dbSink.ts # 写提案 DB 双写（agent_write_proposals）
   semantics/          # 语义层 Provider：mock（人工策展）/ db（semantic_* 表，60s 缓存）
   techhaven/          # 数据访问：mock / http 两实现

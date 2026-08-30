@@ -10,11 +10,11 @@
 
 ## 0. 版本与文档依据
 
-| 项 | 值 | 出处 |
-|---|---|---|
-| dsh 版本 | `0.1.2-alpha.1` | 仓库 `package.json:3` |
-| 对应 commit / tag | `cd5ef8148158c3a752a658978873241fdf8e2bbc`，tag `dsh-v0.1.2-alpha.1` | `git log` / `git tag` |
-| 官方警示 | 「DeepSeek Harness is in _developer preview_ and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**」 | dsh 仓库根 `README.md:13` |
+| 项                | 值                                                                                                                      | 出处                      |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| dsh 版本          | `0.1.2-alpha.1`                                                                                                         | 仓库 `package.json:3`     |
+| 对应 commit / tag | `cd5ef8148158c3a752a658978873241fdf8e2bbc`，tag `dsh-v0.1.2-alpha.1`                                                    | `git log` / `git tag`     |
+| 官方警示          | 「DeepSeek Harness is in _developer preview_ and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**」 | dsh 仓库根 `README.md:13` |
 
 > **升级警示**：dsh 处于 developer preview，官方明示会有兼容性破坏变更。本手册与示例配置仅对上述 commit 验证过文档一致性；升级 dsh 后请对照 `docs/config-catalog.md` 的 `@deepseek-ai/dsh-mcp-client` 一节重新核对键名。
 
@@ -62,10 +62,10 @@ TECHHAVEN_TOKEN_SECRET=dev-only-secret-change-me \
 
 ### 1.3 后端模式：从 `TECHHAVEN_BACKEND=mock` 起步
 
-| 模式 | 说明 |
-|---|---|
+| 模式           | 说明                                                                                                                                                       |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `mock`（默认） | 内置 8 条演示数据（3 需求 + 3 缺陷 + 2 任务，全在 org 1），零外部依赖（techhaven-mcp `README.md:27`；种子数据见 `src/techhaven/mockClient.ts` 的 `SEEDS`） |
-| `http` | 调真实后端 `/rd/*`，需要 `TECHHAVEN_SERVICE_TOKEN`；朋友侧 P0 交付后再联调（techhaven-mcp `README.md:28`） |
+| `http`         | 调真实后端 `/rd/*`，需要 `TECHHAVEN_SERVICE_TOKEN`；朋友侧 P0 交付后再联调（techhaven-mcp `README.md:28`）                                                 |
 
 演示一律从 `mock` 开始。先跑一次冒烟确认服务本身闭环：
 
@@ -77,14 +77,14 @@ TECHHAVEN_TOKEN_SECRET=dev-only-secret-change-me npm run smoke
 
 ### 1.4 techhaven-mcp 注入给子进程的环境变量全集
 
-| 变量 | 必填 | 说明 | 出处（techhaven-mcp） |
-|---|---|---|---|
-| `TECHHAVEN_AGENT_TOKEN` | 是 | `npm run token -- issue` 签发的 thm_v1 token；缺失即启动失败 | `src/config.ts:24-27` |
-| `TECHHAVEN_TOKEN_SECRET` | 是 | HMAC 验签密钥，须与签发方一致 | `src/config.ts:28-31` |
-| `TECHHAVEN_BACKEND` | 否 | `mock` \| `http`，默认 `mock` | `src/config.ts:33-36` |
-| `TECHHAVEN_AUDIT_FILE` | 否 | 审计 JSONL 路径，默认 `./audit/agent-audit.jsonl`，目录自动创建 | `src/config.ts:51`、`src/audit.ts:34` |
-| `TECHHAVEN_API_BASE_URL` / `TECHHAVEN_SERVICE_TOKEN` | http 模式必填 | 后端基地址与服务凭据（agent token 不传给后端） | `src/config.ts:39-42` |
-| `TECHHAVEN_DB_URL` / `TECHHAVEN_AGENT_NAME` | 否 | DB 审计双写 / agent 身份名（可选） | `src/config.ts:10-12、52-53` |
+| 变量                                                 | 必填          | 说明                                                            | 出处（techhaven-mcp）                 |
+| ---------------------------------------------------- | ------------- | --------------------------------------------------------------- | ------------------------------------- |
+| `TECHHAVEN_AGENT_TOKEN`                              | 是            | `npm run token -- issue` 签发的 thm_v1 token；缺失即启动失败    | `src/config.ts:24-27`                 |
+| `TECHHAVEN_TOKEN_SECRET`                             | 是            | HMAC 验签密钥，须与签发方一致                                   | `src/config.ts:28-31`                 |
+| `TECHHAVEN_BACKEND`                                  | 否            | `mock` \| `http`，默认 `mock`                                   | `src/config.ts:33-36`                 |
+| `TECHHAVEN_AUDIT_FILE`                               | 否            | 审计 JSONL 路径，默认 `./audit/agent-audit.jsonl`，目录自动创建 | `src/config.ts:51`、`src/audit.ts:34` |
+| `TECHHAVEN_API_BASE_URL` / `TECHHAVEN_SERVICE_TOKEN` | http 模式必填 | 后端基地址与服务凭据（agent token 不传给后端）                  | `src/config.ts:39-42`                 |
+| `TECHHAVEN_DB_URL` / `TECHHAVEN_AGENT_NAME`          | 否            | DB 审计双写 / agent 身份名（可选）                              | `src/config.ts:10-12、52-53`          |
 
 ---
 
@@ -116,26 +116,26 @@ dsh 通过插件 `@deepseek-ai/dsh-mcp-client` 消费外部 MCP server：**每�
 
 **stdio 传输**（`docs/config-catalog.md:1449-1473`；字段表与默认值见 `packages/mcp/mcp-client/README.md:55-66`；默认值另与源码 `src/index.ts:118-122` 核对一致）：
 
-| 键 | 类型 / 默认 | 含义 | 出处 |
-|---|---|---|---|
-| `transport` | 必填，`'stdio'` | 选择子进程 stdio 传输 | catalog:1451-1452 |
-| `serverName` | 必填 | 工具命名空间，须匹配 `[A-Za-z0-9_-]{1,32}`，在存活的 mcp-client 实例间唯一；重复时**后加载的实例失败** | catalog:1453-1457；README:58、77 |
-| `command` | 必填 | 启动 server 的可执行文件 | catalog:1459-1460 |
-| `args` | `string[]`，默认 `[]` | 参数原样传递，**不做 shell 插值** | catalog:1461-1462；index.ts:118 |
-| `env` | `Record<string,string>`，默认 `{}` | 额外 env，**合并在净化后的父环境之上**（见 §3.4） | catalog:1463-1464；index.ts:119 |
-| `cwd` | `string`，默认 `''` | 子进程工作目录 | catalog:1465-1466；index.ts:120 |
-| `toolCallTimeoutMs` | number，默认 `60000` | 单次 `tools/call` 超时（毫秒） | catalog:1467-1468；README:61 |
-| `failOnStartupError` | boolean，默认 `false` | 为 `true` 时，首连/工具同步失败使插件激活失败（harness 启动中止）；`false` 时 harness 照常启动，该 server 工具不出现并记录错误 | catalog:1469-1470；README:62、70 |
-| `reconnect` | ReconnectConfig，可省略 | 断线自动重连策略，省略即用默认值 | catalog:1471-1472 |
+| 键                   | 类型 / 默认                        | 含义                                                                                                                           | 出处                             |
+| -------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| `transport`          | 必填，`'stdio'`                    | 选择子进程 stdio 传输                                                                                                          | catalog:1451-1452                |
+| `serverName`         | 必填                               | 工具命名空间，须匹配 `[A-Za-z0-9_-]{1,32}`，在存活的 mcp-client 实例间唯一；重复时**后加载的实例失败**                         | catalog:1453-1457；README:58、77 |
+| `command`            | 必填                               | 启动 server 的可执行文件                                                                                                       | catalog:1459-1460                |
+| `args`               | `string[]`，默认 `[]`              | 参数原样传递，**不做 shell 插值**                                                                                              | catalog:1461-1462；index.ts:118  |
+| `env`                | `Record<string,string>`，默认 `{}` | 额外 env，**合并在净化后的父环境之上**（见 §3.4）                                                                              | catalog:1463-1464；index.ts:119  |
+| `cwd`                | `string`，默认 `''`                | 子进程工作目录                                                                                                                 | catalog:1465-1466；index.ts:120  |
+| `toolCallTimeoutMs`  | number，默认 `60000`               | 单次 `tools/call` 超时（毫秒）                                                                                                 | catalog:1467-1468；README:61     |
+| `failOnStartupError` | boolean，默认 `false`              | 为 `true` 时，首连/工具同步失败使插件激活失败（harness 启动中止）；`false` 时 harness 照常启动，该 server 工具不出现并记录错误 | catalog:1469-1470；README:62、70 |
+| `reconnect`          | ReconnectConfig，可省略            | 断线自动重连策略，省略即用默认值                                                                                               | catalog:1471-1472                |
 
 **`reconnect` 子块**（`docs/config-catalog.md:1497-1507`；默认值与源码 `index.ts:107-110` 一致；行为见 README:91）：
 
-| 键 | 默认 | 含义 |
-|---|---|---|
-| `enabled` | `true` | 断线后自动重连；`false` 则工具保持列出但调用失败，直到 reload/重启 |
-| `initialDelayMs` | `500` | 首次重连延迟，逐次翻倍 |
-| `maxDelayMs` | `30000` | 退避上限；也是「存活多久后重置尝试预算」的阈值 |
-| `maxAttempts` | `10` | 每次断线的连续失败预算，耗尽后该 server 的工具被摘除、停止重连，直到 reload 配置或重启 |
+| 键               | 默认    | 含义                                                                                   |
+| ---------------- | ------- | -------------------------------------------------------------------------------------- |
+| `enabled`        | `true`  | 断线后自动重连；`false` 则工具保持列出但调用失败，直到 reload/重启                     |
+| `initialDelayMs` | `500`   | 首次重连延迟，逐次翻倍                                                                 |
+| `maxDelayMs`     | `30000` | 退避上限；也是「存活多久后重置尝试预算」的阈值                                         |
+| `maxAttempts`    | `10`    | 每次断线的连续失败预算，耗尽后该 server 的工具被摘除、停止重连，直到 reload 配置或重启 |
 
 **Streamable HTTP 传输**（`docs/config-catalog.md:1475-1495`；`docs/user/guide/mcp-memory.md:101`）：`transport: 'streamable-http'` + `serverName` + `url`（MCP endpoint URL）+ `headers`（附加请求头）+ `toolCallTimeoutMs` + `failOnStartupError` + `reconnect`。techhaven-mcp P0 **仅支持 stdio**，此组键名仅作记录（见 §7 第 5 条）。
 
@@ -143,11 +143,11 @@ dsh 通过插件 `@deepseek-ai/dsh-mcp-client` 消费外部 MCP server：**每�
 
 配置形态是 **YAML 的 Cordis patch overlay**，行格式 `- insert: [ - id: …, name: '@deepseek-ai/dsh-mcp-client', config: … ]`（`docs/user/guide/mcp-memory.md:88-99` 及同仓库示例 `apps/cli/config/examples/mcp-memory/memorix.cordis.yml`）。三个加载位置（均为文档原文用法）：
 
-| 方式 | 命令 / 位置 | 出处 |
-|---|---|---|
-| 临时（推荐演示用） | `dsh web --patch "<yml 绝对路径>"` | mcp-memory.md:28 |
-| 单 profile | 并入 `$DSH_HOME/profiles/<name>/cordis.patch.yml` | mcp-memory.md:33 |
-| 全机生效 | 并入 `$DSH_HOME/cordis.patch.yml` | mcp-memory.md:33 |
+| 方式               | 命令 / 位置                                       | 出处             |
+| ------------------ | ------------------------------------------------- | ---------------- |
+| 临时（推荐演示用） | `dsh web --patch "<yml 绝对路径>"`                | mcp-memory.md:28 |
+| 单 profile         | 并入 `$DSH_HOME/profiles/<name>/cordis.patch.yml` | mcp-memory.md:33 |
+| 全机生效           | 并入 `$DSH_HOME/cordis.patch.yml`                 | mcp-memory.md:33 |
 
 层叠顺序：bundle patch → profile 的 `cordis.patch.yml` → `$DSH_HOME/cordis.patch.yml` → `--patch` overlays（`apps/cli/README.md:36-41`）。**并入已有文件时只合并自己的 `- insert:` 块，不要整文件覆盖**（mcp-memory.md:33 原文提醒目标文件可能已含其他 patch）。编辑 patch 文件会**就地热重载**该 server 连接，未变的工具名保持不变（包 README:91；HMR 机制另见设计笔记 §Lifecycle）。
 
@@ -156,17 +156,17 @@ dsh 通过插件 `@deepseek-ai/dsh-mcp-client` 消费外部 MCP server：**每�
 ```yaml
 - insert:
     - id: techhaven-mcp
-      name: '@deepseek-ai/dsh-mcp-client'
+      name: "@deepseek-ai/dsh-mcp-client"
       config:
         transport: stdio
         serverName: techhaven
         command: node
-        args: ['D:/Desktop/Chen/TechHaven/services/techhaven-mcp/dist/index.js']   # ← 绝对路径
+        args: ["D:/Desktop/Chen/TechHaven/services/techhaven-mcp/dist/index.js"] # ← 绝对路径
         env:
           TECHHAVEN_AGENT_TOKEN: !!js process.env.TECHHAVEN_AGENT_TOKEN
           TECHHAVEN_TOKEN_SECRET: !!js process.env.TECHHAVEN_TOKEN_SECRET
           TECHHAVEN_BACKEND: mock
-          TECHHAVEN_AUDIT_FILE: 'D:/Desktop/Chen/TechHaven/services/techhaven-mcp/audit/agent-audit.jsonl'
+          TECHHAVEN_AUDIT_FILE: "D:/Desktop/Chen/TechHaven/services/techhaven-mcp/audit/agent-audit.jsonl"
 ```
 
 （`!!js process.env.X` 是 dsh 官方示例的原文写法：包 README:43 `GITHUB_TOKEN: !!js process.env.GITHUB_TOKEN`；mcp-memory.md:98 `cwd: !!js process.cwd()`。**用此写法前必须先 export 对应变量**；若图省事直接写明文字面量也可以——`env` 是 `Record<string,string>`——但含密钥的 patch 文件不要提交仓库。）
@@ -186,15 +186,15 @@ dsh 通过插件 `@deepseek-ai/dsh-mcp-client` 消费外部 MCP server：**每�
 
 `serverName: techhaven` 时，P0 的 6 个工具以如下名字出现在模型工具列表（命名规则出处：包 README:74、config-catalog.md:1453-1457、设计笔记:95-97；工具清单出处：techhaven-mcp `src/tools/index.ts:94-231` 的 `registerTool` 调用）：
 
-| 模型侧工具名 | scope | 说明 |
-|---|---|---|
-| `mcp__techhaven__get_ticket` | rd:read | 读单张工单（入参 `kind` + `id`=hashId） |
-| `mcp__techhaven__list_my_tickets` | rd:read | 列本组织工单（`kind`/`status`/`page` 可选，单页上限 50） |
-| `mcp__techhaven__search_requirements` | rd:read | 按关键词/优先级搜需求 |
-| `mcp__techhaven__get_trend_summary` | rd:read | 近 N 天趋势摘要 |
-| `mcp__techhaven__update_ticket_status` | rd:write | 状态迁移（非法迁移拒绝，必填 `reason`；staged 模式下先建提案） |
-| `mcp__techhaven__get_semantics` | rd:read | 语义层：字段业务含义与指标口径 |
-| `mcp__techhaven__get_proposal` | rd:read | 查询写提案状态；staged 模式下人工批准后再调它即触发应用 |
+| 模型侧工具名                           | scope    | 说明                                                               |
+| -------------------------------------- | -------- | ------------------------------------------------------------------ |
+| `mcp__techhaven__get_ticket`           | rd:read  | 读单张工单（入参 `kind` + `id`=hashId）                            |
+| `mcp__techhaven__list_my_tickets`      | rd:read  | 列本组织工单（`kind`/`status`/`page` 可选，单页上限 50）           |
+| `mcp__techhaven__search_requirements`  | rd:read  | 按关键词/优先级搜需求                                              |
+| `mcp__techhaven__get_trend_summary`    | rd:read  | 近 N 天趋势摘要                                                    |
+| `mcp__techhaven__update_ticket_status` | rd:write | 状态迁移（非法迁移拒绝，必填 `reason`；staged 模式下先建提案）     |
+| `mcp__techhaven__get_semantics`        | rd:read  | 语义层：字段业务含义与指标口径                                     |
+| `mcp__techhaven__get_proposal`         | rd:read  | 只查询写提案状态；staged 模式下人工批准后由 server worker 主动应用 |
 
 > 差异说明：techhaven-mcp `README.md` 的工具表列了 5 个，代码实际注册 6 个（`get_semantics` 未同步进 README 表）。以代码为准。
 
@@ -310,18 +310,18 @@ dsh 文档**没有**提供独立的「列出工具」CLI 命令（检索过 `doc
 
 **server 日志走 stderr**：stdio 传输下 stdout 是 MCP JSON-RPC 通道，任何杂音都会污染协议——techhaven-mcp 的全部日志经 `src/log.ts` 输出到 **stderr**，带 `[techhaven-mcp]` 前缀。dsh 文档只笼统说错误会「logged」、重连进度「visible in the logs」（包 README:70、91），**未描述子进程 stderr 在 dsh 侧如何转发/展示——文档未提及，未经验证**；dsh 侧排查以 dsh 自己的日志输出与 `--dump-config` 为准。
 
-| 症状 | 可能原因 / 处置 | 依据 |
-|---|---|---|
-| 工具完全没出现，dsh 正常启动 | 首连失败被默认策略吞掉（`failOnStartupError` 默认 `false`）；查 dsh 日志中的错误，或临时设 `failOnStartupError: true` 让失败显式中止 | 包 README:62、70 |
-| 工具过一会儿才出现 | 发现是**异步**的，等 `mcp__techhaven__*` 出现再发 prompt | mcp-memory.md:82 |
-| 每次调用都验签失败 | token 过期（TTL 到）→ 重签；`npm run token -- verify` 先自验 | `src/cli.ts:69-76` |
-| 验签失败但 token 未过期 | 签发与运行时 `TECHHAVEN_TOKEN_SECRET` 不一致 → 统一；**或犯了净化陷阱**：变量只 export 没写进配置 `env` → 按本文 §3.4 补进 `config.env` | §3.4；`src/config.ts:28-31` |
-| 工具一个都没有 + `npm run build` 没跑过 | `args` 里的 `dist/index.js` 路径错误/文件不存在 → 构建并写绝对路径 | `package.json` scripts、catalog:1461-1462 |
-| `dump-config` 时 patch 行没接上 | patch 目标不匹配会报到 stderr；确认顶层是 `- insert:` 且 `name`/键名拼写与本文一致 | reference/README.md:42 |
-| `serverName` 冲突报错 | 同一部署里另一个 mcp-client 实例占了 `techhaven` → 换名（同名时后加载实例失败，不会静默遮蔽） | catalog:1453-1457；README:77 |
-| 运行中断线后工具消失 | 重连预算耗尽（默认连续 10 次失败）→ 工具被摘除，reload 配置或重启恢复；存活超过 `maxDelayMs` 会重置预算 | README:66、91 |
-| 审计文件「不见了」 | `TECHHAVEN_AUDIT_FILE` 是相对路径，落在了子进程 cwd（即 dsh 启动目录）下 → 用绝对路径 | §5；index.ts:120 |
-| server 启动即报缺少 token/secret | techhaven-mcp 的 `ConfigError`：env 没注入成功 → 检查 §3.4 净化与 `!!js` 变量是否已 export | `src/config.ts:24-31` |
+| 症状                                    | 可能原因 / 处置                                                                                                                         | 依据                                      |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| 工具完全没出现，dsh 正常启动            | 首连失败被默认策略吞掉（`failOnStartupError` 默认 `false`）；查 dsh 日志中的错误，或临时设 `failOnStartupError: true` 让失败显式中止    | 包 README:62、70                          |
+| 工具过一会儿才出现                      | 发现是**异步**的，等 `mcp__techhaven__*` 出现再发 prompt                                                                                | mcp-memory.md:82                          |
+| 每次调用都验签失败                      | token 过期（TTL 到）→ 重签；`npm run token -- verify` 先自验                                                                            | `src/cli.ts:69-76`                        |
+| 验签失败但 token 未过期                 | 签发与运行时 `TECHHAVEN_TOKEN_SECRET` 不一致 → 统一；**或犯了净化陷阱**：变量只 export 没写进配置 `env` → 按本文 §3.4 补进 `config.env` | §3.4；`src/config.ts:28-31`               |
+| 工具一个都没有 + `npm run build` 没跑过 | `args` 里的 `dist/index.js` 路径错误/文件不存在 → 构建并写绝对路径                                                                      | `package.json` scripts、catalog:1461-1462 |
+| `dump-config` 时 patch 行没接上         | patch 目标不匹配会报到 stderr；确认顶层是 `- insert:` 且 `name`/键名拼写与本文一致                                                      | reference/README.md:42                    |
+| `serverName` 冲突报错                   | 同一部署里另一个 mcp-client 实例占了 `techhaven` → 换名（同名时后加载实例失败，不会静默遮蔽）                                           | catalog:1453-1457；README:77              |
+| 运行中断线后工具消失                    | 重连预算耗尽（默认连续 10 次失败）→ 工具被摘除，reload 配置或重启恢复；存活超过 `maxDelayMs` 会重置预算                                 | README:66、91                             |
+| 审计文件「不见了」                      | `TECHHAVEN_AUDIT_FILE` 是相对路径，落在了子进程 cwd（即 dsh 启动目录）下 → 用绝对路径                                                   | §5；index.ts:120                          |
+| server 启动即报缺少 token/secret        | techhaven-mcp 的 `ConfigError`：env 没注入成功 → 检查 §3.4 净化与 `!!js` 变量是否已 export                                              | `src/config.ts:24-31`                     |
 
 ---
 

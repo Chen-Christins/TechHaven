@@ -7,13 +7,14 @@
  * 终态驻留超 sessionRetentionMinutes 后从注册表淘汰；空闲超 sessionIdleTimeoutMinutes
  * 由看门狗合成 failed 终态 —— "会话不悬空"的不变量由注册表持有，不依赖驱动流结束。
  */
-import { createWriteStream, mkdirSync } from "node:fs";
+import { createWriteStream, existsSync, mkdirSync, readFileSync } from "node:fs";
 import type { WriteStream } from "node:fs";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { log } from "./log.js";
 import { errorMessage, nowIso } from "./util.js";
 import type { EngineDriver, EngineEvent, EngineEventPayload, EngineSessionHandle, EventEnvelope, SessionStatus } from "./types.js";
+import { PgQuotaError, type GatewayPgStore, type PersistedGatewaySession } from "./pgStore.js";
 
 /** 事件信封（TH-RFC-001 §6）：seq/type/occurredAt 上提，payload 保留事件其余字段；SSE 数据帧装信封，JSONL 仍装引擎事件 */
 export function toEnvelopeJson(record: SessionRecord, ev: EngineEvent): string {
@@ -35,7 +36,10 @@ export function toEnvelopeJson(record: SessionRecord, ev: EngineEvent): string {
 
 /** 带 HTTP 语义的业务错误（http.ts 统一映射为 {error}） */
 export class GatewayError extends Error {
-  constructor(readonly status: number, message: string) {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
     super(message);
     this.name = "GatewayError";
   }
@@ -95,6 +99,7 @@ interface SessionPatchJson {
   orgId?: number;
   subjectType?: string;
   subjectId?: string;
+  createdAt?: string;
   note?: string;
 }
 
@@ -105,8 +110,44 @@ function sessionPatch(record: SessionRecord, status: SessionStatus, note?: strin
     orgId: record.orgId,
     subjectType: record.subjectType,
     subjectId: record.subjectId,
+    createdAt: record.createdAt,
     note,
   };
+}
+
+const RECOVERED_PROMPT = "（Gateway 重启恢复：原始 prompt 未持久化）";
+
+function jsonRecord(value: unknown): Record<string, unknown> | undefined {
+  return value !== null && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
+}
+
+function isSessionStatusValue(value: unknown): value is SessionStatus {
+  return (
+    typeof value === "string" &&
+    (TERMINAL_STATUSES as readonly string[]).concat(["queued", "running", "awaiting_permission"]).includes(value)
+  );
+}
+
+/** JSONL 是跨进程恢复输入，必须做运行时校验，不能直接断言为 EngineEvent。 */
+function isEngineEventValue(value: unknown): value is EngineEvent {
+  const event = jsonRecord(value);
+  if (!event || !Number.isInteger(event.seq) || (event.seq as number) <= 0 || typeof event.ts !== "string") return false;
+  switch (event.type) {
+    case "assistant_chunk":
+      return typeof event.text === "string";
+    case "tool_call":
+      return typeof event.tool === "string" && typeof event.argsDigest === "string";
+    case "tool_result":
+      return typeof event.tool === "string" && typeof event.ok === "boolean";
+    case "permission_request":
+      return typeof event.requestId === "string" && typeof event.tool === "string";
+    case "status_change":
+      return isSessionStatusValue(event.status);
+    case "error":
+      return typeof event.message === "string";
+    default:
+      return false;
+  }
 }
 
 /** 注册表内部会话记录（含句柄 / 订阅者等运行态，禁止直接下发给客户端） */
@@ -161,16 +202,23 @@ function lastSeq(record: SessionRecord): number {
   return record.events.length > 0 ? record.events[record.events.length - 1].seq : 0;
 }
 
-/** 按 seq 升序插入（引擎正常时天然有序；乱序到达时兜底保序） */
-function insertBySeq(record: SessionRecord, ev: EngineEvent): void {
+/** 按 seq 升序且幂等插入；返回 false 表示同 sid + seq 已存在。 */
+function insertBySeq(record: SessionRecord, ev: EngineEvent): boolean {
   const events = record.events;
   if (events.length === 0 || ev.seq > events[events.length - 1].seq) {
     events.push(ev);
-    return;
+    return true;
   }
-  let i = events.length - 1;
-  while (i > 0 && events[i - 1].seq > ev.seq) i--;
-  events.splice(i, 0, ev);
+  let low = 0;
+  let high = events.length;
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    if (events[mid].seq < ev.seq) low = mid + 1;
+    else high = mid;
+  }
+  if (events[low]?.seq === ev.seq) return false;
+  events.splice(low, 0, ev);
+  return true;
 }
 
 export interface RegistryOptions {
@@ -180,6 +228,8 @@ export interface RegistryOptions {
   sessionRetentionMinutes: number;
   /** 会话空闲超时分钟数：超时合成 failed 终态（0 = 关闭看门狗） */
   sessionIdleTimeoutMinutes: number;
+  /** 设置后 PostgreSQL 是 session/event 权威，JSONL 仅作提交后的 spool。 */
+  pgStore?: GatewayPgStore;
 }
 
 export class SessionRegistry {
@@ -196,6 +246,7 @@ export class SessionRegistry {
   private readonly idleTimers = new Map<string, NodeJS.Timeout>();
   /** 未完成的 handle.dispose()，registry.dispose() 时统一等待 */
   private readonly pendingDisposes = new Set<Promise<void>>();
+  private startupInterrupted: SessionRecord[] = [];
 
   constructor(
     private readonly driver: EngineDriver,
@@ -204,6 +255,8 @@ export class SessionRegistry {
     this.jsonlPath = join(opts.dataDir, "gateway.jsonl");
     try {
       mkdirSync(opts.dataDir, { recursive: true });
+      const interrupted = opts.pgStore ? [] : this.restoreFromJsonl();
+      this.startupInterrupted = interrupted;
       this.jsonl = createWriteStream(this.jsonlPath, { flags: "a" });
       this.jsonl.on("error", (err) => log(`JSONL 写入失败（${this.jsonlPath}）：`, err));
     } catch (err) {
@@ -212,11 +265,167 @@ export class SessionRegistry {
     }
   }
 
+  /** 异步装载权威存储；调用方必须在监听端口前 await。 */
+  static async open(driver: EngineDriver, opts: RegistryOptions): Promise<SessionRegistry> {
+    const registry = new SessionRegistry(driver, opts);
+    await registry.initialize();
+    return registry;
+  }
+
+  private async initialize(): Promise<void> {
+    if (this.opts.pgStore) {
+      const restored = await this.opts.pgStore.restore(this.opts.sessionRetentionMinutes);
+      for (const source of restored) this.restorePgRecord(source);
+      this.startupInterrupted = [...this.records.values()].filter((record) => !isTerminalStatus(record.status));
+      if (restored.length > 0) {
+        log(`PostgreSQL 恢复：sessions=${restored.length} interrupted=${this.startupInterrupted.length}`);
+      }
+    }
+    const interrupted = this.startupInterrupted;
+    this.startupInterrupted = [];
+    for (const record of interrupted) {
+      await this.acceptEvent(record, {
+        type: "status_change",
+        seq: lastSeq(record) + 1,
+        ts: nowIso(),
+        status: "failed",
+        detail: "Gateway 重启，运行态引擎句柄不可恢复",
+      });
+    }
+  }
+
+  private restorePgRecord(source: PersistedGatewaySession): void {
+    const record: SessionRecord = {
+      sid: source.sid,
+      orgId: source.orgId,
+      subjectType: source.subjectType,
+      subjectId: source.subjectId,
+      prompt: RECOVERED_PROMPT,
+      status: source.status,
+      createdAt: source.createdAt,
+      endedAt: source.endedAt,
+      events: [],
+      subscribers: new Set(),
+      closed: isTerminalStatus(source.status),
+    };
+    for (const event of source.events) insertBySeq(record, event);
+    let remaining: number | undefined;
+    if (record.closed && record.endedAt && this.opts.sessionRetentionMinutes > 0) {
+      remaining = this.opts.sessionRetentionMinutes * 60_000 - (Date.now() - Date.parse(record.endedAt));
+      if (!Number.isFinite(remaining) || remaining <= 0) return;
+    }
+    this.records.set(record.sid, record);
+    if (record.closed) this.armRetention(record, remaining);
+  }
+
+  /**
+   * 从 append-only JSONL 恢复可查询历史和 SSE 回放缓存。
+   * prompt 按安全基线从不落日志，因此恢复视图返回固定占位文本；损坏行 fail-soft 跳过并记数。
+   */
+  private restoreFromJsonl(): SessionRecord[] {
+    if (!existsSync(this.jsonlPath)) return [];
+    const staged = new Map<
+      string,
+      {
+        patch: Partial<SessionPatchJson>;
+        events: EngineEvent[];
+      }
+    >();
+    let skipped = 0;
+    let expired = 0;
+    const entry = (sid: string) => {
+      let value = staged.get(sid);
+      if (!value) {
+        value = { patch: {}, events: [] };
+        staged.set(sid, value);
+      }
+      return value;
+    };
+
+    for (const rawLine of readFileSync(this.jsonlPath, "utf8").split(/\r?\n/)) {
+      if (!rawLine.trim()) continue;
+      try {
+        const line = jsonRecord(JSON.parse(rawLine));
+        if (!line || typeof line.sid !== "string") {
+          skipped += 1;
+          continue;
+        }
+        if (line.kind === "session") {
+          const patch = jsonRecord(line.patch);
+          if (!patch) {
+            skipped += 1;
+            continue;
+          }
+          const target = entry(line.sid).patch;
+          if (isSessionStatusValue(patch.status)) target.status = patch.status;
+          if (typeof patch.orgId === "number" && Number.isInteger(patch.orgId)) target.orgId = patch.orgId;
+          if (typeof patch.subjectType === "string") target.subjectType = patch.subjectType;
+          if (typeof patch.subjectId === "string") target.subjectId = patch.subjectId;
+          if (typeof patch.createdAt === "string") target.createdAt = patch.createdAt;
+          continue;
+        }
+        if (line.kind === "event" && isEngineEventValue(line.event)) {
+          entry(line.sid).events.push(line.event);
+          continue;
+        }
+        // permission 行属于审计留痕，不参与会话视图重建。
+        if (line.kind !== "permission") skipped += 1;
+      } catch {
+        skipped += 1;
+      }
+    }
+
+    const interrupted: SessionRecord[] = [];
+    let recovered = 0;
+    for (const [sid, source] of staged) {
+      if (source.patch.orgId === undefined) {
+        skipped += 1;
+        continue;
+      }
+      const record: SessionRecord = {
+        sid,
+        orgId: source.patch.orgId,
+        subjectType: source.patch.subjectType,
+        subjectId: source.patch.subjectId,
+        prompt: RECOVERED_PROMPT,
+        status: source.patch.status ?? "queued",
+        createdAt: source.patch.createdAt ?? source.events[0]?.ts ?? nowIso(),
+        events: [],
+        subscribers: new Set(),
+      };
+      for (const event of source.events) insertBySeq(record, event);
+      for (const event of record.events) {
+        if (event.type === "status_change") {
+          record.status = event.status;
+          if (isTerminalStatus(event.status)) record.endedAt = event.ts;
+          else record.endedAt = undefined;
+        }
+      }
+      record.closed = isTerminalStatus(record.status);
+      let restoredRetentionMs: number | undefined;
+      if (record.closed && record.endedAt && this.opts.sessionRetentionMinutes > 0) {
+        restoredRetentionMs = this.opts.sessionRetentionMinutes * 60_000 - (Date.now() - Date.parse(record.endedAt));
+        if (!Number.isFinite(restoredRetentionMs) || restoredRetentionMs <= 0) {
+          expired += 1;
+          continue;
+        }
+      }
+      this.records.set(sid, record);
+      recovered += 1;
+      if (record.closed) this.armRetention(record, restoredRetentionMs);
+      else interrupted.push(record);
+    }
+    if (recovered > 0 || skipped > 0 || expired > 0) {
+      log(`JSONL 恢复：sessions=${recovered} interrupted=${interrupted.length} expired=${expired} skipped=${skipped}`);
+    }
+    return interrupted;
+  }
+
   /**
    * 创建会话：配额检查 + 登记 + 后台启动引擎（不阻塞返回）。
-   * 配额检查与登记在同一同步段内完成 —— create 无 await，JS 单线程下不存在并发多开竞态。
+   * JSONL 模式依赖单进程同步登记；PG 模式用 advisory transaction lock + 权威计数防多实例竞态。
    */
-  create(input: CreateSessionInput): SessionRecord {
+  async create(input: CreateSessionInput): Promise<SessionRecord> {
     const active = this.activeCountByOrg(input.orgId);
     if (active >= this.opts.maxSessionsPerOrg) {
       throw new QuotaError(`组织 ${input.orgId} 活动会话数已达配额（${active}/${this.opts.maxSessionsPerOrg}）`);
@@ -233,6 +442,14 @@ export class SessionRegistry {
       events: [],
       subscribers: new Set(),
     };
+    if (this.opts.pgStore) {
+      try {
+        await this.opts.pgStore.createSession(record, this.opts.maxSessionsPerOrg);
+      } catch (error) {
+        if (error instanceof PgQuotaError) throw new QuotaError(error.message);
+        throw error;
+      }
+    }
     this.records.set(sid, record);
     this.bumpActive(record.orgId, 1);
     // patch 行带全量归属（orgId/subjectType/subjectId 供装载器落 agent_sessions / agent_identities）；
@@ -257,6 +474,10 @@ export class SessionRegistry {
   /** 活动会话数：queued / running / awaiting_permission 计入，终态不计（per-org 增量计数，替代全表扫描） */
   activeCountByOrg(orgId: number): number {
     return this.activeCounts.get(orgId) ?? 0;
+  }
+
+  async checkReady(): Promise<void> {
+    await this.opts.pgStore?.ping();
   }
 
   /** per-org 活动计数增量维护（负向钳制在 0，防异常路径多减成负数） */
@@ -324,6 +545,7 @@ export class SessionRegistry {
     this.retentionTimers.clear();
     // 进程退出路径（SIGINT/SIGTERM → registry.dispose）：尽力 end 写流冲刷剩余行
     this.endJsonl();
+    await this.opts.pgStore?.close();
   }
 
   private requireRecord(sid: string): SessionRecord {
@@ -347,18 +569,22 @@ export class SessionRegistry {
         void handle.cancel().catch((err) => log(`补发 cancel 失败（${record.sid}）：`, err));
       }
       for await (const ev of handle.events()) {
-        this.acceptEvent(record, ev);
+        await this.acceptEvent(record, ev);
       }
       if (!isTerminalStatus(record.status)) {
         if (record.closed) {
           // 注册表主动 dispose 导致的流结束：不合成 failed（不撒谎），仅留痕
           log(`会话 ${record.sid} 事件流在注册表释放后结束（状态 ${record.status}），不合成终态`);
           this.appendJsonl(
-            JSON.stringify({ kind: "session", sid: record.sid, patch: sessionPatch(record, record.status, "注册表释放导致事件流结束") }),
+            JSON.stringify({
+              kind: "session",
+              sid: record.sid,
+              patch: sessionPatch(record, record.status, "注册表释放导致事件流结束"),
+            }),
           );
         } else {
           // 流异常结束但未见终态 → 网关侧合成 failed，绝不让会话悬空
-          this.acceptEvent(record, {
+          await this.acceptEvent(record, {
             type: "status_change",
             seq: lastSeq(record) + 1,
             ts: nowIso(),
@@ -371,14 +597,19 @@ export class SessionRegistry {
       // 完整原始错误（含安装指引等运维细节）只进日志
       log(`会话事件泵异常（${record.sid}）：`, err);
       if (!isTerminalStatus(record.status)) {
-        this.acceptEvent(record, {
-          type: "status_change",
-          seq: lastSeq(record) + 1,
-          ts: nowIso(),
-          status: "failed",
-          // 面向消费者的归因一句话；细节见上方日志
-          detail: record.handle === undefined ? "引擎会话启动失败" : "引擎事件流异常中断",
-        });
+        try {
+          await this.acceptEvent(record, {
+            type: "status_change",
+            seq: lastSeq(record) + 1,
+            ts: nowIso(),
+            status: "failed",
+            // 面向消费者的归因一句话；细节见上方日志
+            detail: record.handle === undefined ? "引擎会话启动失败" : "引擎事件流异常中断",
+          });
+        } catch (persistError) {
+          // PG 权威不可用时绝不把未提交终态展示成事实；重启恢复会再次收敛活动会话。
+          log(`会话失败终态无法提交权威存储（${record.sid}）：`, persistError);
+        }
       }
     } finally {
       this.closeSession(record);
@@ -386,8 +617,18 @@ export class SessionRegistry {
   }
 
   /** 事件落点：缓存 + JSONL + 状态机 + 唤醒 SSE；终态时收尾会话 */
-  private acceptEvent(record: SessionRecord, ev: EngineEvent): void {
-    insertBySeq(record, ev);
+  private async acceptEvent(record: SessionRecord, ev: EngineEvent): Promise<void> {
+    if (this.opts.pgStore) {
+      const inserted = await this.opts.pgStore.appendEvent(record.sid, ev);
+      if (!inserted) {
+        log(`忽略 PostgreSQL 已存在事件（${record.sid}，seq=${ev.seq}）`);
+        return;
+      }
+    }
+    if (!insertBySeq(record, ev)) {
+      log(`忽略重复引擎事件（${record.sid}，seq=${ev.seq}）`);
+      return;
+    }
     // 每事件只 JSON.stringify 一次：eventJson 复用于 SSE 帧串与 JSONL 行串各一份，分发不再逐订阅者序列化
     const eventJson = JSON.stringify(ev);
     const frame = `id: ${ev.seq}\ndata: ${toEnvelopeJson(record, ev)}\n\n`;
@@ -453,16 +694,17 @@ export class SessionRegistry {
   }
 
   /** 终态驻留淘汰：到点移除注册表条目（事件缓存随记录一并释放）；0 = 不淘汰 */
-  private armRetention(record: SessionRecord): void {
+  private armRetention(record: SessionRecord, restoredDelayMs?: number): void {
     const minutes = this.opts.sessionRetentionMinutes;
     if (minutes <= 0) return;
     const existing = this.retentionTimers.get(record.sid);
     if (existing) clearTimeout(existing);
+    const delayMs = restoredDelayMs ?? minutes * 60_000;
     const timer = setTimeout(() => {
       this.retentionTimers.delete(record.sid);
       this.records.delete(record.sid);
       log(`会话 ${record.sid} 终态驻留超 ${minutes} 分钟，已从注册表淘汰`);
-    }, minutes * 60_000);
+    }, delayMs);
     timer.unref(); // 驻留清理不阻止进程退出
     this.retentionTimers.set(record.sid, timer);
   }
@@ -477,13 +719,13 @@ export class SessionRegistry {
       this.idleTimers.delete(record.sid);
       if (record.closed || isTerminalStatus(record.status)) return;
       log(`会话 ${record.sid} 空闲超时（${minutes} 分钟无引擎事件），合成 failed 终态`);
-      this.acceptEvent(record, {
+      void this.acceptEvent(record, {
         type: "status_change",
         seq: lastSeq(record) + 1,
         ts: nowIso(),
         status: "failed",
         detail: "空闲超时，引擎无事件",
-      });
+      }).catch((err) => log(`空闲超时终态无法提交（${record.sid}）：`, err));
     }, minutes * 60_000);
     timer.unref(); // 看门狗不阻止进程退出（监听中的 HTTP 服务自持进程存活）
     this.idleTimers.set(record.sid, timer);

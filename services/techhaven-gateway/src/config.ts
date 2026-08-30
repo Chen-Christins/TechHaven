@@ -1,5 +1,6 @@
 /** 引擎驱动类型：mock=脚本化闭环；dsh=真实引擎（drivers/dsh.ts 经官方 SDK 驱动） */
 export type EngineDriverKind = "mock" | "dsh";
+export type GatewayStoreKind = "jsonl" | "postgres";
 
 export interface Config {
   /** Bearer 令牌：除 /healthz 外所有 API 的鉴权凭据（TECHHAVEN_GATEWAY_TOKEN，必填） */
@@ -10,6 +11,12 @@ export interface Config {
   driver: EngineDriverKind;
   /** 会话事件 / 审计 JSONL 目录（TECHHAVEN_GATEWAY_DATA_DIR，默认 ./data） */
   dataDir: string;
+  /** 权威存储：jsonl=单实例 PoC；postgres=PG 权威且 JSONL 仅作 spool */
+  store: GatewayStoreKind;
+  /** TECHHAVEN_GATEWAY_DB_URL；store=postgres 时必填 */
+  dbUrl: string;
+  /** PostgreSQL schema（默认 public；测试可用隔离 schema） */
+  dbSchema: string;
   /** 单组织活动会话数配额（TECHHAVEN_MAX_SESSIONS_PER_ORG，默认 3，正整数） */
   maxSessionsPerOrg: number;
   /** 终态会话驻留分钟数：到点从注册表淘汰（TECHHAVEN_SESSION_RETENTION_MINUTES，默认 30；0 = 不淘汰） */
@@ -57,6 +64,20 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
 
   const dataDir = env.TECHHAVEN_GATEWAY_DATA_DIR?.trim() || "./data";
 
+  const storeRaw = (env.TECHHAVEN_GATEWAY_STORE ?? "jsonl").trim().toLowerCase();
+  if (storeRaw !== "jsonl" && storeRaw !== "postgres") {
+    throw new ConfigError(`TECHHAVEN_GATEWAY_STORE 只能是 jsonl | postgres，收到：${storeRaw}`);
+  }
+  const store = storeRaw as GatewayStoreKind;
+  const dbUrl = env.TECHHAVEN_GATEWAY_DB_URL?.trim() ?? "";
+  if (store === "postgres" && !dbUrl) {
+    throw new ConfigError("TECHHAVEN_GATEWAY_STORE=postgres 时必须设置 TECHHAVEN_GATEWAY_DB_URL");
+  }
+  const dbSchema = env.TECHHAVEN_GATEWAY_DB_SCHEMA?.trim() || "public";
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(dbSchema)) {
+    throw new ConfigError(`TECHHAVEN_GATEWAY_DB_SCHEMA 不是合法标识符：${dbSchema}`);
+  }
+
   // 配额：正整数；空 = 默认 3
   const maxRaw = (env.TECHHAVEN_MAX_SESSIONS_PER_ORG ?? "3").trim();
   const maxSessionsPerOrg = Number(maxRaw);
@@ -83,6 +104,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     port,
     driver,
     dataDir,
+    store,
+    dbUrl,
+    dbSchema,
     maxSessionsPerOrg,
     sessionRetentionMinutes,
     sessionIdleTimeoutMinutes,

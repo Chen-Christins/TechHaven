@@ -1,6 +1,6 @@
 /**
  * staged 写模式端到端冒烟：验证 update_ticket_status 在 staged 模式下
- * 「提案暂存（pending）→ 人工批准 → get_proposal 应用」的完整闭环（TH-RFC-001 §07 事前守护）。
+ * 「提案暂存（pending）→ 人工批准 → server worker 主动应用」的完整闭环（TH-RFC-001 ADR-04）。
  *
  * 与 smoke.ts 的区别：server 以 TECHHAVEN_WRITE_MODE=staged 启动；批准一步由本进程
  * 直接 import ProposalStore 写入 approved 事件，模拟人工 CLI（不经过 server）。
@@ -95,6 +95,8 @@ async function main(): Promise<void> {
     child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method, params }) + "\n");
   }
 
+  const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
   const failures: string[] = [];
   function check(name: string, cond: boolean, detail?: string): void {
     console.log(`${cond ? "✓" : "✗"} ${name}${cond ? "" : ` —— ${detail ?? ""}`}`);
@@ -123,7 +125,11 @@ async function main(): Promise<void> {
       "get_proposal",
       "update_ticket_status",
     ];
-    check("tools/list 含全部工具（含 get_proposal）", expected.every((n) => names.includes(n)), names.join(","));
+    check(
+      "tools/list 含全部工具（含 get_proposal）",
+      expected.every((n) => names.includes(n)),
+      names.join(","),
+    );
 
     // 3. 前置基线：bug #1 初始为 new
     const bug1Hash = encodeId(1, "bug");
@@ -152,25 +158,37 @@ async function main(): Promise<void> {
 
     // 6. 模拟人工批准：不经过 server，直接写 approved 事件（等价于 npm run proposal -- approve）
     try {
-      new ProposalStore(PROPOSALS_FILE, 30).appendEvent("approved", proposalId, "user:smoke");
+      await new ProposalStore(PROPOSALS_FILE, 30).appendEvent("approved", proposalId, "user:smoke");
       check("模拟人工 CLI 批准提案", true);
     } catch (e) {
       check("模拟人工 CLI 批准提案", false, String(e));
     }
 
-    // 7. get_proposal：server 检测到 approved → 校验状态机 → 应用变更
-    const applied = await request(7, "tools/call", { name: "get_proposal", arguments: { id: proposalId } });
-    const appliedText: string = applied.result?.content?.[0]?.text ?? "";
+    // 7. 不调用 get_proposal，直接等待 server worker 主动应用；以工单状态作为权威结果验证
+    let workerAppliedText = "";
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      const ticket = await request(70 + attempt, "tools/call", {
+        name: "get_ticket",
+        arguments: { kind: "bug", id: bug1Hash },
+      });
+      workerAppliedText = ticket.result?.content?.[0]?.text ?? "";
+      if (workerAppliedText.includes('"status": "accepted"')) break;
+      await wait(100);
+    }
     check(
-      "批准后 get_proposal 应用变更（applied + accepted）",
-      !applied.result?.isError && appliedText.includes("applied") && appliedText.includes("accepted"),
-      appliedText.slice(0, 200),
+      "批准后 server worker 主动应用（无需 get_proposal 触发）",
+      workerAppliedText.includes('"status": "accepted"'),
+      workerAppliedText.slice(0, 200),
     );
 
-    // 8. 幂等：再次 get_proposal 仍为 applied，不重复应用
+    // 8. get_proposal 只查询已落盘终态，不触发写入
     const again = await request(8, "tools/call", { name: "get_proposal", arguments: { id: proposalId } });
     const againText: string = again.result?.content?.[0]?.text ?? "";
-    check("重复 get_proposal 幂等（仍 applied）", !again.result?.isError && againText.includes("applied"), againText.slice(0, 160));
+    check(
+      "get_proposal 纯查询返回 applied",
+      !again.result?.isError && againText.includes("applied") && againText.includes("accepted"),
+      againText.slice(0, 160),
+    );
 
     // 9. staged 写：非法迁移 bug #2（accepted → verified 不合法），应建提案前快速失败（isError，不产生提案）
     const bad = await request(9, "tools/call", {

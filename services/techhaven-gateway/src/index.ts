@@ -43,18 +43,26 @@ async function main(): Promise<void> {
   }
 
   log(
-    `启动：driver=${config.driver} port=${config.port} dataDir=${config.dataDir} ` +
+    `启动：driver=${config.driver} store=${config.store} port=${config.port} dataDir=${config.dataDir} ` +
       `maxSessionsPerOrg=${config.maxSessionsPerOrg} ` +
       `sessionRetentionMinutes=${config.sessionRetentionMinutes} sessionIdleTimeoutMinutes=${config.sessionIdleTimeoutMinutes}`,
   );
 
   const driver = createDriver(config);
 
-  const registry = new SessionRegistry(driver, {
+  let pgStore;
+  if (config.store === "postgres") {
+    const { GatewayPgStore } = await import("./pgStore.js");
+    pgStore = await GatewayPgStore.connect(config.dbUrl, config.dbSchema);
+    log("PostgreSQL authoritative 已连接：session/event 先提交 PG，JSONL 仅作 spool");
+  }
+
+  const registry = await SessionRegistry.open(driver, {
     dataDir: config.dataDir,
     maxSessionsPerOrg: config.maxSessionsPerOrg,
     sessionRetentionMinutes: config.sessionRetentionMinutes,
     sessionIdleTimeoutMinutes: config.sessionIdleTimeoutMinutes,
+    pgStore,
   });
   const server = createGatewayServer(config, registry);
   server.on("error", (err) => {

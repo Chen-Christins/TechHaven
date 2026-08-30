@@ -11,7 +11,14 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Config } from "./config.js";
 import { log } from "./log.js";
 import { isRecord } from "./util.js";
-import { GatewayError, sessionView, toEnvelopeJson, type SessionEventSubscriber, type SessionRecord, type SessionRegistry } from "./sessions.js";
+import {
+  GatewayError,
+  sessionView,
+  toEnvelopeJson,
+  type SessionEventSubscriber,
+  type SessionRecord,
+  type SessionRegistry,
+} from "./sessions.js";
 
 /** 请求体上限 1MB */
 const MAX_BODY_BYTES = 1024 * 1024;
@@ -113,7 +120,13 @@ function parseCreateBody(body: unknown): { orgId: number; subjectType?: string; 
 }
 
 /** GET /v1/sessions/:sid/events —— SSE 事件桥 */
-function handleEventsStream(req: IncomingMessage, url: URL, record: SessionRecord, registry: SessionRegistry, res: ServerResponse): void {
+function handleEventsStream(
+  req: IncomingMessage,
+  url: URL,
+  record: SessionRecord,
+  registry: SessionRegistry,
+  res: ServerResponse,
+): void {
   const afterRaw = url.searchParams.get("after");
   let after = -1; // 默认全量补发（seq 从 1 起）
   if (afterRaw !== null) {
@@ -195,7 +208,12 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, config: 
 
   try {
     if (path === "/healthz" && method === "GET") {
-      sendJson(res, 200, { ok: true, driver: config.driver });
+      try {
+        await registry.checkReady();
+        sendJson(res, 200, { ok: true, driver: config.driver, store: config.store });
+      } catch {
+        sendJson(res, 503, { ok: false, driver: config.driver, store: config.store, error: "权威存储不可用" });
+      }
       return;
     }
 
@@ -213,7 +231,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, config: 
     if (path === "/v1/sessions" && method === "POST") {
       const body = await readJsonBody(req);
       const input = parseCreateBody(body);
-      const record = registry.create(input);
+      const record = await registry.create(input);
       sendJson(res, 201, { sid: record.sid, status: record.status });
       return;
     }

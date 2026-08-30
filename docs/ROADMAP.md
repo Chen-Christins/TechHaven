@@ -22,22 +22,25 @@
 
 ## 2. 当前状态快照
 
-| 能力                    | 当前状态        | 证据与边界                                               |
-| ----------------------- | --------------- | -------------------------------------------------------- |
-| SPA 博客/组织/研发/后台 | `implemented`   | 页面与 service 已存在；缺少系统化自动化测试              |
-| 根前端正式构建          | `verified-mock` | `npm run build` 通过；主入口 gzip 92.2 KB（预算 256 KB，历史单体约 1.03 MB） |
-| 根前端单测基线          | `verified-mock` | vitest 7 项通过：Mermaid 安全回归（strict + 恶意输入 fail-closed）、HTTP 1101 状态同步 |
-| Mermaid 安全            | `verified-mock` | `securityLevel=strict`；恶意 HTML/脚本/click 注入测试无可执行标记 |
-| CI                      | `verified-mock` | `.github/workflows/ci.yml` 三 job：root（build+test+体积）、mcp、gateway，触发覆盖 master 与 feature/agent-engine |
-| MCP direct 工具流       | `verified-mock` | 9 项离线冒烟通过                                         |
-| MCP staged proposal     | `verified-mock` | 11 项离线冒烟通过；当前批准后由 `get_proposal` 触发应用  |
-| Gateway HTTP/SSE/配额   | `verified-mock` | 22 项 mock driver 冒烟通过                               |
-| 前端 Agent 面板         | `implemented`   | DEV 样例页，仅本地 mock，未接 Gateway                    |
-| dsh driver              | `implemented`   | 静态实现；无 live dsh、权限应答和单 turn cancel 验证     |
-| MCP → 产品域 HTTP       | `implemented`   | adapter 已有；服务凭据/状态机/趋势接口未联调             |
-| Agent PostgreSQL        | `implemented`   | schema/provider/loader 已有；无 live PG 验证             |
-| 多租户沙箱              | `planned`       | 尚未实现                                                 |
-| 全链路可观测性          | `planned`       | 当前以 JSONL 和 stderr 为主                              |
+| 能力                    | 当前状态        | 证据与边界                                                                                                                                                     |
+| ----------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SPA 博客/组织/研发/后台 | `implemented`   | 页面与 service 已存在；缺少系统化自动化测试                                                                                                                    |
+| 根前端正式构建          | `verified-mock` | `npm run build` 通过；主入口 gzip 92.2 KB（预算 256 KB，历史单体约 1.03 MB）                                                                                   |
+| 根前端单测基线          | `verified-mock` | vitest 默认 20 项通过；另有 1 项环境门控的真实 Gateway HTTP/SSE 刷新式重连回归，本地已通过                                                                     |
+| Mermaid 安全            | `verified-mock` | `securityLevel=strict`；恶意 HTML/脚本/click 注入测试无可执行标记                                                                                              |
+| 凭据脱敏回归            | `verified-mock` | WebSocket 建连日志、AI-SSE 诊断日志、Cookie 取值共 9 项；均用「改回旧写法 → 测试变红」反向验证过有效性                                                         |
+| CI                      | `verified-mock` | `.github/workflows/ci.yml` 三 job：root（build+test+体积）、mcp（typecheck+test+smoke）、gateway（同左）                                                       |
+| MCP direct 工具流       | `verified-mock` | 9 项离线冒烟通过                                                                                                                                               |
+| MCP staged proposal     | `verified-mock` | 11 项离线冒烟通过；批准后由 server worker 主动应用                                                                                                             |
+| Gateway HTTP/SSE/配额   | `verified-mock` | 35 项 mock driver 子进程冒烟通过，含断线/重启回放、无缺口/无重复、活动态失败收敛与取消终态                                                                     |
+| 前端 Agent 面板         | `verified-mock` | 浏览器经 Vite→Gateway(mock) 的创建、刷新同 SID、批准/拒绝、进程重启自动续传已实测；非真实 dsh/产品后端                                                         |
+| dsh driver              | `implemented`   | 静态实现；无 live dsh、权限应答和单 turn cancel 验证                                                                                                           |
+| MCP → 产品域 HTTP       | `implemented`   | 6 项离线 contract 已覆盖 service Bearer/org/幂等/errno/超时；真实凭据、状态机、趋势接口未联调                                                                  |
+| MCP 纯域单测            | `verified-mock` | `npm test` 29 项通过（node:test + tsx，无新增依赖）：状态机合法/非法迁移与终态、agent token 签发校验/篡改/过期/scope/版本、TTL 解析、argsDigest 跨服务固定向量 |
+| Gateway 纯域单测        | `verified-mock` | `npm test` 34 项通过（node:test + tsx，无新增依赖）：配置校验边界、EventChannel 并发语义、SSE 信封契约、会话视图脱敏、共享工具                                 |
+| Agent PostgreSQL        | `implemented`   | schema v0.3、migration、PG 权威 proposal/session/event、并发锁、loader/reconcile/live smoke 已有；无 live PG 证据                                              |
+| 多租户沙箱              | `planned`       | 尚未实现                                                                                                                                                       |
+| 全链路可观测性          | `planned`       | 当前以 JSONL 和 stderr 为主                                                                                                                                    |
 
 ## 3. 阶段计划
 
@@ -66,16 +69,39 @@
 
 > **R0 进度（2026-08-29）**：构建阻断（antd icons 残留）、1101 状态分裂、路由分包、WS token 日志脱敏、
 > Mermaid strict + 回归、CI 三 job、主入口 gzip 预算均已落地并本地复验；`npm test`/`npm run build`/两服务
-> typecheck+smoke 全绿。**剩余**：WebSocket token 从 URL 参数迁移到同源 Cookie/一次性 ticket（需后端配合，
-> 见 ARCHITECTURE §6）、MCP 纯域单测、干净 checkout `npm ci` 复核（CI 完成后自动覆盖）。
+> typecheck+smoke 全绿。纯域单测补齐到两服务共 63 项（MCP 29 + Gateway 34），Gateway 此前为零。
+>
+> **Gateway 单测发现并已归档**（非缺陷，是语义澄清）：`EventChannel` 的消费者若正挂起在内部 await 上，
+> 调用 `iterator.return()` **不会落地**——按 AsyncGenerator 规范，return 请求要排队到生成器体让出控制权后
+> 才处理，而让出的唯一途径是 `push` 或 `close`。因此终止消费的唯一可靠路径是 `channel.close()`；
+> 源文件注释中的「finally 摘除 waiter」只是 yield 点退出时的兜底，不是取消挂起消费者的手段。
+> 现有调用方（mock / dsh 驱动的 `dispose`）走的都是 `close()`，与此语义一致。已写入 `src/channel.ts` 注释并用单测锁定。
+>
+> **R0 补充（2026-08-29 晚）**：R0 退出门禁里「高优先级认证问题有自动化回归测试」此前只覆盖了
+> HTTP 1101，本次补齐了另外两处**已修复但无回归保护**的凭据泄露：
+>
+> - `src/utils/websocket.test.ts`（5 项）：建连 URL 仍带 token（后端鉴权依赖该 query 参数，传输方式未变），
+>   但控制台输出绝不出现 token / token_time 原文；同时断言脱敏不误伤 uid、重连不绕过脱敏。
+> - `src/hooks/useAiSummary.test.tsx`（3 项）：AI-SSE 诊断日志不出现 token 原文或 ≥6 位前缀，
+>   同时断言 `Authorization: Bearer` 头仍正确携带（脱敏不能牺牲功能）。
+>
+> 三处改动都做了**有效性反证**：把旧写法临时改回去，确认测试会变红（分别 2 项 / 1 项 / 1 项失败），再恢复。
+> 前端 vitest 因此由 11 项增至 20 项。
+>
+> 顺带修掉一个潜在缺陷：`src/utils/websocket.ts` 的 `getCookie` 原用 `split("=")` 取值，Cookie 值含
+> `=`（base64 填充、JWT 分段）时会在第一处切断，导致 token 被静默截断 —— 症状是「Cookie 明明有值却鉴权失败」。
+> 改为 `indexOf("=")` 取值并加了回归测试（旧写法下断言实测得到 `PADDED_BASE64_TOKEN_` 而非完整值）。
+>
+> **剩余**：WebSocket token 从 URL 参数迁移到同源 Cookie/一次性 ticket（需后端配合，
+> 见 ARCHITECTURE §6）、干净 checkout `npm ci` 复核（CI 完成后自动覆盖）。
 
 ### R1：契约与真实控制面接线（预计 2–3 周）
 
-> **R1 进度（2026-08-29）**：共享契约包 `contracts/`（类型单源：引擎事件/事件信封/会话/提案/API 形态，
-> 双服务经 `file:../../contracts` 消费并过 typecheck+smoke）；Gateway SSE 已升级为事件信封
-> （schemaVersion/eventId/sessionId/orgId/seq/type/occurredAt/traceId/payload，TH-RFC-001 §6）。
-> **剩余**：前端 Gateway client（SSE 续传/取消/审批）与面板接线、proposal 服务端 worker（见 ADR-04 迁移）、
-> 断线/重启恢复门禁验证。
+> **R1 进度（2026-08-29）**：共享契约包 `contracts/` 已成为事件/API 类型单源；Gateway SSE 已升级为
+> 版本化事件信封；前端 Gateway client 与 DEV 双路径面板已实现；MCP proposal worker 已实现“批准后主动重校验并应用”，
+> `get_proposal` 已退回纯查询，并通过离线 staged smoke；Gateway client 契约回归与 mock driver 子进程的断线回放/取消闭环
+> 已通过；DEV 页活动 SID 刷新恢复、浏览器真实网络中断续传和 Gateway JSONL 单实例重启恢复均已完成 mock 门禁。
+> **剩余**：live dsh/产品域集成；PG 权威代码与环境门控并发测试已进入 R2，但尚无 live PostgreSQL 证据。
 
 目标：前端通过稳定契约使用真实 Gateway，但仍可选择 mock driver。
 
@@ -97,6 +123,29 @@
 - Gateway 重启后历史会话仍可查询。
 
 ### R2：真实域后端与 PostgreSQL（预计 2–3 周）
+
+> **R2 进度（2026-08-29）**：schema v0.3 与 v0.2→v0.3 migration 已加入；MCP 支持
+> `TECHHAVEN_DB_MODE=authoritative`，proposal 批准和 worker 应用由 PG 行锁串行化；Gateway 支持
+> `TECHHAVEN_GATEWAY_STORE=postgres`，session/event 提交优先于 SSE，组织配额由 advisory lock 控制，
+> JSONL 降为提交后 spool；migration、幂等 loader、spool 对账和两套 `smoke:pg` 已 `implemented`。
+> **未验证边界**：本机没有 PostgreSQL/Docker/连接串，故 DDL、迁移、并发、恢复仍未达到
+> `verified-integration`；真实产品域 API 与 live dsh 也尚未接入。
+>
+> > **本机能力审计（2026-08-30）**：逐项确认阻断原因，PG 路径因此停在 `implemented`，代码本身无缺陷证据。
+> >
+> > | 项                      | 结果   | 说明                                                                              |
+> > | ----------------------- | ------ | --------------------------------------------------------------------------------- |
+> > | `psql` 可执行文件       | 缺失   | 无法执行 DDL 或手工核对迁移结果                                                   |
+> > | Docker                  | 缺失   | 无法就地起一次性 PostgreSQL 测试实例                                              |
+> > | `TECHHAVEN_TEST_DB_URL` | 未配置 | 两套 `smoke:pg` 均以此为唯一入口，缺失时以退出码 1 明确失败（已复验，非静默跳过） |
+> > | 两服务 `.env`           | 不存在 | 仅有 `.env.example`；`TECHHAVEN_DB_URL` / `TECHHAVEN_GATEWAY_DB_URL` 均未填写     |
+> > | `TECHHAVEN_DSH_BIN`     | 未配置 | live dsh 烟测同样无法进入                                                         |
+> > | Node / npm / `tsx`      | 可用   | Node v22.22.2；`tsx` 经各自 `node_modules/.bin` 可用，mock 冒烟不受影响           |
+> >
+> > 因此本轮复验到的仍是**不依赖外部实例**的部分：MCP typecheck + 26 项 mock smoke（9 direct / 11 staged /
+> > 6 HTTP contract）、Gateway typecheck + 35 项 mock smoke、根前端 typecheck + 11 项 vitest，全部通过。
+> > 解除门禁只需提供 `TECHHAVEN_TEST_DB_URL`（两套 `smoke:pg` 自建临时 schema 并在 finally 中
+> > `DROP SCHEMA ... CASCADE`，不需要预先建库）。
 
 目标：把 mock 工具流替换为真实测试环境集成。
 

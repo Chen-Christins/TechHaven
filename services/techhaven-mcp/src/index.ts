@@ -6,7 +6,8 @@ import { verifyAgentToken } from "./auth/agentToken.js";
 import { MockTechHavenClient } from "./techhaven/mockClient.js";
 import { HttpTechHavenClient } from "./techhaven/httpClient.js";
 import { AuditLog } from "./audit.js";
-import { ProposalStore } from "./proposals/store.js";
+import { ProposalStore, type ProposalRepository } from "./proposals/store.js";
+import { ProposalWorker } from "./proposals/worker.js";
 import { registerTools } from "./tools/index.js";
 import { MockSemanticsProvider } from "./semantics/mockProvider.js";
 import type { SemanticsProvider } from "./semantics/types.js";
@@ -27,7 +28,11 @@ async function main(): Promise<void> {
 
   const client =
     config.backend === "http"
-      ? new HttpTechHavenClient({ apiBaseUrl: config.apiBaseUrl, serviceToken: config.serviceToken })
+      ? new HttpTechHavenClient({
+          apiBaseUrl: config.apiBaseUrl,
+          serviceToken: config.serviceToken,
+          timeoutMs: config.apiTimeoutMs,
+        })
       : new MockTechHavenClient();
 
   // P2 持久化：TECHHAVEN_DB_URL 非空时建立 DB 会话上下文（pool + agent_identities/agent_sessions 锚点），
@@ -39,7 +44,8 @@ async function main(): Promise<void> {
     try {
       ctx = await PgContext.create(config.dbUrl, config.agentName, session.org, session.sid, SERVER_VERSION);
       log(`DB 已连接（identity=${config.agentName} sid=${session.sid} org=${session.org}）`);
-    } catch {
+    } catch (error) {
+      if (config.dbMode === "authoritative") throw error;
       // 错误细节已在 PgContext.create 里记过 stderr；这里只提示降级
       log("警告：DB 初始化失败，本次会话降级为仅 JSONL 审计 + mock 语义层");
     }
@@ -51,17 +57,23 @@ async function main(): Promise<void> {
   // 接入真实后端语义接口后，再替换为远程 Provider（接口不变）
   let semantics: SemanticsProvider;
   // 写提案存储（staged 写模式：提案暂存 → 人批 → 应用；direct 模式下仅构造不使用）。
-  // JSONL 事件流是权威存储（server 与人工 CLI 靠它交接）；DB 就绪时镜像 agent_write_proposals 表
-  let proposals: ProposalStore;
+  // mirror 模式以 JSONL 为权威并镜像 PG；authoritative 模式只接受 PG 事务写。
+  let proposals: ProposalRepository;
 
   if (ctx) {
     const { DbAuditSink } = await import("./audit/dbSink.js");
-    const { ProposalDbSink } = await import("./proposals/dbSink.js");
     const { DbSemanticsProvider } = await import("./semantics/dbProvider.js");
     audit = new AuditLog(config.auditFile, new DbAuditSink(ctx));
     semantics = new DbSemanticsProvider({ ctx, orgId: session.org });
-    proposals = new ProposalStore(config.proposalsFile, config.proposalTtlMinutes, new ProposalDbSink(ctx));
-    log("DB 已启用：审计双写（agent_tool_calls）+ 写提案落库（agent_write_proposals）+ 语义层 DB Provider（semantic_*）");
+    if (config.dbMode === "authoritative") {
+      const { PgProposalRepository } = await import("./proposals/pgStore.js");
+      proposals = new PgProposalRepository(ctx.pool, config.proposalTtlMinutes, session.org);
+      log("DB authoritative 已启用：agent_write_proposals 是 proposal 唯一权威；连接/事务失败将关闭写路径");
+    } else {
+      const { ProposalDbSink } = await import("./proposals/dbSink.js");
+      proposals = new ProposalStore(config.proposalsFile, config.proposalTtlMinutes, new ProposalDbSink(ctx));
+      log("DB mirror 已启用：审计/提案双写 + 语义层 DB Provider；JSONL 仍是 proposal 权威");
+    }
   } else {
     audit = new AuditLog(config.auditFile);
     semantics = new MockSemanticsProvider();
@@ -78,6 +90,17 @@ async function main(): Promise<void> {
     writeMode: config.writeMode,
     stagedTools: config.stagedTools,
   });
+
+  const proposalWorker =
+    config.writeMode === "staged"
+      ? new ProposalWorker({
+          store: proposals,
+          client,
+          sessionId: session.sid,
+          orgId: session.org,
+        })
+      : null;
+  proposalWorker?.start();
 
   await server.connect(new StdioServerTransport());
   log(
