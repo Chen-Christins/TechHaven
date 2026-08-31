@@ -11,6 +11,14 @@ node_modules
 dist
 dist-ssr
 *.local
+.npm-cache/
+
+# Runtime secrets and append-only service state
+.env
+services/**/.env
+services/**/data/
+services/**/audit/
+services/**/*.jsonl
 
 # Editor directories and files
 .vscode/*

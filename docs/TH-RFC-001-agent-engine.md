@@ -9,9 +9,9 @@
 
 ## 1. 摘要
 
-TechHaven 保持产品外壳、域模型和数据主权，将 dsh 视为**可替换的外部 runner**。平台经 Agent Control Plane 驱动 runner，经 TechHaven MCP 把受控业务工具提供给 agent。产品域写入由服务端策略、proposal 状态机和域后端共同强制，不能由模型提示、MCP annotations 或当前 dsh SDK 的权限事件决定。
+TechHaven 保持产品外壳、域模型和数据主权，将 dsh 视为**可替换的外部 runner**。平台经 Agent Control Plane 驱动 runner，经 TechHaven MCP 把受控业务工具提供给 agent；当旧后端不能改造时，再由独立 Agent Bridge 转换旧 HTTP 契约。产品域写入由服务端策略、proposal 状态机和域后端共同强制，不能由模型提示、MCP annotations 或当前 dsh SDK 的权限事件决定。
 
-当前代码已通过 MCP direct/staged 与 Gateway mock 冒烟；前端 Gateway client 和 DEV 双路径面板已实现。PG 权威 proposal/session/event、事务并发控制、migration、loader/reconcile 与环境门控 live smoke 也已实现，但本机没有 PostgreSQL 实例。真实产品后端、live dsh 和 PostgreSQL 仍未形成真实端到端闭环。因此当前准确表述仍是：**控制面与工具面已实现并在 mock 上验证，PG 权威路径为 implemented，真实集成尚在推进**。
+当前代码已通过 MCP direct/staged 与 Gateway mock 冒烟；前端 Gateway client 和 DEV 双路径面板已实现；独立 Bridge 代码、MCP bridge client 和假旧后端验证路径也已加入。PG 权威 proposal/session/event、事务并发控制、migration、loader/reconcile 与环境门控 live smoke 已实现，但本机没有 PostgreSQL 实例。真实产品后端、live dsh 和 PostgreSQL 仍未形成真实端到端闭环。因此当前准确表述仍是：**控制面、工具面与旧后端兼容层已实现，离线路径可验证；真实集成尚在推进**。
 
 ## 2. 问题
 
@@ -65,17 +65,17 @@ TechHaven 已拥有博客与研发管理面，但缺少可控的 Agent 执行面
 **决定**：
 
 - 人到 Agent：SPA → Web BFF → Agent Control Plane → Runner Port；
-- Agent 到平台：runner → TechHaven MCP → 产品域 API。
+- Agent 到平台：runner → TechHaven MCP → Agent Bridge（旧后端场景）→ 产品域 API。
 
 **理由**：驱动流和工具流的授权、容量与版本节奏不同，必须独立演进。
 
-### ADR-03：MCP 是 anti-corruption layer，不是第二份域模型
+### ADR-03：MCP 工具治理与旧协议转换分层
 
-**决定**：MCP 负责协议、schema、身份、工具策略、幂等和域 API 适配；工单状态机的权威定义仍在产品域后端。
+**决定**：MCP 负责工具协议、schema、agent 身份、scope、工具策略、proposal 和状态机前置校验；独立 Agent Bridge 负责旧后端认证、路径/字段/响应/状态转换，以及旧写入的幂等台账与结果对账。工单状态机和业务数据的权威仍在产品域后端。
 
-**理由**：避免前端、MCP 和后端各自维护状态规则，产生合法迁移漂移。
+**理由**：旧后端当前无法配合 Agent 契约改造。把兼容逻辑做成独立服务，可以不动产品后端和 MySQL，同时避免 MCP 同时承担工具治理与遗留接口细节。
 
-**后果**：当前 `stateMachine.ts` 只作为 fail-closed 前置校验；真实联调时必须由域后端返回版本化状态机/错误契约并通过 contract test。
+**后果**：浏览器不得直连 Bridge，MCP 不持有旧凭据，Bridge 不访问 MySQL。当前 `stateMachine.ts` 只作为 fail-closed 前置校验；真实联调时必须用真实响应冻结状态/错误契约。Bridge JSONL 幂等台账只允许单实例，横向扩容前必须迁移到带唯一约束和事务锁的权威存储。
 
 ### ADR-04：产品审批状态机是写权限权威
 
@@ -135,7 +135,7 @@ TechHaven 已拥有博客与研发管理面，但缺少可控的 Agent 执行面
 | `iat/exp` | 签发和过期                        |
 | `jti`     | 唯一 ID，用于吊销和重放检测       |
 
-Inbound agent token 不能透传给产品域 API；MCP 使用独立服务身份调用域后端。
+Inbound agent token 不能透传给 Bridge 或产品域 API；MCP 使用独立 Bridge token，Bridge 再使用独立旧后端 Bearer/Cookie。三个凭据不可复用。
 
 ### 5.3 工具风险
 
@@ -164,6 +164,7 @@ queued → running → awaiting_permission → running → succeeded
 - 终态不可复活；重试创建新 session，并关联 parent session；
 - 事件信封包含 `schemaVersion/eventId/sessionId/orgId/seq/type/occurredAt/traceId/payload`；
 - `seq` 会话内递增，`sid + seq` 唯一；SSE `Last-Event-ID` 与它对齐；
+- runner 事件与 `proposal_lifecycle` 由 Gateway 串行分配同一 `seq`，防并发来源产生碰撞；
 - 前端断线只影响观察，不影响服务端会话；
 - approval 超时默认拒绝；session 超时 cancel + dispose；
 - runner 崩溃必须产生终态和最后可用诊断，不静默悬空。
@@ -189,9 +190,10 @@ queued → running → awaiting_permission → running → succeeded
 - MCP direct：9 项 mock smoke；
 - MCP staged：11 项 mock smoke；
 - MCP HTTP adapter：6 项离线 contract smoke（service identity、org、幂等键、错误与超时）；
-- Gateway：35 项 mock smoke（含 SSE 断线/进程重启回放、连续性、活动态失败收敛与取消终态）；
-- 前端 Gateway client：默认 4 项契约回归 + 1 项环境门控的真实 Gateway 刷新式重连回归；浏览器 mock 链路已验证创建、待审批、批准/拒绝终态；
-- MCP/Gateway TypeScript typecheck。
+- MCP Bridge client 与 Agent Bridge：离线单测/假旧后端 HTTP smoke 覆盖内部认证、session/org、状态映射、幂等冲突、重放、写后确认和模糊失败对账；
+- Gateway：41 项 mock smoke（含 proposal 审批/幂等/生命周期回放、SSE 断线/进程重启回放、连续性、活动态失败收敛与取消终态）；
+- 前端 Gateway client：默认 6 项契约回归 + 1 项环境门控的真实 Gateway 刷新式重连回归；DEV mock 链路覆盖 runner 权限与产品 proposal 的独立批准/拒绝；
+- MCP/Gateway/Bridge TypeScript typecheck。
 - PG 权威 adapter、migration、reconcile 与 live smoke 已通过编译；这是 `implemented` 证据，不是 live PG 证据。
 
 ### 8.2 当前未验证
@@ -199,7 +201,7 @@ queued → running → awaiting_permission → running → succeeded
 - PostgreSQL 权威存储下的 live 重启/并发恢复，以及批准/应用竞态实跑；
 - live dsh spawn/prompt/event/close；
 - dsh 权限应答与单 turn cancel（当前协议明确不可用）；
-- MCP 到真实产品域 API；
+- Bridge 到真实产品域 API（认证、路径/字段、状态枚举、组织隔离和最终一致性）；
 - live PostgreSQL DDL、并发、恢复和 loader；
 - 多组织沙箱、网络隔离、渗透和容量。
 

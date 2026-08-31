@@ -20,3 +20,5 @@ TechHaven Agent 控制面共享契约（**类型单源**，零运行时依赖，
 - `schemaVersion` 当前为 `1`；新增必选字段走版本升级，不静默加字段。
 - `eventId = "<sessionId>:<seq>"`，与 SSE `id:` 对齐（`Last-Event-ID` 回放）。
 - `traceId`：R2 OpenTelemetry 接入前固定空串，不得伪造。
+- `permission_request` 只表示 runner 执行权限；产品域写入必须使用独立的
+  `proposal_lifecycle` 与 Proposal API，二者不得在 UI 或服务端互相冒充。

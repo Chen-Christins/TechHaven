@@ -3,7 +3,7 @@
 > 版本：v1.0-draft  
 > 日期：2026-08-29  
 > 状态：目标架构已提出，按 `docs/ROADMAP.md` 渐进迁移  
-> 适用范围：TechHaven SPA、产品后端边界、Agent Gateway、TechHaven MCP、dsh runner 与 agent 数据平面
+> 适用范围：TechHaven SPA、产品后端边界、Agent Gateway、TechHaven MCP、Agent Bridge、dsh runner 与 agent 数据平面
 
 ## 1. 文档目的
 
@@ -22,16 +22,17 @@
 - React 19 + TypeScript + Vite SPA，包含博客、社区、组织、作业、研发平台和管理后台。
 - HTTP Service 层、Auth/Theme/Layout/SiteSettings/RdOrg Context、自研 UI 组件库、通知 WebSocket。
 - `services/techhaven-mcp`：7 个 MCP 工具、session/org/scope 绑定 token、状态机、direct/staged 写，以及可切换的 JSONL/PG proposal repository。
+- `services/techhaven-agent-bridge`：独立旧后端 adapter，负责旧认证、路径/字段/状态转换、JSONL 写幂等台账和写后读取对账；不访问产品 MySQL。
 - `services/techhaven-gateway`：mock/dsh driver adapter、HTTP API、SSE 回放、权限中继、配额、看门狗，以及 JSONL/PG session-event 权威适配器。
 - Agent 数据 schema v0.3、v0.2→v0.3 migration、语义层种子、loader、对账与环境门控 PG smoke。
 
 ### 2.2 尚未完成或未验证
 
 - 前端 Agent 会话面板已实现本地 mock 与 `?driver=gateway` 双路径，并具备 SSE 事件信封消费、同页断线续传、标签页刷新后同 SID 全量回放、取消与审批调用；浏览器到本机 Gateway(mock runner) 的创建/刷新/批准/拒绝及 Gateway 强制重启自动续传已实测。它仍是 DEV 样例页，不等于真实 dsh/产品后端集成。
-- MCP `http` 模式尚未与真实产品后端完成凭据、状态机和趋势接口联调。
+- MCP `bridge` 模式及独立 Bridge 已实现并可用假旧后端离线验证，但尚未用真实旧后端完成认证、路径/字段、状态机和趋势口径联调；Bridge JSONL 台账仍是单实例实现。
 - dsh driver 仅按 v0.1.2-alpha.1 契约静态实现，未做 live dsh 端到端验证；该 SDK 线协议当前不能编程式应答权限，也不能取消单个在途 turn。
 - PostgreSQL 权威代码已实现，但本机无可用实例；DDL、迁移、loader、并发与恢复尚未取得 live PostgreSQL 证据。
-- 根前端构建、Vitest 安全/认证回归、路由分包与三 job CI 已建立；干净 checkout 的 CI 结果仍是发布门禁的一部分。
+- 根前端构建、Vitest 安全/认证回归、路由分包与四 job CI 已建立；干净 checkout 的 CI 结果仍是发布门禁的一部分。
 
 因此，当前 Agent 能力的准确成熟度是：**离线 PoC 闭环通过，真实集成尚未完成**。
 
@@ -77,14 +78,16 @@ flowchart LR
     end
 
     subgraph Tools[工具面]
-        MCP[TechHaven MCP Adapter\nschema·授权·幂等]
+        MCP[TechHaven MCP Adapter\nschema·授权·proposal]
+        BRIDGE[Agent Bridge\n旧 API 转换·幂等对账]
     end
 
     BFF --> DOMAIN
     BFF --> GATEWAY
     GATEWAY --> ADAPTER
     DSH -->|MCP stdio / 后续 HTTP| MCP
-    MCP -->|独立服务凭据| DOMAIN
+    MCP -->|内部 Bridge token + session/org| BRIDGE
+    BRIDGE -->|旧后端 Bearer/Cookie| DOMAIN
     GATEWAY -. trace context .-> MCP
 ```
 
@@ -120,7 +123,8 @@ TechHaven 当前只有一个 Web SPA，不建议立即新建独立 BFF 部署单
 - 会话创建、取消、状态推进和恢复；
 - runner adapter 生命周期；
 - 组织级配额、工具策略和审批编排；
-- SSE 事件回放、顺序保证和慢客户端保护；
+- 通过 `ProposalPort` 查询/决定 MCP 权威 proposal，并将生命周期投影到 session SSE；
+- runner 与 proposal 统一 SSE 事件回放、顺序保证和慢客户端保护；
 - trace、metrics、结构化日志与审计关联。
 
 它不得直接修改工单状态、持有前端用户密码或解释产品域状态机。
@@ -133,7 +137,9 @@ TechHaven 当前只有一个 Web SPA，不建议立即新建独立 BFF 部署单
 2. 需要审批时创建持久化 proposal，返回 `pending`，不执行写入；
 3. 用户在 TechHaven UI 对 proposal 批准或拒绝；
 4. 服务端 worker 在批准后重新读取域状态、重新校验状态机并幂等执行；
-5. 执行结果写入事件流并通知 Gateway/SPA；模型轮询只能查询状态，不能成为“触发应用”的唯一机制。
+5. 执行结果经 Gateway proposal adapter 投影为 `proposal_lifecycle` 事件并通知 SPA；模型轮询只能查询状态，不能成为“触发应用”的唯一机制。
+
+runner `permission_request` 只表示外部执行引擎自身的工具权限；产品写入授权由 proposal 状态机独立掌权。两者共享 session 事件序列，但不得合并成同一个审批状态。
 
 dsh 内部文件、命令等执行权限若无法可靠应答，runner profile 必须 fail-closed；不得在 UI 中展示“批准成功”但引擎实际没有收到决定。
 
@@ -148,7 +154,19 @@ MCP 是产品域的 anti-corruption layer 和工具 adapter：
 - 所有写工具要求幂等键；高风险工具默认 staged；
 - MCP stdio 继续从环境接收凭据；未来若开放 HTTP transport，再按 MCP OAuth 规范实现资源指示与 audience 校验。
 
-### 4.7 Runner Plane
+### 4.7 Agent Bridge
+
+当既有产品后端不能改造时，`techhaven-agent-bridge` 作为独立部署的 anti-corruption layer：
+
+- MCP 只调用稳定的 `/internal/v1/*` 契约，不理解旧 `/rd/*` 路径、`errno/data`、Cookie 或数字状态；
+- Bridge 使用独立旧后端凭据，通过 HTTP 调用产品域；不透传 agent token，不直连 MySQL；
+- 写请求带 `Idempotency-Key` 和 `expectedFromStatus`，Bridge 按“写前读 → 台账 started → 单次写 → 写后读”确认结果；超时/5xx 后先读取对账，无法确认则标记 uncertain 并停止盲重试；
+- 当前 Bridge 静态 token 信任调用它的 MCP 对 session/org 的校验。跨信任域或多副本部署前，需升级为短期 audience/org 服务身份以及数据库唯一约束/事务锁；
+- 当前趋势是每类最多 200 条列表的近似聚合；产品域提供权威聚合 API 后应替换 adapter。
+
+该层是旧后端迁移适配，不改变产品域的数据权威；旧后端仍负责最终业务权限和 MySQL 写入。
+
+### 4.8 Runner Plane
 
 - `EngineDriver` 是端口，mock 与 dsh 是 adapter；产品代码不得 import dsh 内部类型。
 - 本地 runner 仅用于受信任的开发者试点；多租户生产必须使用每会话一次性沙箱、最小挂载、网络出站 allowlist 和资源上限。
@@ -167,6 +185,8 @@ MCP 是产品域的 anti-corruption layer 和工具 adapter：
 - 迁移期执行双写比对，但不允许两个方向同时接受写入。
 
 当前实现的 fail-closed 约束：Gateway 事件在 PG 提交后才进入内存/SSE，组织配额由 advisory transaction lock 串行化；MCP proposal 在事务行锁内完成批准与 worker 应用。JSONL 兼容模式仍用于离线 mock，不等于多实例保证。
+
+Bridge 的 `bridge-operations.jsonl` 是另一份独立的写入幂等证据，不是业务数据源；当前只允许单 Bridge 实例。它不能与 Gateway/MCP JSONL 合并，也不能替代产品 MySQL 或 Agent PostgreSQL。
 
 ### 5.2 事件信封
 
@@ -202,7 +222,8 @@ MCP 是产品域的 anti-corruption layer 和工具 adapter：
 | BFF → Control Plane    | 内部 audience token 或 mTLS、短 TTL、请求 ID、最小 scope                        |
 | Control Plane → Runner | 一次性会话凭据、最小环境变量、工具 allowlist、资源/网络限制                     |
 | Runner → MCP           | session/org/audience 绑定 token、禁止 token passthrough、审计摘要               |
-| MCP → Domain API       | 独立服务身份、域端再次授权、幂等键、状态机校验                                  |
+| MCP → Bridge           | 独立内部 Bearer、session/org 头、超时、不得透传 agent token                     |
+| Bridge → Domain API    | 独立旧后端 Bearer/Cookie、状态映射、写前置条件、幂等台账与写后对账              |
 | 用户内容渲染           | 禁止未净化 `innerHTML`；Mermaid/SVG 严格模式；链接协议 allowlist                |
 
 WebSocket/SSE 还需：握手 Origin 校验、消息 schema、每消息授权、最大消息体、连接/消息限流、心跳、退出登录立即关闭连接、日志中清除 token。
@@ -215,7 +236,7 @@ WebSocket/SSE 还需：握手 Origin 校验、消息 schema、每消息授权、
 
 - 远程依赖设置明确 timeout；只对可判定的瞬时错误做有限重试并加入 jitter。
 - 非幂等写在没有幂等键时禁止自动重试。
-- Gateway、MCP 和 BFF 不得层层重复重试；每条调用链指定唯一重试责任方和 retry budget。
+- Gateway、MCP、Bridge 和 BFF 不得层层重复重试；Bridge 对无法判定是否已提交的旧写入只对账、不盲重试。每条调用链指定唯一重试责任方和 retry budget。
 - 对持续失败的 dsh、域 API 或 PostgreSQL 使用 circuit breaker；对组织/执行池使用 bulkhead。
 - readiness 必须检查关键依赖，liveness 只检查进程；降级路径必须可观察且有时限。
 
@@ -235,7 +256,7 @@ WebSocket/SSE 还需：握手 Origin 校验、消息 schema、每消息授权、
 测试按边界分层：
 
 1. **纯域测试**：状态机、scope、策略、配额、事件折叠，不启动网络或数据库；
-2. **contract test**：SPA↔BFF、BFF↔Gateway、MCP↔域 API、driver↔dsh 契约；
+2. **contract test**：SPA↔BFF、BFF↔Gateway、MCP↔Bridge、Bridge↔旧域 API、driver↔dsh 契约；
 3. **adapter integration**：PostgreSQL、JSONL spool、SSE 回放、HTTP client；
 4. **端到端**：mock 必跑；真实 dsh + 测试后端作为受控 nightly/release gate；
 5. **安全测试**：跨组织、token audience、重放、CSWSH、恶意 Mermaid、审批竞态；

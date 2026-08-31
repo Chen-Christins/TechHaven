@@ -10,7 +10,16 @@
  * 重试耗尽后以 failed 回调收尾（绝不静默悬空）。
  */
 
-import type { CreateSessionRequest, CreateSessionResponse, EventEnvelope, OkResponse, SessionDetailResponse } from "../../contracts";
+import type {
+  CreateSessionRequest,
+  CreateSessionResponse,
+  DecideProposalRequest,
+  EventEnvelope,
+  ListProposalsResponse,
+  OkResponse,
+  ProposalDetailResponse,
+  SessionDetailResponse,
+} from "../../contracts";
 
 /**
  * 全局 fetch 的绑定副本：部分浏览器/WebView 对「解引用后的 fetch」直接调用会抛
@@ -52,6 +61,27 @@ export class GatewayRequestError extends Error {
 }
 
 const SESSION_STATUSES = new Set(["queued", "running", "awaiting_permission", "succeeded", "failed", "cancelled"]);
+const PROPOSAL_STATUSES = new Set(["pending", "approved", "rejected", "applied", "expired"]);
+
+function isProposalView(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  const proposal = value as Record<string, unknown>;
+  return (
+    typeof proposal.id === "string" &&
+    typeof proposal.sessionId === "string" &&
+    Number.isInteger(proposal.orgId) &&
+    typeof proposal.tool === "string" &&
+    typeof proposal.subjectType === "string" &&
+    typeof proposal.subjectHashId === "string" &&
+    typeof proposal.fromStatus === "string" &&
+    typeof proposal.toStatus === "string" &&
+    typeof proposal.reason === "string" &&
+    typeof proposal.status === "string" &&
+    PROPOSAL_STATUSES.has(proposal.status) &&
+    typeof proposal.expiresAt === "string" &&
+    typeof proposal.updatedAt === "string"
+  );
+}
 
 /** 跨 HTTP/SSE 信任边界的最小运行时校验；避免把 `as EventEnvelope` 当成输入验证。 */
 function isEventEnvelope(value: unknown): value is EventEnvelope {
@@ -83,6 +113,12 @@ function isEventEnvelope(value: unknown): value is EventEnvelope {
       return typeof payload.tool === "string" && typeof payload.ok === "boolean";
     case "permission_request":
       return typeof payload.requestId === "string" && typeof payload.tool === "string";
+    case "proposal_lifecycle":
+      return (
+        ["created", "approved", "rejected", "applied", "expired"].includes(String(payload.event)) &&
+        typeof payload.actor === "string" &&
+        isProposalView(payload.proposal)
+      );
     case "status_change":
       return typeof payload.status === "string" && SESSION_STATUSES.has(payload.status);
     case "error":
@@ -141,6 +177,32 @@ export class AgentGatewayClient {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ requestId, decision, note }),
     });
+  }
+
+  async listProposals(sid: string): Promise<ListProposalsResponse> {
+    return this.request<ListProposalsResponse>(`/v1/sessions/${encodeURIComponent(sid)}/proposals`);
+  }
+
+  async getProposal(sid: string, proposalId: string): Promise<ProposalDetailResponse> {
+    return this.request<ProposalDetailResponse>(
+      `/v1/sessions/${encodeURIComponent(sid)}/proposals/${encodeURIComponent(proposalId)}`,
+    );
+  }
+
+  async decideProposal(
+    sid: string,
+    proposalId: string,
+    decision: DecideProposalRequest["decision"],
+    note?: string,
+  ): Promise<ProposalDetailResponse> {
+    return this.request<ProposalDetailResponse>(
+      `/v1/sessions/${encodeURIComponent(sid)}/proposals/${encodeURIComponent(proposalId)}/decision`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ decision, note } satisfies DecideProposalRequest),
+      },
+    );
   }
 
   async cancel(sid: string): Promise<void> {

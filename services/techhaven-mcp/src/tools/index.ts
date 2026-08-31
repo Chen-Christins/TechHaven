@@ -197,7 +197,7 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
       description:
         "将工单变更为目标状态（须为合法迁移，非法迁移会被拒绝），必须说明原因。需要 rd:write。" +
         "direct 模式（默认）直接生效；staged 模式且本工具列入分级审批清单时，变更先存为提案" +
-        "（pending，带过期时间），人工批准（npm run proposal -- approve）后由 get_proposal 应用；" +
+        "（pending，带过期时间），人工批准后由服务端 proposal worker 重新校验并幂等应用；get_proposal 只负责查询；" +
         "staged 但未列入清单则与 direct 相同直接生效。",
       inputSchema: {
         kind: z.enum(KINDS).describe(KIND_DESC),

@@ -1,4 +1,4 @@
-export type BackendMode = "mock" | "http";
+export type BackendMode = "mock" | "http" | "bridge";
 /** 写模式：direct=写工具直接生效（P0 现状）；staged=写操作先建提案等待人工批准（TH-RFC-001 §07） */
 export type WriteMode = "direct" | "staged";
 export type DbMode = "mirror" | "authoritative";
@@ -17,6 +17,9 @@ export interface Config {
   apiBaseUrl: string;
   serviceToken: string;
   apiTimeoutMs: number;
+  /** 独立 Agent Bridge 地址与内部 Bearer（backend=bridge 时必填） */
+  bridgeUrl: string;
+  bridgeToken: string;
   auditFile: string;
   /** PostgreSQL 连接串（TECHHAVEN_DB_URL）；空串 = 不接 DB：仅 JSONL 审计 + mock 语义层 + 提案只落 JSONL。
    *  DB 就绪时审计双写 / 写提案落库 / 语义层 DB Provider 三者同时启用（共用 PgContext） */
@@ -54,8 +57,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   }
 
   const backendRaw = (env.TECHHAVEN_BACKEND ?? "mock").trim().toLowerCase();
-  if (backendRaw !== "mock" && backendRaw !== "http") {
-    throw new ConfigError(`TECHHAVEN_BACKEND 只能是 mock | http，收到：${backendRaw}`);
+  if (backendRaw !== "mock" && backendRaw !== "http" && backendRaw !== "bridge") {
+    throw new ConfigError(`TECHHAVEN_BACKEND 只能是 mock | http | bridge，收到：${backendRaw}`);
   }
   const backend = backendRaw as BackendMode;
 
@@ -63,6 +66,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const serviceToken = env.TECHHAVEN_SERVICE_TOKEN?.trim() ?? "";
   if (backend === "http" && !serviceToken) {
     throw new ConfigError("http 模式需要 TECHHAVEN_SERVICE_TOKEN（服务端凭据，不使用 agent token）");
+  }
+  const bridgeUrl = env.TECHHAVEN_BRIDGE_URL?.trim().replace(/\/+$/, "") ?? "";
+  const bridgeToken = env.TECHHAVEN_BRIDGE_TOKEN?.trim() ?? "";
+  if (backend === "bridge" && (!bridgeUrl || !bridgeToken)) {
+    throw new ConfigError("bridge 模式需要 TECHHAVEN_BRIDGE_URL 与 TECHHAVEN_BRIDGE_TOKEN");
   }
   const apiTimeoutRaw = (env.TECHHAVEN_API_TIMEOUT_MS ?? "5000").trim();
   const apiTimeoutMs = Number(apiTimeoutRaw);
@@ -112,6 +120,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     apiBaseUrl,
     serviceToken,
     apiTimeoutMs,
+    bridgeUrl,
+    bridgeToken,
     auditFile: env.TECHHAVEN_AUDIT_FILE?.trim() || "./audit/agent-audit.jsonl",
     dbUrl,
     dbMode,

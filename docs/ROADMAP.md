@@ -22,25 +22,26 @@
 
 ## 2. 当前状态快照
 
-| 能力                    | 当前状态        | 证据与边界                                                                                                                                                     |
-| ----------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| SPA 博客/组织/研发/后台 | `implemented`   | 页面与 service 已存在；缺少系统化自动化测试                                                                                                                    |
-| 根前端正式构建          | `verified-mock` | `npm run build` 通过；主入口 gzip 92.2 KB（预算 256 KB，历史单体约 1.03 MB）                                                                                   |
-| 根前端单测基线          | `verified-mock` | vitest 默认 20 项通过；另有 1 项环境门控的真实 Gateway HTTP/SSE 刷新式重连回归，本地已通过                                                                     |
-| Mermaid 安全            | `verified-mock` | `securityLevel=strict`；恶意 HTML/脚本/click 注入测试无可执行标记                                                                                              |
-| 凭据脱敏回归            | `verified-mock` | WebSocket 建连日志、AI-SSE 诊断日志、Cookie 取值共 9 项；均用「改回旧写法 → 测试变红」反向验证过有效性                                                         |
-| CI                      | `verified-mock` | `.github/workflows/ci.yml` 三 job：root（build+test+体积）、mcp（typecheck+test+smoke）、gateway（同左）                                                       |
-| MCP direct 工具流       | `verified-mock` | 9 项离线冒烟通过                                                                                                                                               |
-| MCP staged proposal     | `verified-mock` | 11 项离线冒烟通过；批准后由 server worker 主动应用                                                                                                             |
-| Gateway HTTP/SSE/配额   | `verified-mock` | 35 项 mock driver 子进程冒烟通过，含断线/重启回放、无缺口/无重复、活动态失败收敛与取消终态                                                                     |
-| 前端 Agent 面板         | `verified-mock` | 浏览器经 Vite→Gateway(mock) 的创建、刷新同 SID、批准/拒绝、进程重启自动续传已实测；非真实 dsh/产品后端                                                         |
-| dsh driver              | `implemented`   | 静态实现；无 live dsh、权限应答和单 turn cancel 验证                                                                                                           |
-| MCP → 产品域 HTTP       | `implemented`   | 6 项离线 contract 已覆盖 service Bearer/org/幂等/errno/超时；真实凭据、状态机、趋势接口未联调                                                                  |
-| MCP 纯域单测            | `verified-mock` | `npm test` 29 项通过（node:test + tsx，无新增依赖）：状态机合法/非法迁移与终态、agent token 签发校验/篡改/过期/scope/版本、TTL 解析、argsDigest 跨服务固定向量 |
-| Gateway 纯域单测        | `verified-mock` | `npm test` 34 项通过（node:test + tsx，无新增依赖）：配置校验边界、EventChannel 并发语义、SSE 信封契约、会话视图脱敏、共享工具                                 |
-| Agent PostgreSQL        | `implemented`   | schema v0.3、migration、PG 权威 proposal/session/event、并发锁、loader/reconcile/live smoke 已有；无 live PG 证据                                              |
-| 多租户沙箱              | `planned`       | 尚未实现                                                                                                                                                       |
-| 全链路可观测性          | `planned`       | 当前以 JSONL 和 stderr 为主                                                                                                                                    |
+| 能力                    | 当前状态        | 证据与边界                                                                                                                                                              |
+| ----------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SPA 博客/组织/研发/后台 | `implemented`   | 页面与 service 已存在；缺少系统化自动化测试                                                                                                                             |
+| 根前端正式构建          | `verified-mock` | `npm run build` 通过；主入口 gzip 93.3 KB（预算 256 KB，历史单体约 1.03 MB）                                                                                            |
+| 根前端单测基线          | `verified-mock` | vitest 默认 22 项通过；另有 1 项环境门控的真实 Gateway HTTP/SSE 刷新式重连回归，本地已通过                                                                              |
+| Mermaid 安全            | `verified-mock` | `securityLevel=strict`；恶意 HTML/脚本/click 注入测试无可执行标记                                                                                                       |
+| 凭据脱敏回归            | `verified-mock` | WebSocket 建连日志、AI-SSE 诊断日志、Cookie 取值共 9 项；均用「改回旧写法 → 测试变红」反向验证过有效性                                                                  |
+| CI                      | `verified-mock` | `.github/workflows/ci.yml` 四 job：root（build+test+体积）、mcp、bridge、gateway（后三者均 typecheck+test+smoke）                                                       |
+| MCP direct 工具流       | `verified-mock` | 9 项离线冒烟通过                                                                                                                                                        |
+| MCP staged proposal     | `verified-mock` | 11 项离线冒烟通过；批准后由 server worker 主动应用                                                                                                                      |
+| Gateway HTTP/SSE/配额   | `verified-mock` | 41 项 mock driver 子进程冒烟通过，含 proposal 审批/幂等/生命周期回放、断线/重启回放、无缺口/无重复、活动态失败收敛与取消终态                                            |
+| 前端 Agent 面板         | `verified-mock` | 浏览器经 Vite→Gateway(mock) 的创建、刷新同 SID、批准/拒绝、进程重启自动续传已实测；非真实 dsh/产品后端                                                                  |
+| dsh driver              | `implemented`   | 静态实现；无 live dsh、权限应答和单 turn cancel 验证                                                                                                                    |
+| Agent Bridge            | `verified-mock` | 14 项单测 + 4 项假旧后端 HTTP smoke：认证、组织隔离、状态/字段转换、台账恢复/损坏拒绝、幂等冲突、并发重放、写后确认和模糊失败对账；真实旧后端未联调、JSONL 只支持单实例 |
+| MCP → 产品域 HTTP       | `implemented`   | 6 项离线 contract 已覆盖 service Bearer/org/幂等/errno/超时；作为直连兼容路径保留，真实凭据、状态机、趋势接口未联调                                                     |
+| MCP 纯域/adapter 单测   | `verified-mock` | `npm test` 32 项通过：原 29 项状态机/token/摘要回归 + 3 项 Bridge client 内部身份、组织隔离与 proposal 幂等/前置状态                                                    |
+| Gateway 纯域单测        | `verified-mock` | `npm test` 41 项通过（node:test + tsx，无新增依赖）：配置校验、EventChannel、SSE、proposal 隔离/幂等/过期、统一事件编号、会话视图脱敏                                   |
+| Agent PostgreSQL        | `implemented`   | schema v0.3、migration、PG 权威 proposal/session/event、并发锁、loader/reconcile/live smoke 已有；无 live PG 证据                                                       |
+| 多租户沙箱              | `planned`       | 尚未实现                                                                                                                                                                |
+| 全链路可观测性          | `planned`       | 当前以 JSONL 和 stderr 为主                                                                                                                                             |
 
 ## 3. 阶段计划
 
@@ -55,21 +56,21 @@
 - WebSocket 不再在 URL/日志暴露长时 token，形成同源 Cookie 或一次性 ticket 设计；
 - Mermaid 改为严格模式并增加恶意输入测试；
 - Router 使用 `React.lazy` 分割 admin/rd/article/agent 等路由；
-- 建立 root、MCP、Gateway 三个 CI job；
+- 建立 root、MCP、Bridge、Gateway 四个 CI job；
 - 将现有 smoke 纳入 CI，增加最小纯域测试；
 - README、RFC、服务文档统一使用本状态模型。
 
 退出门禁：
 
 - `npm ci && npm run build` 在干净 checkout 通过；
-- 两个服务 typecheck + 三套 smoke 全通过；
+- 三个服务 typecheck + 各自 smoke 全通过；
 - 不存在未声明依赖和 README 依赖漂移；
 - 主 JS gzip 体积建立预算并较当前约 1.03 MB 明显下降；
 - 高优先级认证与 Mermaid 安全问题有自动化回归测试。
 
-> **R0 进度（2026-08-29）**：构建阻断（antd icons 残留）、1101 状态分裂、路由分包、WS token 日志脱敏、
-> Mermaid strict + 回归、CI 三 job、主入口 gzip 预算均已落地并本地复验；`npm test`/`npm run build`/两服务
-> typecheck+smoke 全绿。纯域单测补齐到两服务共 63 项（MCP 29 + Gateway 34），Gateway 此前为零。
+> **R0 进度（更新于 2026-08-31）**：构建阻断（antd icons 残留）、1101 状态分裂、路由分包、WS token 日志脱敏、
+> Mermaid strict + 回归、CI 四 job、主入口 gzip 预算均已落地并本地复验；`npm test`/`npm run build`/三个服务
+> typecheck+smoke 全绿。当前三服务单测共 87 项（MCP 32 + Gateway 41 + Bridge 14）。
 >
 > **Gateway 单测发现并已归档**（非缺陷，是语义澄清）：`EventChannel` 的消费者若正挂起在内部 await 上，
 > 调用 `iterator.return()` **不会落地**——按 AsyncGenerator 规范，return 请求要排队到生成器体让出控制权后
@@ -101,7 +102,9 @@
 > 版本化事件信封；前端 Gateway client 与 DEV 双路径面板已实现；MCP proposal worker 已实现“批准后主动重校验并应用”，
 > `get_proposal` 已退回纯查询，并通过离线 staged smoke；Gateway client 契约回归与 mock driver 子进程的断线回放/取消闭环
 > 已通过；DEV 页活动 SID 刷新恢复、浏览器真实网络中断续传和 Gateway JSONL 单实例重启恢复均已完成 mock 门禁。
-> **剩余**：live dsh/产品域集成；PG 权威代码与环境门控并发测试已进入 R2，但尚无 live PostgreSQL 证据。
+> 2026-08-31 补齐 Gateway `ProposalPort`、会话级 proposal 查询/决策 API、proposal 生命周期 SSE 与 DEV 产品提案卡片；
+> mock 门禁覆盖跨组织/跨会话拒绝、重复批准幂等、拒绝、过期和重启回放。runner permission 与产品 proposal 在契约和 UI 中保持独立。
+> **剩余**：live dsh/真实产品域集成；PG 权威代码与环境门控并发测试已进入 R2，但尚无 live PostgreSQL 证据。
 
 目标：前端通过稳定契约使用真实 Gateway，但仍可选择 mock driver。
 
@@ -131,6 +134,11 @@
 > **未验证边界**：本机没有 PostgreSQL/Docker/连接串，故 DDL、迁移、并发、恢复仍未达到
 > `verified-integration`；真实产品域 API 与 live dsh 也尚未接入。
 >
+> **旧后端兼容进度（2026-08-31）**：新增独立 `techhaven-agent-bridge`，MCP 已支持推荐的
+> `TECHHAVEN_BACKEND=bridge`。Bridge 不访问 MySQL，使用旧 HTTP API，隔离 Bearer/Cookie、`errno/data`、
+> 路径/字段和状态枚举；状态写入具备 JSONL 幂等台账、写前置条件、写后确认及模糊失败对账。
+> 14 项单测与 4 项假旧后端 HTTP smoke 已通过，因此为 `verified-mock`；真实旧后端契约未冻结且当前仅允许单实例。
+>
 > > **本机能力审计（2026-08-30）**：逐项确认阻断原因，PG 路径因此停在 `implemented`，代码本身无缺陷证据。
 > >
 > > | 项                      | 结果   | 说明                                                                              |
@@ -152,6 +160,8 @@
 工作项：
 
 - 与产品后端冻结 service identity、audience、scope、状态机和错误契约；
+- 用真实旧后端响应样本冻结 Bridge 的认证、路径、字段、状态枚举、分页和组织隔离；
+- 演练 Bridge uncertain 操作人工核对、ledger 备份恢复；多实例前迁移幂等台账到事务型权威存储；
 - 域后端提供 idempotency key、actor、reason、trace ID；
 - PostgreSQL 执行 schema/migration/seed/loader；
 - 以 PostgreSQL 为 proposal/session/event 权威，JSONL 改为 spool；

@@ -23,6 +23,15 @@ export type EngineEvent =
   | { type: "tool_call"; seq: number; ts: string; tool: string; argsDigest: string; args?: unknown }
   | { type: "tool_result"; seq: number; ts: string; tool: string; ok: boolean; summary?: string }
   | { type: "permission_request"; seq: number; ts: string; requestId: string; tool: string; reason?: string }
+  | {
+      type: "proposal_lifecycle";
+      seq: number;
+      ts: string;
+      event: ProposalLifecycleEventType;
+      actor: string;
+      proposal: ProposalView;
+      note?: string;
+    }
   | { type: "status_change"; seq: number; ts: string; status: SessionStatus; detail?: string }
   | { type: "error"; seq: number; ts: string; message: string };
 
@@ -32,6 +41,7 @@ export type EngineEventPayload =
   | { tool: string; argsDigest: string; args?: unknown }
   | { tool: string; ok: boolean; summary?: string }
   | { requestId: string; tool: string; reason?: string }
+  | { event: ProposalLifecycleEventType; actor: string; proposal: ProposalView; note?: string }
   | { status: SessionStatus; detail?: string }
   | { message: string };
 
@@ -59,6 +69,10 @@ export type EventEnvelope = {
   | { type: "tool_call"; payload: { tool: string; argsDigest: string; args?: unknown } }
   | { type: "tool_result"; payload: { tool: string; ok: boolean; summary?: string } }
   | { type: "permission_request"; payload: { requestId: string; tool: string; reason?: string } }
+  | {
+      type: "proposal_lifecycle";
+      payload: { event: ProposalLifecycleEventType; actor: string; proposal: ProposalView; note?: string };
+    }
   | { type: "status_change"; payload: { status: SessionStatus; detail?: string } }
   | { type: "error"; payload: { message: string } }
 );
@@ -119,12 +133,42 @@ export interface ErrorEnvelope {
 
 export type ProposalStatus = "pending" | "approved" | "rejected" | "applied" | "expired";
 
-/** 提案生命周期事件（提案全量快照结构在 techhaven-mcp 内部，如 ProposalDetail） */
+export type ProposalLifecycleEventType = "created" | "approved" | "rejected" | "applied" | "expired";
+
+/** 浏览器可见的产品写提案快照；不包含内部数字 subject ID。 */
+export interface ProposalView {
+  id: string;
+  sessionId: string;
+  orgId: number;
+  tool: string;
+  subjectType: string;
+  subjectHashId: string;
+  fromStatus: string;
+  toStatus: string;
+  reason: string;
+  status: ProposalStatus;
+  expiresAt: string;
+  updatedAt: string;
+  note?: string;
+}
+
+/** 产品写提案生命周期；与 runner permission 是两条独立授权链。 */
 export interface ProposalLifecycleEvent {
-  event: "created" | "approved" | "rejected" | "applied" | "expired";
+  event: ProposalLifecycleEventType;
   ts: string;
-  /** "agent"（发起）/ "user:cli"（人工批准/拒绝）/ "system"（自动过期/应用） */
+  /** "agent"（发起）/ "user:<id>"（人工决定）/ "system"（自动过期/应用） */
   actor: string;
-  proposalId: string;
+  proposal: ProposalView;
+  note?: string;
+}
+
+export interface ListProposalsResponse {
+  proposals: ProposalView[];
+}
+
+export type ProposalDetailResponse = ProposalView;
+
+export interface DecideProposalRequest {
+  decision: "approve" | "reject";
   note?: string;
 }

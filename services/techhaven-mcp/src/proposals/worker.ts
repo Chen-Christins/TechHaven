@@ -83,6 +83,7 @@ export class ProposalWorker {
       assertTransition(detail.kind, current.status, detail.toStatus as TicketStatus);
       await this.options.client.updateTicketStatus(detail.orgId, detail.kind, detail.subjectId, detail.toStatus, detail.reason, {
         idempotencyKey: detail.id,
+        expectedFromStatus: current.status,
       });
       log(`proposal worker 已应用 ${detail.id}`);
       return { status: "applied" };

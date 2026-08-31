@@ -62,6 +62,8 @@ export default defineConfig(({ mode }) => {
           secure: false,
           headers: {
             authorization: `Bearer ${env.TECHHAVEN_GATEWAY_PROXY_TOKEN || ""}`,
+            // 开发代理模拟生产 BFF 的可信用户主体注入；浏览器自带同名头会被覆盖。
+            "x-techhaven-actor": env.TECHHAVEN_GATEWAY_PROXY_ACTOR || "user:1",
           },
           // 剥掉 /gateway 前缀：网关只识别 /v1/sessions 等路径
           rewrite: (path) => path.replace(/^\/gateway/, ""),

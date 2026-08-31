@@ -13,7 +13,15 @@ import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { log } from "./log.js";
 import { errorMessage, nowIso } from "./util.js";
-import type { EngineDriver, EngineEvent, EngineEventPayload, EngineSessionHandle, EventEnvelope, SessionStatus } from "./types.js";
+import type {
+  EngineDriver,
+  EngineEvent,
+  EngineEventPayload,
+  EngineSessionHandle,
+  EventEnvelope,
+  ProposalLifecycleEvent,
+  SessionStatus,
+} from "./types.js";
 import { PgQuotaError, type GatewayPgStore, type PersistedGatewaySession } from "./pgStore.js";
 
 /** 事件信封（TH-RFC-001 §6）：seq/type/occurredAt 上提，payload 保留事件其余字段；SSE 数据帧装信封，JSONL 仍装引擎事件 */
@@ -128,6 +136,25 @@ function isSessionStatusValue(value: unknown): value is SessionStatus {
   );
 }
 
+function isProposalViewValue(value: unknown): boolean {
+  const proposal = jsonRecord(value);
+  return Boolean(
+    proposal &&
+      typeof proposal.id === "string" &&
+      typeof proposal.sessionId === "string" &&
+      Number.isInteger(proposal.orgId) &&
+      typeof proposal.tool === "string" &&
+      typeof proposal.subjectType === "string" &&
+      typeof proposal.subjectHashId === "string" &&
+      typeof proposal.fromStatus === "string" &&
+      typeof proposal.toStatus === "string" &&
+      typeof proposal.reason === "string" &&
+      ["pending", "approved", "rejected", "applied", "expired"].includes(String(proposal.status)) &&
+      typeof proposal.expiresAt === "string" &&
+      typeof proposal.updatedAt === "string",
+  );
+}
+
 /** JSONL 是跨进程恢复输入，必须做运行时校验，不能直接断言为 EngineEvent。 */
 function isEngineEventValue(value: unknown): value is EngineEvent {
   const event = jsonRecord(value);
@@ -141,6 +168,12 @@ function isEngineEventValue(value: unknown): value is EngineEvent {
       return typeof event.tool === "string" && typeof event.ok === "boolean";
     case "permission_request":
       return typeof event.requestId === "string" && typeof event.tool === "string";
+    case "proposal_lifecycle":
+      return (
+        ["created", "approved", "rejected", "applied", "expired"].includes(String(event.event)) &&
+        typeof event.actor === "string" &&
+        isProposalViewValue(event.proposal)
+      );
     case "status_change":
       return isSessionStatusValue(event.status);
     case "error":
@@ -246,6 +279,8 @@ export class SessionRegistry {
   private readonly idleTimers = new Map<string, NodeJS.Timeout>();
   /** 未完成的 handle.dispose()，registry.dispose() 时统一等待 */
   private readonly pendingDisposes = new Set<Promise<void>>();
+  /** driver / proposal / watchdog 可并发产生日志；逐会话串行化后由 Gateway 统一分配 seq。 */
+  private readonly eventTails = new Map<string, Promise<void>>();
   private startupInterrupted: SessionRecord[] = [];
 
   constructor(
@@ -284,9 +319,9 @@ export class SessionRegistry {
     const interrupted = this.startupInterrupted;
     this.startupInterrupted = [];
     for (const record of interrupted) {
-      await this.acceptEvent(record, {
+      await this.publishEvent(record, {
         type: "status_change",
-        seq: lastSeq(record) + 1,
+        seq: 0,
         ts: nowIso(),
         status: "failed",
         detail: "Gateway 重启，运行态引擎句柄不可恢复",
@@ -471,6 +506,29 @@ export class SessionRegistry {
     return [...this.records.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.sid.localeCompare(b.sid));
   }
 
+  /**
+   * 把产品 proposal 当前生命周期同步进会话事件流。相同提案同一状态只发布一次；
+   * sid/org 任一不匹配均按未知会话处理，避免跨组织枚举。
+   */
+  async syncProposalLifecycle(lifecycle: ProposalLifecycleEvent): Promise<void> {
+    const proposal = lifecycle.proposal;
+    const record = this.records.get(proposal.sessionId);
+    if (!record || record.orgId !== proposal.orgId) throw new SessionNotFoundError(proposal.sessionId);
+    const previous = [...record.events]
+      .reverse()
+      .find((event) => event.type === "proposal_lifecycle" && event.proposal.id === proposal.id);
+    if (previous?.type === "proposal_lifecycle" && previous.proposal.status === proposal.status) return;
+    await this.publishEvent(record, {
+      type: "proposal_lifecycle",
+      seq: 0,
+      ts: lifecycle.ts,
+      event: lifecycle.event,
+      actor: lifecycle.actor,
+      proposal,
+      ...(lifecycle.note ? { note: lifecycle.note } : {}),
+    });
+  }
+
   /** 活动会话数：queued / running / awaiting_permission 计入，终态不计（per-org 增量计数，替代全表扫描） */
   activeCountByOrg(orgId: number): number {
     return this.activeCounts.get(orgId) ?? 0;
@@ -537,6 +595,8 @@ export class SessionRegistry {
   /** 优雅关闭：dispose 全部句柄并关闭全部 SSE 订阅，清空看门狗 / 驻留定时器，冲刷 JSONL 写流 */
   async dispose(): Promise<void> {
     for (const record of this.records.values()) this.closeSession(record);
+    await Promise.allSettled([...this.eventTails.values()]);
+    this.eventTails.clear();
     await Promise.allSettled([...this.pendingDisposes]);
     this.pendingDisposes.clear();
     for (const timer of this.idleTimers.values()) clearTimeout(timer);
@@ -569,7 +629,7 @@ export class SessionRegistry {
         void handle.cancel().catch((err) => log(`补发 cancel 失败（${record.sid}）：`, err));
       }
       for await (const ev of handle.events()) {
-        await this.acceptEvent(record, ev);
+        await this.publishEvent(record, ev);
       }
       if (!isTerminalStatus(record.status)) {
         if (record.closed) {
@@ -584,9 +644,9 @@ export class SessionRegistry {
           );
         } else {
           // 流异常结束但未见终态 → 网关侧合成 failed，绝不让会话悬空
-          await this.acceptEvent(record, {
+          await this.publishEvent(record, {
             type: "status_change",
-            seq: lastSeq(record) + 1,
+            seq: 0,
             ts: nowIso(),
             status: "failed",
             detail: "事件流在非终态下结束",
@@ -598,9 +658,9 @@ export class SessionRegistry {
       log(`会话事件泵异常（${record.sid}）：`, err);
       if (!isTerminalStatus(record.status)) {
         try {
-          await this.acceptEvent(record, {
+          await this.publishEvent(record, {
             type: "status_change",
-            seq: lastSeq(record) + 1,
+            seq: 0,
             ts: nowIso(),
             status: "failed",
             // 面向消费者的归因一句话；细节见上方日志
@@ -616,7 +676,28 @@ export class SessionRegistry {
     }
   }
 
-  /** 事件落点：缓存 + JSONL + 状态机 + 唤醒 SSE；终态时收尾会话 */
+  /**
+   * 新事件统一入口：driver 自带 seq 只是 adapter 内部顺序提示；真正的会话 seq 由 Gateway
+   * 在串行队列内分配，确保 proposal / watchdog 与 driver 并发时仍无冲突、无缺口。
+   */
+  private publishEvent(record: SessionRecord, source: EngineEvent): Promise<void> {
+    const previous = this.eventTails.get(record.sid) ?? Promise.resolve();
+    const next = previous
+      .catch(() => undefined)
+      .then(() => this.acceptEvent(record, { ...source, seq: lastSeq(record) + 1 } as EngineEvent));
+    this.eventTails.set(record.sid, next);
+    next.then(
+      () => {
+        if (this.eventTails.get(record.sid) === next) this.eventTails.delete(record.sid);
+      },
+      () => {
+        if (this.eventTails.get(record.sid) === next) this.eventTails.delete(record.sid);
+      },
+    );
+    return next;
+  }
+
+  /** 已分配 seq 的事件落点：缓存 + JSONL + 状态机 + 唤醒 SSE；终态时收尾会话 */
   private async acceptEvent(record: SessionRecord, ev: EngineEvent): Promise<void> {
     if (this.opts.pgStore) {
       const inserted = await this.opts.pgStore.appendEvent(record.sid, ev);
@@ -634,7 +715,7 @@ export class SessionRegistry {
     const frame = `id: ${ev.seq}\ndata: ${toEnvelopeJson(record, ev)}\n\n`;
     this.appendJsonl(`{"kind":"event","sid":${JSON.stringify(record.sid)},"event":${eventJson}}`);
     // 看门狗：任何事件都证明会话活跃，重置空闲计时
-    this.resetIdleTimer(record);
+    if (!record.closed && !isTerminalStatus(record.status)) this.resetIdleTimer(record);
 
     if (ev.type === "status_change" && ev.status !== record.status) {
       const wasTerminal = isTerminalStatus(record.status);
@@ -703,6 +784,7 @@ export class SessionRegistry {
     const timer = setTimeout(() => {
       this.retentionTimers.delete(record.sid);
       this.records.delete(record.sid);
+      this.eventTails.delete(record.sid);
       log(`会话 ${record.sid} 终态驻留超 ${minutes} 分钟，已从注册表淘汰`);
     }, delayMs);
     timer.unref(); // 驻留清理不阻止进程退出
@@ -719,9 +801,9 @@ export class SessionRegistry {
       this.idleTimers.delete(record.sid);
       if (record.closed || isTerminalStatus(record.status)) return;
       log(`会话 ${record.sid} 空闲超时（${minutes} 分钟无引擎事件），合成 failed 终态`);
-      void this.acceptEvent(record, {
+      void this.publishEvent(record, {
         type: "status_change",
-        seq: lastSeq(record) + 1,
+        seq: 0,
         ts: nowIso(),
         status: "failed",
         detail: "空闲超时，引擎无事件",

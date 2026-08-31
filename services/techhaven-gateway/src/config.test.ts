@@ -33,6 +33,7 @@ test("最小环境可装载，其余取文档默认值", () => {
   assert.equal(config.driver, "mock");
   assert.equal(config.store, "jsonl");
   assert.equal(config.dataDir, "./data");
+  assert.equal(config.proposalsFile, "../techhaven-mcp/audit/proposals.jsonl");
   assert.equal(config.maxSessionsPerOrg, 3);
   assert.equal(config.sessionRetentionMinutes, 30);
   assert.equal(config.sessionIdleTimeoutMinutes, 30);
@@ -50,6 +51,11 @@ test("gatewayToken 缺失或纯空白都拒绝启动", () => {
 
 test("gatewayToken 两端空白被裁剪", () => {
   assert.equal(load({ TECHHAVEN_GATEWAY_TOKEN: "  tok  " }).gatewayToken, "tok");
+});
+
+test("proposal 共享文件可配置且会裁剪空白", () => {
+  assert.equal(load({ TECHHAVEN_PROPOSALS_FILE: "  ./audit/custom-proposals.jsonl  " }).proposalsFile, "./audit/custom-proposals.jsonl");
+  assert.equal(load({ TECHHAVEN_PROPOSALS_FILE: "   " }).proposalsFile, "../techhaven-mcp/audit/proposals.jsonl");
 });
 
 test("端口：空值走默认，显式值须是 1~65535 整数", () => {

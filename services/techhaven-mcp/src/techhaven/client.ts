@@ -28,6 +28,6 @@ export interface TechHavenClient {
     id: number,
     toStatus: string,
     reason: string,
-    options?: { idempotencyKey?: string },
+    options?: { idempotencyKey?: string; expectedFromStatus?: string },
   ): Promise<TicketRecord>;
 }

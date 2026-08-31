@@ -5,6 +5,7 @@ import { loadConfig } from "./config.js";
 import { verifyAgentToken } from "./auth/agentToken.js";
 import { MockTechHavenClient } from "./techhaven/mockClient.js";
 import { HttpTechHavenClient } from "./techhaven/httpClient.js";
+import { BridgeTechHavenClient } from "./techhaven/bridgeClient.js";
 import { AuditLog } from "./audit.js";
 import { ProposalStore, type ProposalRepository } from "./proposals/store.js";
 import { ProposalWorker } from "./proposals/worker.js";
@@ -33,7 +34,15 @@ async function main(): Promise<void> {
           serviceToken: config.serviceToken,
           timeoutMs: config.apiTimeoutMs,
         })
-      : new MockTechHavenClient();
+      : config.backend === "bridge"
+        ? new BridgeTechHavenClient({
+            bridgeUrl: config.bridgeUrl,
+            bridgeToken: config.bridgeToken,
+            timeoutMs: config.apiTimeoutMs,
+            sessionId: session.sid,
+            orgId: session.org,
+          })
+        : new MockTechHavenClient();
 
   // P2 持久化：TECHHAVEN_DB_URL 非空时建立 DB 会话上下文（pool + agent_identities/agent_sessions 锚点），
   // 审计双写 / 写提案落库 / 语义层 DB Provider 三者共用；失败整体降级为

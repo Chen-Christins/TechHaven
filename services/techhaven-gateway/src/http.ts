@@ -11,6 +11,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Config } from "./config.js";
 import { log } from "./log.js";
 import { isRecord } from "./util.js";
+import type { ProposalPort } from "./proposals.js";
 import {
   GatewayError,
   sessionView,
@@ -100,6 +101,16 @@ function optionalString(body: Record<string, unknown>, key: string): string | un
   if (value === undefined || value === null || value === "") return undefined;
   if (typeof value !== "string") throw new GatewayError(400, `字段 ${key} 必须是字符串`);
   return value;
+}
+
+/** 审批主体由持有 Gateway 内部令牌的 BFF/开发代理注入，禁止从 JSON body 接受可伪造 actor。 */
+function trustedActor(req: IncomingMessage): string {
+  const raw = req.headers["x-techhaven-actor"];
+  const actor = Array.isArray(raw) ? raw[0] : raw;
+  if (typeof actor !== "string" || !/^user:[1-9]\d*$/.test(actor.trim())) {
+    throw new GatewayError(401, "缺少可信审批主体 X-TechHaven-Actor（格式 user:<positive-id>）");
+  }
+  return actor.trim();
 }
 
 /** POST /v1/sessions 请求体校验 */
@@ -201,7 +212,13 @@ function handleEventsStream(
   });
 }
 
-async function handleRequest(req: IncomingMessage, res: ServerResponse, config: Config, registry: SessionRegistry): Promise<void> {
+async function handleRequest(
+  req: IncomingMessage,
+  res: ServerResponse,
+  config: Config,
+  registry: SessionRegistry,
+  proposals: ProposalPort,
+): Promise<void> {
   const url = new URL(req.url ?? "/", "http://localhost");
   const path = url.pathname;
   const method = (req.method ?? "GET").toUpperCase();
@@ -242,6 +259,54 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, config: 
       if (!record) throw new GatewayError(404, `未知会话：${detailMatch[1]}`);
       sendJson(res, 200, sessionView(record));
       return;
+    }
+
+    const proposalListMatch = /^\/v1\/sessions\/([^/]+)\/proposals$/.exec(path);
+    if (proposalListMatch && method === "GET") {
+      const sid = decodeURIComponent(proposalListMatch[1]);
+      const record = registry.get(sid);
+      if (!record) throw new GatewayError(404, `未知会话：${sid}`);
+      const snapshots = await proposals.listForSession(sid, record.orgId);
+      for (const item of snapshots) await registry.syncProposalLifecycle(item.lifecycle);
+      sendJson(res, 200, { proposals: snapshots.map((item) => item.proposal) });
+      return;
+    }
+
+    const proposalMatch = /^\/v1\/sessions\/([^/]+)\/proposals\/([^/]+)(?:\/(decision))?$/.exec(path);
+    if (proposalMatch) {
+      const sid = decodeURIComponent(proposalMatch[1]);
+      const proposalId = decodeURIComponent(proposalMatch[2]);
+      const action = proposalMatch[3];
+      const record = registry.get(sid);
+      if (!record) throw new GatewayError(404, `未知会话：${sid}`);
+
+      if (!action && method === "GET") {
+        const snapshots = await proposals.listForSession(sid, record.orgId);
+        const found = snapshots.find((item) => item.proposal.id === proposalId);
+        if (!found) throw new GatewayError(404, "提案不存在或不属于当前会话");
+        await registry.syncProposalLifecycle(found.lifecycle);
+        sendJson(res, 200, found.proposal);
+        return;
+      }
+
+      if (action === "decision" && method === "POST") {
+        const body = jsonObject(await readJsonBody(req));
+        const decision = body.decision;
+        if (decision !== "approve" && decision !== "reject") {
+          throw new GatewayError(400, '字段 decision 必须是 "approve" | "reject"');
+        }
+        const result = await proposals.decide({
+          sessionId: sid,
+          orgId: record.orgId,
+          proposalId,
+          decision,
+          actor: trustedActor(req),
+          note: optionalString(body, "note"),
+        });
+        await registry.syncProposalLifecycle(result.lifecycle);
+        sendJson(res, 200, result.proposal);
+        return;
+      }
     }
 
     const subMatch = /^\/v1\/sessions\/([^/]+)\/(events|permission|cancel)$/.exec(path);
@@ -292,9 +357,9 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, config: 
 }
 
 /** 创建网关 HTTP 服务 */
-export function createGatewayServer(config: Config, registry: SessionRegistry): http.Server {
+export function createGatewayServer(config: Config, registry: SessionRegistry, proposals: ProposalPort): http.Server {
   const server = http.createServer((req, res) => {
-    void handleRequest(req, res, config, registry);
+    void handleRequest(req, res, config, registry, proposals);
   });
   // 显式消费 clientError：默认行为是销毁 socket 并可能打出未处理异常日志
   server.on("clientError", (err, socket) => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { EventEnvelope } from "../../contracts";
+import type { EventEnvelope, ProposalView } from "../../contracts";
 import { AgentGatewayClient } from "./agentGatewayClient";
 
 function envelope(sid: string, seq: number, text = `event-${seq}`): EventEnvelope {
@@ -25,6 +25,23 @@ function sseResponse(items: Array<EventEnvelope | "end" | string>): Response {
     })
     .join("");
   return new Response(body, { status: 200, headers: { "content-type": "text/event-stream" } });
+}
+
+function proposal(id = "p_1"): ProposalView {
+  return {
+    id,
+    sessionId: "s_1",
+    orgId: 1,
+    tool: "update_ticket_status",
+    subjectType: "bug",
+    subjectHashId: "bug_hash",
+    fromStatus: "new",
+    toStatus: "accepted",
+    reason: "ready to apply",
+    status: "pending",
+    expiresAt: "2026-08-31T01:00:00.000Z",
+    updatedAt: "2026-08-31T00:00:00.000Z",
+  };
 }
 
 function waitForEnd(client: AgentGatewayClient, sid: string): Promise<{ seqs: number[]; reason: string; errors: string[] }> {
@@ -114,5 +131,52 @@ describe("AgentGatewayClient SSE contract", () => {
 
     expect(request?.url).toBe("http://gateway.test/v1/sessions/s%2Fwith%20space/cancel");
     expect(request?.init?.method).toBe("POST");
+  });
+
+  it("接受完整的 proposal_lifecycle SSE 信封", async () => {
+    const sid = "s_1";
+    const lifecycle: EventEnvelope = {
+      schemaVersion: 1,
+      eventId: `${sid}:1`,
+      sessionId: sid,
+      orgId: 1,
+      seq: 1,
+      type: "proposal_lifecycle",
+      occurredAt: "2026-08-31T00:00:00.000Z",
+      traceId: "",
+      payload: { event: "created", actor: "agent", proposal: proposal() },
+    };
+    const client = new AgentGatewayClient("http://gateway.test", async () => sseResponse([lifecycle, "end"]), {
+      retryBaseMs: 0,
+      retryMaxMs: 0,
+      retryLimit: 0,
+    });
+
+    const result = await waitForEnd(client, sid);
+
+    expect(result).toEqual({ seqs: [1], reason: "completed", errors: [] });
+  });
+
+  it("proposal 查询与决策请求对路径、方法和 body 做编码", async () => {
+    const requests: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl: typeof fetch = async (input, init) => {
+      requests.push({ url: String(input), init });
+      return new Response(JSON.stringify(requests.length === 1 ? { proposals: [proposal()] } : proposal()), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+    const client = new AgentGatewayClient("http://gateway.test", fetchImpl);
+
+    await client.listProposals("s/with space");
+    await client.decideProposal("s/with space", "p/with space", "reject", "not now");
+
+    expect(requests[0]?.url).toBe("http://gateway.test/v1/sessions/s%2Fwith%20space/proposals");
+    expect(requests[0]?.init?.method).toBeUndefined();
+    expect(requests[1]?.url).toBe(
+      "http://gateway.test/v1/sessions/s%2Fwith%20space/proposals/p%2Fwith%20space/decision",
+    );
+    expect(requests[1]?.init?.method).toBe("POST");
+    expect(JSON.parse(String(requests[1]?.init?.body))).toEqual({ decision: "reject", note: "not now" });
   });
 });

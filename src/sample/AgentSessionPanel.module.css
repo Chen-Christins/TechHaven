@@ -429,6 +429,100 @@
   color: var(--error);
 }
 
+.proposalCard {
+  position: relative;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid color-mix(in srgb, var(--primary) 54%, var(--border-primary));
+  border-left: 4px solid var(--primary);
+  border-radius: 16px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary-light) 64%, var(--card-bg)), var(--card-bg));
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.proposalEyebrow {
+  color: var(--primary);
+  font-size: 0.68rem;
+  font-weight: 760;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.proposalTitleRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 0.86rem;
+}
+
+.proposalTitleRow svg {
+  color: var(--primary);
+}
+
+.proposalTransition {
+  padding: 3px 8px;
+  border: 1px solid var(--border-primary);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card-bg) 72%, transparent);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+.proposalReason,
+.proposalNote {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.proposalNote {
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--bg-tertiary) 72%, transparent);
+  color: var(--text-tertiary);
+}
+
+.proposalMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.proposalMeta span {
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg-tertiary) 82%, transparent);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+}
+
+.proposalResult {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  font-weight: 680;
+}
+
+.proposalResultOk {
+  color: var(--success);
+}
+
+.proposalResultNo {
+  color: var(--error);
+}
+
+.proposalResultPending {
+  color: var(--info);
+}
+
 .statusRow {
   display: flex;
   align-items: center;

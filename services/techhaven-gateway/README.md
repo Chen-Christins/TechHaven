@@ -1,14 +1,14 @@
 # techhaven-gateway
 
-TechHaven Agent Control Plane 的当前实现：runner 生命周期、会话管理、SSE 事件桥、权限中继和基础配额。
+TechHaven Agent Control Plane 的当前实现：runner 生命周期、会话管理、SSE 事件桥、runner 权限中继、产品 proposal 查询/决策和基础配额。
 
-> 当前状态：`implemented + verified-mock`。35 项 mock driver 子进程冒烟通过（含 SSE 断线/重启回放、无缺口/无重复、活动态失败收敛与取消终态）；浏览器经 Vite 代理的创建、刷新、批准/拒绝及进程重启续传已用 mock runner 实测。live dsh、live PostgreSQL 和生产沙箱尚未验证。架构见 `../../docs/ARCHITECTURE.md`，决策见 `../../docs/TH-RFC-001-agent-engine.md`，门禁见 `../../docs/ROADMAP.md`。
+> 当前状态：`implemented + verified-mock`。41 项 mock driver 子进程冒烟通过（含 SSE 断线/重启回放、proposal 查询/审批/幂等与生命周期回放、无缺口/无重复、活动态失败收敛与取消终态）；浏览器经 Vite 代理的创建、刷新、批准/拒绝及进程重启续传已用 mock runner 实测。live dsh、live PostgreSQL 和生产沙箱尚未验证。架构见 `../../docs/ARCHITECTURE.md`，决策见 `../../docs/TH-RFC-001-agent-engine.md`，门禁见 `../../docs/ROADMAP.md`。
 
 数据流：`driver.startSession`（后台）→ 事件泵消费 `handle.events()` → 权威存储提交 → 内存缓存 + JSONL spool → SSE 订阅者。默认 `jsonl` 权威保持 PoC 兼容；`postgres` 模式先提交 PG，失败时不向 SSE 宣布未落库事实。
 SSE 数据帧为**事件信封**（`EventEnvelope`，`id:`=seq，data 含 schemaVersion/eventId/sessionId/orgId/seq/type/occurredAt/traceId/payload，见仓库根 `contracts/` 与 TH-RFC-001 §6）；JSONL 行仍存引擎事件原始形态。
 终态（succeeded / failed / cancelled）后 dispose 引擎句柄并关闭 SSE；空闲超时由看门狗合成 failed 终态——「会话不悬空」。
 
-Gateway 只承载控制面，不复制产品域状态机；proposal 权威位于 techhaven-mcp/审批服务，Gateway PG 只承载 session/event。
+Gateway 只承载控制面，不复制产品域状态机；proposal 权威位于 techhaven-mcp/审批服务。Gateway 通过 `ProposalPort` 暴露同会话、同组织的查询/决策 API，并把 proposal 生命周期投影到 session SSE；批准不等于 Gateway 执行域写，实际应用仍由 MCP 服务端 worker 负责。
 
 ## 快速开始
 
@@ -18,33 +18,39 @@ npm run typecheck    # tsc --noEmit（覆盖 src/**/*.test.ts）
 npm test             # 纯域单测（node:test + tsx，无新增依赖，无需外部实例）
 npm run build        # tsc -p tsconfig.build.json（编译 src/ 到 dist/，排除 *.test.ts）
 npm run dev          # tsx src/index.ts
-npm run smoke        # build + 端到端冒烟（spawn/restart dist/index.js，35 项检查）
+npm run smoke        # build + 端到端冒烟（spawn/restart dist/index.js，41 项检查）
 npm run load         # gateway.jsonl → PostgreSQL 装载（见下「事件落库」）
 npm run reconcile    # JSONL spool ↔ PG session/event 对账
 npm run db:migrate -- --mode fresh --seed
 npm run smoke:pg     # 需要 TECHHAVEN_TEST_DB_URL 的 live PG 门禁
 ```
 
-`npm test` 覆盖 34 项不需要外部实例的纯逻辑：`src/config.test.ts`（环境变量校验的必填项 / 枚举 / 端口与配额边界 / `dbSchema` 标识符注入防护）、
+`npm test` 覆盖 41 项不需要外部实例的纯逻辑：`src/config.test.ts`（环境变量校验的必填项 / 枚举 / 端口与配额边界 / `dbSchema` 标识符注入防护）、
 `src/channel.test.ts`（`EventChannel` 的回放与单趟游标、close 唤醒挂起消费者、close 后 push 静默丢弃、waiter 不泄漏）、
-`src/sessions.test.ts`（SSE 信封 §6 契约：seq/type/occurredAt 上提且 payload 不重复；`sessionView` 剥离句柄/订阅者/事件缓存）、
+`src/sessions.test.ts`（SSE 信封 §6 契约、runner/proposal 统一连续编号、`sessionView` 运行态剥离）、
+`src/proposals.test.ts`（sid/org 隔离、内部 ID 脱敏、批准/拒绝幂等、过期 fail-closed），
 `src/util.test.ts`（共享工具与 `sha256Hex16` 跨服务固定向量）。
 
 构建用 `tsconfig.build.json` 排除 `*.test.ts`，`dist/` 内不含测试产物；`npm run typecheck` 仍覆盖测试文件。
 
 ## 配置（见 `.env.example`）
 
-| 变量                             | 说明                                                        |
-| -------------------------------- | ----------------------------------------------------------- |
-| `TECHHAVEN_GATEWAY_TOKEN`        | Bearer 令牌（必填，缺失拒绝启动）                           |
-| `TECHHAVEN_GATEWAY_PORT`         | HTTP 监听端口（默认 3091）                                  |
-| `TECHHAVEN_ENGINE_DRIVER`        | `mock` / `dsh`（默认 mock）                                 |
-| `TECHHAVEN_GATEWAY_DATA_DIR`     | JSONL 落盘目录（默认 `./data`，文件名固定 `gateway.jsonl`） |
-| `TECHHAVEN_GATEWAY_STORE`        | `jsonl` / `postgres`（默认 jsonl）                          |
-| `TECHHAVEN_GATEWAY_DB_URL`       | store=postgres 时必填；连接失败拒绝启动                     |
-| `TECHHAVEN_GATEWAY_DB_SCHEMA`    | PostgreSQL schema（默认 public）                            |
-| `TECHHAVEN_MAX_SESSIONS_PER_ORG` | 单组织活动会话配额（默认 3）                                |
-| `TECHHAVEN_DB_URL`               | loader/migration 兼容变量                                   |
+| 变量                                                                 | 说明                                                        |
+| -------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `TECHHAVEN_GATEWAY_TOKEN`                                            | Bearer 令牌（必填，缺失拒绝启动）                           |
+| `TECHHAVEN_GATEWAY_PORT`                                             | HTTP 监听端口（默认 3091）                                  |
+| `TECHHAVEN_ENGINE_DRIVER`                                            | `mock` / `dsh`（默认 mock）                                 |
+| `TECHHAVEN_GATEWAY_DATA_DIR`                                         | JSONL 落盘目录（默认 `./data`，文件名固定 `gateway.jsonl`） |
+| `TECHHAVEN_PROPOSALS_FILE`                                           | JSONL 模式共享 proposal 日志（默认指向 MCP audit 文件）     |
+| `TECHHAVEN_GATEWAY_STORE`                                            | `jsonl` / `postgres`（默认 jsonl）                          |
+| `TECHHAVEN_GATEWAY_DB_URL`                                           | store=postgres 时必填；连接失败拒绝启动                     |
+| `TECHHAVEN_GATEWAY_DB_SCHEMA`                                        | PostgreSQL schema（默认 public）                            |
+| `TECHHAVEN_MAX_SESSIONS_PER_ORG`                                     | 单组织活动会话配额（默认 3）                                |
+| `TECHHAVEN_SESSION_RETENTION_MINUTES`                                | 终态会话保留分钟数（默认 30；0 = 不淘汰）                   |
+| `TECHHAVEN_SESSION_IDLE_TIMEOUT_MINUTES`                             | 活动态空闲超时（默认 30；0 = 关闭）                         |
+| `TECHHAVEN_DB_URL`                                                   | loader/migration 兼容变量                                   |
+| `TECHHAVEN_DSH_BIN` / `TECHHAVEN_DSH_PROFILE` / `TECHHAVEN_DSH_HOME` | dsh 可执行文件、固定 profile 与工作区                       |
+| `DEEPSEEK_API_KEY` / `DEEPSEEK_BASE_URL`                             | 由父进程继承给 dsh 的供应商配置；实际键名以 profile 为准    |
 
 ## JSONL 行格式（`gateway.jsonl`，append-only）
 
@@ -58,11 +64,11 @@ npm run smoke:pg     # 需要 TECHHAVEN_TEST_DB_URL 的 live PG 门禁
 - PG 连接或事务失败时 fail-closed，不把 JSONL 提升成第二个可写权威；
 - `npm run reconcile` 比对 spool 与 PG 的 session/status/seq，差异时退出码为 2。
 
-| kind         | 内容                                                                  | 说明                                                                                                                     |
-| ------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `session`    | `{ sid, patch: { status, orgId?, subjectType?, subjectId?, note? } }` | patch 行只在 create（全量归属 + 状态）与注册表释放收尾（status + note）时写；中途状态变化不写 patch 行                   |
-| `event`      | `{ sid, event: <EngineEvent> }`                                       | 引擎事件流（assistant_chunk / tool_call / tool_result / permission_request / status_change / error），事件行不含归属字段 |
-| `permission` | `{ sid, orgId, requestId, decision, ts }`                             | 权限应答审计行（`orgId` 供装载器按组织归档）                                                                             |
+| kind         | 内容                                                                  | 说明                                                                                                   |
+| ------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `session`    | `{ sid, patch: { status, orgId?, subjectType?, subjectId?, note? } }` | patch 行只在 create（全量归属 + 状态）与注册表释放收尾（status + note）时写；中途状态变化不写 patch 行 |
+| `event`      | `{ sid, event: <EngineEvent> }`                                       | 统一事件流（runner 事件 + proposal_lifecycle），事件行不含归属字段                                     |
+| `permission` | `{ sid, orgId, requestId, decision, ts }`                             | 权限应答审计行（`orgId` 供装载器按组织归档）                                                           |
 
 ## 事件落库
 
@@ -126,3 +132,12 @@ args_digest / risk_level / proposal 等权威字段）。当前审计留痕仍�
 - R4：多组织沙箱、bulkhead、retry budget、SLO 和安全门禁。
 
 dsh SDK 的权限应答与取消限制见 `docs/DSH_SDK.md`。产品域写审批由 TechHaven proposal/policy 掌权，不把 dsh `approval/asked` 事件当作授权事实。
+
+## Proposal API
+
+- `GET /v1/sessions/:sid/proposals`：列出当前组织、当前会话的产品写入提案；
+- `GET /v1/sessions/:sid/proposals/:proposalId`：读取单个提案；
+- `POST /v1/sessions/:sid/proposals/:proposalId/decision`：`{ decision: "approve" | "reject", note? }`；
+- 决策 actor 只接受受信 BFF/代理注入的 `X-TechHaven-Actor: user:<id>`，不读取浏览器 body 自报身份；
+- 跨组织与跨会话都返回不可区分的 404；重复同向决策幂等，反向改判/过期批准冲突；
+- runner `permission_request` 与产品 `proposal_lifecycle` 是两套独立状态机，UI 不得把前者显示为后者已获批准。

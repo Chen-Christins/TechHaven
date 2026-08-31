@@ -7,8 +7,11 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GatewayError, sessionView, toEnvelopeJson, type SessionRecord } from "./sessions.js";
-import type { EngineEvent } from "./types.js";
+import { mkdtempSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { GatewayError, SessionRegistry, sessionView, toEnvelopeJson, type SessionRecord } from "./sessions.js";
+import type { EngineDriver, EngineEvent, ProposalLifecycleEvent } from "./types.js";
 
 function makeRecord(patch: Partial<SessionRecord> = {}): SessionRecord {
   return {
@@ -63,10 +66,118 @@ test("toEnvelopeJson：各事件类型的 payload 形状", () => {
       .payload,
     { requestId: "r1", tool: "rd.ticket.update" },
   );
+  const proposal = {
+    id: "p_1",
+    sessionId: "s_abc123",
+    orgId: 7,
+    tool: "update_ticket_status",
+    subjectType: "bug",
+    subjectHashId: "bug_1",
+    fromStatus: "new",
+    toStatus: "accepted",
+    reason: "确认处理",
+    status: "pending" as const,
+    expiresAt: "2026-08-29T03:00:00.000Z",
+    updatedAt: "2026-08-29T02:00:00.000Z",
+  };
+  assert.deepEqual(
+    (
+      parse({
+        type: "proposal_lifecycle",
+        seq: 4,
+        ts: proposal.updatedAt,
+        event: "created",
+        actor: "agent",
+        proposal,
+      }) as { payload: unknown }
+    ).payload,
+    { event: "created", actor: "agent", proposal },
+  );
   assert.deepEqual((parse({ type: "status_change", seq: 4, ts: "t", status: "succeeded" }) as { payload: unknown }).payload, {
     status: "succeeded",
   });
   assert.deepEqual((parse({ type: "error", seq: 5, ts: "t", message: "boom" }) as { payload: unknown }).payload, { message: "boom" });
+});
+
+test("SessionRegistry：driver 与 proposal 并发事件由 Gateway 统一连续编号", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "techhaven-session-proposal-"));
+  let firstSeenResolve!: () => void;
+  let secondRelease!: () => void;
+  const firstSeen = new Promise<void>((resolve) => {
+    firstSeenResolve = resolve;
+  });
+  const secondGate = new Promise<void>((resolve) => {
+    secondRelease = resolve;
+  });
+  const driver: EngineDriver = {
+    name: "sequencing-test",
+    async startSession() {
+      return {
+        async *events() {
+          yield { type: "status_change" as const, seq: 41, ts: "2026-08-31T01:00:00.000Z", status: "running" as const };
+          firstSeenResolve();
+          await secondGate;
+          yield { type: "status_change" as const, seq: 99, ts: "2026-08-31T01:00:02.000Z", status: "succeeded" as const };
+        },
+        async send() {},
+        async answerPermission() {},
+        async cancel() {},
+        async dispose() {},
+      };
+    },
+    async dispose() {},
+  };
+  const registry = await SessionRegistry.open(driver, {
+    dataDir: dir,
+    maxSessionsPerOrg: 3,
+    sessionRetentionMinutes: 0,
+    sessionIdleTimeoutMinutes: 0,
+  });
+  try {
+    const record = await registry.create({ orgId: 7, prompt: "test" });
+    await firstSeen;
+    const proposal = {
+      id: "p_1",
+      sessionId: record.sid,
+      orgId: 7,
+      tool: "update_ticket_status",
+      subjectType: "bug",
+      subjectHashId: "bug_1",
+      fromStatus: "new",
+      toStatus: "accepted",
+      reason: "确认处理",
+      status: "pending" as const,
+      expiresAt: "2026-08-31T02:00:00.000Z",
+      updatedAt: "2026-08-31T01:00:01.000Z",
+    };
+    const lifecycle: ProposalLifecycleEvent = {
+      event: "created",
+      ts: proposal.updatedAt,
+      actor: "agent",
+      proposal,
+    };
+    await registry.syncProposalLifecycle(lifecycle);
+    await registry.syncProposalLifecycle(lifecycle); // 同状态重复同步不应产生重复事件
+    await assert.rejects(
+      () => registry.syncProposalLifecycle({ ...lifecycle, proposal: { ...proposal, orgId: 8 } }),
+      (error: unknown) => error instanceof GatewayError && error.status === 404,
+    );
+    secondRelease();
+    for (let i = 0; i < 50 && record.status !== "succeeded"; i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+    assert.deepEqual(
+      record.events.map((event) => event.seq),
+      [1, 2, 3],
+    );
+    assert.deepEqual(
+      record.events.map((event) => event.type),
+      ["status_change", "proposal_lifecycle", "status_change"],
+    );
+  } finally {
+    await registry.dispose();
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test("toEnvelopeJson：eventId 随 sessionId / seq 变化，是回放游标的事实来源", () => {

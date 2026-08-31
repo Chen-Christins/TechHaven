@@ -17,6 +17,8 @@ export interface Config {
   dbUrl: string;
   /** PostgreSQL schema（默认 public；测试可用隔离 schema） */
   dbSchema: string;
+  /** JSONL proposal 共享文件；store=jsonl 时与 techhaven-mcp ProposalStore 共用 */
+  proposalsFile: string;
   /** 单组织活动会话数配额（TECHHAVEN_MAX_SESSIONS_PER_ORG，默认 3，正整数） */
   maxSessionsPerOrg: number;
   /** 终态会话驻留分钟数：到点从注册表淘汰（TECHHAVEN_SESSION_RETENTION_MINUTES，默认 30；0 = 不淘汰） */
@@ -77,6 +79,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(dbSchema)) {
     throw new ConfigError(`TECHHAVEN_GATEWAY_DB_SCHEMA 不是合法标识符：${dbSchema}`);
   }
+  const proposalsFile = env.TECHHAVEN_PROPOSALS_FILE?.trim() || "../techhaven-mcp/audit/proposals.jsonl";
 
   // 配额：正整数；空 = 默认 3
   const maxRaw = (env.TECHHAVEN_MAX_SESSIONS_PER_ORG ?? "3").trim();
@@ -107,6 +110,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     store,
     dbUrl,
     dbSchema,
+    proposalsFile,
     maxSessionsPerOrg,
     sessionRetentionMinutes,
     sessionIdleTimeoutMinutes,

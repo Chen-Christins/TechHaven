@@ -10,6 +10,7 @@ import { DshSdkDriver, type DshSdkDriverOptions } from "./drivers/dsh.js";
 import { SessionRegistry } from "./sessions.js";
 import { createGatewayServer } from "./http.js";
 import type { EngineDriver } from "./types.js";
+import { JsonlProposalPort, PgProposalPort, type ProposalPort } from "./proposals.js";
 
 /**
  * 组装引擎驱动：mock 直接构造；dsh 静态导入构造（drivers/dsh.ts 已交付，
@@ -51,10 +52,16 @@ async function main(): Promise<void> {
   const driver = createDriver(config);
 
   let pgStore;
+  let proposalPort: ProposalPort;
   if (config.store === "postgres") {
     const { GatewayPgStore } = await import("./pgStore.js");
     pgStore = await GatewayPgStore.connect(config.dbUrl, config.dbSchema);
+    proposalPort = await PgProposalPort.connect(config.dbUrl, config.dbSchema);
     log("PostgreSQL authoritative 已连接：session/event 先提交 PG，JSONL 仅作 spool");
+    log("PostgreSQL proposal control API 已连接：审批决定写入 agent_write_proposals");
+  } else {
+    proposalPort = new JsonlProposalPort(config.proposalsFile);
+    log(`JSONL proposal control API 已连接：${config.proposalsFile}`);
   }
 
   const registry = await SessionRegistry.open(driver, {
@@ -64,7 +71,7 @@ async function main(): Promise<void> {
     sessionIdleTimeoutMinutes: config.sessionIdleTimeoutMinutes,
     pgStore,
   });
-  const server = createGatewayServer(config, registry);
+  const server = createGatewayServer(config, registry, proposalPort);
   server.on("error", (err) => {
     log(`HTTP 服务错误（端口 ${config.port} 可能被占用）：`, err);
     process.exit(1);
@@ -87,7 +94,7 @@ async function main(): Promise<void> {
     log(`收到 ${signal}，优雅关闭…`);
     server.close(() => log("HTTP 服务已关闭"));
     // 关闭全部 SSE 订阅 + dispose 引擎句柄 / 驱动 + 冲刷 JSONL 写流；5s 兜底强制退出（防 SSE 连接拖延）
-    void Promise.allSettled([registry.dispose(), driver.dispose()]).then(() => {
+    void Promise.allSettled([registry.dispose(), driver.dispose(), proposalPort.close()]).then(() => {
       log("已释放全部会话与驱动，退出");
       process.exit(0);
     });

@@ -1,6 +1,6 @@
 # techhaven-mcp
 
-TechHaven 研发平台的 MCP adapter。它把工单/需求/缺陷操作暴露为结构化工具，是 TH-RFC-001 的「工具流」（agent → TechHaven）边界。
+TechHaven 研发平台的 MCP adapter。它把工单/需求/缺陷操作暴露为结构化工具，是 TH-RFC-001 的「工具流」（agent → TechHaven）边界。对于不能改造的旧后端，推荐使用 `bridge` 模式，把旧 API 差异交给独立的 `../techhaven-agent-bridge/`。
 
 > 当前状态：`implemented + verified-mock`。6 读 + 1 写、direct/staged、token、审计、PG 权威 proposal repository 与并发 worker 串行化已实现；真实产品后端与 live PostgreSQL 尚未验证。架构见 `../../docs/ARCHITECTURE.md`，决策见 `../../docs/TH-RFC-001-agent-engine.md`，门禁见 `../../docs/ROADMAP.md`。
 
@@ -28,16 +28,42 @@ smoke 通过只证明 **mock/离线工具流**：9 项 direct、11 项 staged，
 
 ## 运行模式
 
-| 模式                             | 说明                                                                                                                                        |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `TECHHAVEN_BACKEND=mock`（默认） | 内置 8 条演示数据（3 需求 + 3 缺陷 + 2 任务，org 1），零依赖跑通全流程                                                                      |
-| `TECHHAVEN_BACKEND=http`         | 调真实后端 `/rd/*`（端点对齐前端 `rdPlatformService.ts`）。需要 `TECHHAVEN_SERVICE_TOKEN`（服务端到服务端凭据）；**待朋友侧 P0 交付后联调** |
+| 模式                               | 说明                                                                                   |
+| ---------------------------------- | -------------------------------------------------------------------------------------- |
+| `TECHHAVEN_BACKEND=mock`（默认）   | 内置 8 条演示数据（3 需求 + 3 缺陷 + 2 任务，org 1），零依赖跑通全流程                 |
+| `TECHHAVEN_BACKEND=bridge`（推荐） | 调独立 Agent Bridge 的规范化内部 API；MCP 不接触旧后端路径、Cookie、`errno` 或数字状态 |
+| `TECHHAVEN_BACKEND=http`           | MCP 直接调用旧 `/rd/*`；仅保留给契约已经完全一致的后端，需 `TECHHAVEN_SERVICE_TOKEN`   |
 
-HTTP 模式默认 5 秒超时，可用 `TECHHAVEN_API_TIMEOUT_MS` 设置 100–60000 ms；网络错误归一为 `UPSTREAM_UNAVAILABLE`，超时归一为 `UPSTREAM_TIMEOUT`，均失败关闭。
+HTTP 和 Bridge 模式默认 5 秒超时，可用 `TECHHAVEN_API_TIMEOUT_MS` 设置 100–60000 ms；网络错误会归一化并失败关闭。
 
 默认域 API 基址为 `https://techhaven.website/api/v1`。本轮匿名探测确认 `/rd/tasks` 路由存在并返回统一结构的 `errno=1101`（未登录）；这只验证路由/错误壳，不证明 service Bearer 已被后端接受。
 
-agent token 只用于本服务与引擎之间的鉴权与审计，**不会**传给后端；后端调用使用独立的服务凭据。这落实了设计文档「凭据只在服务端，agent 只持 scoped token」的原则。
+agent token 只用于本服务与引擎之间的鉴权与审计，**不会**传给 Bridge 或旧后端。Bridge 模式只传内部 Bridge token、会话 ID 和组织 ID；旧后端凭据由 Bridge 单独持有。这落实了「凭据分层、agent 只持 scoped token」的原则。
+
+### 完整配置
+
+| 环境变量                         | 必填条件           | 默认值                             | 说明                                                                  |
+| -------------------------------- | ------------------ | ---------------------------------- | --------------------------------------------------------------------- |
+| `TECHHAVEN_AGENT_TOKEN`          | 运行 server 必填   | 无                                 | 用 token CLI 签发的 session/org/scope token                           |
+| `TECHHAVEN_TOKEN_SECRET`         | 必填               | 无                                 | agent token HMAC 密钥；与签发方共享，不得复用 Bridge 或 Gateway token |
+| `TECHHAVEN_AGENT_NAME`           | 否                 | `techhaven-mcp-poc`                | 审计和 Agent 身份显示名                                               |
+| `TECHHAVEN_BACKEND`              | 否                 | `mock`                             | `mock`、`bridge` 或 `http`                                            |
+| `TECHHAVEN_BRIDGE_URL`           | bridge 模式必填    | 无                                 | 例如 `http://127.0.0.1:3092`                                          |
+| `TECHHAVEN_BRIDGE_TOKEN`         | bridge 模式必填    | 无                                 | MCP → Bridge 内部 Bearer                                              |
+| `TECHHAVEN_API_BASE_URL`         | http 模式          | `https://techhaven.website/api/v1` | MCP 直连产品 API 的基址                                               |
+| `TECHHAVEN_SERVICE_TOKEN`        | http 模式必填      | 无                                 | MCP 直连产品 API 的服务 Bearer                                        |
+| `TECHHAVEN_API_TIMEOUT_MS`       | 否                 | `5000`                             | HTTP/Bridge 超时，100–60000 ms                                        |
+| `TECHHAVEN_AUDIT_FILE`           | 否                 | `./audit/agent-audit.jsonl`        | append-only 工具审计                                                  |
+| `TECHHAVEN_WRITE_MODE`           | 否                 | `direct`                           | `direct` 或 `staged`                                                  |
+| `TECHHAVEN_WRITE_STAGED_TOOLS`   | 否                 | `update_ticket_status`             | staged 下仍需审批的写工具，逗号分隔；显式空值表示全部直写             |
+| `TECHHAVEN_PROPOSALS_FILE`       | mirror/staged      | `./audit/proposals.jsonl`          | JSONL proposal 权威日志                                               |
+| `TECHHAVEN_PROPOSAL_TTL_MINUTES` | 否                 | `30`                               | pending proposal 的正整数分钟 TTL                                     |
+| `TECHHAVEN_DB_MODE`              | 否                 | `mirror`                           | `mirror` 或 `authoritative`；后者强制 staged                          |
+| `TECHHAVEN_DB_URL`               | authoritative 必填 | 空                                 | Agent PostgreSQL 连接串；与旧后端 MySQL 无关                          |
+| `TECHHAVEN_APPROVAL_ORG_ID`      | PG 审批 CLI 必填   | 无                                 | 人工审批目标组织                                                      |
+| `TECHHAVEN_APPROVER_ID`          | 否                 | 无                                 | 审批人 ID                                                             |
+
+默认值与注释可直接复制 `.env.example`。服务从进程环境读取配置，不应把真实密钥提交到仓库。
 
 ## 挂载到 dsh
 
@@ -51,7 +77,9 @@ dsh 侧通过 mcp-client 把本服务挂为外部工具源（stdio 方式，toke
   "env": {
     "TECHHAVEN_AGENT_TOKEN": "thm_v1....", // 每会话签发一次
     "TECHHAVEN_TOKEN_SECRET": "dev-only-secret-change-me",
-    "TECHHAVEN_BACKEND": "mock",
+    "TECHHAVEN_BACKEND": "bridge",
+    "TECHHAVEN_BRIDGE_URL": "http://127.0.0.1:3092",
+    "TECHHAVEN_BRIDGE_TOKEN": "与 Bridge 配置一致的随机值",
     "TECHHAVEN_AUDIT_FILE": "./audit/agent-audit.jsonl",
   },
 }
@@ -137,10 +165,12 @@ task:        todo → doing → done → closed                    （doing 可�
 
 ## 真实域后端集成清单（ROADMAP R2）
 
-- [ ] 服务凭据机制：接受 `TECHHAVEN_SERVICE_TOKEN`（Bearer）或指定替代方案
-- [ ] `/rd/*` 端点在服务端到服务端调用下的鉴权行为确认
+- [x] 独立 Bridge adapter 与 MCP client 已实现
+- [ ] 旧后端认证方式与 Bridge `bearer` / `cookie` 配置实测
+- [ ] `/rd/*` 路径、字段、`errno` 和分页结构用真实响应样本确认
 - [ ] 工单状态机迁移规则核对/修正
-- [ ] `/rd/trends` 响应结构提供（当前 http 模式由列表端点聚合，上限 200/类）
+- [ ] 趋势权威接口或统计口径确认（当前 Bridge/http 都由列表聚合，上限 200/类）
+- [ ] Bridge JSONL 台账备份、人工处理 uncertain 操作与单实例运行手册演练
 
 ## 目录结构
 
@@ -165,6 +195,6 @@ src/
   proposals/worker.ts # 批准后主动重校验、应用与恢复对账
   proposals/dbSink.ts # 写提案 DB 双写（agent_write_proposals）
   semantics/          # 语义层 Provider：mock（人工策展）/ db（semantic_* 表，60s 缓存）
-  techhaven/          # 数据访问：mock / http 两实现
+  techhaven/          # 数据访问：mock / bridge / http 三实现
   tools/index.ts      # P0 工具注册（scope 守卫 + 审计 + 分级审批的 staged 提案分支）
 ```

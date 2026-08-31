@@ -7,7 +7,7 @@
  * 脚手架 ≈ services/techhaven-mcp/src/smoke.ts 同构孪生（防漂移：改动需同步评审两处）
  */
 import { spawn } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { EventEnvelope } from "./types.js";
@@ -16,6 +16,7 @@ const PORT = 3097;
 const TOKEN = "smoke-token";
 const BASE = `http://127.0.0.1:${PORT}`;
 const SMOKE_DATA_DIR = "data-smoke";
+const PROPOSALS_FILE = `./${SMOKE_DATA_DIR}/proposals.jsonl`;
 /** 包根目录（dist / data-smoke 都挂在这里，与子进程 cwd 保持一致） */
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
@@ -24,11 +25,16 @@ function authHeaders(): Record<string, string> {
 }
 
 /** 普通 JSON API 调用（勿用于 SSE；401 用例走裸 fetch） */
-async function api(method: string, path: string, opts: { body?: unknown } = {}): Promise<{ status: number; json: any }> {
+async function api(
+  method: string,
+  path: string,
+  opts: { body?: unknown; headers?: Record<string, string> } = {},
+): Promise<{ status: number; json: any }> {
   const res = await fetch(`${BASE}${path}`, {
     method,
     headers: {
       ...authHeaders(),
+      ...opts.headers,
       ...(opts.body !== undefined ? { "content-type": "application/json" } : {}),
     },
     body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
@@ -156,6 +162,7 @@ async function main(): Promise<void> {
         TECHHAVEN_GATEWAY_PORT: String(PORT),
         TECHHAVEN_ENGINE_DRIVER: "mock",
         TECHHAVEN_GATEWAY_DATA_DIR: `./${SMOKE_DATA_DIR}`,
+        TECHHAVEN_PROPOSALS_FILE: PROPOSALS_FILE,
       },
       stdio: ["ignore", "ignore", "pipe"],
     });
@@ -211,6 +218,57 @@ async function main(): Promise<void> {
     );
     const sid = created.json.sid as string;
 
+    // 2.1 MCP proposal JSONL → Gateway 查询/可信 actor 审批 → 生命周期并入同一 SSE。
+    const proposalId = `p_smoke_${Date.now().toString(36)}`;
+    appendFileSync(
+      join(ROOT, SMOKE_DATA_DIR, "proposals.jsonl"),
+      `${JSON.stringify({
+        event: "created",
+        ts: new Date().toISOString(),
+        actor: "agent",
+        proposal: {
+          id: proposalId,
+          sessionId: sid,
+          orgId: 1,
+          tool: "update_ticket_status",
+          kind: "bug",
+          subjectHashId: "bug_1",
+          subjectId: 1,
+          fromStatus: "new",
+          toStatus: "accepted",
+          reason: "smoke proposal",
+          expiresAt: new Date(Date.now() + 60_000).toISOString(),
+        },
+      })}\n`,
+      "utf8",
+    );
+    const proposalList = await api("GET", `/v1/sessions/${sid}/proposals`);
+    check(
+      "GET session proposals → pending 且不外发内部 subjectId",
+      proposalList.status === 200 &&
+        proposalList.json?.proposals?.[0]?.status === "pending" &&
+        !("subjectId" in proposalList.json.proposals[0]),
+      JSON.stringify(proposalList.json),
+    );
+    const missingActor = await api("POST", `/v1/sessions/${sid}/proposals/${proposalId}/decision`, {
+      body: { decision: "approve" },
+    });
+    check("proposal decision 缺可信 actor → 401", missingActor.status === 401, JSON.stringify(missingActor.json));
+    const proposalApproved = await api("POST", `/v1/sessions/${sid}/proposals/${proposalId}/decision`, {
+      headers: { "x-techhaven-actor": "user:9" },
+      body: { decision: "approve" },
+    });
+    check("proposal approve → 200 approved", proposalApproved.status === 200 && proposalApproved.json?.status === "approved");
+    const proposalApprovedAgain = await api("POST", `/v1/sessions/${sid}/proposals/${proposalId}/decision`, {
+      headers: { "x-techhaven-actor": "user:9" },
+      body: { decision: "approve" },
+    });
+    check(
+      "proposal 重复 approve 幂等",
+      proposalApprovedAgain.status === 200 && proposalApprovedAgain.json?.status === "approved",
+      JSON.stringify(proposalApprovedAgain.json),
+    );
+
     // 3. SSE：读到 permission_request（顺带断言见到 assistant_chunk / tool_call get_ticket）
     sseRes = await fetch(`${BASE}/v1/sessions/${sid}/events`, { headers: authHeaders() });
     check(
@@ -240,6 +298,12 @@ async function main(): Promise<void> {
       JSON.stringify(seen.map((e) => e.type)),
     );
     check("SSE 收到 permission_request", permRequestId !== undefined, JSON.stringify(seen.map((e) => e.type)));
+    check(
+      "SSE 收到产品 proposal 生命周期且与 runner permission 区分",
+      seen.some((event) => event.type === "proposal_lifecycle" && event.payload.proposal.id === proposalId) &&
+        seen.some((event) => event.type === "permission_request"),
+      JSON.stringify(seen.map((event) => event.type)),
+    );
 
     // 4. 主动断开观察连接；断线期间审批让会话继续，随后 after=<lastSeq> 回放缺失尾部
     const resumeAfter = Math.max(...seen.map((event) => event.seq));
@@ -323,17 +387,25 @@ async function main(): Promise<void> {
     );
     const recoveredRes = await fetch(`${BASE}/v1/sessions/${sid}/events`, { headers: authHeaders() });
     const recoveredReader = new SseReader(recoveredRes);
-    const recoveredSeqs: number[] = [];
+    const recoveredEvents: EventEnvelope[] = [];
     for (;;) {
       const item = await withTimeout(recoveredReader.next(), 15_000, "等待重启后历史回放结束");
       if (item.end) break;
-      if (item.event) recoveredSeqs.push(item.event.seq);
+      if (item.event) recoveredEvents.push(item.event);
     }
+    const recoveredSeqs = recoveredEvents.map((event) => event.seq);
     const expectedSeqs = [...seen, ...resumed].map((event) => event.seq);
     check(
       "重启后 SSE 完整回放历史且无重复",
       JSON.stringify(recoveredSeqs) === JSON.stringify(expectedSeqs),
       JSON.stringify({ recoveredSeqs, expectedSeqs }),
+    );
+    check(
+      "重启后 proposal 生命周期也进入权威事件回放",
+      recoveredEvents.some(
+        (event) => event.type === "proposal_lifecycle" && event.payload.proposal.id === proposalId,
+      ),
+      JSON.stringify(recoveredEvents.map((event) => event.type)),
     );
 
     const interruptedDetail = await api("GET", `/v1/sessions/${interruptedSid}`);
