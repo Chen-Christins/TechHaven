@@ -10,9 +10,11 @@ export const PRESET_KEYS: ThemePreset[] = ["time", "monochrome", "mint", "ocean"
 interface ThemeContextType {
   theme: Theme;
   preset: ThemePreset;
+  cursorEnabled: boolean;
   toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
   setPreset: (preset: ThemePreset) => void;
+  setCursorEnabled: (enabled: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -47,6 +49,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     const savedPreset = localStorage.getItem("theme-preset");
     return PRESET_KEYS.includes(savedPreset as ThemePreset) ? (savedPreset as ThemePreset) : "time";
   });
+  const [cursorEnabled, setCursorEnabled] = useState(() => localStorage.getItem("theme-cursor-enabled") !== "false");
 
   useEffect(() => {
     // 立即更新 DOM 上的 data-theme 属性和 class
@@ -70,6 +73,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     document.documentElement.setAttribute("data-skin", preset);
     localStorage.setItem("theme-preset", preset);
   }, [preset]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-cursor", cursorEnabled ? "custom" : "default");
+    localStorage.setItem("theme-cursor-enabled", String(cursorEnabled));
+  }, [cursorEnabled]);
 
   // 监听系统主题变化
   useEffect(() => {
@@ -99,9 +107,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const value: ThemeContextType = {
     theme,
     preset,
+    cursorEnabled,
     toggleTheme,
     setTheme,
     setPreset,
+    setCursorEnabled,
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

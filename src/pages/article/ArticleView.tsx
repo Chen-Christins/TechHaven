@@ -98,7 +98,7 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   const [activeId, setActiveId] = useState<string>("");
   const [isContentReady, setIsContentReady] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  const programmaticScrollRef = useRef<{ id: string; top: number } | null>(null);
 
   // 互动状态
   const [isFollowing, setIsFollowing] = useState(false);
@@ -397,19 +397,37 @@ const ArticleView: React.FC<ArticleViewProps> = ({
   // 提取标题
   useEffect(() => {
     const extractHeadings = (markdown: string): Heading[] => {
-      const headingRegex = /^(#{1,6})\s+(.+)$/gm;
-      const matches: Heading[] = [];
-      let match;
+      const extracted: Heading[] = [];
+      let fence: { marker: string; length: number } | null = null;
 
-      while ((match = headingRegex.exec(markdown)) !== null) {
-        const level = match[1].length;
-        const text = match[2].trim();
-        const id = generateId(text);
+      markdown.split(/\r?\n/).forEach((line) => {
+        const fenceMatch = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+        if (fenceMatch) {
+          const marker = fenceMatch[1][0];
+          const markerLength = fenceMatch[1].length;
 
-        matches.push({ id, text, level });
-      }
+          if (!fence) {
+            fence = { marker, length: markerLength };
+            return;
+          }
 
-      return matches;
+          if (marker === fence.marker && markerLength >= fence.length && fenceMatch[2].trim() === "") {
+            fence = null;
+          }
+          return;
+        }
+
+        if (fence) return;
+
+        const headingMatch = line.match(/^ {0,3}(#{1,6})\s+(.+)$/);
+        if (!headingMatch) return;
+
+        const level = headingMatch[1].length;
+        const text = headingMatch[2].trim().replace(/\s+#+\s*$/, "");
+        extracted.push({ id: generateId(text), text, level });
+      });
+
+      return extracted;
     };
 
     const extractedHeadings = extractHeadings(content);
@@ -421,42 +439,75 @@ const ArticleView: React.FC<ArticleViewProps> = ({
     }, 100);
   }, [content]);
 
-  // 设置 Intersection Observer 来跟踪活跃标题
+  // 根据实际滚动容器的位置更新目录，并处理首尾标题无法越过激活线的边界情况。
   useEffect(() => {
     if (!contentRef.current || headings.length === 0) return;
 
-    // 清理旧的 observer
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
+    const scrollContainer = contentRef.current.closest<HTMLElement>(".simplebar-content-wrapper");
+    const scrollTarget: HTMLElement | Window = scrollContainer ?? window;
+    let frameId = 0;
 
-    const options: IntersectionObserverInit = {
-      rootMargin: "-20% 0px -60% 0px",
-      threshold: 0.1,
+    const updateActiveHeading = () => {
+      const scrollTop = scrollContainer?.scrollTop ?? window.scrollY;
+      const scrollHeight = scrollContainer?.scrollHeight ?? document.documentElement.scrollHeight;
+      const clientHeight = scrollContainer?.clientHeight ?? window.innerHeight;
+      const programmaticScroll = programmaticScrollRef.current;
+
+      if (programmaticScroll) {
+        setActiveId(programmaticScroll.id);
+        if (Math.abs(scrollTop - programmaticScroll.top) <= 2) {
+          programmaticScrollRef.current = null;
+        }
+        return;
+      }
+
+      if (scrollTop <= 8) {
+        setActiveId(headings[0].id);
+        if (window.location.hash) {
+          window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+        }
+        return;
+      }
+
+      if (scrollTop + clientHeight >= scrollHeight - 8) {
+        setActiveId(headings[headings.length - 1].id);
+        return;
+      }
+
+      const containerTop = scrollContainer?.getBoundingClientRect().top ?? 0;
+      const activationLine = containerTop + 100;
+      let currentId = "";
+
+      for (const heading of headings) {
+        const element = document.getElementById(heading.id);
+        if (element && element.getBoundingClientRect().top <= activationLine) {
+          currentId = heading.id;
+        } else if (element) {
+          break;
+        }
+      }
+
+      setActiveId(currentId);
     };
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveId(entry.target.id);
-        }
-      });
-    }, options);
+    const handleScroll = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(updateActiveHeading);
+    };
 
-    // 观察所有标题元素
-    headings.forEach((heading) => {
-      const element = document.getElementById(heading.id);
-      if (element) {
-        observer.observe(element);
-      }
-    });
+    const handleBackToTop = () => {
+      programmaticScrollRef.current = { id: headings[0].id, top: 0 };
+      setActiveId(headings[0].id);
+    };
 
-    observerRef.current = observer;
+    scrollTarget.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("app:scroll-to-top", handleBackToTop);
+    updateActiveHeading();
 
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
+      scrollTarget.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("app:scroll-to-top", handleBackToTop);
+      window.cancelAnimationFrame(frameId);
     };
   }, [headings]);
 
@@ -466,13 +517,22 @@ const ArticleView: React.FC<ArticleViewProps> = ({
 
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+      const scrollContainer = element.closest(".simplebar-content-wrapper");
+      const top = scrollContainer
+        ? element.getBoundingClientRect().top - scrollContainer.getBoundingClientRect().top + scrollContainer.scrollTop - 76
+        : element.getBoundingClientRect().top + window.scrollY - 76;
+      const maxScrollTop = scrollContainer
+        ? scrollContainer.scrollHeight - scrollContainer.clientHeight
+        : document.documentElement.scrollHeight - window.innerHeight;
+      const targetTop = Math.max(0, Math.min(top, maxScrollTop));
 
-      // 更新活跃ID
+      programmaticScrollRef.current = { id, top: targetTop };
       setActiveId(id);
+
+      (scrollContainer ?? window).scrollTo({
+        top: targetTop,
+        behavior: "smooth",
+      });
 
       // 更新URL的hash（可选）
       window.history.pushState(null, "", `#${id}`);

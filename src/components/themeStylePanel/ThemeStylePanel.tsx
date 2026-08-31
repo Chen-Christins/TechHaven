@@ -1,6 +1,8 @@
-import React from "react";
-import { FaPalette, FaCheck } from "react-icons/fa";
+import React, { useState } from "react";
+import { FaPalette, FaCheck, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useTheme, type ThemePreset } from "@/contexts/ThemeContext";
+import Button from "@/components/button/Button";
+import Switch from "@/components/switch/Switch";
 import styles from "./ThemeStylePanel.module.css";
 
 const PRESETS: { key: ThemePreset; name: string; desc: string; bg: string; header: string; accent: string }[] = [
@@ -79,15 +81,38 @@ const PRESETS: { key: ThemePreset; name: string; desc: string; bg: string; heade
 ];
 
 const ThemeStylePanel: React.FC = () => {
-  const { preset, setPreset } = useTheme();
+  const { preset, setPreset, cursorEnabled, setCursorEnabled } = useTheme();
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem("theme-style-panel-collapsed") !== "false");
+  const visiblePresets = collapsed ? PRESETS.filter((item) => item.key === preset) : PRESETS;
+
+  const toggleCollapsed = () => {
+    setCollapsed((current) => {
+      const next = !current;
+      localStorage.setItem("theme-style-panel-collapsed", String(next));
+      return next;
+    });
+  };
 
   return (
     <div className={styles.panel}>
-      <h3 className={styles.panelTitle}>
-        <FaPalette className={styles.titleIcon} /> 主题风格
-      </h3>
-      <div className={styles.presetList}>
-        {PRESETS.map((item) => {
+      <div className={styles.panelHeader}>
+        <h3 className={styles.panelTitle}>
+          <FaPalette className={styles.titleIcon} /> 主题风格
+        </h3>
+        <Button
+          variant="ghost"
+          size="small"
+          className={styles.collapseButton}
+          onClick={toggleCollapsed}
+          aria-expanded={!collapsed}
+          aria-controls="theme-preset-list"
+          title={collapsed ? "展开主题列表" : "收起主题列表"}
+        >
+          {collapsed ? <FaChevronDown /> : <FaChevronUp />}
+        </Button>
+      </div>
+      <div id="theme-preset-list" className={`${styles.presetList} ${collapsed ? styles.presetListCollapsed : ""}`}>
+        {visiblePresets.map((item) => {
           const active = preset === item.key;
           return (
             <button
@@ -115,6 +140,13 @@ const ThemeStylePanel: React.FC = () => {
             </button>
           );
         })}
+      </div>
+      <div className={styles.cursorSetting}>
+        <span className={styles.cursorCopy}>
+          <span className={styles.cursorLabel}>主题鼠标</span>
+          <span className={styles.cursorHint}>跟随当前主题切换鼠标样式</span>
+        </span>
+        <Switch checked={cursorEnabled} onChange={(checked) => setCursorEnabled(checked)} size="small" aria-label="使用主题鼠标样式" />
       </div>
     </div>
   );

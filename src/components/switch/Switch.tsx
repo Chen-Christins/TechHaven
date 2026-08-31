@@ -1,17 +1,23 @@
-import React, { useState, useRef, useCallback, forwardRef, type ForwardedRef, type KeyboardEvent, type MouseEvent } from "react";
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  forwardRef,
+  type ButtonHTMLAttributes,
+  type ForwardedRef,
+  type KeyboardEvent,
+  type MouseEvent,
+} from "react";
 import styles from "./Switch.module.css";
 
 // 定义组件属性类型
-interface SwitchProps {
+interface SwitchProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onChange" | "onClick"> {
   checked?: boolean;
   defaultChecked?: boolean;
   onChange?: (checked: boolean, event: MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement>) => void;
-  disabled?: boolean;
   size?: "small" | "default" | "large";
   onColor?: string;
   offColor?: string;
-  className?: string;
-  style?: React.CSSProperties;
 }
 
 const Switch = forwardRef<HTMLButtonElement, SwitchProps>((props, ref: ForwardedRef<HTMLButtonElement>) => {

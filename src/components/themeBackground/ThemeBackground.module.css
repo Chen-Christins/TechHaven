@@ -499,14 +499,25 @@
 
 :global([data-skin="ocean"]) .wave {
   top: auto;
-  bottom: -7vh;
-  height: 24vh;
-  width: 130%;
+  bottom: -10vh;
+  height: 30vh;
+  width: 120%;
+  opacity: 0.9;
   background:
-    radial-gradient(ellipse at 25% 0, transparent 0 45%, rgba(14, 124, 181, 0.1) 46% 48%, transparent 49%),
-    radial-gradient(ellipse at 75% 0, transparent 0 47%, rgba(74, 163, 216, 0.1) 48% 50%, transparent 51%);
-  background-size: 24vw 11vh;
-  animation: waveSlide 20s linear infinite;
+    radial-gradient(ellipse 65% 58% at 18% 100%, transparent 0 61%, rgba(14, 124, 181, 0.11) 62% 62.8%, transparent 63.8%),
+    radial-gradient(ellipse 72% 62% at 62% 108%, transparent 0 64%, rgba(74, 163, 216, 0.1) 65% 65.8%, transparent 66.8%),
+    linear-gradient(to top, rgba(14, 124, 181, 0.055), transparent 58%);
+  background-size:
+    62vw 100%,
+    72vw 100%,
+    100% 100%;
+  background-position:
+    0 0,
+    18vw 1vh,
+    0 0;
+  background-repeat: repeat-x, repeat-x, no-repeat;
+  filter: blur(0.2px);
+  animation: waveSlide 28s ease-in-out infinite alternate;
 }
 
 :global([data-skin="ocean"]) .particle {
@@ -714,7 +725,11 @@
 
 @keyframes waveSlide {
   to {
-    transform: translateX(-20vw);
+    transform: translateX(-12vw) translateY(-1.5vh);
+    background-position:
+      -12vw 0,
+      6vw 1vh,
+      0 0;
   }
 }
 
