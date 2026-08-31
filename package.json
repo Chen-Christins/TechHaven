@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:test": "tsc --noEmit && vite build --mode development",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   },

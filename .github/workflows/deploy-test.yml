@@ -1,0 +1,79 @@
+name: Deploy to Test Environment
+
+on:
+  push:
+    branches:
+      - master
+      - feature/*
+
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "要部署的分支（默认 master）"
+        required: false
+        default: master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build site (test mode)
+        run: npm run build:test
+
+      - name: Check build artifacts
+        run: |
+          test -d ./dist
+          test "$(ls -A ./dist)"
+
+      - name: Prepare test directory on remote
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            TARGET="${{ secrets.TEST_DEPLOY_PATH }}"
+            if [ -z "$TARGET" ] || [ "$TARGET" = "/" ]; then
+              echo "Test deploy path is empty or root; aborting" >&2
+              exit 1
+            fi
+            mkdir -p "$TARGET"
+
+      - name: Deploy to test directory over SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          source: "./dist/*"
+          strip_components: 1
+          target: ${{ secrets.TEST_DEPLOY_PATH }}
+
+      - name: Report deployment result
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            TARGET="${{ secrets.TEST_DEPLOY_PATH }}"
+            echo "✅ Test environment deployed to: $TARGET"
+            echo "📁 Files:"
+            ls -la "$TARGET" | sed 's/^/   /'
