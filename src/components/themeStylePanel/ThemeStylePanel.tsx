@@ -68,6 +68,14 @@ const PRESETS: { key: ThemePreset; name: string; desc: string; bg: string; heade
     header: "#7c5cff",
     accent: "#a58aff",
   },
+  {
+    key: "pi",
+    name: "Pi 极客",
+    desc: "纸格终端风",
+    bg: "#ebe7e4",
+    header: "#252f3d",
+    accent: "#4b607c",
+  },
 ];
 
 const ThemeStylePanel: React.FC = () => {

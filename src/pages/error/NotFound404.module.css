@@ -49,7 +49,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--notfound-bg, linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%));
+  background: transparent;
   color: var(--notfound-text, var(--text-primary, #222));
   text-align: center;
 }

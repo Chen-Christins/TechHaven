@@ -1,4 +1,11 @@
 /* SimpleBar 滚动条美化 - 亮色主题 */
+.simplebar-wrapper,
+.simplebar-content-wrapper,
+.simplebar-content {
+  position: relative;
+  z-index: 1;
+}
+
 .simplebar-scrollbar {
   background: linear-gradient(90deg, #e0e6ed 0%, #cfd8e3 100%);
   border-radius: 6px;

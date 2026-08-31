@@ -16,6 +16,7 @@ function SampleThemeStylePanel() {
     cyberpunk: "赛博朋克",
     gold: "暗金奢华",
     lavender: "薰衣草紫",
+    pi: "Pi 极客",
   };
 
   return (

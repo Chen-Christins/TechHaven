@@ -1,6 +1,6 @@
 .adminLayout {
   min-height: 100vh;
-  background-color: var(--bg-primary);
+  background-color: transparent;
   font-family: var(--font-family);
 }
 
@@ -524,7 +524,7 @@
 /* 页面内容区域 */
 .adminPageContent {
   padding: 24px;
-  background-color: var(--bg-primary);
+  background-color: transparent;
   flex: 1;
 }
 

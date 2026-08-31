@@ -1,0 +1,997 @@
+.background {
+  --particle-color: rgba(120, 112, 103, 0.18);
+  --particle-accent: rgba(120, 112, 103, 0.08);
+  --particle-opacity: 0.34;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: layout paint style;
+  isolation: isolate;
+  mask-image: linear-gradient(to bottom, transparent 5%, black 34%, black 100%);
+  transition: none;
+}
+
+.background,
+.background * {
+  transition: none;
+}
+
+.grid,
+.wave,
+.particles {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+.particles {
+  overflow: hidden;
+}
+
+.clickEffects {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.clickEffect {
+  --effect-color: rgba(111, 94, 70, 0.5);
+  --effect-accent: rgba(159, 139, 108, 0.25);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+}
+
+.effectCore,
+.effectParticle {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+
+.effectCore {
+  top: 0;
+  left: 0;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--effect-color);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: clickRing 900ms ease-out both;
+}
+
+.effectParticle {
+  --angle: 0deg;
+  --distance: 42px;
+  --effect-delay: 0ms;
+  top: -4px;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  background: var(--effect-color);
+  animation: clickBurst 1150ms cubic-bezier(0.2, 0.75, 0.3, 1) var(--effect-delay) both;
+}
+
+.effectParticle:nth-of-type(2) {
+  --angle: 0deg;
+  --distance: 48px;
+}
+
+.effectParticle:nth-of-type(3) {
+  --angle: 60deg;
+  --distance: 38px;
+  --effect-delay: 30ms;
+}
+
+.effectParticle:nth-of-type(4) {
+  --angle: 120deg;
+  --distance: 52px;
+  --effect-delay: 60ms;
+}
+
+.effectParticle:nth-of-type(5) {
+  --angle: 180deg;
+  --distance: 42px;
+}
+
+.effectParticle:nth-of-type(6) {
+  --angle: 240deg;
+  --distance: 50px;
+  --effect-delay: 45ms;
+}
+
+.effectParticle:nth-of-type(7) {
+  --angle: 300deg;
+  --distance: 40px;
+  --effect-delay: 75ms;
+}
+
+.time {
+  --effect-color: rgba(111, 94, 70, 0.52);
+  --effect-accent: rgba(159, 139, 108, 0.2);
+}
+
+.time .effectCore {
+  border-style: dotted;
+}
+
+.time .effectParticle {
+  border-radius: 50%;
+  filter: blur(0.4px);
+}
+
+.monochrome {
+  --effect-color: rgba(20, 20, 20, 0.62);
+  --effect-accent: rgba(20, 20, 20, 0.12);
+}
+
+.monochrome .effectCore {
+  border-radius: 2px;
+  animation-name: geometryClickCore;
+}
+
+.monochrome .effectParticle {
+  border: 1px solid var(--effect-color);
+  background: transparent;
+}
+
+.monochrome .effectParticle:nth-child(even) {
+  border-radius: 50%;
+}
+
+.mint {
+  --effect-color: rgba(76, 122, 70, 0.62);
+  --effect-accent: rgba(128, 165, 112, 0.22);
+}
+
+.mint .effectCore {
+  border-color: var(--effect-accent);
+}
+
+.mint .effectParticle {
+  width: 8px;
+  height: 14px;
+  top: -7px;
+  border-radius: 80% 10% 80% 10%;
+  transform-origin: center;
+  animation-name: leafClickBurst;
+}
+
+.ocean {
+  --effect-color: rgba(14, 124, 181, 0.58);
+  --effect-accent: rgba(74, 163, 216, 0.22);
+}
+
+.ocean .effectCore {
+  box-shadow: 0 0 0 9px var(--effect-accent);
+  animation-name: waterRipple;
+}
+
+.ocean .effectParticle {
+  border: 1px solid var(--effect-color);
+  border-radius: 50%;
+  background: transparent;
+  animation-name: bubbleClickBurst;
+}
+
+.sakura {
+  --effect-color: rgba(232, 122, 154, 0.75);
+  --effect-accent: rgba(255, 212, 224, 0.55);
+}
+
+.sakura .effectCore {
+  border-color: var(--effect-accent);
+  box-shadow: 0 0 14px var(--effect-accent);
+}
+
+.sakura .effectParticle {
+  width: 8px;
+  height: 12px;
+  top: -6px;
+  border-radius: 80% 10% 70% 25%;
+  background: linear-gradient(145deg, var(--effect-accent), var(--effect-color));
+  animation-name: petalClickBurst;
+}
+
+.cyberpunk {
+  --effect-color: rgba(0, 220, 255, 0.82);
+  --effect-accent: rgba(124, 92, 255, 0.4);
+}
+
+.cyberpunk .effectCore {
+  border-width: 2px;
+  border-radius: 0;
+  box-shadow:
+    0 0 12px var(--effect-color),
+    inset 0 0 8px var(--effect-accent);
+  animation-name: cyberClickCore;
+}
+
+.cyberpunk .effectParticle {
+  width: 3px;
+  height: 13px;
+  border-radius: 0;
+  box-shadow: 0 0 6px var(--effect-color);
+  animation-name: dataClickBurst;
+}
+
+.gold {
+  --effect-color: rgba(211, 166, 42, 0.85);
+  --effect-accent: rgba(255, 220, 118, 0.42);
+}
+
+.gold .effectCore {
+  border-color: transparent;
+  background: radial-gradient(circle, var(--effect-accent), transparent 65%);
+  animation-name: goldClickCore;
+}
+
+.gold .effectParticle {
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff4bd, var(--effect-color) 45%, transparent 72%);
+  box-shadow: 0 0 7px var(--effect-color);
+}
+
+.lavender {
+  --effect-color: rgba(124, 92, 255, 0.68);
+  --effect-accent: rgba(181, 160, 255, 0.38);
+}
+
+.lavender .effectCore {
+  border-color: var(--effect-accent);
+  box-shadow: 0 0 15px var(--effect-accent);
+}
+
+.lavender .effectParticle {
+  width: 7px;
+  height: 11px;
+  top: -6px;
+  border-radius: 65% 35% 60% 40%;
+  background: linear-gradient(160deg, var(--effect-accent), var(--effect-color));
+  animation-name: lavenderClickBurst;
+}
+
+.pi {
+  --effect-color: rgba(75, 96, 124, 0.72);
+  --effect-accent: rgba(75, 96, 124, 0.2);
+}
+
+.pi .effectCore {
+  border-radius: 50%;
+  box-shadow: 0 0 0 8px var(--effect-accent);
+  animation-name: locatorClickCore;
+}
+
+.pi .effectCore::before,
+.pi .effectCore::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: var(--effect-color);
+}
+
+.pi .effectCore::before {
+  width: 72px;
+  height: 1px;
+  transform: translate(-50%, -50%);
+}
+
+.pi .effectCore::after {
+  width: 1px;
+  height: 72px;
+  transform: translate(-50%, -50%);
+}
+
+.pi .effectParticle {
+  width: 5px;
+  height: 5px;
+  border: 1px solid var(--effect-color);
+  border-radius: 50%;
+  background: transparent;
+}
+
+:global([data-theme="dark"]) .monochrome {
+  --effect-color: rgba(245, 245, 245, 0.68);
+  --effect-accent: rgba(245, 245, 245, 0.14);
+}
+
+.particle {
+  --x: 5vw;
+  --size: 8px;
+  --drift: 5vw;
+  --duration: 20s;
+  --delay: -4s;
+  position: absolute;
+  left: var(--x);
+  display: block;
+  width: var(--size);
+  height: var(--size);
+  opacity: var(--particle-opacity);
+  background: var(--particle-color);
+  will-change: transform, opacity;
+}
+
+.particle:nth-child(1) {
+  --x: 4vw;
+  --size: 7px;
+  --drift: 7vw;
+  --duration: 19s;
+  --delay: -2s;
+}
+
+.particle:nth-child(2) {
+  --x: 12vw;
+  --size: 10px;
+  --drift: -5vw;
+  --duration: 24s;
+  --delay: -17s;
+}
+
+.particle:nth-child(3) {
+  --x: 21vw;
+  --size: 6px;
+  --drift: 8vw;
+  --duration: 21s;
+  --delay: -9s;
+}
+
+.particle:nth-child(4) {
+  --x: 29vw;
+  --size: 9px;
+  --drift: -6vw;
+  --duration: 26s;
+  --delay: -21s;
+}
+
+.particle:nth-child(5) {
+  --x: 37vw;
+  --size: 5px;
+  --drift: 4vw;
+  --duration: 18s;
+  --delay: -13s;
+}
+
+.particle:nth-child(6) {
+  --x: 44vw;
+  --size: 11px;
+  --drift: -8vw;
+  --duration: 27s;
+  --delay: -5s;
+}
+
+.particle:nth-child(7) {
+  --x: 52vw;
+  --size: 7px;
+  --drift: 6vw;
+  --duration: 22s;
+  --delay: -16s;
+}
+
+.particle:nth-child(8) {
+  --x: 60vw;
+  --size: 9px;
+  --drift: -4vw;
+  --duration: 25s;
+  --delay: -7s;
+}
+
+.particle:nth-child(9) {
+  --x: 68vw;
+  --size: 6px;
+  --drift: 7vw;
+  --duration: 20s;
+  --delay: -19s;
+}
+
+.particle:nth-child(10) {
+  --x: 75vw;
+  --size: 10px;
+  --drift: -7vw;
+  --duration: 28s;
+  --delay: -11s;
+}
+
+.particle:nth-child(11) {
+  --x: 82vw;
+  --size: 5px;
+  --drift: 4vw;
+  --duration: 19s;
+  --delay: -4s;
+}
+
+.particle:nth-child(12) {
+  --x: 88vw;
+  --size: 8px;
+  --drift: -6vw;
+  --duration: 23s;
+  --delay: -15s;
+}
+
+.particle:nth-child(13) {
+  --x: 94vw;
+  --size: 6px;
+  --drift: -5vw;
+  --duration: 21s;
+  --delay: -8s;
+}
+
+.particle:nth-child(14) {
+  --x: 48vw;
+  --size: 8px;
+  --drift: 9vw;
+  --duration: 29s;
+  --delay: -24s;
+}
+
+/* Paper dust */
+:global([data-skin="time"]) .background {
+  --particle-color: rgba(111, 94, 70, 0.25);
+  --particle-opacity: 0.22;
+}
+
+:global([data-skin="time"]) .particles {
+  display: block;
+}
+
+:global([data-skin="time"]) .particle {
+  top: 28%;
+  border-radius: 50%;
+  animation: dustDrift var(--duration) ease-in-out var(--delay) infinite alternate;
+}
+
+/* Monochrome geometry */
+:global([data-skin="monochrome"]) .background {
+  --particle-color: rgba(20, 20, 20, 0.2);
+  --particle-opacity: 0.18;
+}
+
+:global([data-skin="monochrome"]) .particles {
+  display: block;
+}
+
+:global([data-skin="monochrome"]) .particle {
+  bottom: calc((var(--size) * 3) + 3vh);
+  width: calc(var(--size) * 2.4);
+  height: calc(var(--size) * 2.4);
+  border: 1px solid var(--particle-color);
+  background: transparent;
+  animation: geometryFloat var(--duration) ease-in-out var(--delay) infinite alternate;
+}
+
+:global([data-skin="monochrome"]) .particle:nth-child(3n) {
+  border-radius: 50%;
+}
+
+/* Mint leaves */
+:global([data-skin="mint"]) .background {
+  --particle-color: rgba(76, 122, 70, 0.28);
+  --particle-opacity: 0.24;
+}
+
+:global([data-skin="mint"]) .particles {
+  display: block;
+}
+
+:global([data-skin="mint"]) .particle {
+  bottom: -8vh;
+  width: calc(var(--size) * 1.15);
+  height: calc(var(--size) * 2.1);
+  border-radius: 80% 10% 80% 10%;
+  transform-origin: 50% 100%;
+  animation: riseAndSway var(--duration) ease-in-out var(--delay) infinite;
+}
+
+/* Ocean waves and bubbles */
+:global([data-skin="ocean"]) .background {
+  --particle-color: rgba(14, 124, 181, 0.24);
+  --particle-opacity: 0.25;
+}
+
+:global([data-skin="ocean"]) .wave,
+:global([data-skin="ocean"]) .particles {
+  display: block;
+}
+
+:global([data-skin="ocean"]) .wave {
+  top: auto;
+  bottom: -7vh;
+  height: 24vh;
+  width: 130%;
+  background:
+    radial-gradient(ellipse at 25% 0, transparent 0 45%, rgba(14, 124, 181, 0.1) 46% 48%, transparent 49%),
+    radial-gradient(ellipse at 75% 0, transparent 0 47%, rgba(74, 163, 216, 0.1) 48% 50%, transparent 51%);
+  background-size: 24vw 11vh;
+  animation: waveSlide 20s linear infinite;
+}
+
+:global([data-skin="ocean"]) .particle {
+  bottom: -4vh;
+  border: 1px solid var(--particle-color);
+  border-radius: 50%;
+  background: transparent;
+  animation: bubbleRise var(--duration) ease-in var(--delay) infinite;
+}
+
+/* Sakura petals */
+:global([data-skin="sakura"]) .background {
+  --particle-color: rgba(232, 122, 154, 0.58);
+  --particle-accent: rgba(255, 212, 224, 0.68);
+  --particle-opacity: 0.42;
+}
+
+:global([data-skin="sakura"]) .particles {
+  display: block;
+}
+
+:global([data-skin="sakura"]) .particle {
+  top: 32%;
+  width: calc(var(--size) * 0.78);
+  height: calc(var(--size) * 1.25);
+  border-radius: 80% 10% 70% 25%;
+  background: linear-gradient(145deg, var(--particle-accent), var(--particle-color));
+  transform-origin: 75% 75%;
+  animation: petalFall var(--duration) linear var(--delay) infinite;
+}
+
+:global([data-skin="sakura"]) .particle::after {
+  content: "";
+  position: absolute;
+  inset: 45% -25% -15% 42%;
+  border-radius: 75% 15% 70% 20%;
+  background: var(--particle-color);
+  transform: rotate(52deg);
+}
+
+/* Cyberpunk perspective grid */
+:global([data-skin="cyberpunk"]) .background {
+  --particle-color: rgba(0, 184, 217, 0.42);
+  --particle-opacity: 0.24;
+}
+
+:global([data-skin="cyberpunk"]) .grid,
+:global([data-skin="cyberpunk"]) .particles {
+  display: block;
+}
+
+:global([data-skin="cyberpunk"]) .grid {
+  top: auto;
+  bottom: -12vh;
+  height: 42vh;
+  background-image:
+    linear-gradient(rgba(124, 92, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 184, 217, 0.12) 1px, transparent 1px);
+  background-size: 44px 32px;
+  transform: perspective(280px) rotateX(58deg) scale(1.35);
+  transform-origin: center bottom;
+  animation: cyberGrid 9s linear infinite;
+}
+
+:global([data-skin="cyberpunk"]) .particle {
+  bottom: 6vh;
+  border-radius: 1px;
+  animation: dataBlink var(--duration) steps(2, end) var(--delay) infinite;
+}
+
+/* Gold dust */
+:global([data-skin="gold"]) .background {
+  --particle-color: rgba(184, 134, 11, 0.46);
+  --particle-opacity: 0.28;
+}
+
+:global([data-skin="gold"]) .particles {
+  display: block;
+}
+
+:global([data-skin="gold"]) .particle {
+  bottom: -3vh;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--particle-color), transparent 72%);
+  animation: goldMote var(--duration) ease-in-out var(--delay) infinite;
+}
+
+/* Lavender florets */
+:global([data-skin="lavender"]) .background {
+  --particle-color: rgba(124, 92, 255, 0.36);
+  --particle-accent: rgba(165, 138, 255, 0.24);
+  --particle-opacity: 0.28;
+}
+
+:global([data-skin="lavender"]) .particles {
+  display: block;
+}
+
+:global([data-skin="lavender"]) .particle {
+  bottom: -5vh;
+  width: calc(var(--size) * 0.72);
+  height: calc(var(--size) * 1.3);
+  border-radius: 65% 35% 60% 40%;
+  background: linear-gradient(160deg, var(--particle-accent), var(--particle-color));
+  animation: lavenderFloat var(--duration) ease-in-out var(--delay) infinite;
+}
+
+/* Pi engineering paper */
+:global([data-skin="pi"]) .grid,
+:global([data-skin="pi"]) .particles {
+  display: block;
+}
+
+:global([data-skin="pi"]) .background {
+  --particle-color: rgba(75, 96, 124, 0.35);
+  --particle-opacity: 0.2;
+  mask-image: none;
+}
+
+:global([data-skin="pi"]) .grid {
+  background-image:
+    linear-gradient(rgba(75, 96, 124, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(75, 96, 124, 0.055) 1px, transparent 1px),
+    linear-gradient(rgba(75, 96, 124, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(75, 96, 124, 0.1) 1px, transparent 1px);
+  background-size:
+    5px 5px,
+    5px 5px,
+    25px 25px,
+    25px 25px;
+  animation: engineeringGrid 24s linear infinite;
+}
+
+:global([data-skin="pi"]) .particle {
+  bottom: calc(4vh + var(--size) * 2);
+  border: 1px solid var(--particle-color);
+  border-radius: 50%;
+  background: transparent;
+  animation: locatorPulse var(--duration) ease-in-out var(--delay) infinite;
+}
+
+:global([data-skin="pi"]) .particle::before,
+:global([data-skin="pi"]) .particle::after {
+  content: "";
+  position: absolute;
+  background: var(--particle-color);
+}
+
+:global([data-skin="pi"]) .particle::before {
+  top: 50%;
+  left: -50%;
+  width: 200%;
+  height: 1px;
+}
+
+:global([data-skin="pi"]) .particle::after {
+  top: -50%;
+  left: 50%;
+  width: 1px;
+  height: 200%;
+}
+
+:global([data-theme="dark"]) .background {
+  --particle-opacity: 0.18;
+}
+
+:global([data-theme="dark"][data-skin="sakura"]) .background {
+  --particle-color: rgba(205, 112, 143, 0.45);
+  --particle-accent: rgba(143, 78, 105, 0.42);
+  --particle-opacity: 0.28;
+}
+
+@keyframes dustDrift {
+  from {
+    transform: translate3d(calc(var(--drift) * -0.4), 12vh, 0) scale(0.75);
+    opacity: calc(var(--particle-opacity) * 0.35);
+  }
+  to {
+    transform: translate3d(var(--drift), 54vh, 0) scale(1.15);
+    opacity: var(--particle-opacity);
+  }
+}
+
+@keyframes geometryFloat {
+  from {
+    transform: translate3d(calc(var(--drift) * -0.5), 2vh, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(var(--drift), -22vh, 0) rotate(115deg);
+  }
+}
+
+@keyframes riseAndSway {
+  0% {
+    transform: translate3d(0, 8vh, 0) rotate(-16deg);
+    opacity: 0;
+  }
+  18% {
+    opacity: var(--particle-opacity);
+  }
+  100% {
+    transform: translate3d(var(--drift), -68vh, 0) rotate(32deg);
+    opacity: 0;
+  }
+}
+
+@keyframes waveSlide {
+  to {
+    transform: translateX(-20vw);
+  }
+}
+
+@keyframes bubbleRise {
+  0% {
+    transform: translate3d(0, 8vh, 0) scale(0.7);
+    opacity: 0;
+  }
+  15% {
+    opacity: var(--particle-opacity);
+  }
+  100% {
+    transform: translate3d(var(--drift), -65vh, 0) scale(1.15);
+    opacity: 0;
+  }
+}
+
+@keyframes petalFall {
+  0% {
+    transform: translate3d(0, -12vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--particle-opacity);
+  }
+  82% {
+    opacity: var(--particle-opacity);
+  }
+  100% {
+    transform: translate3d(var(--drift), 72vh, 0) rotate(520deg);
+    opacity: 0;
+  }
+}
+
+@keyframes cyberGrid {
+  to {
+    background-position: 0 32px;
+  }
+}
+
+@keyframes dataBlink {
+  0%,
+  76%,
+  100% {
+    opacity: 0.08;
+  }
+  80% {
+    opacity: var(--particle-opacity);
+  }
+}
+
+@keyframes goldMote {
+  0% {
+    transform: translate3d(0, 4vh, 0) scale(0.65);
+    opacity: 0;
+  }
+  28%,
+  70% {
+    opacity: var(--particle-opacity);
+  }
+  100% {
+    transform: translate3d(var(--drift), -52vh, 0) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes lavenderFloat {
+  0% {
+    transform: translate3d(0, 5vh, 0) rotate(-20deg);
+    opacity: 0;
+  }
+  22% {
+    opacity: var(--particle-opacity);
+  }
+  100% {
+    transform: translate3d(var(--drift), -58vh, 0) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+@keyframes engineeringGrid {
+  to {
+    background-position:
+      25px 5px,
+      25px 5px,
+      25px 25px,
+      25px 25px;
+  }
+}
+
+@keyframes locatorPulse {
+  0%,
+  100% {
+    transform: translate3d(calc(var(--drift) * -0.25), 0, 0) scale(0.7);
+    opacity: 0.04;
+  }
+  50% {
+    transform: translate3d(var(--drift), -10vh, 0) scale(1);
+    opacity: var(--particle-opacity);
+  }
+}
+
+@keyframes clickRing {
+  0% {
+    transform: translate(-50%, -50%) scale(0.25);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.7);
+    opacity: 0;
+  }
+}
+
+@keyframes clickBurst {
+  0% {
+    transform: rotate(var(--angle)) translateX(4px) scale(0.25);
+    opacity: 0;
+  }
+  16% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: rotate(var(--angle)) translateX(var(--distance)) scale(0.6) rotate(170deg);
+    opacity: 0;
+  }
+}
+
+@keyframes geometryClickCore {
+  0% {
+    transform: translate(-50%, -50%) scale(0.25) rotate(0deg);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.3) rotate(90deg);
+    opacity: 0;
+  }
+}
+
+@keyframes leafClickBurst {
+  0% {
+    transform: rotate(var(--angle)) translateX(3px) scale(0.3) rotate(-25deg);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: rotate(var(--angle)) translateX(var(--distance)) scale(0.85) rotate(150deg);
+    opacity: 0;
+  }
+}
+
+@keyframes waterRipple {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3.2, 1.9);
+    opacity: 0;
+  }
+}
+
+@keyframes bubbleClickBurst {
+  0% {
+    transform: rotate(var(--angle)) translateX(3px) scale(0.3);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: rotate(var(--angle)) translateX(var(--distance)) translateY(-18px) scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes petalClickBurst {
+  0% {
+    transform: rotate(var(--angle)) translateX(2px) scale(0.25);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: rotate(var(--angle)) translateX(var(--distance)) translateY(26px) rotate(300deg) scale(0.7);
+    opacity: 0;
+  }
+}
+
+@keyframes cyberClickCore {
+  0% {
+    transform: translate(-50%, -50%) scale(0.25) rotate(0deg);
+    opacity: 1;
+  }
+  55% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.6) rotate(135deg);
+    opacity: 0;
+  }
+}
+
+@keyframes dataClickBurst {
+  0% {
+    transform: rotate(var(--angle)) translateX(2px) scaleY(0.2);
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(var(--angle)) translateX(var(--distance)) scaleY(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes goldClickCore {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3.5);
+    opacity: 0;
+  }
+}
+
+@keyframes lavenderClickBurst {
+  0% {
+    transform: rotate(var(--angle)) translateX(3px) scale(0.3) rotate(-30deg);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: rotate(var(--angle)) translateX(var(--distance)) translateY(-10px) rotate(210deg) scale(0.7);
+    opacity: 0;
+  }
+}
+
+@keyframes locatorClickCore {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0.9;
+  }
+  35% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.15);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .background {
+    --particle-opacity: 0.2;
+    mask-image: linear-gradient(to bottom, transparent 14%, black 48%, black 100%);
+  }
+
+  .particle:nth-child(n + 9) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .particles,
+  .wave,
+  .clickEffects {
+    display: none !important;
+  }
+
+  .grid {
+    animation: none !important;
+  }
+}

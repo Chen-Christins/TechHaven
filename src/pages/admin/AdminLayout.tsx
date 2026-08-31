@@ -73,7 +73,7 @@ const AdminLayout: React.FC = () => {
           justifyContent: "center",
           alignItems: "center",
           height: "100vh",
-          backgroundColor: "var(--bg-primary)",
+          backgroundColor: "transparent",
           color: "var(--text-primary)",
           padding: "20px",
         }}
