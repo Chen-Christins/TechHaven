@@ -1786,3 +1786,81 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
+
+/* 主题光标仅用于支持精确指针的设备，触摸设备保持系统行为。 */
+@media (hover: hover) and (pointer: fine) {
+  [data-skin="time"] {
+    --theme-cursor: url("/cursors/time.svg") 5 3, auto;
+    --theme-pointer: url("/cursors/time-pointer.svg") 15 3, pointer;
+  }
+
+  [data-skin="monochrome"] {
+    --theme-cursor: url("/cursors/monochrome.svg") 5 3, auto;
+    --theme-pointer: url("/cursors/monochrome-pointer.svg") 15 3, pointer;
+  }
+
+  [data-skin="mint"] {
+    --theme-cursor: url("/cursors/mint.svg") 5 3, auto;
+    --theme-pointer: url("/cursors/mint-pointer.svg") 15 3, pointer;
+  }
+
+  [data-skin="ocean"] {
+    --theme-cursor: url("/cursors/ocean.svg") 5 3, auto;
+    --theme-pointer: url("/cursors/ocean-pointer.svg") 15 3, pointer;
+  }
+
+  [data-skin="sakura"] {
+    --theme-cursor: url("/cursors/sakura.svg") 5 3, auto;
+    --theme-pointer: url("/cursors/sakura-pointer.svg") 15 3, pointer;
+  }
+
+  [data-skin="cyberpunk"] {
+    --theme-cursor: url("/cursors/cyberpunk.svg") 5 3, auto;
+    --theme-pointer: url("/cursors/cyberpunk-pointer.svg") 15 3, pointer;
+  }
+
+  [data-skin="gold"] {
+    --theme-cursor: url("/cursors/gold.svg") 5 3, auto;
+    --theme-pointer: url("/cursors/gold-pointer.svg") 15 3, pointer;
+  }
+
+  [data-skin="lavender"] {
+    --theme-cursor: url("/cursors/lavender.svg") 5 3, auto;
+    --theme-pointer: url("/cursors/lavender-pointer.svg") 15 3, pointer;
+  }
+
+  [data-skin="pi"] {
+    --theme-cursor: url("/cursors/pi.svg") 5 3, auto;
+    --theme-pointer: url("/cursors/pi-pointer.svg") 15 3, pointer;
+  }
+
+  html[data-skin][data-cursor="custom"] body,
+  html[data-skin][data-cursor="custom"] body * {
+    cursor: var(--theme-cursor) !important;
+  }
+
+  html[data-skin][data-cursor="custom"] :is(a, button, select, summary, label[for], [role="button"], [role="link"], [role="switch"]),
+  html[data-skin][data-cursor="custom"] input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"]) {
+    cursor: var(--theme-pointer) !important;
+  }
+
+  html[data-skin][data-cursor="custom"]
+    input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not(:disabled),
+  html[data-skin][data-cursor="custom"] textarea:not(:disabled),
+  html[data-skin][data-cursor="custom"] [contenteditable="true"] {
+    cursor: text !important;
+  }
+
+  html[data-skin][data-cursor="custom"] :disabled,
+  html[data-skin][data-cursor="custom"] [aria-disabled="true"] {
+    cursor: not-allowed !important;
+  }
+
+  html[data-skin][data-cursor="custom"] [draggable="true"] {
+    cursor: grab !important;
+  }
+
+  html[data-skin][data-cursor="custom"] [draggable="true"]:active {
+    cursor: grabbing !important;
+  }
+}

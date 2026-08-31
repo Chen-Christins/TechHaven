@@ -1,10 +1,10 @@
-/* SimpleBar 滚动条美化 - 亮色主题 */
-.simplebar-wrapper,
-.simplebar-content-wrapper,
-.simplebar-content {
+/* 内容整体位于主题背景上方，不改写 SimpleBar 内部布局。 */
+[data-simplebar] {
   position: relative;
   z-index: 1;
 }
+
+/* SimpleBar 滚动条美化 - 亮色主题 */
 
 .simplebar-scrollbar {
   background: linear-gradient(90deg, #e0e6ed 0%, #cfd8e3 100%);

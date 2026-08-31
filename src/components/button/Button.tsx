@@ -1,8 +1,8 @@
-import React, { type MouseEvent, type ReactNode } from "react";
+import React, { type ButtonHTMLAttributes, type MouseEvent, type ReactNode } from "react";
 import styles from "./Button.module.css"; // 导入 CSS Module 样式
 
 // 定义组件的 Props 类型
-interface ButtonProps {
+interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color" | "onClick"> {
   children: ReactNode;
   color?: "primary" | "secondary" | "success" | "warning" | "error" | "info";
   variant?: "solid" | "outline" | "ghost" | "text" | "light";
@@ -10,8 +10,6 @@ interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
-  type?: "button" | "submit" | "reset";
-  className?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
