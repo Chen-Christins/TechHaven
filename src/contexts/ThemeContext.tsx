@@ -3,9 +3,9 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 type Theme = "light" | "dark";
 
 // 主题风格（skin），与明暗色正交：data-skin="time" | ...
-export type ThemePreset = "time" | "monochrome" | "mint" | "ocean" | "sakura" | "cyberpunk" | "gold" | "lavender";
+export type ThemePreset = "time" | "monochrome" | "mint" | "ocean" | "sakura" | "cyberpunk" | "gold" | "lavender" | "pi";
 
-export const PRESET_KEYS: ThemePreset[] = ["time", "monochrome", "mint", "ocean", "sakura", "cyberpunk", "gold", "lavender"];
+export const PRESET_KEYS: ThemePreset[] = ["time", "monochrome", "mint", "ocean", "sakura", "cyberpunk", "gold", "lavender", "pi"];
 
 interface ThemeContextType {
   theme: Theme;

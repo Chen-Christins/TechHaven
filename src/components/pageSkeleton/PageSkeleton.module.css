@@ -3,7 +3,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+  background: transparent;
 }
 
 /* 主内容骨架 */
@@ -151,7 +151,7 @@
 
 /* 暗色主题适配（支持 data-theme） */
 :root[data-theme="dark"] .pageSkeleton {
-  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+  background: transparent;
 }
 
 :root[data-theme="dark"] .articleCardSkeleton,

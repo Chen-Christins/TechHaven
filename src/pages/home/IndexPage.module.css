@@ -1,6 +1,6 @@
 .index {
   min-height: 100vh;
-  background-color: var(--bg-primary);
+  background-color: transparent;
   font-family: var(--font-family);
   color: var(--text-primary);
 }

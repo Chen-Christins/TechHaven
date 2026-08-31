@@ -11,6 +11,7 @@ import { LayoutWidthProvider } from "./contexts/LayoutWidthContext";
 import { SiteSettingsProvider, useSiteSettings } from "./contexts/SiteSettingsContext";
 import IdleTimeoutHandler from "./components/sessionTimeout/IdleTimeoutHandler";
 import RouterConfig from "./router/RouterConfig";
+import ThemeBackground from "./components/themeBackground";
 import { usePresenceConnection } from "./hooks/useOnlineCount";
 import { useDevToolsProtection } from "./hooks/useDevToolsProtection";
 import { initErrorCodes } from "./utils/errorCodes";
@@ -29,6 +30,7 @@ function AppContent() {
       <IdleTimeoutHandler />
       <MessageProvider>
         <ConfirmProvider>
+          <ThemeBackground />
           <SimpleBar
             style={{
               maxHeight: "100vh",

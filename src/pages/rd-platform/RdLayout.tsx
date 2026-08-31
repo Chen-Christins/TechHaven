@@ -84,7 +84,7 @@ const RdLayout: React.FC = () => {
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "var(--bg-primary)",
+          backgroundColor: "transparent",
         }}
       >
         <Navbar />
@@ -130,7 +130,7 @@ const RdLayout: React.FC = () => {
           justifyContent: "center",
           alignItems: "center",
           height: "100vh",
-          backgroundColor: "var(--bg-primary)",
+          backgroundColor: "transparent",
           color: "var(--text-primary)",
           padding: "20px",
         }}

@@ -1514,6 +1514,170 @@ select {
   --primary-bg: rgba(165, 138, 255, 0.08);
 }
 
+/* ========== Pi 极客（data-skin="pi"） ========== */
+
+[data-skin="pi"] {
+  --font-family: var(--font-serif);
+
+  --bg-primary: #ebe7e4;
+  --bg-secondary: #e2dedb;
+  --bg-tertiary: #d8d4d0;
+  --bg-card: #f3f2f0;
+  --bg-hover: #e7e5e2;
+  --bg-active: #ddd9d5;
+
+  --text-primary: #252f3d;
+  --text-secondary: #4d5662;
+  --text-tertiary: #756f69;
+  --text-inverse: #f3f2f0;
+  --text-muted: #7f7973;
+
+  --border-primary: rgba(92, 87, 82, 0.35);
+  --border-secondary: rgba(92, 87, 82, 0.55);
+  --border-light: rgba(92, 87, 82, 0.2);
+
+  --shadow-sm: 0 2px 10px rgba(92, 86, 80, 0.08);
+  --shadow-md: 0 8px 28px rgba(92, 86, 80, 0.12);
+  --shadow-lg: 0 16px 44px rgba(92, 86, 80, 0.15);
+  --shadow-xl: 0 24px 60px rgba(92, 86, 80, 0.18);
+
+  --link-primary: #4b607c;
+  --link-hover: #384d68;
+  --link-active: #2c4059;
+  --success: #527760;
+  --warning: #9a6a32;
+  --error: #844f3b;
+  --info: #4b607c;
+
+  --primary: #4b607c;
+  --primary-hover: #3b506b;
+  --primary-active: #30445d;
+  --secondary: #756f69;
+  --accent: #b86b52;
+
+  --navbar-bg: rgba(243, 242, 240, 0.92);
+  --navbar-border: rgba(92, 87, 82, 0.4);
+  --card-bg: rgba(243, 242, 240, 0.94);
+  --card-hover: #f7f6f4;
+  --button-primary: #4b607c;
+  --button-primary-hover: #3b506b;
+  --button-secondary: #ddd9d5;
+  --button-secondary-hover: #d1ccc7;
+  --button-text: #252f3d;
+  --button-text-hover: #13110f;
+
+  --input-bg: #f3f2f0;
+  --input-outline-bg: #f3f2f0;
+  --input-filled-bg: #e5e2df;
+  --input-disabled-bg: #d8d4d0;
+  --text-placeholder: #8b847d;
+  --text-disabled: #aaa39c;
+  --text-quaternary: #8b847d;
+
+  --focus-ring: 0 0 0 3px rgba(75, 96, 124, 0.18);
+  --focus-ring-error: 0 0 0 3px rgba(132, 79, 59, 0.18);
+  --hover-bg: rgba(75, 96, 124, 0.08);
+  --selected-bg: rgba(75, 96, 124, 0.13);
+  --bg-accent: rgba(75, 96, 124, 0.1);
+  --primary-disabled: #9da5af;
+  --success-light: rgba(82, 119, 96, 0.12);
+  --error-light: rgba(132, 79, 59, 0.12);
+  --warn-light: rgba(154, 106, 50, 0.12);
+  --primary-light: rgba(75, 96, 124, 0.12);
+  --primary-hover-light: rgba(75, 96, 124, 0.18);
+  --disabled: #aaa39c;
+  --primary-dark: #30445d;
+
+  --code-bg: rgba(75, 96, 124, 0.11);
+  --code-block-bg: #e2e5e7;
+  --code-header-bg: #252f3d;
+  --code-header-text: #ebe7e4;
+  --code-button-bg: rgba(255, 255, 255, 0.1);
+  --code-button-hover-bg: rgba(255, 255, 255, 0.18);
+  --table-header-bg: #e2dedb;
+  --primary-bg: rgba(75, 96, 124, 0.06);
+}
+
+[data-skin="pi"][data-theme="dark"] {
+  --bg-primary: #0d1116;
+  --bg-secondary: #161d27;
+  --bg-tertiary: #252f3d;
+  --bg-card: #212730;
+  --bg-hover: #29323d;
+  --bg-active: #303b48;
+
+  --text-primary: #ebe7e4;
+  --text-secondary: #c2c6ca;
+  --text-tertiary: #9fa4ab;
+  --text-inverse: #0d1116;
+  --text-muted: #858b93;
+
+  --border-primary: rgba(117, 125, 137, 0.4);
+  --border-secondary: rgba(117, 125, 137, 0.62);
+  --border-light: rgba(117, 125, 137, 0.22);
+
+  --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 10px 32px rgba(0, 0, 0, 0.36);
+  --shadow-lg: 0 18px 52px rgba(0, 0, 0, 0.42);
+  --shadow-xl: 0 28px 72px rgba(0, 0, 0, 0.48);
+
+  --link-primary: #8bb5d8;
+  --link-hover: #a5cae8;
+  --link-active: #c0ddf3;
+  --success: #6eb083;
+  --warning: #d8a35e;
+  --error: #cf765a;
+  --info: #6a9fcc;
+
+  --primary: #6a9fcc;
+  --primary-hover: #82b3dc;
+  --primary-active: #9ac5e8;
+  --secondary: #9fa4ab;
+  --accent: #b86b52;
+
+  --navbar-bg: rgba(13, 17, 22, 0.92);
+  --navbar-border: rgba(117, 125, 137, 0.45);
+  --card-bg: rgba(33, 39, 48, 0.94);
+  --card-hover: #252f3d;
+  --button-primary: #6a9fcc;
+  --button-primary-hover: #82b3dc;
+  --button-secondary: #252f3d;
+  --button-secondary-hover: #303b48;
+  --button-text: #ebe7e4;
+  --button-text-hover: #ffffff;
+
+  --input-bg: #161d27;
+  --input-outline-bg: #212730;
+  --input-filled-bg: #1b222c;
+  --input-disabled-bg: #252f3d;
+  --text-placeholder: #757d89;
+  --text-disabled: #58616c;
+  --text-quaternary: #757d89;
+
+  --focus-ring: 0 0 0 3px rgba(106, 159, 204, 0.22);
+  --focus-ring-error: 0 0 0 3px rgba(207, 118, 90, 0.2);
+  --hover-bg: rgba(106, 159, 204, 0.08);
+  --selected-bg: rgba(106, 159, 204, 0.17);
+  --bg-accent: rgba(106, 159, 204, 0.13);
+  --primary-disabled: #4f6478;
+  --success-light: rgba(110, 176, 131, 0.13);
+  --error-light: rgba(207, 118, 90, 0.13);
+  --warn-light: rgba(216, 163, 94, 0.13);
+  --primary-light: rgba(106, 159, 204, 0.16);
+  --primary-hover-light: rgba(130, 179, 220, 0.2);
+  --disabled: #58616c;
+  --primary-dark: #395a77;
+
+  --code-bg: rgba(106, 159, 204, 0.13);
+  --code-block-bg: #111820;
+  --code-header-bg: #252f3d;
+  --code-header-text: #d5d8db;
+  --code-button-bg: rgba(255, 255, 255, 0.08);
+  --code-button-hover-bg: rgba(255, 255, 255, 0.14);
+  --table-header-bg: #161d27;
+  --primary-bg: rgba(106, 159, 204, 0.08);
+}
+
 /* 时代周刊 - 标题衬线字 */
 [data-skin="time"] h1,
 [data-skin="time"] h2,
@@ -1588,6 +1752,16 @@ select {
 [data-skin="lavender"] .panel-title {
   font-family: var(--font-fangsong);
   font-weight: 600;
+}
+
+[data-skin="pi"] h1,
+[data-skin="pi"] h2,
+[data-skin="pi"] h3,
+[data-skin="pi"] .page-title,
+[data-skin="pi"] .panel-title {
+  font-family: var(--font-serif);
+  font-weight: 650;
+  letter-spacing: -0.015em;
 }
 
 /* 设置根元素样式 */
