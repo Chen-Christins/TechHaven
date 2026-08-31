@@ -1,9 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthService } from "../services/authService";
-import { tokenManager, getTokenFromCookie } from "../utils/http";
+import { tokenManager, getTokenFromCookie, getCookie, clearAuthCookies } from "../utils/http";
 import { notificationWS } from "../utils/websocket";
 import { setFaviconBadge } from "../utils/favicon";
 import { resetNotificationState } from "../utils/notificationState";
+import { connectPresence } from "../services/presenceService";
 
 // 用户信息类型
 export interface User {
@@ -51,6 +53,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const extractToken = (response: any): string | null => {
     const candidates = [
@@ -70,13 +73,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return null;
   };
 
-  const clearAuthRuntimeState = () => {
+  const clearAuthRuntimeState = useCallback(() => {
     setUser(null);
     setToken(null);
     tokenManager.clearToken();
+    clearAuthCookies();
     resetNotificationState();
     setFaviconBadge(0);
-  };
+  }, []);
 
   // 初始化认证状态
   useEffect(() => {
@@ -109,6 +113,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     initAuth();
   }, []);
+
+  // 会话失效（token 过期 / 被顶下线）→ 清除登录态并跳转登录页
+  useEffect(() => {
+    const handleSessionInvalidated = () => {
+      clearAuthRuntimeState();
+      if (!window.location.pathname.startsWith("/auth")) {
+        navigate("/auth");
+      }
+    };
+    tokenManager.addSessionInvalidatedListener(handleSessionInvalidated);
+    return () => {
+      tokenManager.removeSessionInvalidatedListener(handleSessionInvalidated);
+    };
+  }, [clearAuthRuntimeState, navigate]);
 
   // 计算是否已认证（必须在 WebSocket useEffect 之前声明）
   const isAuthenticated = !!user;
@@ -176,8 +194,62 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, [user]);
 
+  // Token 主动续期：S_TOKEN_TIME 快过期前刷新 token，成功后回写并重连 WS
+  const refreshingRef = useRef(false);
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) return;
+
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let disposed = false;
+
+    const doRefresh = async () => {
+      if (disposed || refreshingRef.current) return;
+      refreshingRef.current = true;
+      try {
+        const res = await AuthService.refreshToken(user.id);
+        if (res.errno === 0 && res.data?.token) {
+          const newToken = res.data.token;
+          tokenRef.current = newToken;
+          setToken(newToken);
+          tokenManager.setToken(newToken);
+          // 重连：connect 会重新读取（已被服务端刷新的）S_TOKEN / S_TOKEN_TIME cookie
+          notificationWS.connect(user.id);
+          connectPresence(user.id);
+        }
+      } catch {
+        // 网络异常等：交由 1101 会话失效或下一轮调度处理
+      } finally {
+        refreshingRef.current = false;
+      }
+    };
+
+    const schedule = () => {
+      if (timer) clearTimeout(timer);
+      const tokenTimeStr = getCookie("S_TOKEN_TIME");
+      if (!tokenTimeStr) return;
+      const ts = Number(tokenTimeStr);
+      if (!Number.isFinite(ts) || ts <= 0) return;
+      const tokenTimeMs = ts > 1e12 ? ts : ts * 1000;
+      const remaining = tokenTimeMs - Date.now();
+      if (remaining <= 0) return; // 已过期，交由 1101 处理
+      // 提前 60s 刷新（下限 30s），避免短 token 高频请求
+      const delay = Math.max(remaining - 60 * 1000, 30 * 1000);
+      timer = setTimeout(doRefresh, delay);
+    };
+
+    schedule();
+    return () => {
+      disposed = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [isAuthenticated, user, token, connectPresence]);
+
   // 登录方法
   const login = async (authId: string, password: string) => {
+    return loginWithRetry(authId, password, false);
+  };
+
+  const loginWithRetry = async (authId: string, password: string, retried: boolean) => {
     try {
       setLoginError(null);
       setLoading(true);
@@ -232,6 +304,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.warn("⚠️ 登录响应状态异常:", response);
       }
     } catch (error: any) {
+      // 2010 USER_ALREADY_LOGIN：本设备已有登录态，先登出再重试一次登录
+      if (!retried && error?.errno === 2010) {
+        try {
+          await AuthService.logout();
+        } catch {
+          // 登出失败不阻断重试
+        }
+        clearAuthRuntimeState();
+        return loginWithRetry(authId, password, true);
+      }
       setLoginError(error.message || "登录失败");
       throw error;
     } finally {

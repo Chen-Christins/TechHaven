@@ -14,11 +14,17 @@ export interface HttpResponse<T = any> {
 }
 
 /**
+ * 会话失效原因：expired = token 过期；kicked = 被顶/被踢下线
+ */
+export type SessionInvalidReason = "expired" | "kicked";
+
+/**
  * Token 管理器 - 使用内存存储，避免 localStorage 安全风险
  */
 class TokenManager {
   private token: string | null = null;
   private listeners: ((token: string | null) => void)[] = [];
+  private sessionInvalidatedListeners: ((reason: SessionInvalidReason) => void)[] = [];
 
   /**
    * 设置 token
@@ -66,6 +72,30 @@ class TokenManager {
   private notifyListeners() {
     this.listeners.forEach((listener) => listener(this.token));
   }
+
+  /**
+   * 广播会话失效事件（token 过期 / 被顶下线）
+   */
+  emitSessionInvalidated(reason: SessionInvalidReason) {
+    this.sessionInvalidatedListeners.forEach((listener) => listener(reason));
+  }
+
+  /**
+   * 添加会话失效监听器（token 过期 / 被顶下线）
+   */
+  addSessionInvalidatedListener(listener: (reason: SessionInvalidReason) => void) {
+    this.sessionInvalidatedListeners.push(listener);
+  }
+
+  /**
+   * 移除会话失效监听器
+   */
+  removeSessionInvalidatedListener(listener: (reason: SessionInvalidReason) => void) {
+    const index = this.sessionInvalidatedListeners.indexOf(listener);
+    if (index > -1) {
+      this.sessionInvalidatedListeners.splice(index, 1);
+    }
+  }
 }
 
 /**
@@ -80,6 +110,38 @@ export const getTokenFromCookie = (): string | null => {
     }
   }
   return null;
+};
+
+/**
+ * 根据服务端 errstr/msg 判定 1101 会话失效原因
+ * 命中"被顶/被踢/已在其他设备"关键字 → kicked，否则视为 token 过期
+ */
+export const detectInvalidReason = (text: string): SessionInvalidReason =>
+  /kick|kicked|other device|异地|被顶|踢下线|已在其他设备|已被登录/i.test(text) ? "kicked" : "expired";
+
+/**
+ * 从 Cookie 中读取指定 key 的值
+ */
+export const getCookie = (key: string): string | null => {
+  const cookies = document.cookie.split(";");
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split("=");
+    if (name === key) {
+      return decodeURIComponent(value);
+    }
+  }
+  return null;
+};
+
+/**
+ * 清除会话认证 Cookie（S_TOKEN / S_UID / S_TOKEN_TIME）
+ * 注意：DEVICE_ID 为 10 年设备标识，保留不删
+ */
+export const clearAuthCookies = (): void => {
+  const authCookieNames = ["S_TOKEN", "S_UID", "S_TOKEN_TIME"];
+  authCookieNames.forEach((name) => {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+  });
 };
 
 // 创建全局 token 管理器实例
@@ -314,8 +376,9 @@ class HttpClient {
 
               // 特殊 errno 处理
               if (errno === 1101) {
-                // 未登录
-                this.handleUnauthorized();
+                // 未登录（token 过期 / 被顶下线）
+                const fallback = (data as any)?.msg || (data as any)?.errstr || "";
+                this.handleUnauthorized(detectInvalidReason(String(fallback)));
               }
 
               throw new HttpError(mappedMessage, 200, response.config as HttpRequestConfig, errno);
@@ -417,7 +480,7 @@ class HttpClient {
               const statusErrorMsg = (data as any)?.msg || (data as any)?.message || "账号状态异常";
               if (statusErrorMsg.includes("not login")) {
                 message = "未登录，请重新登录";
-                this.handleUnauthorized();
+                this.handleUnauthorized(detectInvalidReason(statusErrorMsg));
               } else if (statusErrorMsg.includes("account invalid state")) {
                 message = "账号状态异常，请联系管理员";
               } else if (statusErrorMsg.includes("already login")) {
@@ -467,10 +530,13 @@ class HttpClient {
   }
 
   /**
-   * 处理未授权错误
+   * 处理未授权错误（token 过期 / 被顶下线）
+   * 清除认证 Cookie 与内存 token，并广播会话失效事件
    */
-  private handleUnauthorized(): void {
+  private handleUnauthorized(reason: SessionInvalidReason = "expired"): void {
+    clearAuthCookies();
     tokenManager.clearToken();
+    tokenManager.emitSessionInvalidated(reason);
   }
 
   /**

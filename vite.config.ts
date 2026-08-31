@@ -16,6 +16,12 @@ export default defineConfig(({ mode }) => {
       return `[${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}.${us}]`;
     };
 
+    // 转发真实客户端 IP（后端 GetRemoteIP 优先读取 X-Real-IP 头）
+    const setRealIp = (proxyReq: any, req: any) => {
+      const ip = String(req.socket?.remoteAddress || req.headers["x-forwarded-for"] || "").replace(/^::ffff:/, "");
+      if (ip) proxyReq.setHeader("X-Real-IP", ip);
+    };
+
     return {
         plugins: [react()],
         resolve: {
@@ -38,6 +44,7 @@ export default defineConfig(({ mode }) => {
                         });
                         proxy.on("proxyReq", (_proxyReq, req) => {
                             console.log(timeStamp(), "SSE代理请求:", req.method, req.url);
+                            setRealIp(_proxyReq, req);
                         });
                         proxy.on("proxyRes", (proxyRes, req) => {
                             console.log(timeStamp(), "SSE代理响应:", proxyRes.statusCode, req.url,
@@ -57,6 +64,7 @@ export default defineConfig(({ mode }) => {
                         });
                         proxy.on("proxyReq", (proxyReq, req, _res) => {
                             console.log(timeStamp(), "代理请求:", req.method, req.url, "→ 转发到:", proxyReq.path);
+                            setRealIp(proxyReq, req);
                         });
                         proxy.on("proxyRes", (proxyRes, req, _res) => {
                             console.log(timeStamp(), "代理响应:", proxyRes.statusCode, req.url);
@@ -75,6 +83,7 @@ export default defineConfig(({ mode }) => {
                         });
                         proxy.on("proxyReq", (proxyReq, req, _res) => {
                             console.log(timeStamp(), "文件代理请求:", req.method, req.url, "→ 转发到:", proxyReq.path);
+                            setRealIp(proxyReq, req);
                             // 设置连接保持活跃
                             proxyReq.setHeader("Connection", "keep-alive");
                         });

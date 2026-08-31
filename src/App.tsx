@@ -12,6 +12,7 @@ import { SiteSettingsProvider, useSiteSettings } from "./contexts/SiteSettingsCo
 import IdleTimeoutHandler from "./components/sessionTimeout/IdleTimeoutHandler";
 import RouterConfig from "./router/RouterConfig";
 import ThemeBackground from "./components/themeBackground";
+import SessionNotifier from "./components/auth/SessionNotifier";
 import { usePresenceConnection } from "./hooks/useOnlineCount";
 import { useDevToolsProtection } from "./hooks/useDevToolsProtection";
 import { initErrorCodes } from "./utils/errorCodes";
@@ -31,6 +32,7 @@ function AppContent() {
       <MessageProvider>
         <ConfirmProvider>
           <ThemeBackground />
+          <SessionNotifier />
           <SimpleBar
             style={{
               maxHeight: "100vh",
