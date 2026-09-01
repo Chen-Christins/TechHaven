@@ -76,3 +76,10 @@
   color: #ef4444;
   border-color: #ef4444;
 }
+
+.revokeBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: var(--text-tertiary);
+  border-color: var(--border-primary);
+}

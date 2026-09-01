@@ -209,11 +209,11 @@ export class AuthService {
   }
 
   /**
-   * 用户登出
+   * 用户登出（仅登出当前设备）
    */
   static logout() {
     // 调用后端的登出接口
-    return http.get("/user/logout");
+    return http.post("/user/logout");
   }
 
   /**
