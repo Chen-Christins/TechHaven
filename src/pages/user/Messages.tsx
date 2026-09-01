@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { FaSearch, FaPaperPlane, FaCircle, FaRegSmile, FaArrowLeft, FaPlus } from "react-icons/fa";
+import { FaSearch, FaPaperPlane, FaCircle, FaRegSmile, FaArrowLeft, FaPlus, FaTrash } from "react-icons/fa";
 import styles from "./UserPage.module.css";
 import msgStyles from "./Messages.module.css";
 import Navbar from "@/components/navbar/Navbar";
@@ -9,6 +9,7 @@ import Input from "@/components/input/Input";
 import MessageService from "@/services/messageService";
 import FollowService from "@/services/followService";
 import { chatWS } from "@/utils/websocket";
+import { confirm } from "@/components/confirm/Confirm";
 import type { ChatMsg, Conversation } from "@/types/message";
 import type { MutualFollowUser } from "@/types/follow";
 
@@ -271,6 +272,39 @@ const Messages: React.FC = () => {
 
   const filtered = conversations.filter((c) => !search || c.name.includes(search));
 
+  const handleDelete = useCallback(
+    async (convId: string) => {
+      const target = conversations.find((c) => String(c.id) === convId);
+      if (!target) return;
+      const ok = await confirm({
+        title: "删除会话",
+        content: `确定删除与「${target.name}」的会话吗？删除后对方仍可看到，对方再发消息时该会话会重新出现。`,
+        confirmText: "删除",
+        cancelText: "取消",
+      });
+      if (!ok) return;
+      try {
+        await MessageService.deleteConversation(convId);
+        const remaining = conversations.filter((c) => String(c.id) !== convId);
+        setConversations(remaining);
+        if (activeIdRef.current === convId) {
+          const next = remaining[0];
+          setMessages([]);
+          if (next) {
+            setActiveId(String(next.id));
+            setMobileChatOpen(true);
+          } else {
+            setActiveId("");
+            setMobileChatOpen(false);
+          }
+        }
+      } catch {
+        // 静默处理
+      }
+    },
+    [conversations],
+  );
+
   return (
     <div className={`${styles.page} ${msgStyles.msgPage}`}>
       <Navbar />
@@ -309,6 +343,16 @@ const Messages: React.FC = () => {
                         {c.unread > 0 && <span className={msgStyles.convUnread}>{c.unread}</span>}
                       </div>
                     </div>
+                    <button
+                      className={msgStyles.convDelete}
+                      title="删除会话"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(String(c.id));
+                      }}
+                    >
+                      <FaTrash />
+                    </button>
                   </div>
                 ))
               )}

@@ -3,7 +3,17 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  transition: all 0.3s ease;
+  /* 只过渡可插值的具体属性：all 会包含不可插值的 background 简写，
+     经 var() 解析时浏览器（尤其 Safari）偶发保持旧值导致主题切换卡住 */
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    fill 0.3s ease,
+    stroke 0.3s ease;
 }
 
 /* 表单控件字体统一继承主题字体（原生控件默认不继承，需显式指定） */
@@ -12,6 +22,13 @@ button,
 textarea,
 select {
   font-family: inherit;
+}
+
+/* 主题切换期间禁用过渡：避免大量元素同时过渡导致卡顿/背景滞留（尤其 Safari） */
+html.no-transition *,
+html.no-transition *::before,
+html.no-transition *::after {
+  transition: none !important;
 }
 
 /* CSS 变量定义 - 浅色主题 */

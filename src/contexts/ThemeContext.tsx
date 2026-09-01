@@ -7,6 +7,15 @@ export type ThemePreset = "time" | "monochrome" | "mint" | "ocean" | "sakura" | 
 
 export const PRESET_KEYS: ThemePreset[] = ["time", "monochrome", "mint", "ocean", "sakura", "cyberpunk", "gold", "lavender", "pi"];
 
+/** 在无过渡状态下执行 DOM 变更（主题/皮肤切换），下一帧恢复，避免大量元素同时过渡导致卡顿/背景滞留 */
+const withTransitionDisabled = (fn: () => void) => {
+  document.documentElement.classList.add("no-transition");
+  fn();
+  requestAnimationFrame(() => {
+    document.documentElement.classList.remove("no-transition");
+  });
+};
+
 interface ThemeContextType {
   theme: Theme;
   preset: ThemePreset;
@@ -52,26 +61,30 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [cursorEnabled, setCursorEnabled] = useState(() => localStorage.getItem("theme-cursor-enabled") !== "false");
 
   useEffect(() => {
-    // 立即更新 DOM 上的 data-theme 属性和 class
-    document.documentElement.setAttribute("data-theme", theme);
+    // 立即更新 DOM 上的 data-theme 属性和 class（过渡期间禁用动画）
+    withTransitionDisabled(() => {
+      document.documentElement.setAttribute("data-theme", theme);
 
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
 
-    if (hasManualTheme) {
-      localStorage.setItem("theme", theme);
-    } else {
-      localStorage.removeItem("theme");
-    }
+      if (hasManualTheme) {
+        localStorage.setItem("theme", theme);
+      } else {
+        localStorage.removeItem("theme");
+      }
+    });
   }, [theme, hasManualTheme]);
 
   // 更新 DOM 上的 data-skin 属性（主题风格）
   useEffect(() => {
-    document.documentElement.setAttribute("data-skin", preset);
-    localStorage.setItem("theme-preset", preset);
+    withTransitionDisabled(() => {
+      document.documentElement.setAttribute("data-skin", preset);
+      localStorage.setItem("theme-preset", preset);
+    });
   }, [preset]);
 
   useEffect(() => {

@@ -44,6 +44,14 @@ export class MessageService {
   }
 
   /**
+   * 在本端删除/隐藏会话（对端与消息不受影响）
+   */
+  static async deleteConversation(conversationId: number | string): Promise<{ deleted: boolean }> {
+    const response = await http.post<{ deleted: boolean }>(`/messages/conversations/${conversationId}/delete`);
+    return response.data;
+  }
+
+  /**
    * 发起/获取与某用户的会话（已存在则返回原会话）
    */
   static async createConversation(peerId: number | string): Promise<Conversation> {
