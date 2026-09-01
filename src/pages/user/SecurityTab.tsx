@@ -69,12 +69,13 @@ const SecurityTab: React.FC = () => {
 
   return (
     <div className={styles.tabWrap}>
-      <div className={styles.card}>
-        <h2 className={styles.cardTitle}>
-          <FaShieldAlt /> 安全选项
-        </h2>
-        <div className={styles.settingRow}>
-          <div className={styles.settingInfo}>
+      { import.meta.env.DEV && (
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>
+            <FaShieldAlt /> 安全选项
+          </h2>
+          <div className={styles.settingRow}>
+            <div className={styles.settingInfo}>
             <p className={styles.settingName}>两步验证（2FA）</p>
             <p className={styles.settingHint}>登录时需额外输入动态验证码，大幅提升账户安全</p>
           </div>
@@ -94,6 +95,7 @@ const SecurityTab: React.FC = () => {
           <Switch checked={loginAlert} onChange={(c) => setLoginAlert(c)} />
         </div>
       </div>
+	  )}
 
       <div className={styles.card}>
         <h2 className={styles.cardTitle}>
