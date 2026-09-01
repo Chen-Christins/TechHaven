@@ -287,19 +287,17 @@ const Navbar: React.FC = () => {
                         撰写文章
                       </div>
                       <div className={styles.dropdownDivider}></div>
-                      {import.meta.env.DEV && (
-                        <div
-                          className={styles.dropdownItem}
-                          onClick={() => {
-                            setUserMenuOpen(false);
-                            navigate("/messages");
-                          }}
-                        >
-                          <FaRegComments />
-                          私信
-                        </div>
-                      )}
-                      {import.meta.env.DEV && <div className={styles.dropdownDivider}></div>}
+                      <div
+                        className={styles.dropdownItem}
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate("/messages");
+                        }}
+                      >
+                        <FaRegComments />
+                        私信
+                      </div>
+                      <div className={styles.dropdownDivider}></div>
                       <button
                         className={styles.dropdownItem}
                         onClick={() => {
