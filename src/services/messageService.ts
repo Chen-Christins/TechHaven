@@ -1,0 +1,59 @@
+import http from "../utils/http";
+import type { ChatMsg, Conversation, ConversationListResponse, MessageListResponse } from "../types/message";
+
+/**
+ * 私信服务
+ */
+export class MessageService {
+  /**
+   * 获取会话列表
+   */
+  static async getConversations(): Promise<ConversationListResponse> {
+    const response = await http.get<ConversationListResponse>("/messages/conversations");
+    return response.data;
+  }
+
+  /**
+   * 获取单个会话的消息记录
+   */
+  static async getMessages(conversationId: number | string, params?: { offset?: number; size?: number }): Promise<MessageListResponse> {
+    const response = await http.get<MessageListResponse>(`/messages/conversations/${conversationId}`, {
+      params: { offset: params?.offset ?? 0, size: params?.size ?? 50 },
+    });
+    return response.data;
+  }
+
+  /**
+   * 发送一条消息
+   */
+  static async send(conversationId: number | string, text: string): Promise<ChatMsg> {
+    const formData = new URLSearchParams();
+    formData.append("text", text);
+    const response = await http.post<ChatMsg>(`/messages/conversations/${conversationId}`, formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+    return response.data;
+  }
+
+  /**
+   * 将某会话标记为已读
+   */
+  static async markRead(conversationId: number | string): Promise<{ unread: number }> {
+    const response = await http.post<{ unread: number }>(`/messages/conversations/${conversationId}/read`);
+    return response.data;
+  }
+
+  /**
+   * 发起/获取与某用户的会话（已存在则返回原会话）
+   */
+  static async createConversation(peerId: number | string): Promise<Conversation> {
+    const formData = new URLSearchParams();
+    formData.append("peer_id", String(peerId));
+    const response = await http.post<Conversation>("/messages/conversations", formData.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+    return response.data;
+  }
+}
+
+export default MessageService;

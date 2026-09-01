@@ -239,4 +239,7 @@ export class WebSocketClient {
 /** 通知 WebSocket 单例（path: /ws/v1/notification） */
 export const notificationWS = new WebSocketClient("/ws/v1/notification");
 
+/** 聊天 WebSocket 单例（path: /ws/v1/messages，双向收发消息） */
+export const chatWS = new WebSocketClient("/ws/v1/messages");
+
 export default WebSocketClient;

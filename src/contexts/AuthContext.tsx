@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef, useCallb
 import { useNavigate } from "react-router-dom";
 import { AuthService } from "../services/authService";
 import { tokenManager, getTokenFromCookie, getCookie, clearAuthCookies } from "../utils/http";
-import { notificationWS } from "../utils/websocket";
+import { notificationWS, chatWS } from "../utils/websocket";
 import { setFaviconBadge } from "../utils/favicon";
 import { resetNotificationState } from "../utils/notificationState";
 import { connectPresence } from "../services/presenceService";
@@ -135,8 +135,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     if (isAuthenticated && user) {
       notificationWS.connect(user.id);
+      chatWS.connect(user.id);
     } else {
       notificationWS.disconnect();
+      chatWS.disconnect();
       setFaviconBadge(0); // 退出登录或未认证时清除 favicon 角标
     }
   }, [isAuthenticated, user]);
@@ -153,6 +155,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const unsubOpen = notificationWS.onOpen(() => {
       wsAuthRetry.current = 0;
+    });
+    // 聊天 WS 鉴权错误：1103 登出；1101 由上面的 notificationWS 流程刷新 token 后统一重连
+    const unsubChatError = chatWS.onServerError(async (err) => {
+      if (err.errno === 1103) {
+        clearAuthRuntimeState();
+      }
     });
     const unsubError = notificationWS.onServerError(async (err) => {
       // 账号状态异常（1103），刷新 token 无意义，直接登出
@@ -181,6 +189,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           wsAuthRetry.current = 0;
           // 重连：connect 会重新读取（已被服务端刷新的）S_TOKEN / S_TOKEN_TIME cookie
           notificationWS.connect(user.id);
+          chatWS.connect(user.id);
         } else {
           clearAuthRuntimeState();
         }
@@ -191,6 +200,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => {
       unsubOpen();
       unsubError();
+      unsubChatError();
     };
   }, [user]);
 
@@ -214,6 +224,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           tokenManager.setToken(newToken);
           // 重连：connect 会重新读取（已被服务端刷新的）S_TOKEN / S_TOKEN_TIME cookie
           notificationWS.connect(user.id);
+          chatWS.connect(user.id);
           connectPresence(user.id);
         }
       } catch {
