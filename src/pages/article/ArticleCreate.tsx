@@ -8,8 +8,8 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
-import mermaid from "mermaid";
 import "katex/dist/katex.min.css";
+import MermaidComponent from "@/components/mermaid/MermaidComponent";
 import type { ArticleCreateProps, ArticleFormData, SelectOption, Tag } from "@/types/index";
 import { FaEdit, FaEye, FaFileImport, FaInfoCircle, FaSave, FaFly, FaLock } from "react-icons/fa";
 import styles from "./ArticleCreate.module.css";
@@ -101,57 +101,6 @@ const markdownHelpData = [
     example: "```mermaid\ngraph TD\n    A[开始] --> B{条件判断}\n    B -->|是| C[执行操作]\n    B -->|否| D[结束]\n    C --> D\n```",
   },
 ];
-
-// 初始化 Mermaid
-mermaid.initialize({
-  startOnLoad: false,
-  theme: "default",
-  securityLevel: "loose",
-  fontFamily: "var(--font-mono)",
-  fontSize: 14,
-  flowchart: {
-    useMaxWidth: true,
-    htmlLabels: true,
-    curve: "basis",
-  },
-});
-
-// Mermaid 图表组件
-const MermaidComponent: React.FC<{ code: string }> = ({ code }) => {
-  const elementRef = useRef<HTMLDivElement>(null);
-  const [error, setError] = useState<string>("");
-
-  useEffect(() => {
-    if (elementRef.current) {
-      try {
-        const id = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        mermaid
-          .render(id, code)
-          .then(({ svg }) => {
-            if (elementRef.current) {
-              elementRef.current.innerHTML = svg;
-            }
-          })
-          .catch((err) => {
-            setError(`Mermaid 渲染错误: ${err.message}`);
-          });
-      } catch (err: any) {
-        setError(`Mermaid 渲染错误: ${err.message}`);
-      }
-    }
-  }, [code]);
-
-  if (error) {
-    return (
-      <div className={styles.mermaidError}>
-        <div className={styles.errorMessage}>{error}</div>
-        <pre className={styles.errorCode}>{code}</pre>
-      </div>
-    );
-  }
-
-  return <div ref={elementRef} className={styles.mermaidDiagram} />;
-};
 
 const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDraft, onPublish, initialData }) => {
   const { user } = useAuth();

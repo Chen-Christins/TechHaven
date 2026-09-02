@@ -3,6 +3,8 @@
 入口：顶栏导航 → 帮助（`/help`）。
 对应组件：`src/pages/user/HelpCenter.tsx`。
 
+> 实现状态：`implemented (client-wired)`。FAQ 查询和反馈提交已通过 `HelpService` 接入；本轮只核对静态调用链，live 后端响应、鉴权与滥用防护仍为 `unverified`。
+
 ## 数据模型
 
 ```ts

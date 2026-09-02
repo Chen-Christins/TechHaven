@@ -2,12 +2,13 @@ name: CI Build Check
 
 on:
   push:
-    branches: ["master"]
+    branches: ["master", "integration/agent-engine"]
   pull_request:
-    branches: ["master"]
+    branches: ["master", "integration/conversation"]
 
 jobs:
-  build:
+  frontend:
+    name: Frontend build & test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -16,19 +17,113 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # vitest4 + jsdom30 需要 Node >=22.12（undici/webidl.markAsUncloneable），
+          # 与根 package.json engines 对齐
+          node-version: "24"
           cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build site
+      - name: Type check & build site
         run: npm run build
 
-      - name: Run unit tests
+      - name: Run frontend unit tests
         run: npm test
+
+      - name: Check bundle size budget
+        run: node scripts/check-bundle-size.mjs
 
       - name: Check build artifacts
         run: |
           test -d ./dist
           test "$(ls -A ./dist)"
+
+  mcp:
+    name: techhaven-mcp typecheck & smoke
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/techhaven-mcp
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: services/techhaven-mcp/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      # 纯域单测：node:test + tsx，无外部实例依赖（状态机 / agent token / argsDigest 跨服务向量）
+      - name: Run unit tests
+        run: npm test
+
+      - name: Run mock smoke (direct + staged)
+        run: npm run smoke
+
+  bridge:
+    name: techhaven-agent-bridge typecheck & smoke
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/techhaven-agent-bridge
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: services/techhaven-agent-bridge/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Run adapter unit tests
+        run: npm test
+
+      - name: Run fake-legacy HTTP smoke
+        run: npm run smoke
+
+  gateway:
+    name: techhaven-gateway typecheck & smoke
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/techhaven-gateway
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: services/techhaven-gateway/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      # 纯域单测：node:test + tsx，无外部实例依赖（配置校验 / EventChannel 并发语义 / SSE 信封 / 会话视图）
+      - name: Run unit tests
+        run: npm test
+
+      - name: Run mock smoke
+        run: npm run smoke

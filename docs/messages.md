@@ -3,6 +3,8 @@
 入口：顶栏头像下拉 → 私信（`/messages`）。
 对应组件：`src/pages/user/Messages.tsx`（含 Navbar + Footer，聊天区自适应高度）。
 
+> 实现状态：`implemented (local mock)`。会话、未读数和发送消息均保存在组件内存中；下述 HTTP 接口是目标契约，实时推送、持久化和 live 后端均未验证。
+
 ## 数据模型
 
 ```ts
