@@ -9,6 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "build:test": "tsc --noEmit && vite build --mode development",
     "preview": "vite preview",
+    "test": "vitest run",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   },
   "dependencies": {
@@ -51,6 +52,7 @@
     "@vitejs/plugin-react": "^6.0.3",
     "prettier": "^3.9.5",
     "typescript": "~7.0.2",
-    "vite": "^8.1.4"
+    "vite": "^8.1.4",
+    "vitest": "^4.1.11"
   }
 }
