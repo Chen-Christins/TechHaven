@@ -71,7 +71,7 @@ export default defineConfig(({ mode }) => {
                         });
                     },
                 },
-                "^/file(.*)": {
+"^/file(.*)": {
                     target: apiTarget,
                     changeOrigin: true,
                     secure: false,
@@ -79,7 +79,7 @@ export default defineConfig(({ mode }) => {
                     agent: false,
                     configure: (proxy, _options) => {
                         proxy.on("error", (err, _req, _res) => {
-                            console.log(timeStamp(), "文件代理错误:", err);
+                            console.log(timeStamp(), "文件代理错误:", err.message);
                         });
                         proxy.on("proxyReq", (proxyReq, req, _res) => {
                             console.log(timeStamp(), "文件代理请求:", req.method, req.url, "→ 转发到:", proxyReq.path);
@@ -91,6 +91,13 @@ export default defineConfig(({ mode }) => {
                             console.log(timeStamp(), "文件代理响应:", proxyRes.statusCode, req.url);
                         });
                     },
+                },
+                // WebSocket 代理（通知 / 在线 / 聊天）— 走同源代理，手机/局域网访问可连
+                "^/ws/v1": {
+                    target: env.VITE_WS_URL || "ws://127.0.0.1:8091",
+                    ws: true,
+                    changeOrigin: true,
+                    secure: false,
                 },
             },
         },

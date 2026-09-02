@@ -16,3 +16,19 @@ export interface FollowListResponse {
   total: number;
   offset: number;
 }
+
+/** 互相关注用户（发起会话搜索用） */
+export interface MutualFollowUser {
+  id: number;
+  name: string;
+  account: string;
+  avatar: string;
+}
+
+/** 互相关注列表响应 */
+export interface MutualFollowListResponse {
+  list: MutualFollowUser[];
+  total: number;
+  offset: number;
+  size: number;
+}

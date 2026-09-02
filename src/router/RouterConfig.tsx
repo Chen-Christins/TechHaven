@@ -108,8 +108,15 @@ const RouterConfig: React.FC = () => {
         {/* 用户系统：帮助中心（仅开发环境可见） */}
         <Route path="/help" element={<HelpCenter />} />
 
-        {/* 私信会话（仅开发环境可见） */}
-        {import.meta.env.DEV && <Route path="/messages" element={<Messages />} />}
+        {/* 私信会话：页面已正式开放，但必须登录后访问 */}
+        <Route
+          path="/messages"
+          element={
+            <AuthRequired title="登录后查看私信" message="私信会话仅对已登录用户开放。">
+              <Messages />
+            </AuthRequired>
+          }
+        />
 
         {/* 研发平台 */}
         <Route path="/rd" element={<RdLayout />}>
