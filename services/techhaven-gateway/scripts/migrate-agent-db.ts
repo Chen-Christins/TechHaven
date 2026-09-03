@@ -1,7 +1,9 @@
 /** Execute the reviewed Agent DB DDL/migration/seed against an explicit PostgreSQL instance. */
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { parseArgs } from "node:util";
 import pg from "pg";
+
+const MIGRATIONS_DIR = new URL("../../../docs/agent-db/migrations/", import.meta.url);
 
 const { values } = parseArgs({
   options: {
@@ -34,13 +36,20 @@ async function main(): Promise<void> {
     options: `-c search_path=${schema}`,
   });
   try {
-    const sql = readFileSync(
-      mode === "fresh"
-        ? new URL("../../../docs/agent-db/schema.sql", import.meta.url)
-        : new URL("../../../docs/agent-db/migrations/002-v0.2-to-v0.3-authoritative.sql", import.meta.url),
-      "utf8",
-    );
-    await pool.query(sql);
+    if (mode === "fresh") {
+      const sql = readFileSync(new URL("../../../docs/agent-db/schema.sql", import.meta.url), "utf8");
+      await pool.query(sql);
+    } else {
+      // 逐个按文件名顺序执行幂等迁移；新迁移放入目录即可被拾取
+      const names = readdirSync(MIGRATIONS_DIR)
+        .filter((name) => name.endsWith(".sql"))
+        .sort();
+      if (names.length === 0) throw new Error("migrations 目录为空");
+      for (const name of names) {
+        await pool.query(readFileSync(new URL(name, MIGRATIONS_DIR), "utf8"));
+        console.log(`migration applied: ${name}`);
+      }
+    }
     console.log(`Agent DB ${mode} migration applied (schema=${schema})`);
     if (values.seed) {
       const seed = readFileSync(new URL("../../../docs/agent-db/seed-semantics.sql", import.meta.url), "utf8");

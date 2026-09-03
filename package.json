@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "vite",
     "dev:agent": "node scripts/start-agent-stack.mjs",
+    "deploy:server": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-server.ps1",
     "build": "tsc --noEmit && vite build",
     "build:test": "tsc --noEmit && vite build --mode development",
     "preview": "vite preview",
