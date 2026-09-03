@@ -50,7 +50,13 @@ export class WebSocketClient {
    * @param path WebSocket 路径，如 "/notification"
    */
   constructor(path: string) {
-    const baseUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8080";
+    const explicit = import.meta.env.VITE_WS_URL;
+    const wsProto = window.location.protocol === "https:" ? "wss" : "ws";
+    // 显式配置了非回环地址（如线上 wss://域名）则用显式配置；
+    // 否则（未配置或 127.0.0.1/localhost）用当前页面 origin 推导，
+    // 避免手机/局域网通过非本机主机访问时连到 127.0.0.1 导致失败
+    const isLoopback = !explicit || /^wss?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?/i.test(explicit);
+    const baseUrl = isLoopback ? `${wsProto}://${window.location.host}` : explicit;
     const cleanBase = baseUrl.replace(/\/+$/, "");
     const cleanPath = path.startsWith("/") ? path : `/${path}`;
     this.basePath = `${cleanBase}${cleanPath}`;
@@ -238,5 +244,8 @@ export class WebSocketClient {
 
 /** 通知 WebSocket 单例（path: /ws/v1/notification） */
 export const notificationWS = new WebSocketClient("/ws/v1/notification");
+
+/** 聊天 WebSocket 单例（path: /ws/v1/messages，双向收发消息） */
+export const chatWS = new WebSocketClient("/ws/v1/messages");
 
 export default WebSocketClient;

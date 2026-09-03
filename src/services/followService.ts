@@ -1,5 +1,5 @@
 import http from "../utils/http";
-import type { FollowListResponse } from "../types/follow";
+import type { FollowListResponse, MutualFollowListResponse } from "../types/follow";
 
 /**
  * 关注服务
@@ -52,6 +52,20 @@ export class FollowService {
    */
   static async getFollowerList(params?: { user_id?: number | string; offset?: number; size?: number }): Promise<FollowListResponse> {
     const response = await http.get<FollowListResponse>("/user/follower/list", { params });
+    return response.data;
+  }
+
+  /**
+   * 获取互相关注的用户列表（发起私信会话的搜索数据源）
+   */
+  static async getMutualFollowingList(params?: { keyword?: string; offset?: number; size?: number }): Promise<MutualFollowListResponse> {
+    const response = await http.get<MutualFollowListResponse>("/user/mutual_following/list", {
+      params: {
+        keyword: params?.keyword ?? "",
+        offset: params?.offset ?? 0,
+        size: params?.size ?? 20,
+      },
+    });
     return response.data;
   }
 }

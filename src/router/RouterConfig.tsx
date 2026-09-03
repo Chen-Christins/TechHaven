@@ -108,8 +108,8 @@ const RouterConfig: React.FC = () => {
         {/* 用户系统：帮助中心（仅开发环境可见） */}
         <Route path="/help" element={<HelpCenter />} />
 
-        {/* 私信会话（仅开发环境可见） */}
-        {import.meta.env.DEV && <Route path="/messages" element={<Messages />} />}
+        {/* 私信会话 */}
+        <Route path="/messages" element={<Messages />} />
 
         {/* 研发平台 */}
         <Route path="/rd" element={<RdLayout />}>
