@@ -31,6 +31,16 @@ export interface Config {
   dshProfile?: string;
   /** dsh 引擎主目录 / 工作区根（drivers/dsh.ts 经驱动构造器消费；TECHHAVEN_DSH_HOME） */
   dshHome?: string;
+  /** 产品后端提供的内部用户 AI 配置读取端点；未设置时沿用 Gateway 进程级模型凭据 */
+  aiConfigUrl?: string;
+  /** Gateway → 产品后端内部端点的独立服务令牌，不得与 Gateway token 共用 */
+  aiConfigServiceToken?: string;
+  /** 内部 AI 配置读取超时（毫秒） */
+  aiConfigTimeoutMs: number;
+  /** 用户配置类型到 dsh provider route 的部署映射 */
+  dshProviderOpenai: string;
+  dshProviderClaude: string;
+  dshProviderGlm: string;
 }
 
 /** 配置错误（≈ services/techhaven-mcp/src/config.ts 的 ConfigError 同构孪生，防漂移） */
@@ -102,6 +112,38 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     throw new ConfigError(`TECHHAVEN_SESSION_IDLE_TIMEOUT_MINUTES 必须是正整数或 0（0 = 关闭），收到：${idleRaw}`);
   }
 
+  const aiConfigUrl = env.TECHHAVEN_AI_CONFIG_URL?.trim() || undefined;
+  const aiConfigServiceToken = env.TECHHAVEN_AI_CONFIG_SERVICE_TOKEN?.trim() || undefined;
+  if ((aiConfigUrl === undefined) !== (aiConfigServiceToken === undefined)) {
+    throw new ConfigError("TECHHAVEN_AI_CONFIG_URL 与 TECHHAVEN_AI_CONFIG_SERVICE_TOKEN 必须同时设置");
+  }
+  if (aiConfigUrl !== undefined) {
+    let parsed: URL;
+    try {
+      parsed = new URL(aiConfigUrl);
+    } catch {
+      throw new ConfigError("TECHHAVEN_AI_CONFIG_URL 不是合法 URL");
+    }
+    const isLoopback =
+      parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname === "::1" || parsed.hostname === "[::1]";
+    if (parsed.protocol !== "https:" && !(parsed.protocol === "http:" && isLoopback)) {
+      throw new ConfigError("TECHHAVEN_AI_CONFIG_URL 必须使用 HTTPS（本机回环地址除外）");
+    }
+  }
+  const aiConfigTimeoutRaw = env.TECHHAVEN_AI_CONFIG_TIMEOUT_MS?.trim() || "5000";
+  const aiConfigTimeoutMs = Number(aiConfigTimeoutRaw);
+  if (!Number.isInteger(aiConfigTimeoutMs) || aiConfigTimeoutMs < 100 || aiConfigTimeoutMs > 60_000) {
+    throw new ConfigError(`TECHHAVEN_AI_CONFIG_TIMEOUT_MS 必须是 100~60000 的整数，收到：${aiConfigTimeoutRaw}`);
+  }
+
+  const providerId = (name: string, fallback: string): string => {
+    const value = env[name]?.trim() || fallback;
+    if (!/^[a-z0-9][a-z0-9._-]*$/.test(value)) {
+      throw new ConfigError(`${name} 不是合法的 dsh provider id：${value}`);
+    }
+    return value;
+  };
+
   return {
     gatewayToken,
     port,
@@ -118,5 +160,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     dshBin: env.TECHHAVEN_DSH_BIN?.trim() || undefined,
     dshProfile: env.TECHHAVEN_DSH_PROFILE?.trim() || undefined,
     dshHome: env.TECHHAVEN_DSH_HOME?.trim() || undefined,
+    aiConfigUrl,
+    aiConfigServiceToken,
+    aiConfigTimeoutMs,
+    dshProviderOpenai: providerId("TECHHAVEN_DSH_PROVIDER_OPENAI", "openai"),
+    dshProviderClaude: providerId("TECHHAVEN_DSH_PROVIDER_CLAUDE", "anthropic"),
+    dshProviderGlm: providerId("TECHHAVEN_DSH_PROVIDER_GLM", "glm"),
   };
 }

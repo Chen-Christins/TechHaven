@@ -443,6 +443,8 @@ export interface AiConfigParams {
   url: string;
   api_key: string;
   model?: string;
+  /** 推理档位（dsh reasoningEffort），留空用模型默认 */
+  reasoning_effort?: string;
   max_tokens?: number;
 }
 
@@ -451,6 +453,7 @@ export interface AiConfig {
   url: string;
   api_key: string;
   model: string;
+  reasoning_effort?: string;
   max_tokens: number;
 }
 

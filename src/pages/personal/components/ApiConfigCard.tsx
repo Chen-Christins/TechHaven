@@ -33,11 +33,67 @@ const DEFAULTS: Record<ApiType, { url: string; keyPlaceholder: string; defaultMo
   },
 };
 
+/**
+ * 各协议在 dsh runtime 中落到的字段。
+ * provider 经 TECHHAVEN_DSH_PROVIDER_* 映射为 dsh 的 provider route；
+ * model / maxTokens 对应 dsh InitializeParams 同名参数；
+ * 凭据与 base URL 以环境变量注入隔离子进程（Gateway 只注入这三项，不继承其他环境密钥）。
+ * 见 services/techhaven-gateway/.env.example 与 src/aiConfig.ts。
+ */
+const DSH_FIELD: Record<ApiType, { key: string; baseUrl: string; provider: string }> = {
+  openai: { key: "OPENAI_API_KEY", baseUrl: "OPENAI_BASE_URL", provider: "TECHHAVEN_DSH_PROVIDER_OPENAI" },
+  claude: { key: "ANTHROPIC_API_KEY", baseUrl: "ANTHROPIC_BASE_URL", provider: "TECHHAVEN_DSH_PROVIDER_CLAUDE" },
+  glm: { key: "ZHIPUAI_API_KEY", baseUrl: "ZHIPUAI_BASE_URL", provider: "TECHHAVEN_DSH_PROVIDER_GLM" },
+};
+
+/**
+ * 与 Gateway `src/aiConfig.ts` 的失败关闭规则对齐：
+ * 这些情况原本要到创建会话时才报 412，这里提前到表单拦截。
+ */
+function validateUrl(raw: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return "接口地址必须是完整 URL（需包含 https:// 前缀）";
+  }
+  if (parsed.username || parsed.password) return "接口地址不能内嵌用户名或密码";
+  if (parsed.search || parsed.hash) return "接口地址不能带查询参数或锚点";
+  const host = parsed.hostname;
+  const isLoopback = host === "localhost" || host === "::1" || host === "[::1]" || host.startsWith("127.");
+  if (parsed.protocol !== "https:" && !(parsed.protocol === "http:" && isLoopback)) {
+    return "Agent 运行要求 HTTPS 接口地址（本机回环地址除外）";
+  }
+  return null;
+}
+
+function validateApiKey(raw: string): string | null {
+  if (raw.length > 8192) return "密钥长度超出合理范围（上限 8192 字符），请核对是否复制了多余内容";
+  if (/[*•]/.test(raw)) return "请填入完整密钥：脱敏串（含 * 或 •）无法用于运行";
+  if (!/^[\x21-\x7e]+$/.test(raw)) return "密钥只能包含可打印 ASCII 字符，不能含空格或换行";
+  return null;
+}
+
+function validateMaxTokens(raw: string): string | null {
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed <= 0) return "最大生成长度必须是正整数";
+  if (parsed > 1_000_000) return "最大生成长度超出合理范围（上限 1000000）";
+  return null;
+}
+
+function validateReasoningEffort(raw: string): string | null {
+  if (!/^[\x21-\x7e]{1,64}$/.test(raw)) {
+    return "推理档位必须是 1~64 个可见 ASCII 字符（常见：minimal / low / medium / high / max）";
+  }
+  return null;
+}
+
 const ApiConfigCard: React.FC = () => {
   const [apiType, setApiType] = useState<ApiType>("openai");
   const [url, setUrl] = useState(DEFAULTS.openai.url);
   const [apiKey, setApiKey] = useState("");
   const [model, setModel] = useState("");
+  const [reasoningEffort, setReasoningEffort] = useState("");
   const [maxTokens, setMaxTokens] = useState("");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -45,16 +101,32 @@ const ApiConfigCard: React.FC = () => {
   const maskedKeyRef = useRef("");
   const keyTouchedRef = useRef(false);
   // 保存从后端加载的原始配置，切类型时恢复
-  const savedConfigRef = useRef<{ type: ApiType; url: string; api_key: string; model: string; max_tokens: string } | null>(null);
+  const savedConfigRef = useRef<{
+    type: ApiType;
+    url: string;
+    api_key: string;
+    model: string;
+    reasoning_effort: string;
+    max_tokens: string;
+  } | null>(null);
 
   const current = DEFAULTS[apiType];
+  const dsh = DSH_FIELD[apiType];
 
-  const applyConfig = (config: { type: ApiType; url: string; api_key: string; model: string; max_tokens: string }) => {
+  const applyConfig = (config: {
+    type: ApiType;
+    url: string;
+    api_key: string;
+    model: string;
+    reasoning_effort: string;
+    max_tokens: string;
+  }) => {
     setApiType(config.type);
     setUrl(config.url);
     setApiKey(config.api_key);
     maskedKeyRef.current = config.api_key;
     setModel(config.model);
+    setReasoningEffort(config.reasoning_effort);
     setMaxTokens(config.max_tokens);
   };
 
@@ -68,6 +140,7 @@ const ApiConfigCard: React.FC = () => {
             url: config.url || DEFAULTS[t].url,
             api_key: config.api_key || "",
             model: config.model || "",
+            reasoning_effort: config.reasoning_effort || "",
             max_tokens: config.max_tokens ? String(config.max_tokens) : "",
           };
           savedConfigRef.current = saved;
@@ -91,17 +164,45 @@ const ApiConfigCard: React.FC = () => {
   };
 
   const handleSave = async () => {
+    // 与 Gateway 失败关闭规则对齐：这些错误原本要到创建会话时才以 412 暴露，这里提前拦截
     if (!url.trim()) {
       message.warn("请输入接口地址");
       return;
     }
-    if (!apiKey.trim()) {
+    const urlError = validateUrl(url.trim());
+    if (urlError) {
+      message.warn(urlError);
+      return;
+    }
+    if (keyTouchedRef.current && !apiKey.trim()) {
+      // 用户改过但清空了字段：按「沿用已保存密钥」语义放行（提交空串即保留），提示而非拦截
+      message.warn("已清空密钥输入：保存后将沿用已保存的密钥，如需更换请重新输入完整密钥");
+    } else if (keyTouchedRef.current) {
+      const keyError = validateApiKey(apiKey.trim());
+      if (keyError) {
+        message.warn(keyError);
+        return;
+      }
+    } else if (!maskedKeyRef.current) {
       message.warn("请输入 API 密钥");
       return;
     }
-    if (apiType === "claude" && !maxTokens.trim()) {
+    if (maxTokens.trim()) {
+      const tokensError = validateMaxTokens(maxTokens.trim());
+      if (tokensError) {
+        message.warn(tokensError);
+        return;
+      }
+    } else if (apiType === "claude") {
       message.warn("Claude 系列必须填写最大生成长度 (max_tokens)");
       return;
+    }
+    if (reasoningEffort.trim()) {
+      const effortError = validateReasoningEffort(reasoningEffort.trim());
+      if (effortError) {
+        message.warn(effortError);
+        return;
+      }
     }
 
     setSaving(true);
@@ -112,6 +213,7 @@ const ApiConfigCard: React.FC = () => {
         url: url.trim(),
         api_key: keyToSend,
         model: model.trim() || undefined,
+        reasoning_effort: reasoningEffort.trim() || undefined,
         max_tokens: maxTokens.trim() ? Number(maxTokens) : undefined,
       });
       // 更新本地缓存，防止切走再切回来时丢失刚保存的配置
@@ -120,6 +222,7 @@ const ApiConfigCard: React.FC = () => {
         url: url.trim(),
         api_key: keyToSend,
         model: model.trim(),
+        reasoning_effort: reasoningEffort.trim(),
         max_tokens: maxTokens.trim(),
       };
       if (keyTouchedRef.current) {
@@ -156,7 +259,10 @@ const ApiConfigCard: React.FC = () => {
             hideBadge
             placeholder="请选择协议类型..."
           />
-          <span className={styles.editHint}>每个用户仅支持配置一套接口，切换协议类型不会清空已填写的内容</span>
+          <span className={styles.editHint}>
+            每个用户仅支持配置一套接口，切换协议类型不会清空已填写的内容。对应 dsh 的 provider route（经{" "}
+            <span className={styles.editHintCode}>{dsh.provider}</span> 映射）
+          </span>
         </div>
 
         {/* 第二步：通用配置 */}
@@ -172,6 +278,8 @@ const ApiConfigCard: React.FC = () => {
               : apiType === "claude"
                 ? "支持 Anthropic 兼容接口，可填写中转/代理地址"
                 : "支持智谱 GLM 兼容接口，可填写中转/代理地址"}
+            。将作为 dsh 环境变量 <span className={styles.editHintCode}>{dsh.baseUrl}</span> 注入，末尾的 /chat/completions 或
+            /messages 会自动剥离
           </span>
         </div>
 
@@ -182,6 +290,8 @@ const ApiConfigCard: React.FC = () => {
           </label>
           <Input
             type="password"
+            autoComplete="new-password"
+            maxLength={8192}
             value={apiKey}
             onChange={(v) => {
               setApiKey(v);
@@ -191,7 +301,8 @@ const ApiConfigCard: React.FC = () => {
             size="large"
           />
           <span className={styles.editHint}>
-            {maskedKeyRef.current ? "已保存密钥（脱敏显示），如需修改请重新输入" : "密钥加密存储，仅你可见"}
+            {maskedKeyRef.current ? "已保存密钥（脱敏显示），如需修改请重新输入" : "密钥加密存储，仅你可见"}。将作为 dsh 环境变量{" "}
+            <span className={styles.editHintCode}>{dsh.key}</span> 注入会话专属子进程，不进入浏览器存储，也不会出现在会话视图或日志中
           </span>
         </div>
 
@@ -201,8 +312,24 @@ const ApiConfigCard: React.FC = () => {
             <FaCogs size={12} style={{ marginRight: 4 }} />
             模型名称 (Model)
           </label>
-          <Input value={model} onChange={(v) => setModel(v)} placeholder={`如 ${current.defaultModel}`} size="large" />
-          <span className={styles.editHint}>留空则使用默认模型 {current.defaultModel}，也可输入其他模型名</span>
+          <Input value={model} onChange={(v) => setModel(v)} placeholder={`如 ${current.defaultModel}`} maxLength={256} size="large" />
+          <span className={styles.editHint}>
+            对应 dsh 的 model 参数。留空则使用默认模型 {current.defaultModel}，也可输入其他模型名
+          </span>
+        </div>
+
+        <div className={styles.editFormGroup}>
+          <label className={styles.editLabel}>推理档位 (Reasoning Effort)</label>
+          <Input
+            value={reasoningEffort}
+            onChange={(v) => setReasoningEffort(v)}
+            placeholder="选填，如 medium / high / max"
+            maxLength={64}
+            size="large"
+          />
+          <span className={styles.editHint}>
+            对应 dsh 的 reasoningEffort 参数。常见值：minimal / low / medium / high / max（具体支持范围取决于模型）；留空使用模型默认
+          </span>
         </div>
 
         <div className={styles.editFormGroup}>
@@ -222,6 +349,7 @@ const ApiConfigCard: React.FC = () => {
           />
           <span className={styles.editHint}>
             {apiType === "claude" ? "Claude API 要求必须指定 max_tokens，建议不超过 4096" : "可选，留空使用模型默认值"}
+            。对应 dsh 的 maxTokens 参数
           </span>
         </div>
 

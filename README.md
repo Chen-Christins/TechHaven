@@ -62,6 +62,7 @@ Agent 写入链路为：前端请求会话 → Gateway 驱动 dsh → agent 调 
 - `services/techhaven-mcp/`：7 个工具、scoped token、staged proposal、JSONL/PG 可切换权威 repository；direct/staged/HTTP contract smoke 为 9+11+6 项，另有环境门控 PG 并发 smoke。
 - `services/techhaven-agent-bridge/`：独立旧后端兼容层；规范化读接口、状态映射、内部身份、JSONL 幂等台账和写后对账。当前只支持单实例，真实旧后端尚待联调。
 - `services/techhaven-gateway/`：runner adapter、HTTP/SSE、配额、proposal 决策、JSONL/PG session-event 权威、loader 与 reconcile；mock driver smoke 为 41 项，另有环境门控 PG 恢复 smoke。
+- Gateway 可选通过内部服务身份按可信用户读取 AI 配置，并为每个 dsh 会话注入隔离的 provider/model/凭据环境；配置不进入浏览器、会话响应、日志或 JSONL。产品后端内部读取端点与 live dsh 仍需在测试环境联调。
 - 前端 Agent 助手：开发、测试和生产环境统一通过研发平台 `/rd/agent` 入口访问。页面内可切换本地 mock 与 Gateway 联调模式，也可打开“API 配置”复用个人中心的 OpenAI/Claude/GLM 接口配置；配置通过 `/user/ai-config` 交由站点后端保存，不写入浏览器存储。Gateway 经同源代理连接（鉴权头由代理注入，浏览器不持有网关 token）。活动 SID 在单标签页会话内做轻量检查点，刷新后查询同一会话并全量回放 UI；同页网络断线则按 `after=<lastSeq>` 增量续传。客户端见 `src/services/agentGatewayClient.ts`，契约见 `contracts/`。
 
 当前准确成熟度：Agent 工具面、控制面、兼容层和 Agent 面板已 `implemented`，其中离线测试通过的部分标记为 `verified-mock`；PG 权威、并发锁、迁移/对账/live smoke 为 `implemented`。浏览器 mock runner 链路已实测；Bridge 与真实旧后端、live dsh、live PostgreSQL 和多租户沙箱尚未达到 `verified-integration`。禁止把编译或 mock 冒烟表述为生产完成。
@@ -222,6 +223,12 @@ npm ci && npm run typecheck && npm test && npm run smoke
 | `TECHHAVEN_DSH_BIN`                      | driver=dsh         | 无                                       | dsh 可执行文件绝对路径                               |
 | `TECHHAVEN_DSH_PROFILE`                  | driver=dsh         | 无                                       | Gateway 固定下发的 dsh profile                       |
 | `TECHHAVEN_DSH_HOME`                     | driver=dsh         | 无                                       | dsh 工作区/缓存根                                    |
+| `TECHHAVEN_AI_CONFIG_URL`                | 按用户配置时       | 无                                       | 产品后端内部 AI 配置读取端点；与 service token 成对  |
+| `TECHHAVEN_AI_CONFIG_SERVICE_TOKEN`      | 按用户配置时       | 无                                       | Gateway 调内部读取端点的独立服务令牌                 |
+| `TECHHAVEN_AI_CONFIG_TIMEOUT_MS`         | 否                 | `5000`                                   | 内部 AI 配置读取超时，范围 100~60000ms               |
+| `TECHHAVEN_DSH_PROVIDER_OPENAI`          | 否                 | `openai`                                 | OpenAI 配置对应的 dsh provider route                 |
+| `TECHHAVEN_DSH_PROVIDER_CLAUDE`          | 否                 | `anthropic`                              | Claude 配置对应的 dsh provider route                 |
+| `TECHHAVEN_DSH_PROVIDER_GLM`             | 否                 | `glm`                                    | GLM 配置对应的 dsh provider route                    |
 | `DEEPSEEK_API_KEY`                       | 取决于 dsh profile | 无                                       | 模型供应商密钥，只注入 runner/Gateway 进程           |
 | `DEEPSEEK_BASE_URL`                      | 否                 | 供应商默认值                             | 兼容代理或自建模型端点；是否支持由 dsh profile 决定  |
 
@@ -301,13 +308,14 @@ TECHHAVEN_WRITE_MODE=staged
 
 ## 常用命令
 
-| 命令              | 说明                                       |
-| ----------------- | ------------------------------------------ |
-| `npm run dev`     | 启动 Vite 开发服务器                       |
-| `npm run build`   | 执行 `tsc --noEmit` 类型检查并构建生产产物 |
-| `npm run preview` | 本地预览 `dist/` 构建产物                  |
-| `npm test`        | 执行前端 Vitest 回归测试                   |
-| `npm run format`  | 使用 Prettier 格式化 `src/` 中支持的文件   |
+| 命令                | 说明                                                          |
+| ------------------- | ------------------------------------------------------------- |
+| `npm run dev`       | 启动 Vite 开发服务器                                          |
+| `npm run dev:agent` | 一键构建并启动本地 Gateway，再启动 Vite；默认使用 mock driver |
+| `npm run build`     | 执行 `tsc --noEmit` 类型检查并构建生产产物                    |
+| `npm run preview`   | 本地预览 `dist/` 构建产物                                     |
+| `npm test`          | 执行前端 Vitest 回归测试                                      |
+| `npm run format`    | 使用 Prettier 格式化 `src/` 中支持的文件                      |
 
 前端、Gateway、MCP 和 Bridge 都已配置自动化单测或离线 smoke；环境门控的 Gateway 集成测试和两套 PG smoke 需要相应外部实例。`src/sample/` 仍用于组件的浏览器人工验证。
 
@@ -450,6 +458,25 @@ Agent 架构与交付门禁以 `docs/ARCHITECTURE.md`、`docs/ROADMAP.md` 和 `d
 ```
 
 版本以 `vX.Y.Z` Git tag 为发布依据。生产服务器还需要配置 React Router 的 SPA 回退、HTTP API、文件服务、SSE 和 WebSocket 反向代理。
+
+### Agent Gateway 一键启动与测试部署
+
+本地不再需要分别开两个终端：先在仓库根目录和 `services/techhaven-gateway/` 各执行一次 `npm ci`，以后运行 `npm run dev:agent` 即会构建并启动 `127.0.0.1:3091` Gateway，通过健康检查后再启动 Vite。脚本为两个进程注入同一份仅本次运行有效的随机代理令牌；显式设置的 `TECHHAVEN_*` 变量仍优先生效。
+
+`.github/workflows/deploy-agent-gateway.yml` 提供 GitHub Actions 的 **Deploy Agent Gateway** 手动按钮，并会在 **Deploy to Test Environment** 成功后自动执行，因此测试站不再只发布静态 `dist/`。服务器需满足 Node.js 24、npm、curl，并配置：
+
+1. GitHub Secret `TEST_AGENT_DEPLOY_PATH`，例如 `/srv/techhaven-agent-gateway`。
+2. 在服务器创建 `$TEST_AGENT_DEPLOY_PATH/shared/gateway.env`，权限设为 `600`；最小内容为 `TECHHAVEN_GATEWAY_TOKEN=<随机服务端令牌>` 与 `TECHHAVEN_ENGINE_DRIVER=mock`。
+3. Nginx/BFF 的 `/gateway/*` 反向代理指向 `127.0.0.1:3091`，并注入与上项一致的 Bearer。启用按用户 AI 配置时，还必须由可信 BFF 注入真实 `X-TechHaven-Actor`，不能信任浏览器自报身份。
+
+工作流会安装生产依赖、切换 `current` 软链接、重启进程并轮询 `/healthz`。若环境文件选择 `TECHHAVEN_ENGINE_DRIVER=dsh`，部署阶段还会固定安装并校验配套的官方 dsh runtime/SDK `0.1.1-rc.2`。默认使用无需 root 的进程管理脚本；为了让服务随服务器重启自动恢复，首次部署成功后执行一次：
+
+```bash
+sudo /srv/techhaven-agent-gateway/current/scripts/install-agent-gateway-systemd.sh \
+  /srv/techhaven-agent-gateway "$USER"
+```
+
+之后同一工作流会自动改用 `systemd` 重启服务。内部 AI 配置读取端点仍由产品后端提供；一键启动负责部署和进程生命周期，不会把脱敏的浏览器配置当作可运行密钥。
 
 ## 相关文档
 

@@ -29,14 +29,36 @@ export type {
 // 契约包里的 EngineEvent/EventEnvelope 定义为唯一事实源，改动需双方同步评审（见 contracts/README.md）。
 
 export interface EngineSessionHandle {
-  events(): AsyncIterable<EngineEvent>;                       // 会话全量事件流（含历史回放）
+  events(): AsyncIterable<EngineEvent>; // 会话全量事件流（含历史回放）
   send(text: string): Promise<void>;
   answerPermission(requestId: string, decision: "approve" | "reject", note?: string): Promise<void>;
   cancel(): Promise<void>;
   dispose(): Promise<void>;
 }
+
+/**
+ * 仅在 Gateway 内存中流转的模型运行配置。
+ *
+ * `env` 可含供应商密钥，因此禁止写入 SessionView、JSONL、日志或 HTTP 响应。
+ * dsh driver 必须把不同配置放入相互隔离的 runtime，不能复用进程级环境。
+ */
+export interface EngineRuntimeConfig {
+  provider: string;
+  model: string;
+  /** 推理档位（dsh reasoningEffort，非空字符串）；省略用模型默认 */
+  reasoningEffort?: string;
+  maxTokens?: number;
+  env: Record<string, string>;
+}
+
 export interface EngineDriver {
   readonly name: string;
-  startSession(opts: { sessionId: string; orgId: number; prompt: string; profile?: string }): Promise<EngineSessionHandle>;
+  startSession(opts: {
+    sessionId: string;
+    orgId: number;
+    prompt: string;
+    profile?: string;
+    runtimeConfig?: EngineRuntimeConfig;
+  }): Promise<EngineSessionHandle>;
   dispose(): Promise<void>;
 }

@@ -132,7 +132,20 @@ const RouterConfig: React.FC = () => {
           {/* 研发平台 */}
           <Route path="/rd" element={<RdLayout />}>
             <Route index element={<RdDashboard />} />
-            <Route path="agent" element={<SampleAgentSessionPanel />} />
+            {/*
+              Agent 会话入口在开发/测试/生产三环境一致可达（不做 DEV 门禁）。
+              原因：测试环境部署走 `npm run build:test` = vite --mode development，
+              该模式下 import.meta.env.DEV 为 true，DEV 门禁无法在测试环境屏蔽页面。
+              因此统一改用登录门禁，保证三环境行为一致。
+            */}
+            <Route
+              path="agent"
+              element={
+                <AuthRequired title="登录后使用 Agent" message="Agent 会话需绑定你的个人 AI 接口配置，请先登录。">
+                  <SampleAgentSessionPanel />
+                </AuthRequired>
+              }
+            />
             <Route path="trends" element={<TrendAnalysis />} />
             <Route path="requirements" element={<RequirementList />} />
             <Route path="requirements/:id" element={<TicketDetail />} />

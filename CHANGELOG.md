@@ -19,6 +19,11 @@
 - 前端 Agent 面板重构为分层会话控制台，支持 mock/Gateway 双路径、事件概况、权限审批、明暗主题与窄屏布局。
 - 开发、测试和生产环境统一在研发平台暴露 `/rd/agent`“Agent 助手”入口，并可在页面内直接切换本地演示与 Gateway 联调模式。
 - Agent 助手增加“API 配置”入口，复用个人中心的 OpenAI/Claude/GLM 配置表单与 `/user/ai-config` 服务端保存链路，不在浏览器存储模型密钥。
+- Gateway 增加按可信用户从产品内部端点解析 AI 配置的适配器，并按会话隔离 dsh runtime；供应商密钥只进入最小化子进程环境，不进入响应、日志或 JSONL。
+- `/rd/agent` 统一采用 `AuthRequired` 登录门禁（三环境一致可达；不使用 DEV 门禁——测试环境部署走 `build:test` 即 development 模式，DEV 门禁在该模式下会失效）。
+- AI 配置表单对齐 dsh 运行时字段：每个字段标注其运行时落点（provider route / BASE_URL / API_KEY / model / maxTokens），并把 Gateway 的失败关闭规则前置到保存时校验（脱敏串、回环外非 HTTPS 地址、带查询参数或内嵌凭据的 URL、非正整数 max_tokens、超长密钥）；密钥输入框改用 `autoComplete="new-password"` 防浏览器凭证管理器收藏（`Input` 组件补 `autoComplete` 透传）。
+- AI 配置补齐 dsh 推理档位 `reasoning_effort`（此前表单可配项少于 dsh 支持面）：表单输入 → `/user/ai-config` 契约 → Gateway 解析 → dsh 构造参数全链路透传；1~64 可见 ASCII 校验、缺省/空串视为未配置（用模型默认），非法值失败关闭且不回显原值；内部配置端点响应契约同步扩展（`aiConfig.test` 52→56 项）。
+- 增加 Agent 一键启动与测试部署：`npm run dev:agent` 自动构建/启动本地 Gateway 后拉起 Vite；`Deploy Agent Gateway` 工作流既可手动执行，也会跟随测试站静态发布，负责版本化上传、生产依赖安装、进程重启与 `/healthz` 门禁，并提供可选的 systemd 开机自启安装脚本。
 
 - 根前端单测基线（vitest）：Mermaid 安全严格模式与恶意注入回归、HTTP 1101 未授权状态同步回归（`npm test`）。
 - 凭据脱敏回归测试 9 项：`src/utils/websocket.test.ts`（6 项，WebSocket 建连日志不含 token / token_time 原文，脱敏不误伤 uid，重连不绕过，Cookie 值含 `=` 不截断）与 `src/hooks/useAiSummary.test.tsx`（3 项，AI-SSE 诊断日志不含 token 原文或 ≥6 位前缀，同时断言 `Authorization` 头仍正确携带）。两处均已用「临时改回旧写法 → 测试变红」反向验证测试有效性。
@@ -31,6 +36,8 @@
 
 ### 修复
 
+- Gateway 用户配置解析补齐输入边界（生产级扫描发现）：`api_key` ≤8192 字符、`model` ≤256 字符、`max_tokens` ≤1,000,000，内部配置服务响应体上限 1MB；超限一律失败关闭且错误信息不回显原值（超长密钥此前可直通子进程 env，在 POSIX `execve` ARG_MAX 约 128KB 限制下导致 spawn 失败）。附 3 项边界回归测试（网关单测 52→55）。
+- 用户 AI 配置响应体改为流式累计字节并在 1MB 处主动取消读取；修复仅按字符串长度、且先完整读入内存后再检查的资源上限漏洞，同时拒绝显式 `max_tokens=0`。
 - `src/utils/websocket.ts` 的 `getCookie` 改用 `indexOf("=")` 取值：原 `split("=")` 会在 Cookie 值内的第一个 `=` 处切断，base64 填充或 JWT 分段的 token 会被静默截断，症状是「Cookie 明明有值却鉴权失败」。已附回归测试。
 - 开发代理的 Gateway 令牌改用非 `VITE_` 前缀的 `TECHHAVEN_GATEWAY_PROXY_TOKEN`，避免把仅供 Vite 配置进程读取的凭据放入客户端环境变量命名空间。
 
@@ -57,17 +64,20 @@
 ## [v1.0.1] - 2026-08-31
 
 ### 新增
+
 - 新增「Pi 极客」主题，采用纸格与终端风格设计。
 - 新增各主题对应的鼠标指针样式和主题背景交互效果。
 - 主题背景支持网格、波纹、粒子及点击反馈动画，并适配系统的减少动态效果偏好。
 
 ### 优化
+
 - 优化文章目录滚动定位逻辑，根据实际滚动容器和标题位置更新当前目录项。
 - 优化文章目录在页面顶部、底部及平滑滚动过程中的激活状态。
 - 优化返回顶部功能，兼容页面滚动和 SimpleBar 滚动容器。
 - 优化主题样式面板、开关组件及页面背景在不同主题下的视觉表现。
 
 ### 修复
+
 - 修复 Markdown 代码块中的标题语法被错误提取到文章目录的问题。
 - 修复文章目录定位偏移及首尾标题无法正确激活的问题。
 

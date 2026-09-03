@@ -11,6 +11,7 @@ import { SessionRegistry } from "./sessions.js";
 import { createGatewayServer } from "./http.js";
 import type { EngineDriver } from "./types.js";
 import { JsonlProposalPort, PgProposalPort, type ProposalPort } from "./proposals.js";
+import { HttpAiConfigResolver, type AiConfigResolver } from "./aiConfig.js";
 
 /**
  * 组装引擎驱动：mock 直接构造；dsh 静态导入构造（drivers/dsh.ts 已交付，
@@ -71,7 +72,23 @@ async function main(): Promise<void> {
     sessionIdleTimeoutMinutes: config.sessionIdleTimeoutMinutes,
     pgStore,
   });
-  const server = createGatewayServer(config, registry, proposalPort);
+  let aiConfigResolver: AiConfigResolver | undefined;
+  if (config.driver === "dsh" && config.aiConfigUrl && config.aiConfigServiceToken) {
+    aiConfigResolver = new HttpAiConfigResolver({
+      endpoint: config.aiConfigUrl,
+      serviceToken: config.aiConfigServiceToken,
+      timeoutMs: config.aiConfigTimeoutMs,
+      providerIds: {
+        openai: config.dshProviderOpenai,
+        claude: config.dshProviderClaude,
+        glm: config.dshProviderGlm,
+      },
+    });
+    log(`用户 AI 配置解析已启用：${new URL(config.aiConfigUrl).origin}`);
+  } else if (config.driver === "dsh") {
+    log("用户 AI 配置解析未启用：dsh 将沿用 Gateway 进程级模型凭据");
+  }
+  const server = createGatewayServer(config, registry, proposalPort, aiConfigResolver);
   server.on("error", (err) => {
     log(`HTTP 服务错误（端口 ${config.port} 可能被占用）：`, err);
     process.exit(1);

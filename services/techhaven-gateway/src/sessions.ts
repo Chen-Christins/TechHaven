@@ -17,6 +17,7 @@ import type {
   EngineDriver,
   EngineEvent,
   EngineEventPayload,
+  EngineRuntimeConfig,
   EngineSessionHandle,
   EventEnvelope,
   ProposalLifecycleEvent,
@@ -95,6 +96,8 @@ interface CreateSessionInput {
   subjectType?: string;
   subjectId?: string;
   prompt: string;
+  /** 仅内存传给 driver；绝不进入持久化与客户端视图。 */
+  runtimeConfig?: EngineRuntimeConfig;
 }
 
 /**
@@ -140,18 +143,18 @@ function isProposalViewValue(value: unknown): boolean {
   const proposal = jsonRecord(value);
   return Boolean(
     proposal &&
-      typeof proposal.id === "string" &&
-      typeof proposal.sessionId === "string" &&
-      Number.isInteger(proposal.orgId) &&
-      typeof proposal.tool === "string" &&
-      typeof proposal.subjectType === "string" &&
-      typeof proposal.subjectHashId === "string" &&
-      typeof proposal.fromStatus === "string" &&
-      typeof proposal.toStatus === "string" &&
-      typeof proposal.reason === "string" &&
-      ["pending", "approved", "rejected", "applied", "expired"].includes(String(proposal.status)) &&
-      typeof proposal.expiresAt === "string" &&
-      typeof proposal.updatedAt === "string",
+    typeof proposal.id === "string" &&
+    typeof proposal.sessionId === "string" &&
+    Number.isInteger(proposal.orgId) &&
+    typeof proposal.tool === "string" &&
+    typeof proposal.subjectType === "string" &&
+    typeof proposal.subjectHashId === "string" &&
+    typeof proposal.fromStatus === "string" &&
+    typeof proposal.toStatus === "string" &&
+    typeof proposal.reason === "string" &&
+    ["pending", "approved", "rejected", "applied", "expired"].includes(String(proposal.status)) &&
+    typeof proposal.expiresAt === "string" &&
+    typeof proposal.updatedAt === "string",
   );
 }
 
@@ -190,6 +193,8 @@ export interface SessionRecord {
   subjectType?: string;
   subjectId?: string;
   prompt: string;
+  /** 仅在 driver 启动前短暂保留；pump 取走后立即清空。 */
+  runtimeConfig?: EngineRuntimeConfig;
   /** 初始 queued，由事件流里的 status_change 更新 */
   status: SessionStatus;
   createdAt: string;
@@ -472,6 +477,7 @@ export class SessionRegistry {
       subjectType: input.subjectType,
       subjectId: input.subjectId,
       prompt: input.prompt,
+      runtimeConfig: input.runtimeConfig,
       status: "queued",
       createdAt: nowIso(),
       events: [],
@@ -617,11 +623,14 @@ export class SessionRegistry {
   /** 事件泵：消费引擎事件流直到结束；任何异常都收敛为 failed 终态，绝不让进程崩 */
   private async pump(record: SessionRecord): Promise<void> {
     try {
+      const runtimeConfig = record.runtimeConfig;
+      record.runtimeConfig = undefined;
       const handle = await this.driver.startSession({
         sessionId: record.sid,
         orgId: record.orgId,
         prompt: record.prompt,
         // profile 由 Gateway 经驱动构造器统一下发（单通道，见 RegistryOptions 注释）
+        runtimeConfig,
       });
       record.handle = handle;
       // cancel 早于句柄就绪到达：补发

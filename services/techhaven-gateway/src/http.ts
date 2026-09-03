@@ -12,6 +12,7 @@ import type { Config } from "./config.js";
 import { log } from "./log.js";
 import { isRecord } from "./util.js";
 import type { ProposalPort } from "./proposals.js";
+import { AiConfigResolutionError, type AiConfigResolver } from "./aiConfig.js";
 import {
   GatewayError,
   sessionView,
@@ -218,6 +219,7 @@ async function handleRequest(
   config: Config,
   registry: SessionRegistry,
   proposals: ProposalPort,
+  aiConfigResolver?: AiConfigResolver,
 ): Promise<void> {
   const url = new URL(req.url ?? "/", "http://localhost");
   const path = url.pathname;
@@ -248,7 +250,8 @@ async function handleRequest(
     if (path === "/v1/sessions" && method === "POST") {
       const body = await readJsonBody(req);
       const input = parseCreateBody(body);
-      const record = await registry.create(input);
+      const runtimeConfig = aiConfigResolver ? await aiConfigResolver.resolve(trustedActor(req)) : undefined;
+      const record = await registry.create({ ...input, runtimeConfig });
       sendJson(res, 201, { sid: record.sid, status: record.status });
       return;
     }
@@ -346,6 +349,10 @@ async function handleRequest(
 
     sendError(res, 404, "未找到路由");
   } catch (err) {
+    if (err instanceof AiConfigResolutionError) {
+      sendError(res, err.status, err.message);
+      return;
+    }
     if (err instanceof GatewayError) {
       sendError(res, err.status, err.message);
       return;
@@ -357,9 +364,14 @@ async function handleRequest(
 }
 
 /** 创建网关 HTTP 服务 */
-export function createGatewayServer(config: Config, registry: SessionRegistry, proposals: ProposalPort): http.Server {
+export function createGatewayServer(
+  config: Config,
+  registry: SessionRegistry,
+  proposals: ProposalPort,
+  aiConfigResolver?: AiConfigResolver,
+): http.Server {
   const server = http.createServer((req, res) => {
-    void handleRequest(req, res, config, registry, proposals);
+    void handleRequest(req, res, config, registry, proposals, aiConfigResolver);
   });
   // 显式消费 clientError：默认行为是销毁 socket 并可能打出未处理异常日志
   server.on("clientError", (err, socket) => {

@@ -10,6 +10,18 @@ SSE 数据帧为**事件信封**（`EventEnvelope`，`id:`=seq，data 含 schema
 
 Gateway 只承载控制面，不复制产品域状态机；proposal 权威位于 techhaven-mcp/审批服务。Gateway 通过 `ProposalPort` 暴露同会话、同组织的查询/决策 API，并把 proposal 生命周期投影到 session SSE；批准不等于 Gateway 执行域写，实际应用仍由 MCP 服务端 worker 负责。
 
+### 用户模型配置注入
+
+设置 `TECHHAVEN_AI_CONFIG_URL` 与 `TECHHAVEN_AI_CONFIG_SERVICE_TOKEN` 后，创建会话必须携带受信 BFF 注入的 `X-TechHaven-Actor: user:<id>`。Gateway 使用独立服务令牌向产品后端内部端点读取该用户的 `{ type, url, api_key, model?, reasoning_effort?, max_tokens? }`，再把它转换为只存在于内存中的 dsh runtime 配置。
+
+- 浏览器不提交、读取或持有供应商 API key；内部配置端点不得对浏览器开放。
+- 脱敏 key、非 HTTPS provider URL（本机回环除外）、非法协议/模型配置一律失败关闭。
+- 每个 Agent 会话独占一个 dsh 子进程；不同用户或不同模型配置不会共享进程环境。
+- 注入配置不进入 `SessionView`、HTTP 响应、日志或 JSONL；传给子进程的基础环境采用 allowlist，避免顺带泄露 Gateway 其他凭据。
+- dsh profile 需要把 provider route 与 `OPENAI_*`、`ANTHROPIC_*`、`ZHIPUAI_*` 环境变量绑定；route 名可通过 `TECHHAVEN_DSH_PROVIDER_OPENAI/CLAUDE/GLM` 调整。
+
+产品后端不在本仓库中，因此这里只交付并验证 Gateway 侧适配器与内部 HTTP 契约；真实测试环境仍需实现该只读内部端点并完成 live dsh 联调。
+
 ## 快速开始
 
 ```bash

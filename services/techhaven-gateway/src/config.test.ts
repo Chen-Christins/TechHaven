@@ -38,6 +38,12 @@ test("最小环境可装载，其余取文档默认值", () => {
   assert.equal(config.sessionRetentionMinutes, 30);
   assert.equal(config.sessionIdleTimeoutMinutes, 30);
   assert.equal(config.dbSchema, "public");
+  assert.equal(config.aiConfigUrl, undefined);
+  assert.equal(config.aiConfigServiceToken, undefined);
+  assert.equal(config.aiConfigTimeoutMs, 5000);
+  assert.equal(config.dshProviderOpenai, "openai");
+  assert.equal(config.dshProviderClaude, "anthropic");
+  assert.equal(config.dshProviderGlm, "glm");
 });
 
 test("gatewayToken 缺失或纯空白都拒绝启动", () => {
@@ -54,7 +60,10 @@ test("gatewayToken 两端空白被裁剪", () => {
 });
 
 test("proposal 共享文件可配置且会裁剪空白", () => {
-  assert.equal(load({ TECHHAVEN_PROPOSALS_FILE: "  ./audit/custom-proposals.jsonl  " }).proposalsFile, "./audit/custom-proposals.jsonl");
+  assert.equal(
+    load({ TECHHAVEN_PROPOSALS_FILE: "  ./audit/custom-proposals.jsonl  " }).proposalsFile,
+    "./audit/custom-proposals.jsonl",
+  );
   assert.equal(load({ TECHHAVEN_PROPOSALS_FILE: "   " }).proposalsFile, "../techhaven-mcp/audit/proposals.jsonl");
 });
 
@@ -128,4 +137,41 @@ test("dsh 选项透传：空串归一为 undefined", () => {
   assert.equal(config.dshBin, "/opt/dsh/bin/dsh");
   assert.equal(config.dshProfile, undefined);
   assert.equal(config.dshHome, undefined);
+});
+
+test("用户 AI 配置解析：URL 与服务 token 必须成对出现", () => {
+  assertConfigError({ TECHHAVEN_AI_CONFIG_URL: "https://backend.example/internal/ai-config" }, "必须同时设置");
+  assertConfigError({ TECHHAVEN_AI_CONFIG_SERVICE_TOKEN: "service-token" }, "必须同时设置");
+  const config = load({
+    TECHHAVEN_AI_CONFIG_URL: " https://backend.example/internal/ai-config ",
+    TECHHAVEN_AI_CONFIG_SERVICE_TOKEN: " service-token ",
+  });
+  assert.equal(config.aiConfigUrl, "https://backend.example/internal/ai-config");
+  assert.equal(config.aiConfigServiceToken, "service-token");
+});
+
+test("用户 AI 配置解析：只允许 HTTPS 或本机 HTTP，超时有界", () => {
+  assertConfigError(
+    { TECHHAVEN_AI_CONFIG_URL: "http://backend.example/config", TECHHAVEN_AI_CONFIG_SERVICE_TOKEN: "token" },
+    "必须使用 HTTPS",
+  );
+  assert.equal(
+    load({ TECHHAVEN_AI_CONFIG_URL: "http://127.0.0.1:8088/config", TECHHAVEN_AI_CONFIG_SERVICE_TOKEN: "token" }).aiConfigUrl,
+    "http://127.0.0.1:8088/config",
+  );
+  assert.equal(load({ TECHHAVEN_AI_CONFIG_TIMEOUT_MS: "1500" }).aiConfigTimeoutMs, 1500);
+  assertConfigError({ TECHHAVEN_AI_CONFIG_TIMEOUT_MS: "99" }, "100~60000");
+  assertConfigError({ TECHHAVEN_AI_CONFIG_TIMEOUT_MS: "60001" }, "100~60000");
+});
+
+test("dsh provider route 可配置且拒绝非法标识", () => {
+  const config = load({
+    TECHHAVEN_DSH_PROVIDER_OPENAI: "company-openai",
+    TECHHAVEN_DSH_PROVIDER_CLAUDE: "company.anthropic",
+    TECHHAVEN_DSH_PROVIDER_GLM: "glm_v2",
+  });
+  assert.equal(config.dshProviderOpenai, "company-openai");
+  assert.equal(config.dshProviderClaude, "company.anthropic");
+  assert.equal(config.dshProviderGlm, "glm_v2");
+  assertConfigError({ TECHHAVEN_DSH_PROVIDER_OPENAI: "OpenAI Route" }, "provider id");
 });

@@ -11,8 +11,8 @@
  *     `npm i @deepseek-ai/dsh-sdk-client@0.1.1-rc.2 @deepseek-ai/dsh@0.1.1-rc.2`
  *     （SDK 启动时强制 client 与 dsh 同版本，launch.ts:55-66；0.1.2-alpha.1 需从源码构建）；
  *  2. TECHHAVEN_DSH_BIN 指向 dsh 可执行入口（缺省则要求 node_modules 内存在同版本 @deepseek-ai/dsh 包）；
- *  3. LLM API key（默认 deepseek-official 路由，如 DEEPSEEK_API_KEY）经父环境继承到 dsh 子进程
- *     （HarnessClientOptions.env 缺省继承父环境，types.ts:42）。
+ *  3. LLM API key 可沿用 Gateway 进程环境，或由服务端用户配置解析器通过
+ *     EngineRuntimeConfig 注入会话独占的 dsh 子进程（不共享用户凭据）。
  *
  * 本驱动不写入 package.json：SDK 通过动态 import 加载，包缺失 / 导出面不符时抛出
  * 带中文说明的 Error。驱动选择权在启动配置（TECHHAVEN_ENGINE_DRIVER，默认 mock），
@@ -27,7 +27,7 @@
 
 import { EventChannel } from "../channel.js";
 import { errorMessage, isRecord, nowIso, sha256Hex16 } from "../util.js";
-import type { EngineDriver, EngineEvent, EngineSessionHandle } from "../types.js";
+import type { EngineDriver, EngineEvent, EngineRuntimeConfig, EngineSessionHandle } from "../types.js";
 import { log } from "../log.js";
 
 /**
@@ -99,19 +99,19 @@ const KNOWN_DSH_EVENT_TYPES: ReadonlySet<string> = new Set([
 // ---------------------------------------------------------------------------
 
 /** 一条 server→client 通知（types.ts:13-18：{ method, params }）。 */
-interface DshHarnessNotification {
+export interface DshHarnessNotification {
   method: string;
   params: Record<string, unknown>;
 }
 
 /** 通知订阅（client.ts:76-93；本驱动只消费 next/close）。 */
-interface DshNotificationSubscription {
+export interface DshNotificationSubscription {
   next(): Promise<DshHarnessNotification>;
   close(): void;
 }
 
 /** 底层协议客户端（client.ts:185；本驱动只消费 prompt 与 subscribeSessionTree）。 */
-interface DshRuntimeClient {
+export interface DshRuntimeClient {
   /** client.ts:291-298：排队一条 prompt，立即返回 durable 消息 id。 */
   prompt(sessionId: string, contentBlocks: unknown[]): Promise<string>;
   /** client.ts:370-381：订阅一个会话及其 subagent 血缘后代。 */
@@ -119,7 +119,7 @@ interface DshRuntimeClient {
 }
 
 /** 高层 API（api.ts:22 class DeepSeekHarness）。 */
-interface DshHarness {
+export interface DshHarness {
   /** api.ts:69-95：懒启动子进程并 memoize initialize 握手。 */
   start(): Promise<void>;
   /** api.ts:55-57：底层客户端 getter。 */
@@ -128,7 +128,7 @@ interface DshHarness {
   close(): Promise<void>;
 }
 
-interface DshSdkModule {
+export interface DshSdkModule {
   DeepSeekHarness: new (options: Record<string, unknown>) => DshHarness;
 }
 
@@ -141,17 +141,17 @@ async function loadDshSdk(): Promise<DshSdkModule> {
     imported = await import(DSH_SDK_SPECIFIER);
   } catch (cause) {
     throw new Error(
-      `无法加载 dsh 官方 SDK（${DSH_SDK_SPECIFIER}）：${errorMessage(cause)}。`
-      + `安装方式：npm i ${DSH_SDK_SPECIFIER}@0.1.1-rc.2 @deepseek-ai/dsh@0.1.1-rc.2`
-      + `（两个包必须同版本，SDK 启动时强制校验；0.1.2-alpha.1 未发布到 npm，需从源码 tag dsh-v0.1.2-alpha.1 构建）。`
-      + `驱动选择权在启动配置：TECHHAVEN_ENGINE_DRIVER 默认为 mock，仅显式选择 dsh 的部署受影响。`,
+      `无法加载 dsh 官方 SDK（${DSH_SDK_SPECIFIER}）：${errorMessage(cause)}。` +
+        `安装方式：npm i ${DSH_SDK_SPECIFIER}@0.1.1-rc.2 @deepseek-ai/dsh@0.1.1-rc.2` +
+        `（两个包必须同版本，SDK 启动时强制校验；0.1.2-alpha.1 未发布到 npm，需从源码 tag dsh-v0.1.2-alpha.1 构建）。` +
+        `驱动选择权在启动配置：TECHHAVEN_ENGINE_DRIVER 默认为 mock，仅显式选择 dsh 的部署受影响。`,
     );
   }
   if (!isRecord(imported) || typeof imported.DeepSeekHarness !== "function") {
     throw new Error(
-      `dsh SDK（${DSH_SDK_SPECIFIER}）已安装但导出面不符：缺少 DeepSeekHarness 构造器。`
-      + `本驱动按 dsh v0.1.2-alpha.1 源码实现（导出面清单见 docs/DSH_SDK.md §1），`
-      + `请确认安装版本 ≥ 0.1.1-rc.2 且未被构建工具裁剪导出。`,
+      `dsh SDK（${DSH_SDK_SPECIFIER}）已安装但导出面不符：缺少 DeepSeekHarness 构造器。` +
+        `本驱动按 dsh v0.1.2-alpha.1 源码实现（导出面清单见 docs/DSH_SDK.md §1），` +
+        `请确认安装版本 ≥ 0.1.1-rc.2 且未被构建工具裁剪导出。`,
     );
   }
   return imported as unknown as DshSdkModule;
@@ -164,16 +164,16 @@ function assertHarnessShape(candidate: unknown): DshHarness {
   }
   const client: unknown = candidate.client;
   if (
-    typeof candidate.start !== "function"
-    || typeof candidate.close !== "function"
-    || !isRecord(client)
-    || typeof client.prompt !== "function"
-    || typeof client.subscribeSessionTree !== "function"
+    typeof candidate.start !== "function" ||
+    typeof candidate.close !== "function" ||
+    !isRecord(client) ||
+    typeof client.prompt !== "function" ||
+    typeof client.subscribeSessionTree !== "function"
   ) {
     throw new Error(
-      "dsh SDK 实例缺少预期成员（start/close/client/client.prompt/client.subscribeSessionTree）。"
-      + "安装的 @deepseek-ai/dsh-sdk-client 版本与本驱动依据的 v0.1.2-alpha.1 源码不符，"
-      + "版本对照见 docs/DSH_SDK.md §1/§2。",
+      "dsh SDK 实例缺少预期成员（start/close/client/client.prompt/client.subscribeSessionTree）。" +
+        "安装的 @deepseek-ai/dsh-sdk-client 版本与本驱动依据的 v0.1.2-alpha.1 源码不符，" +
+        "版本对照见 docs/DSH_SDK.md §1/§2。",
     );
   }
   return candidate as unknown as DshHarness;
@@ -187,11 +187,13 @@ type EngineEventBody = { [T in EngineEvent as T["type"]]: Omit<T, "seq" | "ts"> 
 
 interface DshSessionState {
   sessionId: string;
+  harness: DshHarness;
   subscription: DshNotificationSubscription;
   /** 事件通道：组合共享 EventChannel（回放模式；语义见 src/channel.ts） */
   channel: EventChannel<EngineEvent>;
   seq: number;
   disposed: boolean;
+  closePromise?: Promise<void>;
   /** tool/call 的 callId → 工具名：tool_result 侧没有工具名，只能按 callId 关联（llm/llm/src/message.ts:28-31）。 */
   toolNames: Map<string, string>;
   /** 已发过 permission_request 的 approval id（去重）。 */
@@ -205,6 +207,37 @@ export interface DshSdkDriverOptions {
   profile?: string;
   /** dsh 主目录（TECHHAVEN_DSH_HOME）；经 DSH_HOME 下发（types.ts:32；launch.ts:140,148）。 */
   dshHome?: string;
+  /** 单测注入点；生产缺省动态加载官方 SDK。 */
+  sdkLoader?: () => Promise<DshSdkModule>;
+}
+
+const SAFE_CHILD_ENV_KEYS = [
+  "PATH",
+  "Path",
+  "PATHEXT",
+  "SystemRoot",
+  "ComSpec",
+  "TEMP",
+  "TMP",
+  "TMPDIR",
+  "HOME",
+  "USERPROFILE",
+  "APPDATA",
+  "LOCALAPPDATA",
+  "LANG",
+  "LC_ALL",
+  "SHELL",
+] as const;
+
+/** 给含用户凭据的 runtime 构造最小环境，避免把 Gateway 其他 ambient secrets 一并继承。 */
+function isolatedRuntimeEnv(runtimeConfig: EngineRuntimeConfig): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = {};
+  for (const key of SAFE_CHILD_ENV_KEYS) {
+    const value = process.env[key];
+    if (value !== undefined) env[key] = value;
+  }
+  for (const [key, value] of Object.entries(runtimeConfig.env)) env[key] = value;
+  return env;
 }
 
 export class DshSdkDriver implements EngineDriver {
@@ -213,10 +246,8 @@ export class DshSdkDriver implements EngineDriver {
   private readonly dshBin: string | undefined;
   private readonly profile: string | undefined;
   private readonly dshHome: string | undefined;
+  private readonly sdkLoader: () => Promise<DshSdkModule>;
   private sdkPromise: Promise<DshSdkModule> | undefined;
-  private harness: DshHarness | undefined;
-  /** runtime 级 profile：launch 参数（launch.ts:132-143），创建后不可按会话切换。 */
-  private harnessProfile: string | undefined;
   private readonly sessions = new Map<string, DshSessionState>();
   private disposed = false;
 
@@ -224,6 +255,7 @@ export class DshSdkDriver implements EngineDriver {
     this.dshBin = options.dshBin?.trim() || undefined;
     this.profile = options.profile?.trim() || undefined;
     this.dshHome = options.dshHome?.trim() || undefined;
+    this.sdkLoader = options.sdkLoader ?? loadDshSdk;
   }
 
   async startSession(opts: {
@@ -231,6 +263,7 @@ export class DshSdkDriver implements EngineDriver {
     orgId: number;
     prompt: string;
     profile?: string;
+    runtimeConfig?: EngineRuntimeConfig;
   }): Promise<EngineSessionHandle> {
     if (this.disposed) throw new Error("dsh 驱动已销毁，无法开启新会话");
     if (typeof opts.sessionId !== "string" || opts.sessionId.trim() === "") {
@@ -244,25 +277,20 @@ export class DshSdkDriver implements EngineDriver {
     }
     // orgId：dsh 无组织概念，仅契约透传；配额/审计由 Gateway 层完成。
 
-    const sdk = await (this.sdkPromise ??= loadDshSdk());
-    if (this.harness === undefined) this.harness = this.createHarness(sdk, opts.profile);
-    const harness: DshHarness = this.harness;
+    const sdk = await (this.sdkPromise ??= this.sdkLoader());
+    // dsh 的 provider/model/env 是 initialize/runtime 级配置。每个 TechHaven 会话独占一个
+    // runtime，避免不同用户的 API key 或 endpoint 在同一子进程中交叉复用。
+    const harness = this.createHarness(sdk, opts.profile, opts.runtimeConfig);
     const requestedProfile = this.profile ?? opts.profile ?? "sdk";
-    if (requestedProfile !== this.harnessProfile) {
-      throw new Error(
-        `dsh profile 是 runtime 启动参数（launch.ts:132-143），无法按会话切换：`
-        + `runtime 已以 profile "${this.harnessProfile}" 启动，本次请求 "${requestedProfile}"。`
-        + `如需切换，请重启 Gateway 或另行部署驱动实例（docs/DSH_SDK.md §8#8）。`,
-      );
-    }
 
     try {
       // 失败的握手会被 SDK 自愈（清理后换新客户端重试，api.ts:60-95），此处直接透传错误。
       await harness.start();
     } catch (cause) {
+      await harness.close().catch(() => undefined);
       throw new Error(
-        `dsh runtime 启动 / initialize 握手失败（profile=${this.harnessProfile}）：${errorMessage(cause)}。`
-        + `请检查 dsh 是否安装（TECHHAVEN_DSH_BIN / node_modules 内同版本 @deepseek-ai/dsh）与 LLM API key。`,
+        `dsh runtime 启动 / initialize 握手失败（profile=${requestedProfile}）：${errorMessage(cause)}。` +
+          `请检查 dsh 是否安装（TECHHAVEN_DSH_BIN / node_modules 内同版本 @deepseek-ai/dsh）与 LLM API key。`,
       );
     }
 
@@ -270,6 +298,7 @@ export class DshSdkDriver implements EngineDriver {
     const subscription = harness.client.subscribeSessionTree(opts.sessionId); // client.ts:370-381
     const state: DshSessionState = {
       sessionId: opts.sessionId,
+      harness,
       subscription,
       channel: new EventChannel<EngineEvent>(),
       seq: 0,
@@ -285,7 +314,7 @@ export class DshSdkDriver implements EngineDriver {
       // 服务端实现是 agent.followup（server.ts:190-191）；runtime 在首个 prompt 时懒建会话（server.ts:258-291）。
       await harness.client.prompt(opts.sessionId, [{ type: "text", text: opts.prompt }]);
     } catch (cause) {
-      this.teardownSession(state);
+      await this.teardownSession(state);
       throw new Error(`dsh 会话 ${opts.sessionId} 的首次 prompt 入队失败：${errorMessage(cause)}`);
     }
 
@@ -299,11 +328,7 @@ export class DshSdkDriver implements EngineDriver {
         // steering / 后续工作（runtime-types.ts:126-130；落盘事件 agent/inbox/spliced，inbox.ts:186）。
         await harness.client.prompt(state.sessionId, [{ type: "text", text }]);
       },
-      answerPermission: async (
-        requestId: string,
-        decision: "approve" | "reject",
-        note?: string,
-      ): Promise<void> => {
+      answerPermission: async (requestId: string, decision: "approve" | "reject", note?: string): Promise<void> => {
         if (state.disposed) throw new Error(`dsh 会话 ${state.sessionId} 已结束，无法应答权限请求`);
         // dsh v0.1.2-alpha.1 的线协议没有权限应答方法：client→server 仅
         // initialize / session/prompt / shutdown（protocol/src/types.ts:115-119；server.ts:245-256），
@@ -311,9 +336,9 @@ export class DshSdkDriver implements EngineDriver {
         // 应答器只能在 dsh 进程内组合（user-approval/src/types.ts:85-89 的 approval/request waterfall）。
         log(`权限应答无法下发到引擎（SDK 无此通道）：requestId=${requestId} decision=${decision}${note ? ` note=${note}` : ""}`);
         throw new Error(
-          `无法将权限决议「${decision}」下发到 dsh 引擎：SDK 线协议没有编程式应答方法`
-          + `（出处见 docs/DSH_SDK.md §5）。请在 dsh profile 内配置 approval 策略`
-          + `（如 policy: never，user-approval/README.md）或进程内应答器。`,
+          `无法将权限决议「${decision}」下发到 dsh 引擎：SDK 线协议没有编程式应答方法` +
+            `（出处见 docs/DSH_SDK.md §5）。请在 dsh profile 内配置 approval 策略` +
+            `（如 policy: never，user-approval/README.md）或进程内应答器。`,
         );
       },
       cancel: async (): Promise<void> => {
@@ -321,12 +346,12 @@ export class DshSdkDriver implements EngineDriver {
         // dsh 线协议没有取消方法（protocol/README.md:115「No cancel or session-close methods」；
         // client/README.md:123「No mid-turn cancel」）。进程内 agent.cancel（runtime-types.ts:84-91）不可达。
         throw new Error(
-          `dsh 会话 ${state.sessionId} 无法按需取消：SDK 线协议没有 cancel 方法`
-          + `（docs/DSH_SDK.md §8#4）；如需立即停止，请调用驱动级 dispose() 关闭整个 runtime。`,
+          `dsh 会话 ${state.sessionId} 无法按需取消：SDK 线协议没有 cancel 方法` +
+            `（docs/DSH_SDK.md §8#4）；如需立即停止，请调用驱动级 dispose() 关闭整个 runtime。`,
         );
       },
       dispose: async (): Promise<void> => {
-        this.teardownSession(state); // 幂等（内部有 disposed 检查）
+        await this.teardownSession(state); // 幂等（内部有 disposed 检查）
       },
     };
   }
@@ -334,33 +359,34 @@ export class DshSdkDriver implements EngineDriver {
   async dispose(): Promise<void> {
     if (this.disposed) return; // 幂等
     this.disposed = true;
-    for (const state of [...this.sessions.values()]) this.teardownSession(state);
-    const harness = this.harness;
-    this.harness = undefined;
-    if (harness !== undefined) {
-      // DeepSeekHarness.close：协议 shutdown（限时）→ stdin-EOF（默认 6s）→ SIGTERM（默认 3s）→
-      // SIGKILL，以进程实际退出为准；Windows 无 POSIX 信号语义，直接强杀
-      // （api.ts:122-133；client.ts:389-410；dispose.ts:82-99，92-96）。
-      try {
-        await harness.close();
-      } catch (cause) {
-        log(`dsh runtime 关停异常（已忽略）：${errorMessage(cause)}`);
-      }
-    }
+    await Promise.all([...this.sessions.values()].map((state) => this.teardownSession(state)));
   }
 
   // -------------------------------------------------------------------------
 
-  private createHarness(sdk: DshSdkModule, sessionProfile: string | undefined): DshHarness {
-    // profile 默认 "sdk"（types.ts:28；launch.ts:132）；provider/model 不传，
-    // 落到 SDK 默认 deepseek-official / deepseek-v4-flash（api.ts:42-43）。
-    this.harnessProfile = this.profile ?? sessionProfile ?? "sdk";
+  private createHarness(
+    sdk: DshSdkModule,
+    sessionProfile: string | undefined,
+    runtimeConfig: EngineRuntimeConfig | undefined,
+  ): DshHarness {
+    const profile = this.profile ?? sessionProfile ?? "sdk";
     const options: UnknownRecord = {
-      profile: this.harnessProfile,
+      profile,
       // dshBin 缺省时 SDK 解析同版本 @deepseek-ai/dsh 包（launch.ts:72-77,133-135）。
       ...(this.dshBin === undefined ? {} : { dshBin: this.dshBin }),
       // dshHome 经 DSH_HOME 环境变量下发（launch.ts:140,148）。
       ...(this.dshHome === undefined ? {} : { dshHome: this.dshHome }),
+      ...(runtimeConfig === undefined
+        ? {}
+        : {
+            provider: runtimeConfig.provider,
+            model: runtimeConfig.model,
+            ...(runtimeConfig.reasoningEffort === undefined
+              ? {}
+              : { reasoningEffort: runtimeConfig.reasoningEffort }),
+            ...(runtimeConfig.maxTokens === undefined ? {} : { maxTokens: runtimeConfig.maxTokens }),
+            env: isolatedRuntimeEnv(runtimeConfig),
+          }),
     };
     return assertHarnessShape(new sdk.DeepSeekHarness(options));
   }
@@ -384,17 +410,21 @@ export class DshSdkDriver implements EngineDriver {
         });
       }
     } finally {
-      this.teardownSession(state);
+      await this.teardownSession(state);
     }
   }
 
-  private teardownSession(state: DshSessionState): void {
-    if (state.disposed) return;
+  private async teardownSession(state: DshSessionState): Promise<void> {
+    if (state.closePromise) return state.closePromise;
     state.disposed = true;
     // 订阅 close：丢弃队列、拒绝 pending waiter（client.ts:128-131）。
     state.subscription.close();
     state.channel.close(); // 迭代器回放完历史后正常结束
     this.sessions.delete(state.sessionId);
+    state.closePromise = state.harness.close().catch((cause) => {
+      log(`dsh runtime 关停异常（sessionId=${state.sessionId}，已忽略）：${errorMessage(cause)}`);
+    });
+    return state.closePromise;
   }
 
   private emit(state: DshSessionState, ts: string, body: EngineEventBody): void {
@@ -521,9 +551,7 @@ export class DshSdkDriver implements EngineDriver {
               case "error": {
                 // reason.error 为结构化 LlmFailure（core/session/src/types.ts:161-166）
                 const failure = reason !== undefined && isRecord(reason.error) ? reason.error : undefined;
-                const detail = failure !== undefined && typeof failure.message === "string"
-                  ? failure.message
-                  : "error";
+                const detail = failure !== undefined && typeof failure.message === "string" ? failure.message : "error";
                 this.emit(state, ts, { type: "status_change", status: "failed", detail });
                 return;
               }

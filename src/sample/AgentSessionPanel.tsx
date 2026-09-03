@@ -872,7 +872,10 @@ const SampleAgentSessionPanel: React.FC = () => {
           <FaShieldAlt aria-hidden="true" />
           <div>
             <strong>密钥由站点后端保存</strong>
-            <p>这里复用个人 AI 接口配置，不写入浏览器存储。Gateway 模式仍由服务端注入运行凭据，浏览器不会获得 Gateway 管理令牌。</p>
+            <p>
+              这里复用个人 AI 接口配置，不写入浏览器存储。部署启用用户配置解析后，Gateway
+              会按当前用户在服务端注入隔离的运行凭据；浏览器不会获得供应商密钥或 Gateway 管理令牌。
+            </p>
           </div>
         </div>
         <ApiConfigCard />
