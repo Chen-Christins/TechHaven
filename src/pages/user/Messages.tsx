@@ -10,6 +10,7 @@ import MessageService from "@/services/messageService";
 import FollowService from "@/services/followService";
 import { chatWS } from "@/utils/websocket";
 import { confirm } from "@/components/confirm/Confirm";
+import { useAuth } from "@/contexts/AuthContext";
 import type { ChatMsg, Conversation } from "@/types/message";
 import type { MutualFollowUser } from "@/types/follow";
 
@@ -32,6 +33,10 @@ const formatMsgTime = (ts: number): string => {
 };
 
 const Messages: React.FC = () => {
+  const { user } = useAuth();
+  // 普通用户无权限使用私信（兼容 role 为中文名或数字；后端同样校验）
+  const denied = !user || ["用户", "1"].includes(String(user.role));
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [activeId, setActiveId] = useState<string>("");
@@ -56,6 +61,7 @@ const Messages: React.FC = () => {
 
   // 加载会话列表
   useEffect(() => {
+    if (denied) return;
     let cancelled = false;
     (async () => {
       try {
@@ -75,11 +81,11 @@ const Messages: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [denied]);
 
   // 切换会话时加载消息记录
   useEffect(() => {
-    if (!activeId) return;
+    if (denied || !activeId) return;
     let cancelled = false;
     (async () => {
       try {
@@ -111,6 +117,7 @@ const Messages: React.FC = () => {
 
   // 聊天 WebSocket：接收新消息 + 发送确认 + 发送失败回滚
   useEffect(() => {
+    if (denied) return;
     const unsubMsg = chatWS.onMessage("message", (data: any) => {
       const convId = String(data?.conversation_id ?? "");
       const msg = data?.message as ChatMsg | undefined;
@@ -169,7 +176,7 @@ const Messages: React.FC = () => {
       unsubAck();
       unsubErr();
     };
-  }, []);
+  }, [denied]);
 
   // 拉取互相关注用户（发起会话）
   const fetchMutual = useCallback(async (keyword: string) => {
@@ -304,6 +311,20 @@ const Messages: React.FC = () => {
     },
     [conversations],
   );
+
+  if (denied) {
+    return (
+      <div className={`${styles.page} ${msgStyles.msgPage}`}>
+        <Navbar />
+        <div className={msgStyles.wrapper}>
+          <div className={msgStyles.convEmpty} style={{ margin: "auto" }}>
+            私信功能仅对内部成员开放
+          </div>
+        </div>
+        <Footer startYear={2025} />
+      </div>
+    );
+  }
 
   return (
     <div className={`${styles.page} ${msgStyles.msgPage}`}>

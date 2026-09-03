@@ -135,7 +135,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     if (isAuthenticated && user) {
       notificationWS.connect(user.id);
-      chatWS.connect(user.id);
+      // 普通用户无私信权限，不建立聊天连接（后端同样拒绝，避免重连循环）
+      if (!["用户", "1"].includes(String(user.role))) {
+        chatWS.connect(user.id);
+      } else {
+        chatWS.disconnect();
+      }
     } else {
       notificationWS.disconnect();
       chatWS.disconnect();
@@ -156,11 +161,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const unsubOpen = notificationWS.onOpen(() => {
       wsAuthRetry.current = 0;
     });
-    // 聊天 WS 鉴权错误：1103 登出；1101 由上面的 notificationWS 流程刷新 token 后统一重连
-    const unsubChatError = chatWS.onServerError(async (err) => {
-      if (err.errno === 1103) {
-        clearAuthRuntimeState();
-      }
+    // 聊天 WS 失败（如无权限/账号异常）绝不影响登录态，仅停止重连避免循环。
+    // 会话失效由 notificationWS 统一处理。
+    const unsubChatError = chatWS.onServerError(async () => {
+      chatWS.disconnect();
     });
     const unsubError = notificationWS.onServerError(async (err) => {
       // 账号状态异常（1103），刷新 token 无意义，直接登出
@@ -189,7 +193,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           wsAuthRetry.current = 0;
           // 重连：connect 会重新读取（已被服务端刷新的）S_TOKEN / S_TOKEN_TIME cookie
           notificationWS.connect(user.id);
-          chatWS.connect(user.id);
+          if (!["用户", "1"].includes(String(user.role))) {
+            chatWS.connect(user.id);
+          }
         } else {
           clearAuthRuntimeState();
         }
@@ -224,7 +230,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           tokenManager.setToken(newToken);
           // 重连：connect 会重新读取（已被服务端刷新的）S_TOKEN / S_TOKEN_TIME cookie
           notificationWS.connect(user.id);
-          chatWS.connect(user.id);
+          if (!["用户", "1"].includes(String(user.role))) {
+            chatWS.connect(user.id);
+          }
           connectPresence(user.id);
         }
       } catch {

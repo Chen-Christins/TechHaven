@@ -49,6 +49,9 @@ const Navbar: React.FC = () => {
       }
     : null;
 
+  // 普通用户无权限使用私信（兼容 role 为中文名或数字）
+  const isNormalUser = ["用户", "1"].includes(String(user?.role));
+
   // 导航链接数据（包含图标和路径）
   const navLinks = [
     { label: "首页", icon: <FaHome />, path: "/" },
@@ -287,17 +290,21 @@ const Navbar: React.FC = () => {
                         撰写文章
                       </div>
                       <div className={styles.dropdownDivider}></div>
-                      <div
-                        className={styles.dropdownItem}
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          navigate("/messages");
-                        }}
-                      >
-                        <FaRegComments />
-                        私信
-                      </div>
-                      <div className={styles.dropdownDivider}></div>
+                      {!isNormalUser && (
+                        <>
+                          <div
+                            className={styles.dropdownItem}
+                            onClick={() => {
+                              setUserMenuOpen(false);
+                              navigate("/messages");
+                            }}
+                          >
+                            <FaRegComments />
+                            私信
+                          </div>
+                          <div className={styles.dropdownDivider}></div>
+                        </>
+                      )}
                       <button
                         className={styles.dropdownItem}
                         onClick={() => {
