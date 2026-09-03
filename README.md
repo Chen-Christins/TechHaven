@@ -62,7 +62,7 @@ Agent 写入链路为：前端请求会话 → Gateway 驱动 dsh → agent 调 
 - `services/techhaven-mcp/`：7 个工具、scoped token、staged proposal、JSONL/PG 可切换权威 repository；direct/staged/HTTP contract smoke 为 9+11+6 项，另有环境门控 PG 并发 smoke。
 - `services/techhaven-agent-bridge/`：独立旧后端兼容层；规范化读接口、状态映射、内部身份、JSONL 幂等台账和写后对账。当前只支持单实例，真实旧后端尚待联调。
 - `services/techhaven-gateway/`：runner adapter、HTTP/SSE、配额、proposal 决策、JSONL/PG session-event 权威、loader 与 reconcile；mock driver smoke 为 41 项，另有环境门控 PG 恢复 smoke。
-- 前端 Agent 助手：开发、测试和生产环境统一通过研发平台 `/rd/agent` 入口访问。页面内可切换本地 mock 与 Gateway 联调模式；Gateway 经同源代理连接（鉴权头由代理注入，浏览器不持有网关 token）。活动 SID 在单标签页会话内做轻量检查点，刷新后查询同一会话并全量回放 UI；同页网络断线则按 `after=<lastSeq>` 增量续传。客户端见 `src/services/agentGatewayClient.ts`，契约见 `contracts/`。
+- 前端 Agent 助手：开发、测试和生产环境统一通过研发平台 `/rd/agent` 入口访问。页面内可切换本地 mock 与 Gateway 联调模式，也可打开“API 配置”复用个人中心的 OpenAI/Claude/GLM 接口配置；配置通过 `/user/ai-config` 交由站点后端保存，不写入浏览器存储。Gateway 经同源代理连接（鉴权头由代理注入，浏览器不持有网关 token）。活动 SID 在单标签页会话内做轻量检查点，刷新后查询同一会话并全量回放 UI；同页网络断线则按 `after=<lastSeq>` 增量续传。客户端见 `src/services/agentGatewayClient.ts`，契约见 `contracts/`。
 
 当前准确成熟度：Agent 工具面、控制面、兼容层和 Agent 面板已 `implemented`，其中离线测试通过的部分标记为 `verified-mock`；PG 权威、并发锁、迁移/对账/live smoke 为 `implemented`。浏览器 mock runner 链路已实测；Bridge 与真实旧后端、live dsh、live PostgreSQL 和多租户沙箱尚未达到 `verified-integration`。禁止把编译或 mock 冒烟表述为生产完成。
 

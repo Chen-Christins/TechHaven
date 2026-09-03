@@ -18,6 +18,7 @@
 - MCP 默认域 API 基址修正为 `https://techhaven.website/api/v1`；匿名 live 探测确认 `/rd/tasks` 返回统一 `errno=1101` 未登录错误壳，service identity 仍待后端凭据联调。
 - 前端 Agent 面板重构为分层会话控制台，支持 mock/Gateway 双路径、事件概况、权限审批、明暗主题与窄屏布局。
 - 开发、测试和生产环境统一在研发平台暴露 `/rd/agent`“Agent 助手”入口，并可在页面内直接切换本地演示与 Gateway 联调模式。
+- Agent 助手增加“API 配置”入口，复用个人中心的 OpenAI/Claude/GLM 配置表单与 `/user/ai-config` 服务端保存链路，不在浏览器存储模型密钥。
 
 - 根前端单测基线（vitest）：Mermaid 安全严格模式与恶意注入回归、HTTP 1101 未授权状态同步回归（`npm test`）。
 - 凭据脱敏回归测试 9 项：`src/utils/websocket.test.ts`（6 项，WebSocket 建连日志不含 token / token_time 原文，脱敏不误伤 uid，重连不绕过，Cookie 值含 `=` 不截断）与 `src/hooks/useAiSummary.test.tsx`（3 项，AI-SSE 诊断日志不含 token 原文或 ≥6 位前缀，同时断言 `Authorization` 头仍正确携带）。两处均已用「临时改回旧写法 → 测试变红」反向验证测试有效性。

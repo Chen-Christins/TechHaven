@@ -11,12 +11,14 @@
 import React, { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import SimpleBar from "simplebar-react";
-import { FaBolt, FaCheckCircle, FaInfoCircle, FaRedo, FaShieldAlt, FaTimesCircle, FaWrench } from "react-icons/fa";
+import { FaBolt, FaCheckCircle, FaCog, FaInfoCircle, FaRedo, FaShieldAlt, FaTimesCircle, FaWrench } from "react-icons/fa";
 import Button from "../components/button/Button";
 import Avatar from "../components/avatar/Avatar";
 import Loading from "../components/loading/Loading";
+import Modal from "../components/modal/Modal";
 import Skeleton from "../components/skeleton/Skeleton";
 import message from "../components/message/Message";
+import ApiConfigCard from "../pages/personal/components/ApiConfigCard";
 import { AgentGatewayClient } from "../services/agentGatewayClient";
 import type {
   EngineEvent as SharedEngineEvent,
@@ -491,6 +493,7 @@ const SampleAgentSessionPanel: React.FC = () => {
   const [events, setEvents] = useState<EngineEvent[]>([]);
   const [decisions, setDecisions] = useState<Record<string, PermissionDecision>>({});
   const [proposalBusy, setProposalBusy] = useState<Record<string, boolean>>({});
+  const [configOpen, setConfigOpen] = useState(false);
   const sessionRef = useRef<SessionHandle | null>(null);
   const scrollBodyRef = useRef<HTMLDivElement | null>(null);
 
@@ -755,30 +758,36 @@ const SampleAgentSessionPanel: React.FC = () => {
         </div>
         <h1 className={styles.title}>每一次执行，都清晰可控。</h1>
         <p className={styles.desc}>分开观察 Runner 执行权限与产品写提案，在真实写入前完成服务端审批，并保留可回放的生命周期轨迹。</p>
-        <div className={styles.modePicker} role="group" aria-label="选择 Agent 运行模式">
-          <span className={styles.modeLabel}>运行模式</span>
-          <div className={styles.modeActions}>
-            <Button
-              className={styles.modeButton}
-              color="primary"
-              variant={isGatewayDriver ? "light" : "solid"}
-              size="small"
-              aria-pressed={!isGatewayDriver}
-              onClick={() => handleDriverChange("mock")}
-            >
-              本地演示
-            </Button>
-            <Button
-              className={styles.modeButton}
-              color="primary"
-              variant={isGatewayDriver ? "solid" : "light"}
-              size="small"
-              aria-pressed={isGatewayDriver}
-              onClick={() => handleDriverChange("gateway")}
-            >
-              Gateway 联调
-            </Button>
+        <div className={styles.heroControls}>
+          <div className={styles.modePicker} role="group" aria-label="选择 Agent 运行模式">
+            <span className={styles.modeLabel}>运行模式</span>
+            <div className={styles.modeActions}>
+              <Button
+                className={styles.modeButton}
+                color="primary"
+                variant={isGatewayDriver ? "light" : "solid"}
+                size="small"
+                aria-pressed={!isGatewayDriver}
+                onClick={() => handleDriverChange("mock")}
+              >
+                本地演示
+              </Button>
+              <Button
+                className={styles.modeButton}
+                color="primary"
+                variant={isGatewayDriver ? "solid" : "light"}
+                size="small"
+                aria-pressed={isGatewayDriver}
+                onClick={() => handleDriverChange("gateway")}
+              >
+                Gateway 联调
+              </Button>
+            </div>
           </div>
+          <Button className={styles.configButton} color="secondary" variant="light" onClick={() => setConfigOpen(true)}>
+            <FaCog aria-hidden="true" />
+            API 配置
+          </Button>
         </div>
       </header>
 
@@ -857,6 +866,17 @@ const SampleAgentSessionPanel: React.FC = () => {
           <span className={styles.footerMono}>SSE · versioned envelope · staged approval</span>
         </footer>
       </section>
+
+      <Modal visible={configOpen} title="Agent API 配置" onClose={() => setConfigOpen(false)} width={720} footer={null}>
+        <div className={styles.configNotice} role="note">
+          <FaShieldAlt aria-hidden="true" />
+          <div>
+            <strong>密钥由站点后端保存</strong>
+            <p>这里复用个人 AI 接口配置，不写入浏览器存储。Gateway 模式仍由服务端注入运行凭据，浏览器不会获得 Gateway 管理令牌。</p>
+          </div>
+        </div>
+        <ApiConfigCard />
+      </Modal>
     </div>
   );
 };

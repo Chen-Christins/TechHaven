@@ -58,12 +58,19 @@
   line-height: 1.75;
 }
 
+.heroControls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
 .modePicker {
   width: fit-content;
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 4px;
   padding: 6px;
   border: 1px solid var(--border-light);
   border-radius: 999px;
@@ -87,6 +94,45 @@
 .modeButton {
   min-height: 44px;
   border-radius: 999px;
+}
+
+.configButton {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+}
+
+.configNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--border-light));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--primary-light) 58%, var(--card-bg));
+  color: var(--text-primary);
+}
+
+.configNotice > svg {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: var(--primary);
+}
+
+.configNotice strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+.configNotice p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.65;
 }
 
 .panel {
@@ -718,6 +764,11 @@
 }
 
 @media (max-width: 420px) {
+  .heroControls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .modePicker {
     width: 100%;
     align-items: stretch;
@@ -736,6 +787,11 @@
 
   .modeButton {
     width: 100%;
+  }
+
+  .configButton {
+    width: 100%;
+    justify-content: center;
   }
 
   .sessionTitleRow {
