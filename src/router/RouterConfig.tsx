@@ -6,7 +6,6 @@ import MaintenanceGuard from "../components/maintenance/MaintenanceGuard";
 import IndexPage from "../pages/home/IndexPage";
 import AuthRequired from "../components/auth/AuthRequired";
 import PageSkeleton from "../components/pageSkeleton/PageSkeleton";
-import { AGENT_LAB_ENABLED } from "../utils/featureFlags";
 
 // 首屏必需的页面保持静态引入：首页、登录页、404、路由守卫
 // 其余页面按需加载，避免全部打进主包
@@ -99,7 +98,6 @@ const RouterConfig: React.FC = () => {
           {/* 测试页面（仅开发环境可见） */}
           {import.meta.env.DEV && <Route path="/test/chunk-upload" element={<ChunkUploadTest />} />}
           {import.meta.env.DEV && <Route path="/test/theme-style-panel" element={<SampleThemeStylePanel />} />}
-          {import.meta.env.DEV && <Route path="/test/agent-session-panel" element={<SampleAgentSessionPanel />} />}
 
           {/* 用户组织列表页 */}
           <Route path="/organizations/list" element={<OrganizationList />} />
@@ -134,7 +132,7 @@ const RouterConfig: React.FC = () => {
           {/* 研发平台 */}
           <Route path="/rd" element={<RdLayout />}>
             <Route index element={<RdDashboard />} />
-            {AGENT_LAB_ENABLED && <Route path="agent" element={<SampleAgentSessionPanel />} />}
+            <Route path="agent" element={<SampleAgentSessionPanel />} />
             <Route path="trends" element={<TrendAnalysis />} />
             <Route path="requirements" element={<RequirementList />} />
             <Route path="requirements/:id" element={<TicketDetail />} />

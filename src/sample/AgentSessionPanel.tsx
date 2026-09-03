@@ -1,12 +1,12 @@
 /**
- * Agent 会话面板（开发/测试环境，TH-RFC-001 §05.4）
+ * Agent 会话面板（TH-RFC-001 §05.4）
  *
  * 默认用内置 mock 事件流驱动 UI；`?driver=gateway` 经同源代理连接本机 Gateway：
  * 状态徽标（queued/running/awaiting_permission/succeeded/failed/cancelled）、
  * 事件流（assistant/tool/runner permission/product proposal/status/error）、runner 权限卡，
  * 以及独立的产品写提案卡（批准后仍由 MCP worker 重校验并幂等应用）。
  *
- * 这是测试验证页，不替代正式工单入口与生产 BFF 集成门禁。
+ * 当前从研发平台统一入口 `/rd/agent` 访问；真实写入仍受生产 BFF 集成门禁保护。
  */
 import React, { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";

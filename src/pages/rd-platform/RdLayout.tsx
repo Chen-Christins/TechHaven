@@ -27,14 +27,12 @@ import OrgSelector from "@/components/orgSelector/OrgSelector";
 import { useAuth } from "@/contexts/AuthContext";
 import { RdOrgProvider, useRdOrg } from "@/contexts/RdOrgContext";
 import { RdPlatformService } from "@/services/rdPlatformService";
-import { AGENT_LAB_ENABLED } from "@/utils/featureFlags";
 
 interface NavItem {
   id: string;
   label: string;
   icon: React.ReactNode;
   path: string;
-  badge?: string;
 }
 
 const RdLayout: React.FC = () => {
@@ -252,14 +250,10 @@ const RdLayout: React.FC = () => {
         { id: "reviews", label: "代码审查", icon: <FaCode />, path: "/rd/reviews" },
       ],
     },
-    ...(AGENT_LAB_ENABLED
-      ? [
-          {
-            title: "智能协作",
-            items: [{ id: "agent", label: "Agent 实验室", icon: <FaRobot />, path: "/rd/agent", badge: "测试" }],
-          },
-        ]
-      : []),
+    {
+      title: "智能协作",
+      items: [{ id: "agent", label: "Agent 助手", icon: <FaRobot />, path: "/rd/agent" }],
+    },
     {
       title: "分析洞察",
       items: [{ id: "trends", label: "趋势分析", icon: <FaChartLine />, path: "/rd/trends" }],
@@ -435,7 +429,6 @@ const RdLayout: React.FC = () => {
                       >
                         <span className={styles.rdNavIcon}>{item.icon}</span>
                         <span className={styles.rdNavText}>{item.label}</span>
-                        {item.badge && <span className={styles.rdNavBadge}>{item.badge}</span>}
                       </div>
                     </div>
                   ))}

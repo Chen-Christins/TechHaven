@@ -16,8 +16,8 @@
 - PostgreSQL 权威模式：MCP proposal 事务行锁与并发 worker 串行化；Gateway session/event 提交优先于 SSE、组织级 advisory lock 配额；附 migration、spool 对账和两套环境门控 live PG smoke。
 - MCP HTTP adapter 增加 5 秒默认超时、稳定的上游不可用/超时错误码，以及 6 项离线 contract smoke（service Bearer、org、幂等键、errno、超时）。
 - MCP 默认域 API 基址修正为 `https://techhaven.website/api/v1`；匿名 live 探测确认 `/rd/tasks` 返回统一 `errno=1101` 未登录错误壳，service identity 仍待后端凭据联调。
-- 前端样例页 `/test/agent-session-panel`（DEV）：重构为分层会话控制台，支持 mock/Gateway 双路径、事件概况、权限审批、明暗主题与窄屏布局；仍待正式业务页集成。
-- 测试站可通过 `VITE_ENABLE_AGENT_TEST=true` 在研发平台显示 `/rd/agent`“Agent 实验室”入口，并在页面内直接切换本地演示与 Gateway 联调模式；普通生产构建默认隐藏。
+- 前端 Agent 面板重构为分层会话控制台，支持 mock/Gateway 双路径、事件概况、权限审批、明暗主题与窄屏布局。
+- 开发、测试和生产环境统一在研发平台暴露 `/rd/agent`“Agent 助手”入口，并可在页面内直接切换本地演示与 Gateway 联调模式。
 
 - 根前端单测基线（vitest）：Mermaid 安全严格模式与恶意注入回归、HTTP 1101 未授权状态同步回归（`npm test`）。
 - 凭据脱敏回归测试 9 项：`src/utils/websocket.test.ts`（6 项，WebSocket 建连日志不含 token / token_time 原文，脱敏不误伤 uid，重连不绕过，Cookie 值含 `=` 不截断）与 `src/hooks/useAiSummary.test.tsx`（3 项，AI-SSE 诊断日志不含 token 原文或 ≥6 位前缀，同时断言 `Authorization` 头仍正确携带）。两处均已用「临时改回旧写法 → 测试变红」反向验证测试有效性。
@@ -43,11 +43,11 @@
 - 明确产品 proposal/策略引擎是写权限权威；当前 dsh SDK 不支持编程式权限应答时，runner 权限必须 fail-closed。
 - staged proposal 改为服务端 worker 在批准后主动重校验并应用，`get_proposal` 退回纯查询；真实 HTTP 写携带 proposal ID 作为 `Idempotency-Key`。
 - 前端 Gateway SSE client 增加 EventEnvelope 运行时校验、跨会话拒绝、`sid + seq` 幂等去重与有限重连；Gateway 子进程冒烟增加断线 `after` 回放、连续性和取消终态闭环。
-- DEV Agent 面板增加活动 SID 的标签页级刷新恢复：刷新后查询同一会话并全量回放，页面卸载仅断开观察流；mock runner 补齐 `awaiting_permission → running` 状态迁移，Gateway 模式审批文案不再误写为 mock 流。
+- Agent 面板增加活动 SID 的标签页级刷新恢复：刷新后查询同一会话并全量回放，页面卸载仅断开观察流；mock runner 补齐 `awaiting_permission → running` 状态迁移，Gateway 模式审批文案不再误写为 mock 流。
 - Gateway 环境集成测试增加“第一观察端断开 → 新 client 查询同一 SID → 历史回放 → 审批 → succeeded”闭环；浏览器经 Vite 代理的创建、待审批、批准和拒绝路径已实测。
 - Gateway 启动时从 JSONL 恢复会话视图与 SSE 历史；终态保留原状态并延续剩余 TTL，重启时仍活动的会话追加唯一 failed 终态。子进程冒烟扩展为 35 项，覆盖终态查询/回放与中断态收敛。
 - Vite Gateway 代理在上游 SSE `ECONNRESET` 时显式关闭浏览器侧响应，使客户端真正进入 `after=<lastSeq>` 重连；浏览器已实测刷新保持同 SID，以及 Gateway 强制重启后自动续传失败终态。
-- DEV Agent 会话将“断开观察”与“用户取消”拆分，并共享 StrictMode 创建 Promise，消除刷新误取消和双 POST 会话竞态。
+- Agent 会话将“断开观察”与“用户取消”拆分，并共享 StrictMode 创建 Promise，消除刷新误取消和双 POST 会话竞态。
 - 同步根 README、Agent 服务文档、数据层文档和开发约定中的架构状态与验证边界。
 - `docs/agent-db/schema.sql` v0.2：`agent_write_proposals` 增加 `proposal_ref TEXT UNIQUE` 列。
 - `docs/agent-db/schema.sql` 升级 v0.3：`proposal_ref` 设为 NOT NULL 权威并发键并增加 migration ledger；提供可重复的 v0.2→v0.3 migration。

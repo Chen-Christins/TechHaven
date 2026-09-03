@@ -62,9 +62,9 @@ Agent 写入链路为：前端请求会话 → Gateway 驱动 dsh → agent 调 
 - `services/techhaven-mcp/`：7 个工具、scoped token、staged proposal、JSONL/PG 可切换权威 repository；direct/staged/HTTP contract smoke 为 9+11+6 项，另有环境门控 PG 并发 smoke。
 - `services/techhaven-agent-bridge/`：独立旧后端兼容层；规范化读接口、状态映射、内部身份、JSONL 幂等台账和写后对账。当前只支持单实例，真实旧后端尚待联调。
 - `services/techhaven-gateway/`：runner adapter、HTTP/SSE、配额、proposal 决策、JSONL/PG session-event 权威、loader 与 reconcile；mock driver smoke 为 41 项，另有环境门控 PG 恢复 smoke。
-- 前端 Agent 实验室：开发环境保留 `/test/agent-session-panel`，研发平台在 `VITE_ENABLE_AGENT_TEST=true` 时显示 `/rd/agent` 入口。页面内可切换本地 mock 与 Gateway 联调模式；Gateway 经同源代理连接（鉴权头由代理注入，浏览器不持有网关 token）。活动 SID 在单标签页会话内做轻量检查点，刷新后查询同一会话并全量回放 UI；同页网络断线则按 `after=<lastSeq>` 增量续传。客户端见 `src/services/agentGatewayClient.ts`，契约见 `contracts/`。
+- 前端 Agent 助手：开发、测试和生产环境统一通过研发平台 `/rd/agent` 入口访问。页面内可切换本地 mock 与 Gateway 联调模式；Gateway 经同源代理连接（鉴权头由代理注入，浏览器不持有网关 token）。活动 SID 在单标签页会话内做轻量检查点，刷新后查询同一会话并全量回放 UI；同页网络断线则按 `after=<lastSeq>` 增量续传。客户端见 `src/services/agentGatewayClient.ts`，契约见 `contracts/`。
 
-当前准确成熟度：Agent 工具面、控制面、兼容层和 DEV Agent 面板已 `implemented`，其中离线测试通过的部分标记为 `verified-mock`；PG 权威、并发锁、迁移/对账/live smoke 为 `implemented`。浏览器 mock runner 链路已实测；Bridge 与真实旧后端、live dsh、live PostgreSQL 和多租户沙箱尚未达到 `verified-integration`。禁止把编译或 mock 冒烟表述为生产完成。
+当前准确成熟度：Agent 工具面、控制面、兼容层和 Agent 面板已 `implemented`，其中离线测试通过的部分标记为 `verified-mock`；PG 权威、并发锁、迁移/对账/live smoke 为 `implemented`。浏览器 mock runner 链路已实测；Bridge 与真实旧后端、live dsh、live PostgreSQL 和多租户沙箱尚未达到 `verified-integration`。禁止把编译或 mock 冒烟表述为生产完成。
 
 ### feature/agent-engine 提交边界
 
@@ -181,7 +181,6 @@ npm ci && npm run typecheck && npm test && npm run smoke
 | `VITE_WS_URL`                   | `wss://techhaven.website`   | 产品通知 WebSocket 地址                                                                  |
 | `VITE_USE_PROXY`                | `true`                      | 开发模式用 Vite `/api` 代理；生产静态站点不存在 Vite 代理，必须由 Nginx/BFF 实现同样路由 |
 | `VITE_REQUIRE_CREDENTIALS`      | `false`                     | axios 是否发送 Cookie credentials                                                        |
-| `VITE_ENABLE_AGENT_TEST`        | `false`                     | 测试站是否显示研发平台 `/rd/agent` Agent 实验室入口；普通生产构建保持关闭                |
 | `VITE_GATEWAY_URL`              | `http://127.0.0.1:3091`     | 仅 Vite 配置进程使用的 Gateway 目标                                                      |
 | `TECHHAVEN_GATEWAY_PROXY_TOKEN` | 无                          | Vite 代理注入的 Gateway Bearer；没有 `VITE_` 前缀，不进入前端代码                        |
 | `TECHHAVEN_GATEWAY_PROXY_ACTOR` | `user:1`                    | 开发代理注入的 `X-TechHaven-Actor`；只用于本地开发占位                                   |

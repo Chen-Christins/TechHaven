@@ -255,21 +255,7 @@
   white-space: nowrap;
 }
 
-.rdNavBadge {
-  margin-left: auto;
-  padding: 2px 7px;
-  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
-  border-radius: 999px;
-  background-color: var(--primary-light);
-  color: var(--primary);
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.4;
-  letter-spacing: 0.04em;
-}
-
-.rdSidebar.collapsed .rdNavText,
-.rdSidebar.collapsed .rdNavBadge {
+.rdSidebar.collapsed .rdNavText {
   opacity: 0;
   width: 0;
   overflow: hidden;
