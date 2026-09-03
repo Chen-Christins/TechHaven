@@ -6,6 +6,7 @@ import MaintenanceGuard from "../components/maintenance/MaintenanceGuard";
 import IndexPage from "../pages/home/IndexPage";
 import AuthRequired from "../components/auth/AuthRequired";
 import PageSkeleton from "../components/pageSkeleton/PageSkeleton";
+import { AGENT_LAB_ENABLED } from "../utils/featureFlags";
 
 // 首屏必需的页面保持静态引入：首页、登录页、404、路由守卫
 // 其余页面按需加载，避免全部打进主包
@@ -133,6 +134,7 @@ const RouterConfig: React.FC = () => {
           {/* 研发平台 */}
           <Route path="/rd" element={<RdLayout />}>
             <Route index element={<RdDashboard />} />
+            {AGENT_LAB_ENABLED && <Route path="agent" element={<SampleAgentSessionPanel />} />}
             <Route path="trends" element={<TrendAnalysis />} />
             <Route path="requirements" element={<RequirementList />} />
             <Route path="requirements/:id" element={<TicketDetail />} />

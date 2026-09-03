@@ -17,6 +17,7 @@
 - MCP HTTP adapter 增加 5 秒默认超时、稳定的上游不可用/超时错误码，以及 6 项离线 contract smoke（service Bearer、org、幂等键、errno、超时）。
 - MCP 默认域 API 基址修正为 `https://techhaven.website/api/v1`；匿名 live 探测确认 `/rd/tasks` 返回统一 `errno=1101` 未登录错误壳，service identity 仍待后端凭据联调。
 - 前端样例页 `/test/agent-session-panel`（DEV）：重构为分层会话控制台，支持 mock/Gateway 双路径、事件概况、权限审批、明暗主题与窄屏布局；仍待正式业务页集成。
+- 测试站可通过 `VITE_ENABLE_AGENT_TEST=true` 在研发平台显示 `/rd/agent`“Agent 实验室”入口，并在页面内直接切换本地演示与 Gateway 联调模式；普通生产构建默认隐藏。
 
 - 根前端单测基线（vitest）：Mermaid 安全严格模式与恶意注入回归、HTTP 1101 未授权状态同步回归（`npm test`）。
 - 凭据脱敏回归测试 9 项：`src/utils/websocket.test.ts`（6 项，WebSocket 建连日志不含 token / token_time 原文，脱敏不误伤 uid，重连不绕过，Cookie 值含 `=` 不截断）与 `src/hooks/useAiSummary.test.tsx`（3 项，AI-SSE 诊断日志不含 token 原文或 ≥6 位前缀，同时断言 `Authorization` 头仍正确携带）。两处均已用「临时改回旧写法 → 测试变红」反向验证测试有效性。

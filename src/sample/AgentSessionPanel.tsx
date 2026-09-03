@@ -1,14 +1,15 @@
 /**
- * Agent 会话面板测试样例页（DEV 专用，TH-RFC-001 §05.4）
+ * Agent 会话面板（开发/测试环境，TH-RFC-001 §05.4）
  *
  * 默认用内置 mock 事件流驱动 UI；`?driver=gateway` 经同源代理连接本机 Gateway：
  * 状态徽标（queued/running/awaiting_permission/succeeded/failed/cancelled）、
  * 事件流（assistant/tool/runner permission/product proposal/status/error）、runner 权限卡，
  * 以及独立的产品写提案卡（批准后仍由 MCP worker 重校验并幂等应用）。
  *
- * 这是 DEV 验证页，不替代正式业务页与生产 BFF 集成门禁。
+ * 这是测试验证页，不替代正式工单入口与生产 BFF 集成门禁。
  */
 import React, { useEffect, useRef, useState, type ReactNode } from "react";
+import { useSearchParams } from "react-router-dom";
 import SimpleBar from "simplebar-react";
 import { FaBolt, FaCheckCircle, FaInfoCircle, FaRedo, FaShieldAlt, FaTimesCircle, FaWrench } from "react-icons/fa";
 import Button from "../components/button/Button";
@@ -481,7 +482,8 @@ const formatTime = (ts: string) => {
 };
 
 const SampleAgentSessionPanel: React.FC = () => {
-  const isGatewayDriver = new URLSearchParams(window.location.search).get("driver") === "gateway";
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isGatewayDriver = searchParams.get("driver") === "gateway";
   // runId 变化时重开一场 mock 会话（重新演示）
   const [runId, setRunId] = useState(0);
   const [sid, setSid] = useState("");
@@ -526,6 +528,19 @@ const SampleAgentSessionPanel: React.FC = () => {
   const handleRestart = () => {
     sessionRef.current?.cancel();
     setRunId((n) => n + 1);
+  };
+
+  const handleDriverChange = (driver: "mock" | "gateway") => {
+    if ((driver === "gateway") === isGatewayDriver) return;
+
+    sessionRef.current?.cancel();
+    const nextParams = new URLSearchParams(searchParams);
+    if (driver === "gateway") {
+      nextParams.set("driver", "gateway");
+    } else {
+      nextParams.delete("driver");
+    }
+    setSearchParams(nextParams, { replace: true });
   };
 
   const handleDecision = (requestId: string, decision: PermissionDecision) => {
@@ -740,6 +755,31 @@ const SampleAgentSessionPanel: React.FC = () => {
         </div>
         <h1 className={styles.title}>每一次执行，都清晰可控。</h1>
         <p className={styles.desc}>分开观察 Runner 执行权限与产品写提案，在真实写入前完成服务端审批，并保留可回放的生命周期轨迹。</p>
+        <div className={styles.modePicker} role="group" aria-label="选择 Agent 运行模式">
+          <span className={styles.modeLabel}>运行模式</span>
+          <div className={styles.modeActions}>
+            <Button
+              className={styles.modeButton}
+              color="primary"
+              variant={isGatewayDriver ? "light" : "solid"}
+              size="small"
+              aria-pressed={!isGatewayDriver}
+              onClick={() => handleDriverChange("mock")}
+            >
+              本地演示
+            </Button>
+            <Button
+              className={styles.modeButton}
+              color="primary"
+              variant={isGatewayDriver ? "solid" : "light"}
+              size="small"
+              aria-pressed={isGatewayDriver}
+              onClick={() => handleDriverChange("gateway")}
+            >
+              Gateway 联调
+            </Button>
+          </div>
+        </div>
       </header>
 
       <section className={styles.panel} aria-label="Agent 会话运行面板">

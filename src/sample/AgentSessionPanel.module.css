@@ -1,4 +1,4 @@
-/* Agent 会话面板测试样例页样式（DEV 专用）。
+/* Agent 会话面板测试样例页样式（开发/测试环境）。
  * 使用项目主题变量，同时保持控制台类界面的稳定信息层级。 */
 
 .page {
@@ -56,6 +56,37 @@
   font-size: 1rem;
   color: var(--text-secondary);
   line-height: 1.75;
+}
+
+.modePicker {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 6px;
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card-bg) 88%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+
+.modeLabel {
+  padding-left: 10px;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.modeActions {
+  display: flex;
+  gap: 4px;
+}
+
+.modeButton {
+  min-height: 44px;
+  border-radius: 999px;
 }
 
 .panel {
@@ -687,6 +718,26 @@
 }
 
 @media (max-width: 420px) {
+  .modePicker {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+    border-radius: 18px;
+  }
+
+  .modeLabel {
+    padding: 4px 8px 0;
+  }
+
+  .modeActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .modeButton {
+    width: 100%;
+  }
+
   .sessionTitleRow {
     gap: 6px;
   }
