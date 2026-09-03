@@ -12,6 +12,8 @@ import { createGatewayServer } from "./http.js";
 import type { EngineDriver } from "./types.js";
 import { JsonlProposalPort, PgProposalPort, type ProposalPort } from "./proposals.js";
 import { HttpAiConfigResolver, type AiConfigResolver } from "./aiConfig.js";
+import { AiConfigStore, StoreAiConfigResolver } from "./aiConfigStore.js";
+import { loadMasterKeys } from "./aiConfigCrypto.js";
 
 /**
  * 组装引擎驱动：mock 直接构造；dsh 静态导入构造（drivers/dsh.ts 已交付，
@@ -54,12 +56,21 @@ async function main(): Promise<void> {
 
   let pgStore;
   let proposalPort: ProposalPort;
+  let aiConfigStore: AiConfigStore | undefined;
   if (config.store === "postgres") {
     const { GatewayPgStore } = await import("./pgStore.js");
     pgStore = await GatewayPgStore.connect(config.dbUrl, config.dbSchema);
     proposalPort = await PgProposalPort.connect(config.dbUrl, config.dbSchema);
     log("PostgreSQL authoritative 已连接：session/event 先提交 PG，JSONL 仅作 spool");
     log("PostgreSQL proposal control API 已连接：审批决定写入 agent_write_proposals");
+    // AI 配置资产：Agent DB v0.4 表 + 主密钥齐全时启用；缺失时降级到旧链路，不阻断启动
+    try {
+      const keys = loadMasterKeys();
+      aiConfigStore = await AiConfigStore.connect(config.dbUrl, keys, config.dbSchema);
+      log("AI 配置资产已启用：一账号多套配置 / 组织共享 / 用量与配额（Agent DB v0.4）");
+    } catch (err) {
+      log(`AI 配置资产未启用（${errorMessage(err)}）；用户 AI 配置将走产品后端接口`);
+    }
   } else {
     proposalPort = new JsonlProposalPort(config.proposalsFile);
     log(`JSONL proposal control API 已连接：${config.proposalsFile}`);
@@ -73,7 +84,15 @@ async function main(): Promise<void> {
     pgStore,
   });
   let aiConfigResolver: AiConfigResolver | undefined;
-  if (config.driver === "dsh" && config.aiConfigUrl && config.aiConfigServiceToken) {
+  if (aiConfigStore) {
+    // 优先走 Agent DB 配置资产：按用户解析多套配置，密钥只在服务端流转
+    aiConfigResolver = new StoreAiConfigResolver(aiConfigStore, {
+      openai: config.dshProviderOpenai,
+      claude: config.dshProviderClaude,
+      glm: config.dshProviderGlm,
+    });
+    log("用户 AI 配置解析已启用：Agent DB 配置资产（个人优先，回落组织共享）");
+  } else if (config.driver === "dsh" && config.aiConfigUrl && config.aiConfigServiceToken) {
     aiConfigResolver = new HttpAiConfigResolver({
       endpoint: config.aiConfigUrl,
       serviceToken: config.aiConfigServiceToken,
@@ -88,13 +107,13 @@ async function main(): Promise<void> {
   } else if (config.driver === "dsh") {
     log("用户 AI 配置解析未启用：dsh 将沿用 Gateway 进程级模型凭据");
   }
-  const server = createGatewayServer(config, registry, proposalPort, aiConfigResolver);
+  const server = createGatewayServer(config, registry, proposalPort, aiConfigResolver, aiConfigStore);
   server.on("error", (err) => {
     log(`HTTP 服务错误（端口 ${config.port} 可能被占用）：`, err);
     process.exit(1);
   });
-  server.listen(config.port, () => {
-    log(`监听 http://127.0.0.1:${config.port}（鉴权：Authorization: Bearer <TECHHAVEN_GATEWAY_TOKEN>）`);
+  server.listen(config.port, config.host, () => {
+    log(`监听 http://${config.host}:${config.port}（鉴权：Authorization: Bearer <TECHHAVEN_GATEWAY_TOKEN>）`);
   });
 
   // 兜底：泵与订阅链路已各自容错；这两类全局异常只记日志，避免静默丢失

@@ -46,6 +46,40 @@ test("OpenAI 配置经内部服务解析为隔离 runtime 配置", async () => {
   });
 });
 
+test("OpenAI Responses 配置按 /responses 资源地址归一化", async () => {
+  const resolver = new HttpAiConfigResolver({
+    endpoint: "https://backend.example/config",
+    serviceToken: "token",
+    timeoutMs: 1000,
+    fetchImpl: async () =>
+      jsonResponse({
+        type: "openai",
+        provider: "openai",
+        response_type: "responses",
+        url: "https://api.openai.com/v1/responses",
+        api_key: "sk-live-secret",
+      }),
+  });
+  const config = await resolver.resolve("user:8");
+  assert.equal(config.env.OPENAI_BASE_URL, "https://api.openai.com/v1");
+});
+
+test("旧后端未返回 response_type 时可从 /responses 地址推断", async () => {
+  const resolver = new HttpAiConfigResolver({
+    endpoint: "https://backend.example/config",
+    serviceToken: "token",
+    timeoutMs: 1000,
+    fetchImpl: async () =>
+      jsonResponse({
+        type: "openai",
+        url: "https://api.openai.com/v1/responses",
+        api_key: "sk-live-secret",
+      }),
+  });
+  const config = await resolver.resolve("user:9");
+  assert.equal(config.env.OPENAI_BASE_URL, "https://api.openai.com/v1");
+});
+
 test("Claude 使用默认模型并要求 max_tokens", async () => {
   const fetchImpl = async () =>
     jsonResponse({ type: "claude", url: "https://api.anthropic.com/v1/messages", api_key: "sk-ant-secret", max_tokens: 2048 });
@@ -77,6 +111,27 @@ test("脱敏密钥、非可信 actor 与不安全 endpoint 全部失败关闭", 
   );
   assert.throws(() => normalizeProviderBaseUrl("http://provider.example/v1/chat/completions", "openai"), AiConfigResolutionError);
   assert.equal(normalizeProviderBaseUrl("http://127.0.0.1:11434/v1/chat/completions", "openai"), "http://127.0.0.1:11434/v1");
+});
+
+test("服务商、协议和接口类型组合不兼容时失败关闭", async () => {
+  const makeResolver = (payload: Record<string, unknown>) =>
+    new HttpAiConfigResolver({
+      endpoint: "https://backend.example/config",
+      serviceToken: "token",
+      timeoutMs: 1000,
+      fetchImpl: async () => jsonResponse(payload),
+    });
+  const base = { url: "https://api.example.com/v1/responses", api_key: "sk-ok" };
+
+  await assert.rejects(
+    () => makeResolver({ ...base, type: "openai", provider: "anthropic", response_type: "responses" }).resolve("user:1"),
+    (error: unknown) => error instanceof AiConfigResolutionError && error.status === 502,
+  );
+  await assert.rejects(
+    () =>
+      makeResolver({ ...base, type: "claude", provider: "anthropic", response_type: "responses", max_tokens: 1024 }).resolve("user:1"),
+    (error: unknown) => error instanceof AiConfigResolutionError && error.status === 502,
+  );
 });
 
 test("内部服务错误不会把响应体或凭据带入错误信息", async () => {

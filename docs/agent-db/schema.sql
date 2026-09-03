@@ -1,5 +1,5 @@
 -- ============================================================================
--- TechHaven Agent 平面数据层 · Schema v0.3
+-- TechHaven Agent 平面数据层 · Schema v0.4
 -- 依据：TH-RFC-001 §06 的扩展 + 《TDSQL Nexa：面向 Agent 的统一数据平面》理念
 -- 范围：只覆盖「agent 平面」的元数据与治理层；
 --       域数据（requirements/bugs/tasks/users/organizations）仍归产品后端所有，
@@ -27,6 +27,8 @@ CREATE TYPE risk_level AS ENUM ('low', 'medium', 'high');
 CREATE TYPE proposal_status AS ENUM ('pending', 'approved', 'rejected', 'applied', 'expired');
 
 CREATE TYPE run_outcome AS ENUM ('draft', 'delivered', 'applied', 'discarded');
+
+CREATE TYPE ai_config_scope AS ENUM ('user', 'org');
 
 -- ---------------------------------------------------------------------------
 -- 1. Control：Agent 独立身份体系
@@ -294,11 +296,149 @@ ORDER BY c.created_at DESC;
 -- agent_tokens     : 过期后 30 天清理台账
 
 -- ---------------------------------------------------------------------------
--- 11. 变更记录
+-- 11. AI 配置资产：一账号多套、组织共享 + 个人优先、用量与配额
+--     设计要点：密钥只以密文落地；明文仅解析时短暂驻留内存；
+--     金额用「微元」(cost_micros) 累加，避免浮点误差；
+--     个人优先于组织，解析链见 services/techhaven-gateway/src/aiConfigAssets.ts
+-- ---------------------------------------------------------------------------
+
+-- 配置资产本体：scope 区分归属，同一 owner 下 name 唯一
+CREATE TABLE ai_configs (
+  id               BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  scope            ai_config_scope NOT NULL,
+  owner_id         BIGINT      NOT NULL,              -- scope=user → users.id；scope=org → organizations.id
+  name             TEXT        NOT NULL,              -- 用户可见的资产名，如「工作 GPT」
+  provider_type    TEXT        NOT NULL,              -- openai | claude | glm
+  service_provider TEXT        NOT NULL DEFAULT 'custom', -- openai | anthropic | zhipu | custom
+  response_type    TEXT        NOT NULL DEFAULT 'chat_completions',
+  endpoint_url     TEXT        NOT NULL,
+  api_key_cipher   BYTEA       NOT NULL,              -- AES-256-GCM 密文（含 iv 与 tag）
+  api_key_fp       TEXT        NOT NULL,              -- sha256(明文) 前 16 位；去重/审计，不可逆
+  api_key_masked   TEXT        NOT NULL,              -- 脱敏显示，如 sk-***3f9a
+  key_version      INTEGER     NOT NULL DEFAULT 1,    -- 主密钥版本，支持轮换后逐条重加密
+  model            TEXT,
+  reasoning_effort TEXT,
+  max_tokens       INTEGER,
+  is_default       BOOLEAN     NOT NULL DEFAULT false,
+  shared           BOOLEAN     NOT NULL DEFAULT false, -- 仅 scope=org 有意义：是否对组织成员开放
+  status           TEXT        NOT NULL DEFAULT 'active', -- active | disabled | quota_exceeded
+  created_by       BIGINT      NOT NULL,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_used_at     TIMESTAMPTZ,
+  CONSTRAINT ck_ai_configs_provider CHECK (provider_type IN ('openai', 'claude', 'glm')),
+  CONSTRAINT ck_ai_configs_service  CHECK (service_provider IN ('openai', 'anthropic', 'zhipu', 'custom')),
+  CONSTRAINT ck_ai_configs_response CHECK (response_type IN ('responses', 'chat_completions', 'messages')),
+  CONSTRAINT ck_ai_configs_status   CHECK (status IN ('active', 'disabled', 'quota_exceeded')),
+  -- 与前端/网关校验对齐：Agent 运行要求 HTTPS，仅本机回环允许明文 HTTP
+  CONSTRAINT ck_ai_configs_endpoint CHECK (
+    endpoint_url LIKE 'https://%'
+    OR endpoint_url LIKE 'http://127.%'
+    OR endpoint_url LIKE 'http://localhost%'
+    OR endpoint_url LIKE 'http://[::1]%'
+  ),
+  CONSTRAINT ck_ai_configs_tokens   CHECK (max_tokens IS NULL OR max_tokens > 0)
+);
+
+CREATE UNIQUE INDEX uq_ai_configs_owner_name
+  ON ai_configs (scope, owner_id, name);
+-- 每个归属下最多一个默认配置（用部分索引精确约束 true）
+CREATE UNIQUE INDEX uq_ai_configs_default
+  ON ai_configs (scope, owner_id) WHERE is_default;
+CREATE INDEX idx_ai_configs_owner
+  ON ai_configs (scope, owner_id, status);
+CREATE INDEX idx_ai_configs_fp
+  ON ai_configs (api_key_fp);
+
+-- 用量：按「配置 × 天」聚合，供配额判定与账单展示
+CREATE TABLE ai_usage_daily (
+  id                BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  config_id         BIGINT      NOT NULL REFERENCES ai_configs(id) ON DELETE CASCADE,
+  usage_date        DATE        NOT NULL,
+  session_count     INTEGER     NOT NULL DEFAULT 0,
+  request_count     INTEGER     NOT NULL DEFAULT 0,
+  prompt_tokens     BIGINT      NOT NULL DEFAULT 0,
+  completion_tokens BIGINT      NOT NULL DEFAULT 0,
+  total_tokens      BIGINT      NOT NULL DEFAULT 0,
+  cost_micros       BIGINT      NOT NULL DEFAULT 0,   -- 百万分之一元；整数累加无浮点误差
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT ck_usage_non_negative CHECK (
+    session_count >= 0 AND request_count >= 0
+    AND prompt_tokens >= 0 AND completion_tokens >= 0
+    AND total_tokens >= 0 AND cost_micros >= 0
+  ),
+  UNIQUE (config_id, usage_date)
+);
+CREATE INDEX idx_usage_daily_date ON ai_usage_daily (usage_date);
+
+-- 配额：挂在单套配置上，超限时置 quota_exceeded 并拒绝解析
+CREATE TABLE ai_quotas (
+  id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  config_id   BIGINT      NOT NULL REFERENCES ai_configs(id) ON DELETE CASCADE,
+  period      TEXT        NOT NULL,                    -- daily | monthly
+  metric      TEXT        NOT NULL,                    -- tokens | requests | cost_micros
+  limit_value BIGINT      NOT NULL,
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT ck_ai_quotas_period   CHECK (period IN ('daily', 'monthly')),
+  CONSTRAINT ck_ai_quotas_metric   CHECK (metric IN ('tokens', 'requests', 'cost_micros')),
+  CONSTRAINT ck_ai_quotas_positive CHECK (limit_value > 0),
+  UNIQUE (config_id, period, metric)
+);
+
+-- 使用明细：谁、在哪个会话、用了哪把钥匙
+CREATE TABLE ai_config_usages (
+  id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  config_id      BIGINT      NOT NULL REFERENCES ai_configs(id),
+  scope_snapshot TEXT        NOT NULL,                 -- user | org
+  resolved_from  TEXT        NOT NULL,                 -- explicit | user_default | user_named | org_default
+  user_id        BIGINT      NOT NULL,
+  session_sid    TEXT,                                 -- → agent_sessions.sid
+  request_count  INTEGER     NOT NULL DEFAULT 0,
+  total_tokens   BIGINT      NOT NULL DEFAULT 0,
+  cost_micros    BIGINT      NOT NULL DEFAULT 0,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT ck_config_usages_scope   CHECK (scope_snapshot IN ('user', 'org')),
+  CONSTRAINT ck_config_usages_resolve CHECK (
+    resolved_from IN ('explicit', 'user_default', 'user_named', 'org_default')
+  )
+);
+CREATE INDEX idx_config_usages_config_time ON ai_config_usages (config_id, created_at);
+CREATE INDEX idx_config_usages_user        ON ai_config_usages (user_id, created_at);
+
+-- 用户偏好：记住「当前选哪一把」，为空则走默认解析链
+CREATE TABLE user_ai_preferences (
+  user_id          BIGINT PRIMARY KEY,                 -- → users.id
+  org_id           BIGINT,                             -- 当前组织上下文
+  active_config_id BIGINT REFERENCES ai_configs(id) ON DELETE SET NULL,
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 便捷视图：配置 + 累计用量
+CREATE VIEW v_ai_config_usage AS
+SELECT
+  c.id                              AS config_id,
+  c.scope,
+  c.owner_id,
+  c.name,
+  c.status,
+  c.api_key_masked,
+  c.last_used_at,
+  COALESCE(SUM(u.request_count), 0) AS total_requests,
+  COALESCE(SUM(u.total_tokens), 0)  AS total_tokens,
+  COALESCE(SUM(u.cost_micros), 0)   AS total_cost_micros
+FROM ai_configs c
+LEFT JOIN ai_usage_daily u ON u.config_id = c.id
+GROUP BY c.id;
+
+-- ---------------------------------------------------------------------------
+-- 12. 变更记录
 -- ---------------------------------------------------------------------------
 INSERT INTO agent_schema_migrations (version, description)
-VALUES ('0.3', 'PostgreSQL authoritative proposal/session/event baseline')
+VALUES ('0.4', 'AI config assets: multi-config per account, org sharing, usage and quota')
 ON CONFLICT (version) DO NOTHING;
 
+-- v0.4 (2026-09-04)：AI 配置资产化 —— ai_configs / ai_usage_daily / ai_quotas
+--        / ai_config_usages / user_ai_preferences，支持一账号多套、组织共享、
+--        个人优先覆盖与用量配额。
 -- v0.3 (2026-08-29)：proposal_ref 升为 NOT NULL 权威并发键；增加 request_key 去重与 migration ledger。
 -- v0.2 (2026-08-29)：agent_write_proposals 增加 proposal_ref TEXT UNIQUE。

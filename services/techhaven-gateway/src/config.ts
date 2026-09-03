@@ -7,6 +7,11 @@ export interface Config {
   gatewayToken: string;
   /** HTTP 监听端口（TECHHAVEN_GATEWAY_PORT，默认 3091） */
   port: number;
+  /**
+   * HTTP 监听地址（TECHHAVEN_GATEWAY_HOST，默认 127.0.0.1）。
+   * 默认只监听回环：3091 承载 Bearer 鉴权的 Agent API，只能由同机 Nginx/BFF 访问。
+   */
+  host: string;
   /** 引擎驱动（TECHHAVEN_ENGINE_DRIVER，默认 mock） */
   driver: EngineDriverKind;
   /** 会话事件 / 审计 JSONL 目录（TECHHAVEN_GATEWAY_DATA_DIR，默认 ./data） */
@@ -67,6 +72,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     }
     port = parsed;
   }
+
+  // 监听地址：默认回环。显式设为 0.0.0.0 / :: 才会监听所有网卡（仅供容器或反向代理跨机部署）
+  const host = env.TECHHAVEN_GATEWAY_HOST?.trim() || "127.0.0.1";
 
   const driverRaw = (env.TECHHAVEN_ENGINE_DRIVER ?? "mock").trim().toLowerCase();
   if (driverRaw !== "mock" && driverRaw !== "dsh") {
@@ -147,6 +155,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   return {
     gatewayToken,
     port,
+    host,
     driver,
     dataDir,
     store,

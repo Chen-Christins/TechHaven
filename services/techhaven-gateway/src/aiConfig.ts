@@ -3,6 +3,8 @@ import type { EngineRuntimeConfig } from "./types.js";
 import { isRecord } from "./util.js";
 
 export type AiProviderType = "openai" | "claude" | "glm";
+export type AiServiceProvider = "openai" | "anthropic" | "zhipu" | "custom";
+export type AiResponseType = "responses" | "chat_completions" | "messages";
 
 export interface AiConfigResolver {
   resolve(actor: string): Promise<EngineRuntimeConfig>;
@@ -26,19 +28,19 @@ export class AiConfigResolutionError extends Error {
   }
 }
 
-const DEFAULT_PROVIDER_IDS: Record<AiProviderType, string> = {
+export const DEFAULT_PROVIDER_IDS: Record<AiProviderType, string> = {
   openai: "openai",
   claude: "anthropic",
   glm: "glm",
 };
 
-const DEFAULT_MODELS: Record<AiProviderType, string> = {
+export const DEFAULT_MODELS: Record<AiProviderType, string> = {
   openai: "gpt-4o",
   claude: "claude-sonnet-4-6",
   glm: "glm-4.7-flash",
 };
 
-const PROVIDER_ENV: Record<AiProviderType, { key: string; baseUrl: string }> = {
+export const PROVIDER_ENV: Record<AiProviderType, { key: string; baseUrl: string }> = {
   openai: { key: "OPENAI_API_KEY", baseUrl: "OPENAI_BASE_URL" },
   claude: { key: "ANTHROPIC_API_KEY", baseUrl: "ANTHROPIC_BASE_URL" },
   glm: { key: "ZHIPUAI_API_KEY", baseUrl: "ZHIPUAI_BASE_URL" },
@@ -58,6 +60,8 @@ const MAX_RESPONSE_BYTES = 1024 * 1024;
 
 interface StoredAiConfig {
   type: AiProviderType;
+  provider: AiServiceProvider;
+  responseType: AiResponseType;
   url: string;
   apiKey: string;
   model: string;
@@ -65,7 +69,7 @@ interface StoredAiConfig {
   maxTokens?: number;
 }
 
-function positiveUserId(actor: string): string {
+export function positiveUserId(actor: string): string {
   const match = /^user:([1-9]\d*)$/.exec(actor);
   if (!match) throw new AiConfigResolutionError(401, "缺少可信用户身份，无法解析 Agent 模型配置");
   return match[1];
@@ -74,6 +78,42 @@ function positiveUserId(actor: string): string {
 function providerType(value: unknown): AiProviderType {
   if (value === "openai" || value === "claude" || value === "glm") return value;
   throw new AiConfigResolutionError(502, "用户 AI 配置包含不支持的协议类型");
+}
+
+function defaultServiceProvider(type: AiProviderType): AiServiceProvider {
+  if (type === "claude") return "anthropic";
+  if (type === "glm") return "zhipu";
+  return "openai";
+}
+
+function serviceProvider(value: unknown, type: AiProviderType): AiServiceProvider {
+  const provider = value === undefined || value === null || value === "" ? defaultServiceProvider(type) : value;
+  if (provider !== "openai" && provider !== "anthropic" && provider !== "zhipu" && provider !== "custom") {
+    throw new AiConfigResolutionError(502, "用户 AI 配置包含不支持的服务商");
+  }
+  const expectedType = provider === "openai" ? "openai" : provider === "anthropic" ? "claude" : provider === "zhipu" ? "glm" : type;
+  if (expectedType !== type) {
+    throw new AiConfigResolutionError(502, "用户 AI 配置中的服务商与协议类型不匹配");
+  }
+  return provider;
+}
+
+function responseType(value: unknown, type: AiProviderType): AiResponseType {
+  const fallback: AiResponseType = type === "claude" ? "messages" : "chat_completions";
+  const response = value === undefined || value === null || value === "" ? fallback : value;
+  const valid =
+    (type === "openai" && (response === "responses" || response === "chat_completions")) ||
+    (type === "claude" && response === "messages") ||
+    (type === "glm" && response === "chat_completions");
+  if (!valid) throw new AiConfigResolutionError(502, "用户 AI 配置中的接口类型与协议不匹配");
+  return response as AiResponseType;
+}
+
+function inferResponseTypeFromUrl(raw: string, type: AiProviderType): AiResponseType {
+  if (/\/responses\/?$/i.test(raw)) return responseType("responses", type);
+  if (/\/messages\/?$/i.test(raw)) return responseType("messages", type);
+  if (/\/chat\/completions\/?$/i.test(raw)) return responseType("chat_completions", type);
+  return responseType(undefined, type);
 }
 
 function requiredText(record: Record<string, unknown>, key: string, label: string): string {
@@ -104,10 +144,10 @@ function isLoopback(hostname: string): boolean {
 }
 
 /**
- * 用户表单保存的是具体 messages/chat-completions 地址；dsh provider 配置消费 base URL。
+ * 用户表单保存的是具体 responses/messages/chat-completions 地址；dsh provider 配置消费 base URL。
  * 这里只删除已知的最终资源段，不猜测其余自定义路径。
  */
-export function normalizeProviderBaseUrl(raw: string, type: AiProviderType): string {
+export function normalizeProviderBaseUrl(raw: string, type: AiProviderType, apiResponseType?: AiResponseType): string {
   let url: URL;
   try {
     url = new URL(raw);
@@ -120,7 +160,13 @@ export function normalizeProviderBaseUrl(raw: string, type: AiProviderType): str
   if (url.protocol !== "https:" && !(url.protocol === "http:" && isLoopback(url.hostname))) {
     throw new AiConfigResolutionError(412, "Agent 模型接口必须使用 HTTPS（本机回环地址除外）");
   }
-  const suffix = type === "claude" ? /\/messages\/?$/ : /\/chat\/completions\/?$/;
+  const selectedResponseType = responseType(apiResponseType, type);
+  const suffix =
+    selectedResponseType === "responses"
+      ? /\/responses\/?$/
+      : selectedResponseType === "messages"
+        ? /\/messages\/?$/
+        : /\/chat\/completions\/?$/;
   url.pathname = url.pathname.replace(suffix, "").replace(/\/$/, "") || "/";
   return url.toString().replace(/\/$/, "");
 }
@@ -130,6 +176,9 @@ function parseStoredConfig(payload: unknown): StoredAiConfig {
   const raw = root && isRecord(root.data) ? root.data : root;
   if (!raw) throw new AiConfigResolutionError(502, "用户 AI 配置服务返回了无效响应");
   const type = providerType(raw.type);
+  const provider = serviceProvider(raw.provider, type);
+  const rawUrl = requiredText(raw, "url", "接口地址");
+  const apiResponseType = responseType(raw.response_type ?? inferResponseTypeFromUrl(rawUrl, type), type);
   const apiKey = usableSecret(requiredText(raw, "api_key", "完整密钥"));
   const modelValue = raw.model;
   const model = typeof modelValue === "string" && modelValue.trim() !== "" ? modelValue.trim() : DEFAULT_MODELS[type];
@@ -160,7 +209,9 @@ function parseStoredConfig(payload: unknown): StoredAiConfig {
   }
   return {
     type,
-    url: normalizeProviderBaseUrl(requiredText(raw, "url", "接口地址"), type),
+    provider,
+    responseType: apiResponseType,
+    url: normalizeProviderBaseUrl(rawUrl, type, apiResponseType),
     apiKey,
     model,
     reasoningEffort,
