@@ -9,22 +9,14 @@ export class FollowService {
    * 关注用户
    */
   static async follow(followingId: number | string): Promise<void> {
-    const formData = new URLSearchParams();
-    formData.append("following_id", String(followingId));
-    await http.post("/user/follow", formData.toString(), {
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    });
+    await http.postForm("/user/follow", { following_id: followingId });
   }
 
   /**
    * 取消关注
    */
   static async unfollow(followingId: number | string): Promise<void> {
-    const formData = new URLSearchParams();
-    formData.append("following_id", String(followingId));
-    await http.post("/user/unfollow", formData.toString(), {
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    });
+    await http.postForm("/user/unfollow", { following_id: followingId });
   }
 
   /**

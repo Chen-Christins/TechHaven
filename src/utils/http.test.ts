@@ -1,6 +1,38 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { HttpClient, HttpError, tokenManager, setUnauthorizedHandler } from "./http";
 
+it("postForm preserves falsy values, encodes special text and omits only nullish fields", async () => {
+  let sent = "";
+  let contentType: unknown;
+  const client = new HttpClient();
+  const adapter: import("axios").AxiosRequestConfig["adapter"] = async (config) => {
+    sent = config.data;
+    contentType = config.headers.get("Content-Type");
+    return { data: { code: 200, success: true, data: { ok: true } }, status: 200, statusText: "OK", headers: {}, config };
+  };
+  await client.postForm(
+    "/form",
+    { count: 0, enabled: false, empty: "", text: "你好 & +", absent: undefined, cleared: null },
+    { adapter },
+  );
+  expect([...new URLSearchParams(sent)]).toEqual([
+    ["count", "0"],
+    ["enabled", "false"],
+    ["empty", ""],
+    ["text", "你好 & +"],
+  ]);
+  expect(contentType).toBe("application/x-www-form-urlencoded");
+  await client.postForm(
+    "/form",
+    new URLSearchParams([
+      ["id", "1"],
+      ["id", "2"],
+    ]),
+    { adapter },
+  );
+  expect(sent).toBe("id=1&id=2");
+});
+
 /** 模拟后端业务未授权（errno 1101），复用 axios adapter 注入 */
 const unauthorizedAdapter: import("axios").AxiosRequestConfig["adapter"] = async (config) => ({
   data: { code: 200, errno: 1101, message: "未登录", msg: "未登录", data: null, success: false },

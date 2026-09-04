@@ -10,6 +10,31 @@ import type { AiConfigAsset } from "./aiConfigAssets.js";
 
 const GATEWAY_TOKEN = "gateway-test-token";
 
+test("配置路由复用协议规则，并按已有协议校验部分更新", async () => {
+  const store = fakeStore();
+  const patches: unknown[] = [];
+  store.listByOwner = async () => [
+    summary({ providerType: "claude", serviceProvider: "anthropic", responseType: "messages", maxTokens: 1024 }),
+  ];
+  store.update = async (_id, _scope, _owner, patch) => {
+    patches.push(patch);
+    return summary();
+  };
+  await withServer(store, async (base) => {
+    const patch = await fetch(`${base}/v1/ai-configs/11`, {
+      ...authedInit({ provider: "anthropic", response_type: "messages" }),
+      method: "PATCH",
+    });
+    assert.equal(patch.status, 200);
+    assert.deepEqual(patches, [{ serviceProvider: "anthropic", responseType: "messages" }]);
+    const mismatch = await fetch(
+      `${base}/v1/ai-configs`,
+      authedInit({ name: "invalid", type: "openai", provider: "anthropic", url: "https://api.example.com/v1", api_key: "sk-test" }),
+    );
+    assert.equal(mismatch.status, 400);
+  });
+});
+
 function emptyProposalPort(): ProposalPort {
   return {
     async listForSession() {

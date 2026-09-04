@@ -7,24 +7,6 @@ on:
     branches: ["master", "integration/conversation"]
 
 jobs:
-  bff:
-    name: techhaven-bff build & test
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/techhaven-bff
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: npm
-          cache-dependency-path: services/techhaven-bff/package-lock.json
-      - run: npm ci
-      - run: npm run typecheck
-      - run: npm run build
-      - run: npm test
-
   frontend:
     name: Frontend build & test
     runs-on: ubuntu-latest
@@ -57,91 +39,28 @@ jobs:
           test -d ./dist
           test "$(ls -A ./dist)"
 
-  mcp:
-    name: techhaven-mcp typecheck & smoke
+  services:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { path: techhaven-bff, name: "techhaven-bff build & test", check: build }
+          - { path: techhaven-mcp, name: "techhaven-mcp typecheck & smoke", check: smoke }
+          - { path: techhaven-agent-bridge, name: "techhaven-agent-bridge typecheck & smoke", check: smoke }
+          - { path: techhaven-gateway, name: "techhaven-gateway typecheck & smoke", check: smoke }
     defaults:
       run:
-        working-directory: services/techhaven-mcp
+        working-directory: services/${{ matrix.path }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "npm"
-          cache-dependency-path: services/techhaven-mcp/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Type check
-        run: npm run typecheck
-
-      # 纯域单测：node:test + tsx，无外部实例依赖（状态机 / agent token / argsDigest 跨服务向量）
-      - name: Run unit tests
-        run: npm test
-
-      - name: Run mock smoke (direct + staged)
-        run: npm run smoke
-
-  bridge:
-    name: techhaven-agent-bridge typecheck & smoke
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/techhaven-agent-bridge
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: "npm"
-          cache-dependency-path: services/techhaven-agent-bridge/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Type check
-        run: npm run typecheck
-
-      - name: Run adapter unit tests
-        run: npm test
-
-      - name: Run fake-legacy HTTP smoke
-        run: npm run smoke
-
-  gateway:
-    name: techhaven-gateway typecheck & smoke
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/techhaven-gateway
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: "npm"
-          cache-dependency-path: services/techhaven-gateway/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Type check
-        run: npm run typecheck
-
-      # 纯域单测：node:test + tsx，无外部实例依赖（配置校验 / EventChannel 并发语义 / SSE 信封 / 会话视图）
-      - name: Run unit tests
-        run: npm test
-
-      - name: Run mock smoke
-        run: npm run smoke
+          cache: npm
+          cache-dependency-path: services/${{ matrix.path }}/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run ${{ matrix.check }}

@@ -35,7 +35,7 @@ const AssignmentSubmissions = lazy(() => import("../pages/assignment/AssignmentS
 
 const ChunkUploadTest = lazy(() => import("../pages/test/ChunkUploadTest"));
 const SampleThemeStylePanel = lazy(() => import("../sample/ThemeStylePanel"));
-const SampleAgentSessionPanel = lazy(() => import("../sample/AgentSessionPanel"));
+const AgentSessionPanel = lazy(() => import("../pages/rd-platform/AgentSessionPanel"));
 
 const RdLayout = lazy(() => import("../pages/rd-platform/RdLayout"));
 const RdDashboard = lazy(() => import("../pages/rd-platform/Dashboard"));
@@ -142,7 +142,7 @@ const RouterConfig: React.FC = () => {
               path="agent"
               element={
                 <AuthRequired title="登录后使用 Agent" message="Agent 会话需绑定你的个人 AI 接口配置，请先登录。">
-                  <SampleAgentSessionPanel />
+                  <AgentSessionPanel />
                 </AuthRequired>
               }
             />

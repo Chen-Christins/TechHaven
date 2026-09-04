@@ -127,7 +127,7 @@ try {
 
   $scriptsStage = Join-Path $stageRoot "scripts"
   New-Item -ItemType Directory -Path $scriptsStage -Force | Out-Null
-  foreach ($scriptName in @("agent-gateway-service.sh", "install-agent-gateway-systemd.sh", "bff-service.sh")) {
+  foreach ($scriptName in @("agent-gateway-service.sh", "install-agent-gateway-systemd.sh", "bff-service.sh", "node-service.sh")) {
     Copy-RequiredItem -Source (Join-Path $PSScriptRoot $scriptName) -Destination $scriptsStage
   }
 

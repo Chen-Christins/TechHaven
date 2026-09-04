@@ -49,7 +49,7 @@ jobs:
           cp -R services/techhaven-gateway/dist .agent-release/services/techhaven-gateway/dist
           cp services/techhaven-gateway/package.json services/techhaven-gateway/package-lock.json .agent-release/services/techhaven-gateway/
           cp contracts/package.json contracts/index.d.ts .agent-release/contracts/
-          cp scripts/agent-gateway-service.sh scripts/install-agent-gateway-systemd.sh .agent-release/scripts/
+          cp scripts/agent-gateway-service.sh scripts/node-service.sh scripts/install-agent-gateway-systemd.sh .agent-release/scripts/
           tar -czf agent-gateway-release.tgz -C .agent-release .
 
       - name: Prepare remote Agent directory

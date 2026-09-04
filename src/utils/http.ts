@@ -570,6 +570,24 @@ class HttpClient {
     return response.data;
   }
 
+  /** Form encoding stays here; callers retain field selection and omission rules. */
+  async postForm<T = any>(
+    url: string,
+    fields: URLSearchParams | Record<string, string | number | boolean | null | undefined>,
+    config?: HttpRequestConfig,
+  ): Promise<HttpResponse<T>> {
+    const body = fields instanceof URLSearchParams ? fields : new URLSearchParams();
+    if (!(fields instanceof URLSearchParams)) {
+      for (const [key, value] of Object.entries(fields)) {
+        if (value !== null && value !== undefined) body.append(key, String(value));
+      }
+    }
+    return this.post<T>(url, body.toString(), {
+      ...config,
+      headers: { ...config?.headers, "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  }
+
   /**
    * PUT请求
    */
