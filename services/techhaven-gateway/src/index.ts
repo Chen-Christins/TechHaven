@@ -69,6 +69,7 @@ async function main(): Promise<void> {
       aiConfigStore = await AiConfigStore.connect(config.dbUrl, keys, config.dbSchema);
       log("AI 配置资产已启用：一账号多套配置 / 组织共享 / 用量与配额（Agent DB v0.4）");
     } catch (err) {
+      if (process.env.TECHHAVEN_AI_CONFIG_MASTER_KEY?.trim()) throw err;
       log(`AI 配置资产未启用（${errorMessage(err)}）；用户 AI 配置将走产品后端接口`);
     }
   } else {

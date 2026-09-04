@@ -12,8 +12,20 @@ import type { Config } from "./config.js";
 import { log } from "./log.js";
 import { isRecord } from "./util.js";
 import type { ProposalPort } from "./proposals.js";
-import { AiConfigResolutionError, type AiConfigResolver, type AiProviderType, type AiResponseType, type AiServiceProvider } from "./aiConfig.js";
-import { AiConfigStoreError, type AiConfigStore, type AiConfigSummary, type CreateConfigInput, type UpdateConfigInput } from "./aiConfigStore.js";
+import {
+  AiConfigResolutionError,
+  type AiConfigResolver,
+  type AiProviderType,
+  type AiResponseType,
+  type AiServiceProvider,
+} from "./aiConfig.js";
+import {
+  AiConfigStoreError,
+  type AiConfigStore,
+  type AiConfigSummary,
+  type CreateConfigInput,
+  type UpdateConfigInput,
+} from "./aiConfigStore.js";
 import { maskSecret } from "./aiConfigCrypto.js";
 import { renderPrometheus } from "./metrics.js";
 import {
@@ -262,6 +274,8 @@ function parseCreateConfigBody(body: Record<string, unknown>, userId: number): C
 /** PATCH /v1/ai-configs/:id 请求体校验：只认出现的字段，字段值规则与创建一致 */
 function parseUpdateConfigBody(body: Record<string, unknown>): UpdateConfigInput {
   const patch: UpdateConfigInput = {};
+  const apiKey = optionalString(body, "api_key")?.trim();
+  if (apiKey) patch.apiKey = validateApiKeyShape(apiKey);
   if (body.name !== undefined) {
     const name = requireString(body, "name").trim();
     if (name.length > 64) throw new GatewayError(400, "字段 name 最长 64 字符");
@@ -418,17 +432,33 @@ async function handleRequest(
     }
 
     if (path === "/v1/sessions" && method === "GET") {
-      sendJson(res, 200, { sessions: registry.list().map(sessionView) });
+      const actor = trustedActor(req);
+      sendJson(res, 200, {
+        sessions: registry
+          .list()
+          .filter((record) => record.ownerActor === actor)
+          .map(sessionView),
+      });
       return;
     }
 
     if (path === "/v1/sessions" && method === "POST") {
       const body = await readJsonBody(req);
       const input = parseCreateBody(body);
-      const runtimeConfig = aiConfigResolver ? await aiConfigResolver.resolve(trustedActor(req)) : undefined;
-      const record = await registry.create({ ...input, runtimeConfig });
+      const ownerActor = trustedActor(req);
+      const runtimeConfig = aiConfigResolver ? await aiConfigResolver.resolve(ownerActor) : undefined;
+      const record = await registry.create({ ...input, ownerActor, runtimeConfig });
       sendJson(res, 201, { sid: record.sid, status: record.status });
       return;
+    }
+
+    // Every session subresource shares the same authorization gate, including SSE,
+    // runner permissions and product proposals. Legacy ownerless sessions stay private.
+    const sessionPath = /^\/v1\/sessions\/([^/]+)(?:\/|$)/.exec(path);
+    if (sessionPath) {
+      const actor = trustedActor(req);
+      const record = registry.get(decodeURIComponent(sessionPath[1]));
+      if (!record || record.ownerActor !== actor) throw new GatewayError(404, "会话不存在或无权访问");
     }
 
     const detailMatch = /^\/v1\/sessions\/([^/]+)$/.exec(path);
@@ -442,6 +472,11 @@ async function handleRequest(
     // ---- AI 配置资产：个人多套配置 CRUD + 组织共享只读 ----
     // 归属校验统一为 scope=user 且 owner=当前 actor，任何路径都无法触达他人配置
     if (path === "/v1/ai-configs" || path.startsWith("/v1/ai-configs/")) {
+      if (path === "/v1/ai-configs/mode" && method === "GET") {
+        trustedActor(req);
+        sendJson(res, 200, { storage: aiConfigStore ? "assets" : "legacy" });
+        return;
+      }
       if (!aiConfigStore) {
         throw new GatewayError(503, "AI 配置资产未启用：需要 TECHHAVEN_GATEWAY_STORE=postgres 并配置主密钥");
       }
@@ -450,9 +485,7 @@ async function handleRequest(
       if (path === "/v1/ai-configs" && method === "GET") {
         const preference = await aiConfigStore.getPreference(userId);
         const userConfigs = await aiConfigStore.listByOwner("user", userId);
-        const orgConfigs = preference.orgId
-          ? (await aiConfigStore.listByOwner("org", preference.orgId)).filter((c) => c.shared)
-          : [];
+        const orgConfigs = preference.orgId ? (await aiConfigStore.listByOwner("org", preference.orgId)).filter((c) => c.shared) : [];
         sendJson(res, 200, {
           configs: userConfigs.map(configView),
           org_configs: orgConfigs.map(configView),

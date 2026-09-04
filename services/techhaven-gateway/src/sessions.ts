@@ -92,6 +92,7 @@ export interface SessionEventSubscriber {
 }
 
 interface CreateSessionInput {
+  ownerActor?: string;
   orgId: number;
   subjectType?: string;
   subjectId?: string;
@@ -106,6 +107,7 @@ interface CreateSessionInput {
  * 可选字段缺省即不出现在行中。prompt 刻意不入行：agent_sessions 无 prompt 列，原文不进库。
  */
 interface SessionPatchJson {
+  ownerActor?: string;
   status: SessionStatus;
   orgId?: number;
   subjectType?: string;
@@ -117,6 +119,7 @@ interface SessionPatchJson {
 /** patch 行载荷：create 全量（归属 + 状态），后续收尾 patch 只带变化字段（如 note） */
 function sessionPatch(record: SessionRecord, status: SessionStatus, note?: string): SessionPatchJson {
   return {
+    ownerActor: record.ownerActor,
     status,
     orgId: record.orgId,
     subjectType: record.subjectType,
@@ -188,6 +191,7 @@ function isEngineEventValue(value: unknown): value is EngineEvent {
 
 /** 注册表内部会话记录（含句柄 / 订阅者等运行态，禁止直接下发给客户端） */
 export interface SessionRecord {
+  ownerActor?: string;
   sid: string;
   orgId: number;
   subjectType?: string;
@@ -337,6 +341,7 @@ export class SessionRegistry {
   private restorePgRecord(source: PersistedGatewaySession): void {
     const record: SessionRecord = {
       sid: source.sid,
+      ownerActor: source.ownerActor,
       orgId: source.orgId,
       subjectType: source.subjectType,
       subjectId: source.subjectId,
@@ -397,6 +402,7 @@ export class SessionRegistry {
             continue;
           }
           const target = entry(line.sid).patch;
+          if (typeof patch.ownerActor === "string" && /^user:[1-9]\d*$/.test(patch.ownerActor)) target.ownerActor = patch.ownerActor;
           if (isSessionStatusValue(patch.status)) target.status = patch.status;
           if (typeof patch.orgId === "number" && Number.isInteger(patch.orgId)) target.orgId = patch.orgId;
           if (typeof patch.subjectType === "string") target.subjectType = patch.subjectType;
@@ -425,6 +431,7 @@ export class SessionRegistry {
       const record: SessionRecord = {
         sid,
         orgId: source.patch.orgId,
+        ownerActor: source.patch.ownerActor,
         subjectType: source.patch.subjectType,
         subjectId: source.patch.subjectId,
         prompt: RECOVERED_PROMPT,
@@ -473,6 +480,7 @@ export class SessionRegistry {
     const sid = `s_${Date.now().toString(36)}${randomBytes(2).toString("hex")}`;
     const record: SessionRecord = {
       sid,
+      ownerActor: input.ownerActor,
       orgId: input.orgId,
       subjectType: input.subjectType,
       subjectId: input.subjectId,
@@ -625,6 +633,7 @@ export class SessionRegistry {
     try {
       const runtimeConfig = record.runtimeConfig;
       record.runtimeConfig = undefined;
+      await runtimeConfig?.recordUsage?.(record.sid, "session", { sessions: 1 });
       const handle = await this.driver.startSession({
         sessionId: record.sid,
         orgId: record.orgId,

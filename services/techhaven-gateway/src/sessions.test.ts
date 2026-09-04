@@ -254,7 +254,7 @@ test("SessionRegistry：运行配置只传给 driver，随后从记录和 JSONL 
       model: "gpt-5",
       env: { OPENAI_API_KEY: "session-secret" },
     };
-    const record = await registry.create({ orgId: 7, prompt: "test", runtimeConfig });
+    const record = await registry.create({ orgId: 7, ownerActor: "user:100", prompt: "test", runtimeConfig });
     for (let i = 0; i < 20 && record.status !== "succeeded"; i += 1) {
       await new Promise((resolve) => setTimeout(resolve, 5));
     }
@@ -262,6 +262,7 @@ test("SessionRegistry：运行配置只传给 driver，随后从记录和 JSONL 
     assert.equal(record.runtimeConfig, undefined);
     assert.equal("runtimeConfig" in sessionView(record), false);
     const jsonl = readFileSync(join(dir, "gateway.jsonl"), "utf8");
+    assert.equal(JSON.parse(jsonl.split("\n")[0]).patch.ownerActor, "user:100");
     assert.equal(jsonl.includes("session-secret"), false);
     assert.equal(jsonl.includes("OPENAI_API_KEY"), false);
   } finally {

@@ -21,7 +21,7 @@ const PROPOSALS_FILE = `./${SMOKE_DATA_DIR}/proposals.jsonl`;
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
 function authHeaders(): Record<string, string> {
-  return { authorization: `Bearer ${TOKEN}` };
+  return { authorization: `Bearer ${TOKEN}`, "x-techhaven-actor": "user:9" };
 }
 
 /** 普通 JSON API 调用（勿用于 SSE；401 用例走裸 fetch） */
@@ -251,6 +251,7 @@ async function main(): Promise<void> {
       JSON.stringify(proposalList.json),
     );
     const missingActor = await api("POST", `/v1/sessions/${sid}/proposals/${proposalId}/decision`, {
+      headers: { "x-techhaven-actor": "" },
       body: { decision: "approve" },
     });
     check("proposal decision 缺可信 actor → 401", missingActor.status === 401, JSON.stringify(missingActor.json));
@@ -402,9 +403,7 @@ async function main(): Promise<void> {
     );
     check(
       "重启后 proposal 生命周期也进入权威事件回放",
-      recoveredEvents.some(
-        (event) => event.type === "proposal_lifecycle" && event.payload.proposal.id === proposalId,
-      ),
+      recoveredEvents.some((event) => event.type === "proposal_lifecycle" && event.payload.proposal.id === proposalId),
       JSON.stringify(recoveredEvents.map((event) => event.type)),
     );
 

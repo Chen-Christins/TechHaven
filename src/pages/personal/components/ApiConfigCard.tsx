@@ -4,7 +4,7 @@ import Input from "@/components/input/Input";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import type { SelectOption } from "@/types/index";
 import { message } from "@/components/message/Message";
-import { AuthService } from "@/services/authService";
+import { agentAiConfigService } from "@/services/agentAiConfigService";
 import styles from "../PersonalCenter.module.css";
 
 type ApiType = "openai" | "claude" | "glm";
@@ -131,7 +131,7 @@ const ApiConfigCard: React.FC = () => {
   };
 
   useEffect(() => {
-    AuthService.getAiConfig()
+    agentAiConfigService.getAiConfig()
       .then((config) => {
         if (config) {
           const t: ApiType = config.type === "claude" || config.type === "glm" ? config.type : "openai";
@@ -208,7 +208,7 @@ const ApiConfigCard: React.FC = () => {
     setSaving(true);
     try {
       const keyToSend = keyTouchedRef.current ? apiKey.trim() : "";
-      await AuthService.saveAiConfig({
+      await agentAiConfigService.saveAiConfig({
         type: apiType,
         url: url.trim(),
         api_key: keyToSend,

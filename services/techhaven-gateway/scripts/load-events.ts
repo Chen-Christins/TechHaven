@@ -52,7 +52,7 @@ interface PatchRow {
   kind: "session";
   sid: string;
   ts?: string;
-  patch: { status?: string; orgId?: number; subjectType?: string; subjectId?: string; note?: string };
+  patch: { status?: string; orgId?: number; ownerActor?: string; subjectType?: string; subjectId?: string; note?: string };
 }
 interface EventRow {
   kind: "event";
@@ -70,6 +70,7 @@ type Row = PatchRow | EventRow | PermissionRow;
 
 /** 每会话的文件序聚合状态（含新旧格式兼容） */
 interface SessionAgg {
+  ownerActor?: string;
   sid: string;
   orgId: number; // 第一个 patch 行提供，否则兜底
   orgFromPatch: boolean;
@@ -116,6 +117,8 @@ async function main(): Promise<void> {
       bySid.set(row.sid, agg);
     }
     if (row.kind === "session") {
+      if (typeof row.patch.ownerActor === "string" && /^user:[1-9]\d*$/.test(row.patch.ownerActor))
+        agg.ownerActor = row.patch.ownerActor;
       if (!agg.orgFromPatch && typeof row.patch.orgId === "number" && row.patch.orgId > 0) {
         agg.orgId = row.patch.orgId;
         agg.orgFromPatch = true;
@@ -168,7 +171,7 @@ async function main(): Promise<void> {
       status = EXCLUDED.status,
       started_at = COALESCE(EXCLUDED.started_at, agent_sessions.started_at),
       ended_at = EXCLUDED.ended_at,
-      exit_info = EXCLUDED.exit_info
+      exit_info = COALESCE(agent_sessions.exit_info, '{}'::jsonb) || COALESCE(EXCLUDED.exit_info, '{}'::jsonb)
     RETURNING id`;
 
   const eventStmt = `INSERT INTO agent_events (session_id, seq, ts, type, payload)
@@ -186,7 +189,7 @@ async function main(): Promise<void> {
       const identityId = identity.rows[0]?.id;
       if (!identityId) throw new Error("identity upsert 未返回 id");
       const terminated = /^(succeeded|failed|cancelled)$/.test(agg.status);
-      const exit = terminated && agg.note ? JSON.stringify({ note: agg.note }) : null;
+      const exit = JSON.stringify({ owner_actor: agg.ownerActor, ...(terminated && agg.note ? { note: agg.note } : {}) });
       const session = await pool.query<{ id: string }>(sessionStmt, [
         agg.sid,
         identityId,

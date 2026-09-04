@@ -43,12 +43,23 @@ export interface EngineSessionHandle {
  * dsh driver 必须把不同配置放入相互隔离的 runtime，不能复用进程级环境。
  */
 export interface EngineRuntimeConfig {
+  /** Server-only accounting callback; never passed into SDK options or child env. */
+  recordUsage?: (sessionSid: string, eventKey: string, delta: EngineUsage) => Promise<void>;
   provider: string;
   model: string;
   /** 推理档位（dsh reasoningEffort，非空字符串）；省略用模型默认 */
   reasoningEffort?: string;
   maxTokens?: number;
   env: Record<string, string>;
+}
+
+export interface EngineUsage {
+  sessions?: number;
+  requests?: number;
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+  costMicros?: number;
 }
 
 export interface EngineDriver {

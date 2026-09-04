@@ -1,5 +1,5 @@
 -- ============================================================================
--- TechHaven Agent 平面数据层 · Schema v0.4
+-- TechHaven Agent 平面数据层 · Schema v0.5
 -- 依据：TH-RFC-001 §06 的扩展 + 《TDSQL Nexa：面向 Agent 的统一数据平面》理念
 -- 范围：只覆盖「agent 平面」的元数据与治理层；
 --       域数据（requirements/bugs/tasks/users/organizations）仍归产品后端所有，
@@ -442,3 +442,26 @@ ON CONFLICT (version) DO NOTHING;
 --        个人优先覆盖与用量配额。
 -- v0.3 (2026-08-29)：proposal_ref 升为 NOT NULL 权威并发键；增加 request_key 去重与 migration ledger。
 -- v0.2 (2026-08-29)：agent_write_proposals 增加 proposal_ref TEXT UNIQUE。
+BEGIN;
+
+-- Trusted, explicitly provisioned sharing grants; never writable by the public API.
+-- Delete a row when a member leaves. Preferences are not membership grants.
+CREATE TABLE IF NOT EXISTS ai_org_memberships (
+  org_id BIGINT NOT NULL,
+  user_id BIGINT NOT NULL,
+  PRIMARY KEY (org_id, user_id)
+);
+
+-- Claim and accounting updates commit together, so replay does not double bill.
+CREATE TABLE IF NOT EXISTS ai_usage_receipts (
+  config_id BIGINT NOT NULL REFERENCES ai_configs(id) ON DELETE CASCADE,
+  session_sid TEXT NOT NULL,
+  event_key TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (config_id, session_sid, event_key)
+);
+
+INSERT INTO agent_schema_migrations (version, description)
+VALUES ('0.5', 'Explicit organization sharing grants and idempotent usage receipts')
+ON CONFLICT (version) DO NOTHING;
+COMMIT;

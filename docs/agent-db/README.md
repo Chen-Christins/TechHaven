@@ -5,6 +5,8 @@
 **产出**：[`schema.sql`](./schema.sql)（PostgreSQL 14+ DDL）、[`migrations/002-v0.2-to-v0.3-authoritative.sql`](./migrations/002-v0.2-to-v0.3-authoritative.sql) 与 [`seed-semantics.sql`](./seed-semantics.sql)
 **当前状态**：`implemented`；PG 权威 repository、迁移、loader、对账与环境门控 smoke 已存在，尚未在 live PostgreSQL 执行，不能标记 `verified-integration`
 
+PR #122 修复使用 schema v0.5：新增 [004 成员授权与用量去重迁移](./migrations/004-v0.4-to-v0.5-access-and-usage.sql)。启用 AI 配置资产的部署须先迁移，再更新服务；组织共享授权需由可信管理通道同步到 `ai_org_memberships`，不会从用户偏好自动推导。详见 [配置与升级说明](../../services/techhaven-gateway/docs/AI_CONFIG_ASSETS.md)。
+
 ## 一句话定位
 
 本数据平面承载 Agent Control（身份、会话、配额、审批、审计）与 Context（mini 语义层）的元数据。**域数据不搬**：工单、需求、缺陷、用户和组织仍归产品后端，本层只存引用和 Agent 运行事实。

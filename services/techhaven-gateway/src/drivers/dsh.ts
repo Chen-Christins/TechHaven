@@ -186,6 +186,7 @@ function assertHarnessShape(candidate: unknown): DshHarness {
 type EngineEventBody = { [T in EngineEvent as T["type"]]: Omit<T, "seq" | "ts"> }[EngineEvent["type"]];
 
 interface DshSessionState {
+  recordUsage?: EngineRuntimeConfig["recordUsage"];
   sessionId: string;
   harness: DshHarness;
   subscription: DshNotificationSubscription;
@@ -297,6 +298,7 @@ export class DshSdkDriver implements EngineDriver {
     // 先订阅后发 prompt，避免漏事件（对照高层 run() 的顺序，api.ts:183-199）。
     const subscription = harness.client.subscribeSessionTree(opts.sessionId); // client.ts:370-381
     const state: DshSessionState = {
+      recordUsage: opts.runtimeConfig?.recordUsage,
       sessionId: opts.sessionId,
       harness,
       subscription,
@@ -381,9 +383,7 @@ export class DshSdkDriver implements EngineDriver {
         : {
             provider: runtimeConfig.provider,
             model: runtimeConfig.model,
-            ...(runtimeConfig.reasoningEffort === undefined
-              ? {}
-              : { reasoningEffort: runtimeConfig.reasoningEffort }),
+            ...(runtimeConfig.reasoningEffort === undefined ? {} : { reasoningEffort: runtimeConfig.reasoningEffort }),
             ...(runtimeConfig.maxTokens === undefined ? {} : { maxTokens: runtimeConfig.maxTokens }),
             env: isolatedRuntimeEnv(runtimeConfig),
           }),
@@ -398,6 +398,7 @@ export class DshSdkDriver implements EngineDriver {
         if (state.disposed) break;
         // runtime 死亡或订阅关闭后 next() reject（client.ts:76-93,128-131,255-258）。
         const notification = await state.subscription.next();
+        await this.accountNotification(state, notification);
         this.mapNotification(state, notification);
       }
     } catch (cause) {
@@ -425,6 +426,37 @@ export class DshSdkDriver implements EngineDriver {
       log(`dsh runtime 关停异常（sessionId=${state.sessionId}，已忽略）：${errorMessage(cause)}`);
     });
     return state.closePromise;
+  }
+
+  private async accountNotification(state: DshSessionState, notification: DshHarnessNotification): Promise<void> {
+    if (!state.recordUsage || notification.method !== "session.event") return;
+    const event = notification.params.event;
+    if (!isRecord(event) || !isRecord(event.data)) return;
+    const data = event.data;
+    // Include descendants in billing; their transcript is intentionally not forwarded to the root UI.
+    const sourceSid = notification.params.sessionId;
+    if (typeof sourceSid !== "string" || !Number.isInteger(data.turn) || !Number.isInteger(data.step)) return;
+    const key = `${sourceSid}:${data.turn}:${data.step}`;
+    if (event.type === "step/start" || event.type === "assistant/message") {
+      await state.recordUsage(state.sessionId, `request:${key}`, { requests: 1 });
+    }
+    // assistant/message carries final usage for the call. Ignore assistant/chunk usage
+    // snapshots to avoid adding cumulative streaming totals multiple times.
+    if (event.type !== "assistant/message" || !isRecord(data.usage)) return;
+    const usage = data.usage;
+    const count = (name: string): number => {
+      const value = usage[name] ?? 0;
+      if (!Number.isSafeInteger(value) || (value as number) < 0) throw new Error(`Invalid dsh usage: ${name}`);
+      return value as number;
+    };
+    // dsh TokenUsage counts uncached input and cache read/write separately.
+    const promptTokens = count("inputTokens") + count("cacheReadTokens") + count("cacheWriteTokens");
+    const completionTokens = count("outputTokens");
+    await state.recordUsage(state.sessionId, `tokens:${key}`, {
+      promptTokens,
+      completionTokens,
+      totalTokens: promptTokens + completionTokens,
+    });
   }
 
   private emit(state: DshSessionState, ts: string, body: EngineEventBody): void {

@@ -1,11 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type pg from "pg";
-import {
-  AiConfigStore,
-  AiConfigStoreError,
-  type AiConfigSummary,
-} from "./aiConfigStore.js";
+import { AiConfigStore, AiConfigStoreError, StoreAiConfigResolver, type AiConfigSummary } from "./aiConfigStore.js";
 import {
   decryptSecret,
   encryptSecret,
@@ -174,18 +170,9 @@ test("resolveForRun 配额超限时拒绝并报 429", async () => {
   const { pool } = fakeDb([
     [/FROM user_ai_preferences/, () => ({ rows: [] })],
     [/scope = 'user' AND owner_id/, () => ({ rows: [metaRow()] })],
-    [
-      /usage_date >=/,
-      () => ({ rows: [{ total_tokens: "999999", request_count: "5", cost_micros: null }] }),
-    ],
-    [
-      /usage_date = /,
-      () => ({ rows: [{ total_tokens: "999999", request_count: "5", cost_micros: "0" }] }),
-    ],
-    [
-      /FROM ai_quotas/,
-      () => ({ rows: [{ period: "daily", metric: "tokens", limit_value: "500000" }] }),
-    ],
+    [/usage_date >=/, () => ({ rows: [{ total_tokens: "999999", request_count: "5", cost_micros: null }] })],
+    [/usage_date = /, () => ({ rows: [{ total_tokens: "999999", request_count: "5", cost_micros: "0" }] })],
+    [/FROM ai_quotas/, () => ({ rows: [{ period: "daily", metric: "tokens", limit_value: "500000" }] })],
   ]);
 
   const store = AiConfigStore.forTesting(pool, keys);
@@ -204,6 +191,7 @@ test("recordUsage 使用 upsert 累加并落使用明细", async () => {
   const keys = keySet();
   const { pool, log } = fakeDb([
     [/^BEGIN$/i, () => ({ rows: [] })],
+    [/INSERT INTO ai_usage_receipts/, () => ({ rows: [], rowCount: 1 })],
     [/INSERT INTO ai_usage_daily/, () => ({ rows: [] })],
     [/INSERT INTO ai_config_usages/, () => ({ rows: [] })],
     [/UPDATE ai_configs SET last_used_at/, () => ({ rows: [], rowCount: 1 })],
@@ -264,4 +252,79 @@ test("update 走 COALESCE 保留未指定字段，且只影响本归属的行", 
   assert.equal(updateStmt.values[0], 11, "WHERE 条件应限定 id");
   assert.equal(updateStmt.values[1], "user", "WHERE 条件应限定 scope");
   assert.equal(updateStmt.values[2], 100, "WHERE 条件应限定 owner_id，防止越权改别人的配置");
+});
+
+test("key rotation and endpoint change share the same scoped update transaction", async () => {
+  const keys = keySet();
+  const { pool, log } = fakeDb([
+    [/^BEGIN$|^COMMIT$/, () => ({ rows: [] })],
+    [/^UPDATE ai_configs SET\s+name/, () => ({ rows: [metaRow()] })],
+  ]);
+  await AiConfigStore.forTesting(pool, keys).update(11, "user", 100, { apiKey: PLAIN_KEY, endpointUrl: "https://new.example/v1" });
+  const writes = log.filter((q) => q.sql.startsWith("UPDATE"));
+  assert.equal(writes.length, 1);
+  assert.equal(writes[0].values[4], "https://new.example/v1");
+  assert.equal(decryptSecret(writes[0].values[17] as Buffer, keys), PLAIN_KEY);
+  assert.ok(!writes[0].values.includes(PLAIN_KEY));
+});
+
+test("organization preference and runtime resolution require a current membership grant", async () => {
+  let member = false;
+  const { pool, log } = fakeDb([
+    [/FROM ai_org_memberships/, () => ({ rows: member ? [{}] : [] })],
+    [/FROM user_ai_preferences/, () => ({ rows: [{ org_id: "7", active_config_id: null }] })],
+    [/INSERT INTO user_ai_preferences/, () => ({ rows: [] })],
+    [/SELECT id FROM ai_configs/, () => ({ rows: [] })],
+  ]);
+  const store = AiConfigStore.forTesting(pool, keySet());
+  await assert.rejects(store.setPreference(100, 7, null), (err: AiConfigStoreError) => err.status === 403);
+  assert.ok(!log.some((q) => q.sql.includes("INSERT")));
+  member = true;
+  await store.setPreference(100, 7, null);
+  await assert.rejects(store.setPreference(100, 7, 999), (err: AiConfigStoreError) => err.status === 404);
+  member = false;
+  await assert.rejects(store.resolveForRun({ userId: 100 }), (err: AiConfigStoreError) => err.status === 403);
+  assert.ok(!log.some((q) => q.sql.includes("api_key_cipher")));
+  // Revoked members can clear stale context without regaining access.
+  await store.setPreference(100, null, null);
+});
+
+test("runtime accounting persists config provenance, deduplicates events and blocks next run at quota", async () => {
+  const keys = keySet();
+  let requests = 0;
+  const receipts = new Set<string>();
+  const { pool, log } = fakeDb([
+    [/^BEGIN$|^COMMIT$/, () => ({ rows: [] })],
+    [/FROM user_ai_preferences/, () => ({ rows: [] })],
+    [/scope = 'user' AND owner_id/, () => ({ rows: [metaRow()] })],
+    [/FROM ai_usage_daily/, () => ({ rows: [{ total_tokens: 0, request_count: requests, cost_micros: 0 }] })],
+    [/FROM ai_quotas/, () => ({ rows: [{ period: "daily", metric: "requests", limit_value: "1" }] })],
+    [/SELECT api_key_cipher/, () => ({ rows: [{ api_key_cipher: encryptSecret(PLAIN_KEY, keys) }] })],
+    [
+      /INSERT INTO ai_usage_receipts/,
+      (_sql, values) => {
+        const key = JSON.stringify(values);
+        if (receipts.has(key)) return { rows: [], rowCount: 0 };
+        receipts.add(key);
+        return { rows: [], rowCount: 1 };
+      },
+    ],
+    [
+      /INSERT INTO ai_usage_daily/,
+      (_sql, values) => {
+        requests += Number(values[3]);
+        return { rows: [] };
+      },
+    ],
+    [/INSERT INTO ai_config_usages|UPDATE ai_configs SET last_used_at/, () => ({ rows: [] })],
+  ]);
+  const resolver = new StoreAiConfigResolver(AiConfigStore.forTesting(pool, keys));
+  const runtime = await resolver.resolve("user:100");
+  assert.ok(runtime.recordUsage);
+  await runtime.recordUsage("s_1", "request:1:1", { requests: 1 });
+  await runtime.recordUsage("s_1", "request:1:1", { requests: 1 });
+  assert.equal(requests, 1);
+  const detail = log.find((q) => q.sql.includes("INSERT INTO ai_config_usages"))!;
+  assert.deepEqual(detail.values.slice(0, 5), [11, "user", "user_default", 100, "s_1"]);
+  await assert.rejects(resolver.resolve("user:100"), (err: AiConfigStoreError) => err.status === 429);
 });

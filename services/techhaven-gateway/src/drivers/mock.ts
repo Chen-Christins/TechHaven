@@ -15,7 +15,7 @@ import { randomBytes } from "node:crypto";
 import { log } from "../log.js";
 import { errorMessage, nowIso, sha256Hex16, sleep } from "../util.js";
 import { EventChannel } from "../channel.js";
-import type { EngineDriver, EngineEvent, EngineSessionHandle } from "../types.js";
+import type { EngineDriver, EngineEvent, EngineSessionHandle, EngineRuntimeConfig } from "../types.js";
 
 /** 剧本步骤间停顿：让事件呈"流式"到达（0 也合法，便于测试提速） */
 const STEP_DELAY_MS = 30;
@@ -224,7 +224,14 @@ export class MockDriver implements EngineDriver {
 
   private readonly sessions = new Set<MockSession>();
 
-  async startSession(opts: { sessionId: string; orgId: number; prompt: string; profile?: string }): Promise<EngineSessionHandle> {
+  async startSession(opts: {
+    sessionId: string;
+    orgId: number;
+    prompt: string;
+    profile?: string;
+    runtimeConfig?: EngineRuntimeConfig;
+  }): Promise<EngineSessionHandle> {
+    await opts.runtimeConfig?.recordUsage?.(opts.sessionId, "mock-request", { requests: 1 });
     const session = new MockSession(opts, () => this.sessions.delete(session));
     this.sessions.add(session);
     return session;

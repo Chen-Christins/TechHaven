@@ -11,7 +11,16 @@ import {
   type AiServiceProvider,
 } from "./aiConfig.js";
 import { decryptSecret, encryptSecret, maskSecret, secretFingerprint, type MasterKeySet } from "./aiConfigCrypto.js";
-import type { AiConfigAsset, AiConfigMeta, AiConfigScope, ConfigStatus, QuotaRule, ResolvedConfig, ResolveSource, UsageWindow } from "./aiConfigAssets.js";
+import type {
+  AiConfigAsset,
+  AiConfigMeta,
+  AiConfigScope,
+  ConfigStatus,
+  QuotaRule,
+  ResolvedConfig,
+  ResolveSource,
+  UsageWindow,
+} from "./aiConfigAssets.js";
 import { AiConfigResolveError, dailyBucket, evaluateQuotas, monthStart, resolveAiConfig } from "./aiConfigAssets.js";
 import type { EngineRuntimeConfig } from "./types.js";
 
@@ -73,6 +82,7 @@ export interface CreateConfigInput {
 
 /** 可更新的非密钥字段；undefined 表示不改动 */
 export interface UpdateConfigInput {
+  apiKey?: string;
   name?: string;
   endpointUrl?: string;
   providerType?: AiProviderType;
@@ -161,6 +171,9 @@ export class AiConfigStore {
     });
     try {
       await pool.query("SELECT 1");
+      // Do not announce asset mode against a database missing its migrations.
+      await pool.query("SELECT config_id, event_key FROM ai_usage_receipts LIMIT 0");
+      await pool.query("SELECT org_id, user_id FROM ai_org_memberships LIMIT 0");
     } catch (err) {
       await pool.end().catch(() => undefined);
       throw new AiConfigStoreError(503, `连接 Agent DB 失败：${(err as Error).message}`);
@@ -240,6 +253,7 @@ export class AiConfigStore {
 
   /** 更新非密钥字段；置为默认时会先清掉同归属下的旧默认 */
   async update(id: number, scope: AiConfigScope, ownerId: number, patch: UpdateConfigInput): Promise<AiConfigSummary> {
+    const cipher = patch.apiKey === undefined ? null : encryptSecret(patch.apiKey, this.keys);
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
@@ -263,6 +277,10 @@ export class AiConfigStore {
            is_default       = COALESCE($15, is_default),
            shared           = COALESCE($16, shared),
            status           = COALESCE($17, status),
+           api_key_cipher   = COALESCE($18::bytea, api_key_cipher),
+           api_key_fp       = COALESCE($19, api_key_fp),
+           api_key_masked   = COALESCE($20, api_key_masked),
+           key_version      = COALESCE($21, key_version),
            updated_at       = now()
          WHERE id = $1 AND scope = $2 AND owner_id = $3
          RETURNING ${META_COLUMNS}`,
@@ -284,6 +302,10 @@ export class AiConfigStore {
           patch.isDefault ?? null,
           patch.shared ?? null,
           patch.status ?? null,
+          cipher,
+          patch.apiKey === undefined ? null : secretFingerprint(patch.apiKey),
+          patch.apiKey === undefined ? null : maskSecret(patch.apiKey),
+          patch.apiKey === undefined ? null : this.keys.currentVersion,
         ],
       );
       if (rows.length === 0) {
@@ -321,10 +343,11 @@ export class AiConfigStore {
   }
 
   async remove(id: number, scope: AiConfigScope, ownerId: number): Promise<void> {
-    const { rowCount } = await this.pool.query(
-      `DELETE FROM ai_configs WHERE id = $1 AND scope = $2 AND owner_id = $3`,
-      [id, scope, ownerId],
-    );
+    const { rowCount } = await this.pool.query(`DELETE FROM ai_configs WHERE id = $1 AND scope = $2 AND owner_id = $3`, [
+      id,
+      scope,
+      ownerId,
+    ]);
     if (rowCount === 0) {
       throw new AiConfigStoreError(404, `未找到归属下的 AI 配置（id=${id}）`);
     }
@@ -337,13 +360,25 @@ export class AiConfigStore {
     );
     if (rows.length === 0) return {};
     const result: { orgId?: number; activeConfigId?: number } = {};
-    if (rows[0].org_id != null) result.orgId = Number(rows[0].org_id);
+    if (rows[0].org_id != null) {
+      result.orgId = Number(rows[0].org_id);
+      await this.requireOrgMember(userId, result.orgId);
+    }
     if (rows[0].active_config_id != null) result.activeConfigId = Number(rows[0].active_config_id);
     return result;
   }
 
   /** configId 传 null 表示清空选择，回到默认解析链 */
   async setPreference(userId: number, orgId: number | null, configId: number | null): Promise<void> {
+    if (orgId !== null) await this.requireOrgMember(userId, orgId);
+    if (configId !== null) {
+      const { rows } = await this.pool.query(
+        `SELECT id FROM ai_configs WHERE id = $1 AND
+          ((scope = 'user' AND owner_id = $2) OR (scope = 'org' AND owner_id = $3 AND shared = true))`,
+        [configId, userId, orgId],
+      );
+      if (!rows.length) throw new AiConfigStoreError(404, "配置不存在或无权使用");
+    }
     await this.pool.query(
       `INSERT INTO user_ai_preferences (user_id, org_id, active_config_id)
        VALUES ($1, $2, $3)
@@ -363,16 +398,24 @@ export class AiConfigStore {
     return rows.map((r) => ({ period: r.period, metric: r.metric, limitValue: Number(r.limit_value) }));
   }
 
+  /** Membership grants are managed by the trusted administration/sync channel only. */
+  async requireOrgMember(userId: number, orgId: number): Promise<void> {
+    const { rows } = await this.pool.query(`SELECT 1 FROM ai_org_memberships WHERE user_id = $1 AND org_id = $2`, [userId, orgId]);
+    if (!rows.length) throw new AiConfigStoreError(403, "无权使用该组织的 AI 配置");
+  }
+
   async replaceQuotas(configId: number, rules: readonly QuotaRule[]): Promise<void> {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
       await client.query(`DELETE FROM ai_quotas WHERE config_id = $1`, [configId]);
       for (const rule of rules) {
-        await client.query(
-          `INSERT INTO ai_quotas (config_id, period, metric, limit_value) VALUES ($1,$2,$3,$4)`,
-          [configId, rule.period, rule.metric, rule.limitValue],
-        );
+        await client.query(`INSERT INTO ai_quotas (config_id, period, metric, limit_value) VALUES ($1,$2,$3,$4)`, [
+          configId,
+          rule.period,
+          rule.metric,
+          rule.limitValue,
+        ]);
       }
       await client.query("COMMIT");
     } catch (err) {
@@ -431,6 +474,7 @@ export class AiConfigStore {
   async resolveForRun(input: ResolveForRunInput): Promise<ResolvedForRun> {
     const preference = await this.getPreference(input.userId);
     const orgId = input.orgId ?? preference.orgId ?? null;
+    if (orgId !== null) await this.requireOrgMember(input.userId, orgId);
 
     const { rows: userRows } = await this.pool.query<MetaRow>(
       `SELECT ${META_COLUMNS} FROM ai_configs WHERE scope = 'user' AND owner_id = $1 ORDER BY is_default DESC, name`,
@@ -465,7 +509,11 @@ export class AiConfigStore {
     }
 
     const windows = await this.usageWindows(picked.config.id);
-    const decision = evaluateQuotas(await this.listQuotas(picked.config.id), windows);
+    const rules = await this.listQuotas(picked.config.id);
+    if (rules.some((rule) => rule.metric === "cost_micros")) {
+      throw new AiConfigStoreError(412, "当前引擎没有可信的计费价格数据，请使用请求数或 token 配额");
+    }
+    const decision = evaluateQuotas(rules, windows);
     if (!decision.allowed) {
       const detail = decision.exceeded.map((r) => `${r.period}/${r.metric}`).join("、");
       throw new AiConfigStoreError(429, `AI 配置「${picked.config.name}」已超出配额（${detail}）`);
@@ -493,6 +541,7 @@ export class AiConfigStore {
     scopeSnapshot: AiConfigScope;
     resolvedFrom: ResolveSource;
     sessionSid?: string;
+    eventKey?: string;
     delta: UsageDelta;
     now?: Date;
   }): Promise<void> {
@@ -500,6 +549,17 @@ export class AiConfigStore {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
+      if (params.sessionSid) {
+        const receipt = await client.query(
+          `INSERT INTO ai_usage_receipts (config_id, session_sid, event_key)
+           VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
+          [params.configId, params.sessionSid, params.eventKey ?? "final"],
+        );
+        if (receipt.rowCount === 0) {
+          await client.query("COMMIT");
+          return;
+        }
+      }
       await client.query(
         `INSERT INTO ai_usage_daily
            (config_id, usage_date, session_count, request_count, prompt_tokens, completion_tokens, total_tokens, cost_micros)
@@ -591,7 +651,19 @@ export class StoreAiConfigResolver implements AiConfigResolver {
   async resolve(actor: string): Promise<EngineRuntimeConfig> {
     const userId = Number(positiveUserId(actor));
     const resolved = await this.store.resolveForRun({ userId });
-    return assetToRuntimeConfig(resolved.config, this.providerIds);
+    return {
+      ...assetToRuntimeConfig(resolved.config, this.providerIds),
+      recordUsage: (sessionSid, eventKey, delta) =>
+        this.store.recordUsage({
+          configId: resolved.config.id,
+          userId,
+          scopeSnapshot: resolved.config.scope,
+          resolvedFrom: resolved.source,
+          sessionSid,
+          eventKey,
+          delta,
+        }),
+    };
   }
 }
 
@@ -612,11 +684,7 @@ export function assetToRuntimeConfig(
     maxTokens: asset.maxTokens,
     env: {
       [envNames.key]: asset.apiKey,
-      [envNames.baseUrl]: normalizeProviderBaseUrl(
-        asset.endpointUrl,
-        asset.providerType,
-        asset.responseType,
-      ),
+      [envNames.baseUrl]: normalizeProviderBaseUrl(asset.endpointUrl, asset.providerType, asset.responseType),
     },
   };
 }

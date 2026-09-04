@@ -115,6 +115,7 @@ set +a
 : "${TECHHAVEN_GATEWAY_TOKEN:?TECHHAVEN_GATEWAY_TOKEN is required in $ENV_FILE}"
 
 if [[ "${TECHHAVEN_ENGINE_DRIVER:-mock}" == "dsh" ]]; then
+  cd "$RELEASE/services/techhaven-gateway"
   npm install --no-save --omit=dev \
     @deepseek-ai/dsh@0.1.1-rc.2 \
     @deepseek-ai/dsh-sdk-client@0.1.1-rc.2

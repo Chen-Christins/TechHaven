@@ -8,8 +8,8 @@
  *   4. org_default   —— 组织默认配置（必须 shared 才对成员开放）
  *
  * 任一步命中且状态可用即返回；全落空则返回 412，由调用方提示用户先配置。
- * 被禁用或已超限（quota_exceeded）的配置在每一层都被跳过，而不是直接报错——
- * 这样「个人那把钥匙没额度了」会自动回落到组织配置，符合使用直觉。
+ * 显式选择不可用时返回 409；默认链跳过非 active 配置。
+ * 实时用量由存储层检查，超限返回 429，不自动切换到另一套付费凭据。
  */
 import type { AiProviderType, AiResponseType, AiServiceProvider } from "./aiConfig.js";
 
@@ -94,10 +94,7 @@ export function resolveAiConfig(input: ResolveInput): ResolvedConfig {
     if (shared) {
       return { config: shared, source: "explicit", borrowedFromOrg: true };
     }
-    throw new AiConfigResolveError(
-      409,
-      `选中的 AI 配置（id=${preferredConfigId}）不可用：不存在、已禁用或额度已用完`,
-    );
+    throw new AiConfigResolveError(409, `选中的 AI 配置（id=${preferredConfigId}）不可用：不存在、已禁用或额度已用完`);
   }
 
   if (requestedName) {
@@ -167,10 +164,7 @@ function usageValue(window: UsageWindow, metric: QuotaMetric): number {
  * 判定是否仍在配额内。
  * 没有任何规则时视为不限量（allowed=true）——「未设限」与「已设限但未超」行为一致。
  */
-export function evaluateQuotas(
-  rules: readonly QuotaRule[],
-  windows: { daily: UsageWindow; monthly: UsageWindow },
-): QuotaDecision {
+export function evaluateQuotas(rules: readonly QuotaRule[], windows: { daily: UsageWindow; monthly: UsageWindow }): QuotaDecision {
   const exceeded = rules.filter((rule) => {
     const window = rule.period === "daily" ? windows.daily : windows.monthly;
     return usageValue(window, rule.metric) >= rule.limitValue;

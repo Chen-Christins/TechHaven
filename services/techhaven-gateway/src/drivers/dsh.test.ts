@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { EngineUsage } from "../types.js";
 import {
   DshSdkDriver,
   type DshHarness,
@@ -103,5 +104,62 @@ test("每个 dsh 会话获得隔离 runtime，用户密钥不继承 Gateway ambi
   } finally {
     if (previous === undefined) delete process.env.SECRET_THAT_MUST_NOT_LEAK;
     else process.env.SECRET_THAT_MUST_NOT_LEAK = previous;
+  }
+});
+
+test("dsh accounts final usage once per call and includes child sessions and disjoint cache tokens", async () => {
+  const event = (sessionId: string, type: string, data: object): DshHarnessNotification => ({
+    method: "session.event",
+    params: { sessionId, event: { type, time: Date.now(), data } },
+  });
+  const notifications = [
+    event("root", "step/start", { turn: 1, step: 1 }),
+    event("root", "assistant/chunk", { turn: 1, step: 1, chunk: { type: "usage", usage: { inputTokens: 999 } } }),
+    event("root", "assistant/message", {
+      turn: 1,
+      step: 1,
+      usage: { inputTokens: 10, cacheReadTokens: 3, cacheWriteTokens: 2, outputTokens: 7, reasoningTokens: 2 },
+    }),
+    event("child", "assistant/message", { turn: 1, step: 1, usage: { inputTokens: 4, outputTokens: 5 } }),
+    event("root", "turn/end", { turn: 1, reason: { kind: "completed" } }),
+  ];
+  class Harness implements DshHarness {
+    private pending = new PendingSubscription();
+    readonly client = {
+      prompt: async () => "message",
+      subscribeSessionTree: () => ({
+        next: async () => notifications.shift() ?? this.pending.next(),
+        close: () => this.pending.close(),
+      }),
+    };
+    async start() {}
+    async close() {
+      this.pending.close();
+    }
+  }
+  const usage = new Map<string, EngineUsage>();
+  const driver = new DshSdkDriver({ sdkLoader: async () => ({ DeepSeekHarness: Harness }) });
+  const handle = await driver.startSession({
+    sessionId: "root",
+    orgId: 1,
+    prompt: "test",
+    runtimeConfig: {
+      provider: "openai",
+      model: "test",
+      env: {},
+      recordUsage: async (sid, key, delta) => {
+        assert.equal(sid, "root");
+        usage.set(key, delta);
+      },
+    },
+  });
+  try {
+    for await (const e of handle.events()) if (e.type === "status_change" && e.status === "succeeded") break;
+    assert.equal(usage.size, 4);
+    assert.deepEqual(usage.get("tokens:root:1:1"), { promptTokens: 15, completionTokens: 7, totalTokens: 22 });
+    assert.deepEqual(usage.get("tokens:child:1:1"), { promptTokens: 4, completionTokens: 5, totalTokens: 9 });
+    assert.deepEqual(usage.get("request:root:1:1"), { requests: 1 });
+  } finally {
+    await driver.dispose();
   }
 });

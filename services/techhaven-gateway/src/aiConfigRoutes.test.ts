@@ -87,10 +87,7 @@ function fakeStore(): AiConfigStore {
   } as unknown as AiConfigStore;
 }
 
-async function withServer(
-  store: AiConfigStore | undefined,
-  run: (base: string) => Promise<void>,
-): Promise<void> {
+async function withServer(store: AiConfigStore | undefined, run: (base: string) => Promise<void>): Promise<void> {
   const registry = {} as unknown as SessionRegistry;
   const server = createGatewayServer(
     loadConfig({ TECHHAVEN_GATEWAY_TOKEN: GATEWAY_TOKEN }),
@@ -200,4 +197,18 @@ test("缺少可信 actor 时拒绝访问配置资产", async () => {
     });
     assert.equal(res.status, 401);
   });
+});
+
+test("configuration mode is explicit and still requires authenticated identity", async () => {
+  for (const [store, storage] of [
+    [undefined, "legacy"],
+    [fakeStore(), "assets"],
+  ] as const) {
+    await withServer(store, async (base) => {
+      const response = await fetch(`${base}/v1/ai-configs/mode`, authedInit());
+      assert.deepEqual(await response.json(), { storage });
+      const anonymous = await fetch(`${base}/v1/ai-configs/mode`, { headers: { authorization: `Bearer ${GATEWAY_TOKEN}` } });
+      assert.equal(anonymous.status, 401);
+    });
+  }
 });

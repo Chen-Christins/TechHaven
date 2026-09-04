@@ -4,6 +4,7 @@ import type { EngineEvent, SessionStatus } from "./types.js";
 const ACTIVE_STATUSES: readonly SessionStatus[] = ["queued", "running", "awaiting_permission"];
 
 export interface PersistedGatewaySession {
+  ownerActor?: string;
   sid: string;
   orgId: number;
   subjectType?: string;
@@ -21,7 +22,7 @@ interface SessionRow {
   status: SessionStatus;
   created_at: Date | string;
   ended_at: Date | string | null;
-  exit_info: { subject_type?: unknown; subject_id?: unknown } | null;
+  exit_info: { subject_type?: unknown; subject_id?: unknown; owner_actor?: unknown } | null;
 }
 
 interface EventRow {
@@ -42,6 +43,10 @@ export class PgQuotaError extends Error {
 /** PostgreSQL 权威的 Gateway session/event adapter；JSONL 仅由 registry 继续作为 spool。 */
 export class GatewayPgStore {
   private constructor(private readonly pool: pg.Pool) {}
+
+  static forTesting(pool: pg.Pool): GatewayPgStore {
+    return new GatewayPgStore(pool);
+  }
 
   static async connect(dbUrl: string, schema = "public"): Promise<GatewayPgStore> {
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schema)) throw new Error(`PostgreSQL schema 非法：${schema}`);
@@ -99,6 +104,7 @@ export class GatewayPgStore {
     }
     return sessions.rows.map((row) => ({
       sid: row.sid,
+      ...(typeof row.exit_info?.owner_actor === "string" ? { ownerActor: row.exit_info.owner_actor } : {}),
       orgId: Number(row.org_id),
       ...(typeof row.exit_info?.subject_type === "string" ? { subjectType: row.exit_info.subject_type } : {}),
       ...(typeof row.exit_info?.subject_id === "string" ? { subjectId: row.exit_info.subject_id } : {}),
@@ -112,6 +118,7 @@ export class GatewayPgStore {
   /** advisory transaction lock + authoritative count prevents multi-instance quota oversubscription. */
   async createSession(
     input: {
+      ownerActor?: string;
       sid: string;
       orgId: number;
       subjectType?: string;
@@ -146,8 +153,16 @@ export class GatewayPgStore {
         `INSERT INTO agent_sessions
            (sid, identity_id, org_id, engine, engine_version, profile, status, created_at, exit_info)
          VALUES ($1, $2, $3, 'techhaven-gateway', '0.1.0', 'managed', 'queued', $4,
-                 jsonb_strip_nulls(jsonb_build_object('subject_type', $5::text, 'subject_id', $6::text)))`,
-        [input.sid, identityId, input.orgId, input.createdAt, input.subjectType ?? null, input.subjectId ?? null],
+                 jsonb_strip_nulls(jsonb_build_object('subject_type', $5::text, 'subject_id', $6::text, 'owner_actor', $7::text)))`,
+        [
+          input.sid,
+          identityId,
+          input.orgId,
+          input.createdAt,
+          input.subjectType ?? null,
+          input.subjectId ?? null,
+          input.ownerActor ?? null,
+        ],
       );
       await client.query("COMMIT");
     } catch (error) {
