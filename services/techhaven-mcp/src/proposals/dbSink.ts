@@ -55,6 +55,16 @@ export class ProposalDbSink {
             [event.event, p.id],
           );
           break;
+        case "applying":
+          // 镜像应用领取态（审查意见 F2）：让治理侧能看到「已批准且正在写」，
+          // 租约与重新领取由权威存储（PG repository 的 apply_lease_expires_at）持有。
+          await this.ctx.pool.query(
+            `UPDATE agent_write_proposals
+                SET status = 'applying'
+              WHERE proposal_ref = $1 AND status IN ('pending', 'approved', 'applying')`,
+            [p.id],
+          );
+          break;
         case "applied":
           await this.ctx.pool.query(
             `UPDATE agent_write_proposals

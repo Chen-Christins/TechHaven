@@ -95,7 +95,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): BridgeConfig {
     throw new ConfigError("TECHHAVEN_LEGACY_RD_PREFIX 必须是以 / 开头且不含查询串的路径");
   }
   return {
-    port: integer(env, "TECHHAVEN_BRIDGE_PORT", 3092, 1, 65_535),
+    port: integer(env, "TECHHAVEN_BRIDGE_PORT", 3093, 1, 65_535),
     bridgeToken,
     legacyBaseUrl,
     legacyRdPrefix: legacyRdPrefix.replace(/\/+$/, ""),

@@ -48,7 +48,7 @@ agent token 只用于本服务与引擎之间的鉴权与审计，**不会**传�
 | `TECHHAVEN_TOKEN_SECRET`         | 必填               | 无                                 | agent token HMAC 密钥；与签发方共享，不得复用 Bridge 或 Gateway token |
 | `TECHHAVEN_AGENT_NAME`           | 否                 | `techhaven-mcp-poc`                | 审计和 Agent 身份显示名                                               |
 | `TECHHAVEN_BACKEND`              | 否                 | `mock`                             | `mock`、`bridge` 或 `http`                                            |
-| `TECHHAVEN_BRIDGE_URL`           | bridge 模式必填    | 无                                 | 例如 `http://127.0.0.1:3092`                                          |
+| `TECHHAVEN_BRIDGE_URL`           | bridge 模式必填    | 无                                 | 例如 `http://127.0.0.1:3093`（Bridge 端口，不是 BFF 的 3092）          |
 | `TECHHAVEN_BRIDGE_TOKEN`         | bridge 模式必填    | 无                                 | MCP → Bridge 内部 Bearer                                              |
 | `TECHHAVEN_API_BASE_URL`         | http 模式          | `https://techhaven.website/api/v1` | MCP 直连产品 API 的基址                                               |
 | `TECHHAVEN_SERVICE_TOKEN`        | http 模式必填      | 无                                 | MCP 直连产品 API 的服务 Bearer                                        |
@@ -78,7 +78,7 @@ dsh 侧通过 mcp-client 把本服务挂为外部工具源（stdio 方式，toke
     "TECHHAVEN_AGENT_TOKEN": "thm_v1....", // 每会话签发一次
     "TECHHAVEN_TOKEN_SECRET": "dev-only-secret-change-me",
     "TECHHAVEN_BACKEND": "bridge",
-    "TECHHAVEN_BRIDGE_URL": "http://127.0.0.1:3092",
+    "TECHHAVEN_BRIDGE_URL": "http://127.0.0.1:3093",
     "TECHHAVEN_BRIDGE_TOKEN": "与 Bridge 配置一致的随机值",
     "TECHHAVEN_AUDIT_FILE": "./audit/agent-audit.jsonl",
   },

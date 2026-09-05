@@ -38,7 +38,16 @@ test("all session routes reject another user and ownerless restored sessions", a
     },
     async close() {},
   };
-  const server = createGatewayServer(loadConfig({ TECHHAVEN_GATEWAY_TOKEN: "test-token" }), registry, proposals);
+  const server = createGatewayServer(
+    loadConfig({ TECHHAVEN_GATEWAY_TOKEN: "test-token" }),
+    registry,
+    proposals,
+    undefined,
+    undefined,
+    // 测试关注访问隔离：默认放行 orgAccess，让会话创建可走通；POST /v1/sessions 的
+    // 拒绝路径见 http.test.ts 里专门的 OrgAccess 负向用例（审查意见 F1）。
+    { requireMember: async () => undefined },
+  );
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
   const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;

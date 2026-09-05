@@ -242,7 +242,7 @@ npm ci && npm run typecheck && npm test && npm run smoke
 | `TECHHAVEN_TOKEN_SECRET`         | 是            | 无                                 | agent token HMAC 密钥                        |
 | `TECHHAVEN_AGENT_NAME`           | 否            | `techhaven-mcp-poc`                | 审计身份名                                   |
 | `TECHHAVEN_BACKEND`              | 否            | `mock`                             | `mock`、`bridge`（推荐）或 `http`            |
-| `TECHHAVEN_BRIDGE_URL`           | bridge        | 无                                 | 兼容层地址，通常 `http://127.0.0.1:3092`     |
+| `TECHHAVEN_BRIDGE_URL`           | bridge        | 无                                 | 兼容层地址，通常 `http://127.0.0.1:3093`     |
 | `TECHHAVEN_BRIDGE_TOKEN`         | bridge        | 无                                 | MCP → Bridge 内部 Bearer                     |
 | `TECHHAVEN_API_BASE_URL`         | http          | `https://techhaven.website/api/v1` | MCP 直连旧 API 基址                          |
 | `TECHHAVEN_SERVICE_TOKEN`        | http          | 无                                 | MCP 直连旧 API 的 Bearer                     |
@@ -264,7 +264,7 @@ npm ci && npm run typecheck && npm test && npm run smoke
 | 环境变量                           | 必填条件      | 默认值                           | 说明                                                 |
 | ---------------------------------- | ------------- | -------------------------------- | ---------------------------------------------------- |
 | `TECHHAVEN_BRIDGE_TOKEN`           | 是            | 无                               | 与 MCP 一致的内部随机 Bearer，不得与其他 token 复用  |
-| `TECHHAVEN_BRIDGE_PORT`            | 否            | `3092`                           | 服务只绑定 `127.0.0.1`                               |
+| `TECHHAVEN_BRIDGE_PORT`            | 否            | `3093`                           | 服务只绑定 `127.0.0.1`（3092 已分配给 BFF）          |
 | `TECHHAVEN_BRIDGE_LEDGER_FILE`     | 否            | `./data/bridge-operations.jsonl` | 单实例 append-only 幂等台账，必须持久化和备份        |
 | `TECHHAVEN_LEGACY_BASE_URL`        | 是            | 无                               | 包含 `/api/v1`、不含 `/rd` 的旧后端地址              |
 | `TECHHAVEN_LEGACY_RD_PREFIX`       | 否            | `/rd`                            | 旧研发 API 前缀                                      |
@@ -280,7 +280,7 @@ npm ci && npm run typecheck && npm test && npm run smoke
 保持旧后端和 MySQL 不动，按以下顺序部署：
 
 1. 确认旧后端可从 Bridge 所在机器访问，并冻结三类工单的真实请求/响应、认证方式和状态枚举。
-2. 启动一个 Bridge 实例；为 ledger 挂持久卷。MCP 与 Bridge 同机时保持 `127.0.0.1:3092`，不要向公网开放。
+2. 启动一个 Bridge 实例；为 ledger 挂持久卷。MCP 与 Bridge 同机时保持 `127.0.0.1:3093`（3092 是 BFF，3091 是 Gateway），不要向公网开放。
 3. 构建 MCP，把 `TECHHAVEN_BACKEND=bridge`、Bridge URL/token 注入 dsh 的 MCP server 环境；每个会话注入独立 `TECHHAVEN_AGENT_TOKEN`。
 4. 启动 Gateway。开发验证用 `TECHHAVEN_ENGINE_DRIVER=mock`；接入真实 Agent 时使用已经验证的 dsh driver/profile。
 5. 由 Nginx/BFF 暴露同源 `/gateway/*`，在服务端注入 Gateway Bearer 和真实用户 actor；静态前端不能依赖 Vite 开发代理完成生产鉴权。
@@ -297,7 +297,7 @@ TECHHAVEN_LEGACY_AUTH_VALUE=S_TOKEN=<旧后端服务账号会话>
 
 # dsh 启动 MCP 时注入
 TECHHAVEN_BACKEND=bridge
-TECHHAVEN_BRIDGE_URL=http://127.0.0.1:3092
+TECHHAVEN_BRIDGE_URL=http://127.0.0.1:3093
 TECHHAVEN_BRIDGE_TOKEN=<与上方一致>
 TECHHAVEN_AGENT_TOKEN=<按 session/org/scope 签发>
 TECHHAVEN_TOKEN_SECRET=<签发和校验共享的独立 HMAC 密钥>

@@ -70,7 +70,7 @@ function isProposalViewValue(value: unknown): boolean {
     typeof proposal.fromStatus === "string" &&
     typeof proposal.toStatus === "string" &&
     typeof proposal.reason === "string" &&
-    ["pending", "approved", "rejected", "applied", "expired"].includes(String(proposal.status)) &&
+    ["pending", "approved", "applying", "rejected", "applied", "expired"].includes(String(proposal.status)) &&
     typeof proposal.expiresAt === "string" &&
     typeof proposal.updatedAt === "string",
   );
@@ -91,7 +91,7 @@ function isEngineEventValue(value: unknown): value is EngineEvent {
       return typeof event.requestId === "string" && typeof event.tool === "string";
     case "proposal_lifecycle":
       return (
-        ["created", "approved", "rejected", "applied", "expired"].includes(String(event.event)) &&
+        ["created", "approved", "applying", "rejected", "applied", "expired"].includes(String(event.event)) &&
         typeof event.actor === "string" &&
         isProposalViewValue(event.proposal)
       );

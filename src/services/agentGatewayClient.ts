@@ -61,7 +61,7 @@ export class GatewayRequestError extends Error {
 }
 
 const SESSION_STATUSES = new Set(["queued", "running", "awaiting_permission", "succeeded", "failed", "cancelled"]);
-const PROPOSAL_STATUSES = new Set(["pending", "approved", "rejected", "applied", "expired"]);
+const PROPOSAL_STATUSES = new Set(["pending", "approved", "applying", "rejected", "applied", "expired"]);
 
 function isProposalView(value: unknown): boolean {
   if (!value || typeof value !== "object") return false;
@@ -115,7 +115,7 @@ function isEventEnvelope(value: unknown): value is EventEnvelope {
       return typeof payload.requestId === "string" && typeof payload.tool === "string";
     case "proposal_lifecycle":
       return (
-        ["created", "approved", "rejected", "applied", "expired"].includes(String(payload.event)) &&
+        ["created", "approved", "applying", "rejected", "applied", "expired"].includes(String(payload.event)) &&
         typeof payload.actor === "string" &&
         isProposalView(payload.proposal)
       );

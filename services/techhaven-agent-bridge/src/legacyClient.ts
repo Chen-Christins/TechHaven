@@ -222,10 +222,27 @@ export class LegacyHttpClient implements LegacyBackendPort {
     return { orgId, days, byKind, newlyCreated, newlyClosed };
   }
 
-  async updateTicketStatus(orgId: number, kind: TicketKind, id: number, toStatus: string, reason: string): Promise<void> {
+  async updateTicketStatus(
+    orgId: number,
+    kind: TicketKind,
+    id: number,
+    toStatus: string,
+    reason: string,
+    options?: { expectedFromStatus?: string },
+  ): Promise<void> {
+    // 期望的旧状态随写入下发：让支持条件更新的旧后端能在服务端做 compare-and-set，
+    // 覆盖「读—校验—写」之间来自其他业务客户端的并发写入（审查意见 F5）。
+    // 不支持的后端忽略该字段，语义退化为原来的无条件写，由写后对账兜底。
+    const expected = options?.expectedFromStatus;
     await this.call(this.path(kind, "/edit"), {
       method: "POST",
-      body: JSON.stringify({ id, status: this.encodeStatus(kind, toStatus), org_id: orgId, reason }),
+      body: JSON.stringify({
+        id,
+        status: this.encodeStatus(kind, toStatus),
+        org_id: orgId,
+        reason,
+        ...(expected === undefined ? {} : { expected_from_status: this.encodeStatus(kind, expected) }),
+      }),
     });
   }
 }

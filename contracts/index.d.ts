@@ -131,9 +131,19 @@ export interface ErrorEnvelope {
 // 提案生命周期（techhaven-mcp 写提案审批流）
 // ------------------------------------------------------------------
 
-export type ProposalStatus = "pending" | "approved" | "rejected" | "applied" | "expired";
+/**
+ * 提案状态。
+ * - pending：已创建，等待人工决定
+ * - approved：已批准，等待应用
+ * - applying：已被 worker 独占领取、正在执行业务写（审查意见 F2）
+ * - applied / rejected / expired：终态
+ *
+ * appying 是「领取态」而非「决定态」：进入 applying 后人工撤回必须返回冲突，
+ * 否则会出现「审批结果说 rejected、业务副作用已发生」的矛盾。
+ */
+export type ProposalStatus = "pending" | "approved" | "applying" | "rejected" | "applied" | "expired";
 
-export type ProposalLifecycleEventType = "created" | "approved" | "rejected" | "applied" | "expired";
+export type ProposalLifecycleEventType = "created" | "approved" | "applying" | "rejected" | "applied" | "expired";
 
 /** 浏览器可见的产品写提案快照；不包含内部数字 subject ID。 */
 export interface ProposalView {
@@ -156,7 +166,7 @@ export interface ProposalView {
 export interface ProposalLifecycleEvent {
   event: ProposalLifecycleEventType;
   ts: string;
-  /** "agent"（发起）/ "user:<id>"（人工决定）/ "system"（自动过期/应用） */
+  /** "agent"（发起）/ "user:<id>"（人工决定）/ "system"（自动过期/应用/领取） */
   actor: string;
   proposal: ProposalView;
   note?: string;

@@ -51,7 +51,9 @@ export class ProposalWorker {
           await this.options.store.getState(detail.id); // 触发超时补记，未批准不执行
           continue;
         }
-        if (status !== "approved" || this.inFlight.has(detail.id)) continue;
+        // applying = 上次领取后未回填终态（worker 崩溃/失联）；交给 repository 按租约判定能否重新领取
+        if (status !== "approved" && status !== "applying") continue;
+        if (this.inFlight.has(detail.id)) continue;
         this.inFlight.add(detail.id);
         try {
           await this.options.store.applyApproved(detail.id, (lockedDetail) => this.apply(lockedDetail));

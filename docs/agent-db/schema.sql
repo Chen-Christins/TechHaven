@@ -24,7 +24,9 @@ CREATE TYPE tool_kind AS ENUM ('read', 'write');
 
 CREATE TYPE risk_level AS ENUM ('low', 'medium', 'high');
 
-CREATE TYPE proposal_status AS ENUM ('pending', 'approved', 'rejected', 'applied', 'expired');
+-- 'applying' = 应用阶段的独占领取态（v0.6，审查意见 F2）：
+--   已被 worker 领取、正在执行业务写；此状态下人工撤回必须返回冲突。
+CREATE TYPE proposal_status AS ENUM ('pending', 'approved', 'applying', 'rejected', 'applied', 'expired');
 
 CREATE TYPE run_outcome AS ENUM ('draft', 'delivered', 'applied', 'discarded');
 
@@ -81,10 +83,15 @@ CREATE TABLE agent_sessions (
   started_at     TIMESTAMPTZ,
   ended_at       TIMESTAMPTZ,
   exit_info      JSONB,                              -- 退出码 / 末条事件 / 失败原因
+  -- 归属与租约（v0.7，审查意见 F4）：runner_id 标识当前执行实例，
+  -- lease_expires_at 标识 runner 失联判定边界；启动时按此筛选恢复会话。
+  runner_id        TEXT,
+  lease_expires_at TIMESTAMPTZ,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
   CHECK (ended_at IS NULL OR started_at IS NOT NULL)
 );
 CREATE INDEX idx_sessions_org_status ON agent_sessions (org_id, status);
+CREATE INDEX idx_sessions_runner_lease ON agent_sessions (runner_id, lease_expires_at) WHERE ended_at IS NULL;
 
 -- 会话与业务对象的关联（工单/需求/缺陷/文章……）
 CREATE TABLE agent_runs (
@@ -163,6 +170,9 @@ CREATE TABLE agent_write_proposals (
   applied_at   TIMESTAMPTZ,
   expires_at   TIMESTAMPTZ      NOT NULL,            -- 未决自动过期 = 默认拒绝（安全侧倾斜）
   created_at   TIMESTAMPTZ      NOT NULL DEFAULT now(),
+  -- 应用租约（v0.6）：status='applying' 时写入，回填终态时清空；
+  -- 租约到期的 applying 视为 worker 失联，可被重新领取。
+  apply_lease_expires_at TIMESTAMPTZ,
   UNIQUE (session_id, request_key)
 );
 CREATE INDEX idx_proposals_pending ON agent_write_proposals (org_id, status)

@@ -19,7 +19,7 @@ import { log } from "../log.js";
  * 规则（见 STATUS_RANK），重复事件不会回退状态，结果仍一致。
  */
 
-/** 提案状态：pending → approved → applied；或 pending → rejected / expired（未决过期 = 默认拒绝） */
+/** 提案状态：pending → approved → applying → applied；或 pending → rejected / expired（未决过期 = 默认拒绝） */
 /** 提案状态单源：techhaven-contracts（控制面共享契约，见根 contracts/README.md） */
 import type { ProposalStatus } from "techhaven-contracts";
 export type { ProposalStatus };
@@ -51,9 +51,9 @@ export interface ProposalDetail {
 export type ProposalEventType = ProposalEvent["event"];
 
 export interface ProposalEvent {
-  event: "created" | "approved" | "rejected" | "applied" | "expired";
+  event: "created" | "approved" | "applying" | "rejected" | "applied" | "expired";
   ts: string;
-  /** "agent"（发起）/ "user:cli"（人工批准/拒绝）/ "system"（自动过期/应用） */
+  /** "agent"（发起）/ "user:cli"（人工批准/拒绝）/ "system"（自动过期/应用/领取） */
   actor: string;
   proposal: ProposalDetail;
   note?: string;
@@ -88,22 +88,34 @@ export interface ProposalRepository {
   applyApproved(id: string, apply: (detail: ProposalDetail) => Promise<ProposalApplyOutcome>): Promise<boolean>;
 }
 
-/** 状态推进优先级：只允许沿优先级单向推进，防止文件被手改/竞争导致状态回退 */
+/**
+ * 状态推进优先级：只允许沿优先级单向推进，防止文件被手改/竞争导致状态回退。
+ *
+ * applying 是「应用阶段的独占领取态」（审查意见 F2）：
+ *   approved → applying 由 applyApproved 在发起业务写之前落盘，
+ *   之后业务写回调与撤回请求不再竞争同一段状态。applying 之后只允许
+ *   applied / rejected（后者仅由系统侧的应用失败补偿写入，人工撤回走 Gateway 409）。
+ */
 const STATUS_RANK: Record<ProposalStatus, number> = {
   pending: 0,
   approved: 1,
-  expired: 2,
-  rejected: 3,
-  applied: 3,
+  applying: 2,
+  expired: 3,
+  rejected: 4,
+  applied: 4,
 };
 
 /** 非 created 事件 → 折叠后的状态 */
 const EVENT_STATUS: Record<Exclude<ProposalEventType, "created">, ProposalStatus> = {
   approved: "approved",
+  applying: "applying",
   rejected: "rejected",
   applied: "applied",
   expired: "expired",
 };
+
+/** 应用租约：worker 领取后未回填终态超过此时长，允许重新领取（默认 5 分钟） */
+export const DEFAULT_APPLY_LEASE_MS = 5 * 60_000;
 
 /** 4 位随机小写字母数字（36^4 ≈ 168 万），叠加毫秒时间戳，PoC 足够去重 */
 function randomSuffix(): string {
@@ -128,6 +140,8 @@ export class ProposalStore implements ProposalRepository {
     private file: string,
     private ttlMinutes: number,
     private db?: ProposalSinkLike,
+    /** 应用租约：领取后未回填终态超过此时长视为 worker 失联，允许重新领取 */
+    private readonly applyLeaseMs: number = DEFAULT_APPLY_LEASE_MS,
   ) {
     mkdirSync(dirname(file), { recursive: true });
   }
@@ -168,6 +182,11 @@ export class ProposalStore implements ProposalRepository {
     const target = EVENT_STATUS[event];
     if (STATUS_RANK[target] <= STATUS_RANK[state.status]) {
       throw new Error(`提案 ${id} 当前状态为 ${state.status}，不允许追加 ${event} 事件`);
+    }
+    // applying 是应用阶段的独占领取态：人工撤回必须失败（否则会出现「撤回成功但写入已发生」）。
+    // 应用失败补偿走 forceEvent（actor "system"），不受此限制。
+    if (state.status === "applying" && event === "rejected" && actor !== "system") {
+      throw new Error(`提案 ${id} 正在应用（applying），无法撤回；请等待应用结束或联系管理员处理`);
     }
     this.record({
       event,
@@ -228,10 +247,69 @@ export class ProposalStore implements ProposalRepository {
 
   async applyApproved(id: string, apply: (detail: ProposalDetail) => Promise<ProposalApplyOutcome>): Promise<boolean> {
     const state = this.getState(id);
-    if (state.status !== "approved" || state.detail === null) return false;
-    const outcome = await apply(state.detail);
+    if (state.detail === null) return false;
+    if (state.status === "applying" && !this.leaseExpired(id)) return false;
+    if (state.status !== "approved" && state.status !== "applying") return false;
+
+    // 独占领取：先落 applying 再执行业务写回调。
+    // JSONL 单进程内「读状态 → 落 applying」之间没有 await，等价于一次 compare-and-set；
+    // 领取之后 Gateway 侧的人工撤回读到 applying 会返回 409，不再出现「撤回成功但已写入」。
+    this.claim(id, state.status);
+    let outcome: ProposalApplyOutcome;
+    try {
+      outcome = await apply(state.detail);
+    } catch (error) {
+      // 业务写异常抛出（而非返回 rejected）：留痕后上抛，避免 applying 永久悬挂，
+      // 同时不把「未知写结果」谎报成成功或干净失败。
+      this.forceEvent("rejected", id, "system", `应用失败：${error instanceof Error ? error.message : String(error)}`);
+      throw error;
+    }
     this.appendEvent(outcome.status, id, "system", outcome.note);
     return true;
+  }
+
+  /** 领取（或租约过期后的重新领取）：直接落盘 applying，不经过状态单调性检查 */
+  private claim(id: string, current: ProposalStatus): void {
+    const state = this.getState(id);
+    if (state.detail === null) return;
+    this.record({
+      event: "applying",
+      ts: new Date().toISOString(),
+      actor: "system",
+      proposal: state.detail,
+      note: current === "applying" ? "应用租约过期，重新领取" : "已领取应用，撤回请求将被拒绝",
+    });
+  }
+
+  /** 租约是否已过期：读取最后一条 applying 事件的时间戳 */
+  private leaseExpired(id: string): boolean {
+    let claimedAt: number | undefined;
+    for (const ev of this.readEvents()) {
+      if (ev?.proposal?.id !== id) continue;
+      if (ev.event !== "applying") continue;
+      const ts = Date.parse(ev.ts);
+      if (Number.isFinite(ts)) claimedAt = ts;
+    }
+    if (claimedAt === undefined) return false; // 无领取时间戳 = 不敢接管，留在安全侧
+    return Date.now() - claimedAt > this.applyLeaseMs;
+  }
+
+  /** 绕过状态单调性检查直接落盘：只用于应用失败补偿（applying → rejected） */
+  private forceEvent(
+    event: Exclude<ProposalEventType, "created">,
+    id: string,
+    actor: string,
+    note?: string,
+  ): void {
+    const state = this.getState(id);
+    if (state.detail === null) return;
+    this.record({
+      event,
+      ts: new Date().toISOString(),
+      actor,
+      proposal: state.detail,
+      ...(note !== undefined && note !== "" ? { note } : {}),
+    });
   }
 
   /**

@@ -14,6 +14,7 @@ import { JsonlProposalPort, PgProposalPort, type ProposalPort } from "./proposal
 import { HttpAiConfigResolver, type AiConfigResolver } from "./aiConfig.js";
 import { AiConfigStore, StoreAiConfigResolver } from "./aiConfigStore.js";
 import { loadMasterKeys } from "./aiConfigCrypto.js";
+import { AiConfigOrgAccess, LocalDemoOrgAccess, type OrgAccessPort } from "./orgAccess.js";
 
 /**
  * 组装引擎驱动：mock 直接构造；dsh 静态导入构造（drivers/dsh.ts 已交付，
@@ -59,7 +60,12 @@ async function main(): Promise<void> {
   let aiConfigStore: AiConfigStore | undefined;
   if (config.store === "postgres") {
     const { GatewayPgStore } = await import("./pgStore.js");
-    pgStore = await GatewayPgStore.connect(config.dbUrl, config.dbSchema);
+    // 归属与租约：把当前实例 ID 注入 pgStore，启动时强制单活（advisory_lock），
+    // 防止多实例同时接管同一份 agent_sessions（审查意见 F4）。
+    pgStore = await GatewayPgStore.connect(config.dbUrl, config.dbSchema, {
+      ...(config.instanceId === undefined ? {} : { instanceId: config.instanceId }),
+    });
+    log(`PG 单活门禁已启用，归属 instanceId=${pgStore.currentInstanceId}`);
     proposalPort = await PgProposalPort.connect(config.dbUrl, config.dbSchema);
     log("PostgreSQL authoritative 已连接：session/event 先提交 PG，JSONL 仅作 spool");
     log("PostgreSQL proposal control API 已连接：审批决定写入 agent_write_proposals");
@@ -108,7 +114,22 @@ async function main(): Promise<void> {
   } else if (config.driver === "dsh") {
     log("用户 AI 配置解析未启用：dsh 将沿用 Gateway 进程级模型凭据");
   }
-  const server = createGatewayServer(config, registry, proposalPort, aiConfigResolver, aiConfigStore);
+
+  // 组织授权（审查意见 F1）：会话创建前校验「用户属于目标组织」。
+  // 有 Agent DB 配置资产 → 以 ai_org_memberships 为权威；否则只有显式开启的
+  // mock 演示逃生舱能放行；两者都没有时不注入端口，创建会话 fail-closed 返回 503。
+  let orgAccess: OrgAccessPort | undefined;
+  if (aiConfigStore) {
+    orgAccess = new AiConfigOrgAccess(aiConfigStore);
+    log("组织授权已启用：会话创建前校验 ai_org_memberships 成员关系");
+  } else if (config.orgAccessAllowAll) {
+    orgAccess = new LocalDemoOrgAccess(log);
+    log("警告：组织授权已按 TECHHAVEN_ORG_ACCESS_ALLOW_ALL=1 跳过（仅 mock 本地演示），真实部署不得启用");
+  } else {
+    log("警告：未配置可信组织授权服务，POST /v1/sessions 将返回 503（fail-closed）");
+  }
+
+  const server = createGatewayServer(config, registry, proposalPort, aiConfigResolver, aiConfigStore, orgAccess);
   server.on("error", (err) => {
     log(`HTTP 服务错误（端口 ${config.port} 可能被占用）：`, err);
     process.exit(1);

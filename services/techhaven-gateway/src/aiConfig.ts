@@ -8,7 +8,12 @@ export type AiServiceProvider = "openai" | "anthropic" | "zhipu" | "custom";
 export type AiResponseType = "responses" | "chat_completions" | "messages";
 
 export interface AiConfigResolver {
-  resolve(actor: string): Promise<EngineRuntimeConfig>;
+  /**
+   * 按 actor 与**已授权的 orgId** 解析本次运行要用的模型配置。
+   * orgId 必传性由调用方保证：会话创建前已经过组织成员校验（见 orgAccess.ts），
+   * 这里带上同一个 orgId，配置解析才能按组织范围选配置并校验共享授权。
+   */
+  resolve(actor: string, orgId?: number): Promise<EngineRuntimeConfig>;
 }
 
 export interface HttpAiConfigResolverOptions {
@@ -240,10 +245,13 @@ export class HttpAiConfigResolver implements AiConfigResolver {
     this.providerIds = { ...DEFAULT_PROVIDER_IDS, ...options.providerIds };
   }
 
-  async resolve(actor: string): Promise<EngineRuntimeConfig> {
+  async resolve(actor: string, orgId?: number): Promise<EngineRuntimeConfig> {
     const userId = positiveUserId(actor);
     const url = new URL(this.endpoint);
     url.searchParams.set("user_id", userId);
+    // 组织上下文随请求下发：产品后端据此判定该用户在此组织内可用的配置。
+    // Gateway 侧已在会话创建前完成成员校验，这里是同一事实的传递，不是新的授权依据。
+    if (orgId !== undefined) url.searchParams.set("org_id", String(orgId));
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.options.timeoutMs);
     let response: Response;
@@ -254,6 +262,7 @@ export class HttpAiConfigResolver implements AiConfigResolver {
           accept: "application/json",
           authorization: `Bearer ${this.options.serviceToken}`,
           "x-techhaven-actor": actor,
+          ...(orgId === undefined ? {} : { "x-techhaven-org-id": String(orgId) }),
         },
         signal: controller.signal,
       });

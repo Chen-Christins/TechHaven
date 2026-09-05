@@ -648,9 +648,14 @@ export class StoreAiConfigResolver implements AiConfigResolver {
     this.providerIds = { ...DEFAULT_PROVIDER_IDS, ...providerIds };
   }
 
-  async resolve(actor: string): Promise<EngineRuntimeConfig> {
+  /**
+   * orgId 必须是**已通过成员校验**的那个组织（见 orgAccess.ts）。
+   * 传给 resolveForRun 后，store 会再次 requireOrgMember：配置解析与会话创建
+   * 共用同一份授权判定，避免「会话属于组织 A、配置取自组织 B」的错配。
+   */
+  async resolve(actor: string, orgId?: number): Promise<EngineRuntimeConfig> {
     const userId = Number(positiveUserId(actor));
-    const resolved = await this.store.resolveForRun({ userId });
+    const resolved = await this.store.resolveForRun({ userId, orgId });
     return {
       ...assetToRuntimeConfig(resolved.config, this.providerIds),
       recordUsage: (sessionSid, eventKey, delta) =>

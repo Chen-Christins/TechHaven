@@ -61,11 +61,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function validStatus(value: unknown): value is ProposalStatus {
-  return ["pending", "approved", "rejected", "applied", "expired"].includes(String(value));
+  return ["pending", "approved", "applying", "rejected", "applied", "expired"].includes(String(value));
 }
 
 function validEvent(value: unknown): value is ProposalLifecycleEventType {
-  return ["created", "approved", "rejected", "applied", "expired"].includes(String(value));
+  return ["created", "approved", "applying", "rejected", "applied", "expired"].includes(String(value));
 }
 
 function parseFileEvent(value: unknown): ProposalFileEvent | undefined {
@@ -139,6 +139,10 @@ function notFound(): GatewayError {
 }
 
 function conflict(id: string, status: ProposalStatus, decision: "approve" | "reject"): GatewayError {
+  // applying：业务写已被 worker 独占领取，撤回无法撤销已发生的写入 → 明确冲突（审查意见 F2）
+  if (status === "applying") {
+    return new GatewayError(409, `提案 ${id} 正在应用（applying），无法${decision === "approve" ? "重复批准" : "撤回"}`);
+  }
   return new GatewayError(409, `提案 ${id} 当前状态为 ${status}，不能执行 ${decision}`);
 }
 
@@ -223,7 +227,9 @@ export class JsonlProposalPort implements ProposalPort {
         const currentStatus = current.proposal.status;
         const allowed =
           (currentStatus === "pending" && ["approved", "rejected", "expired"].includes(nextStatus)) ||
-          (currentStatus === "approved" && ["applied", "rejected"].includes(nextStatus));
+          (currentStatus === "approved" && ["applying", "applied", "rejected"].includes(nextStatus)) ||
+          // 领取态只允许补齐终态；人工撤回在 decide 侧被拒，这里只负责正确折叠文件里已有的事件
+          (currentStatus === "applying" && ["applied", "rejected"].includes(nextStatus));
         if (allowed) states.set(event.proposal.id, snapshot(event));
       } catch {
         log("proposal JSONL：跳过无法解析的行", line.slice(0, 80));

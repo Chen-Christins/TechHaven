@@ -25,6 +25,7 @@ import type {
   SessionStatus,
 } from "./types.js";
 import { PgQuotaError, type GatewayPgStore, type PersistedGatewaySession } from "./pgStore.js";
+import { withSessionMcpContext } from "./mcpLaunchContext.js";
 
 /** 事件信封（TH-RFC-001 §6）：seq/type/occurredAt 上提，payload 保留事件其余字段；SSE 数据帧装信封，JSONL 仍装引擎事件 */
 export function toEnvelopeJson(record: SessionRecord, ev: EngineEvent): string {
@@ -294,6 +295,11 @@ export class SessionRegistry {
     }
     this.records.set(sid, record);
     this.bumpActive(record.orgId, 1);
+    // MCP 启动上下文与「已授权 org + 本次 sid」绑定：dsh 子进程的 env 会整体替换父环境，
+    // 随附的 dsh MCP 配置只能从这里拿到凭据与会话归属（审查意见 F6）。
+    if (record.runtimeConfig) {
+      withSessionMcpContext(record.runtimeConfig, { sid, orgId: record.orgId });
+    }
     // patch 行带全量归属（orgId/subjectType/subjectId 供装载器落 agent_sessions / agent_identities）；
     // 中途状态变化不写 patch 行（kind:"event" 行已含 status），归属以首行为准
     this.appendJsonl(JSON.stringify({ kind: "session", sid, patch: sessionPatch(record, record.status) }));

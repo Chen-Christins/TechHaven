@@ -51,6 +51,16 @@ export interface EngineRuntimeConfig {
   reasoningEffort?: string;
   maxTokens?: number;
   env: Record<string, string>;
+  /**
+   * 会话级 MCP 启动上下文（审查意见 F6）：显式绑定 sid / 已授权 org / 最小 scopes，
+   * 并按需携带专用的 MCP 启动凭据。
+   *
+   * 存在的理由：dsh 的 env 会**整体替换**父环境（docs/DSH_SDK.md §「显式 env」），
+   * 而随附的 dsh MCP 配置恰好从 process.env 读取 TECHHAVEN_AGENT_TOKEN /
+   * TECHHAVEN_TOKEN_SECRET。不显式传递，启用用户模型配置后 MCP 初始化必然失败。
+   * 这里只放最小集合，绝不回退成「继承全部父环境」。
+   */
+  mcpEnv?: Record<string, string>;
 }
 
 export interface EngineUsage {

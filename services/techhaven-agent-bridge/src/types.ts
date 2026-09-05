@@ -62,5 +62,18 @@ export interface LegacyBackendPort {
     opts: { query?: string; priority?: string; page?: number; pageSize?: number },
   ): Promise<TicketPage>;
   getTrendSummary(orgId: number, days: number): Promise<TrendSummary>;
-  updateTicketStatus(orgId: number, kind: TicketKind, id: number, toStatus: string, reason: string): Promise<void>;
+  /**
+   * 条件写：expectedFromStatus 随写请求一起下发（审查意见 F5）。
+   * 本地串行化只能挡住本进程内的并发提案；旧后端若支持按期望旧状态做
+   * compare-and-set，就能一起挡住其他业务客户端的并发写入。
+   * 不支持该字段的旧后端会忽略它，行为与之前一致。
+   */
+  updateTicketStatus(
+    orgId: number,
+    kind: TicketKind,
+    id: number,
+    toStatus: string,
+    reason: string,
+    options?: { expectedFromStatus?: string },
+  ): Promise<void>;
 }

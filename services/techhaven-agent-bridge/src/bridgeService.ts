@@ -39,7 +39,15 @@ function digest(input: TransitionInput): string {
 }
 
 export class BridgeService {
-  private readonly tails = new Map<string, Promise<TransitionResult>>();
+  /**
+   * 同一工单的读—校验—写—确认整段串行。
+   *
+   * 键是目标工单 (orgId, kind, id)，而**不是** idempotencyKey：两个不同 proposal
+   * 带着不同幂等键改同一个工单时，旧的按幂等键排队会让它们并发通过
+   * expectedFromStatus 检查，第二次写覆盖第一次（审查意见 F5）。
+   * 幂等键仍然用于请求去重与重放，两者职责分离。
+   */
+  private readonly subjectTails = new Map<string, Promise<TransitionResult>>();
 
   constructor(
     private readonly legacy: LegacyBackendPort,
@@ -66,11 +74,13 @@ export class BridgeService {
   }
 
   transition(input: TransitionInput): Promise<TransitionResult> {
-    const previous = this.tails.get(input.idempotencyKey);
+    const subjectKey = `${input.orgId}:${input.kind}:${input.id}`;
+    const previous = this.subjectTails.get(subjectKey);
+    // 前序操作失败不影响本次排队：每个提案都要基于自己读到的状态重新校验。
     const next = (previous ? previous.catch(() => undefined) : Promise.resolve()).then(() => this.transitionNow(input));
-    this.tails.set(input.idempotencyKey, next);
+    this.subjectTails.set(subjectKey, next);
     return next.finally(() => {
-      if (this.tails.get(input.idempotencyKey) === next) this.tails.delete(input.idempotencyKey);
+      if (this.subjectTails.get(subjectKey) === next) this.subjectTails.delete(subjectKey);
     });
   }
 
@@ -125,7 +135,9 @@ export class BridgeService {
 
     this.ledger.append(this.operation(input, requestDigest, "started"));
     try {
-      await this.legacy.updateTicketStatus(input.orgId, input.kind, input.id, input.toStatus, input.reason);
+      await this.legacy.updateTicketStatus(input.orgId, input.kind, input.id, input.toStatus, input.reason, {
+        expectedFromStatus: before.status,
+      });
       const after = await this.legacy.getTicket(input.orgId, input.kind, input.id);
       if (!after || after.status !== input.toStatus) {
         this.ledger.append(this.operation(input, requestDigest, "uncertain", "旧后端返回成功但写后状态未确认"));

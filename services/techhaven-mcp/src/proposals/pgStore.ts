@@ -1,7 +1,14 @@
 import { createHash, randomBytes } from "node:crypto";
 import type pg from "pg";
 import type { TicketKind } from "../domain/types.js";
-import type { ProposalApplyOutcome, ProposalDetail, ProposalRepository, ProposalState, ProposalStatus } from "./store.js";
+import type {
+  ProposalApplyOutcome,
+  ProposalDetail,
+  ProposalRepository,
+  ProposalState,
+  ProposalStatus,
+} from "./store.js";
+import { DEFAULT_APPLY_LEASE_MS } from "./store.js";
 
 interface ProposalRow {
   proposal_ref: string;
@@ -84,6 +91,8 @@ export class PgProposalRepository implements ProposalRepository {
     private readonly pool: pg.Pool,
     private readonly ttlMinutes: number,
     private readonly orgId: number,
+    /** 应用租约：领取后未回填终态超过此时长，允许其他 worker 重新领取 */
+    private readonly applyLeaseMs: number = DEFAULT_APPLY_LEASE_MS,
   ) {}
 
   async create(detail: Omit<ProposalDetail, "id" | "expiresAt">): Promise<ProposalDetail> {
@@ -116,7 +125,12 @@ export class PgProposalRepository implements ProposalRepository {
     return { ...detail, id: returned.proposal_ref, expiresAt: new Date(returned.expires_at).toISOString() };
   }
 
-  async appendEvent(event: "approved" | "rejected" | "applied" | "expired", id: string, actor: string, note?: string): Promise<void> {
+  async appendEvent(
+    event: "approved" | "applying" | "rejected" | "applied" | "expired",
+    id: string,
+    actor: string,
+    note?: string,
+  ): Promise<void> {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
@@ -126,8 +140,16 @@ export class PgProposalRepository implements ProposalRepository {
       const current = state.status;
       const allowed =
         (current === "pending" && (event === "approved" || event === "rejected" || event === "expired")) ||
-        (current === "approved" && (event === "applied" || event === "rejected"));
-      if (!allowed) throw new Error(`提案 ${id} 当前状态为 ${current}，不允许追加 ${event} 事件`);
+        // 领取态：只允许补齐终态；人工撤回 applying 必须失败（审查意见 F2）
+        (current === "applying" && (event === "applied" || (event === "rejected" && actor === "system"))) ||
+        (current === "approved" && (event === "applied" || event === "rejected" || event === "applying"));
+      if (!allowed) {
+        throw new Error(
+          current === "applying" && event === "rejected"
+            ? `提案 ${id} 正在应用（applying），无法撤回；请等待应用结束或联系管理员处理`
+            : `提案 ${id} 当前状态为 ${current}，不允许追加 ${event} 事件`,
+        );
+      }
 
       const decided = event === "approved" || event === "rejected";
       const applied = event === "applied";
@@ -137,6 +159,7 @@ export class PgProposalRepository implements ProposalRepository {
                 decided_by = CASE WHEN $2::boolean THEN $3 ELSE decided_by END,
                 decided_at = CASE WHEN $2::boolean THEN now() ELSE decided_at END,
                 applied_at = CASE WHEN $4::boolean THEN now() ELSE applied_at END,
+                apply_lease_expires_at = CASE WHEN $1 = 'applied' OR $1 = 'rejected' THEN NULL ELSE apply_lease_expires_at END,
                 apply_note = COALESCE($5, apply_note)
           WHERE proposal_ref = $6 AND org_id = $7 AND status = $8`,
         [event, decided, actorUserId(actor), applied, note ?? null, id, this.orgId, current],
@@ -174,33 +197,64 @@ export class PgProposalRepository implements ProposalRepository {
     return result.rows.map((row) => ({ detail: detailFromRow(row), status: row.status }));
   }
 
+  /**
+   * 两阶段应用（审查意见 F2）：
+   *   1) 事务内把 approved 推进为 applying 并写入租约，然后**立即提交释放行锁**——
+   *      这样人工撤回请求不会被业务写回调阻塞，而是读到 applying 直接返回 409；
+   *   2) 执行业务写回调（不持锁）；
+   *   3) 再开事务按 `status = 'applying'` 条件写入终态，条件不成立说明有人/有进程已改状态。
+   *
+   * 持锁执行回调（旧行为）虽然也能串行化，但会把撤回请求挂起到写入结束，
+   * 且崩溃时没有任何痕迹表明「有人正在写」——applying + 租约让失联可被检测和接管。
+   */
   async applyApproved(id: string, apply: (detail: ProposalDetail) => Promise<ProposalApplyOutcome>): Promise<boolean> {
-    const client = await this.pool.connect();
+    // 阶段 1：独占领取
+    const claim = await this.pool.query(
+      `UPDATE agent_write_proposals
+          SET status = 'applying',
+              apply_lease_expires_at = now() + ($3::text || ' milliseconds')::interval,
+              apply_note = COALESCE($4, apply_note)
+        WHERE proposal_ref = $1 AND org_id = $2
+          AND (status = 'approved'
+               OR (status = 'applying' AND (apply_lease_expires_at IS NULL OR apply_lease_expires_at <= now())))
+        RETURNING proposal_ref`,
+      [id, this.orgId, String(this.applyLeaseMs), "已领取应用，撤回请求将被拒绝"],
+    );
+    if (claim.rowCount !== 1) return false;
+
+    const state = await this.getState(id);
+    if (state.status !== "applying" || state.detail === null) return false;
+
+    // 阶段 2：业务写（不持锁）
+    let outcome: ProposalApplyOutcome;
     try {
-      await client.query("BEGIN");
-      const state = await this.lockState(client, id);
-      if (state.status !== "approved" || state.detail === null) {
-        await client.query("ROLLBACK");
-        return false;
-      }
-      const outcome = await apply(state.detail);
-      const result = await client.query(
-        `UPDATE agent_write_proposals
-            SET status = $1,
-                applied_at = CASE WHEN $1 = 'applied' THEN now() ELSE applied_at END,
-                apply_note = COALESCE($2, apply_note)
-          WHERE proposal_ref = $3 AND org_id = $4 AND status = 'approved'`,
-        [outcome.status, outcome.note ?? null, id, this.orgId],
-      );
-      if (result.rowCount !== 1) throw new Error(`提案 ${id} 应用状态被并发修改`);
-      await client.query("COMMIT");
-      return true;
+      outcome = await apply(state.detail);
     } catch (error) {
-      await client.query("ROLLBACK").catch(() => undefined);
+      // 应用异常：留痕终态（避免 applying 悬挂到租约过期）后上抛，绝不谎报成功
+      await this.pool
+        .query(
+          `UPDATE agent_write_proposals
+              SET status = 'rejected', apply_lease_expires_at = NULL,
+                  apply_note = $2, decided_by = 0, decided_at = now()
+            WHERE proposal_ref = $1 AND org_id = $3 AND status = 'applying'`,
+          [id, `应用失败：${error instanceof Error ? error.message : String(error)}`, this.orgId],
+        )
+        .catch(() => undefined);
       throw error;
-    } finally {
-      client.release();
     }
+
+    // 阶段 3：按 applying 条件写终态
+    const result = await this.pool.query(
+      `UPDATE agent_write_proposals
+          SET status = $1,
+              applied_at = CASE WHEN $1 = 'applied' THEN now() ELSE applied_at END,
+              apply_lease_expires_at = NULL,
+              apply_note = COALESCE($2, apply_note)
+        WHERE proposal_ref = $3 AND org_id = $4 AND status = 'applying'`,
+      [outcome.status, outcome.note ?? null, id, this.orgId],
+    );
+    if (result.rowCount !== 1) throw new Error(`提案 ${id} 应用状态被并发修改`);
+    return true;
   }
 
   private async lockState(client: pg.PoolClient, id: string): Promise<ProposalState> {

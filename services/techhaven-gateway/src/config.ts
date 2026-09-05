@@ -46,6 +46,18 @@ export interface Config {
   dshProviderOpenai: string;
   dshProviderClaude: string;
   dshProviderGlm: string;
+  /**
+   * 本地演示逃生舱：TECHHAVEN_ORG_ACCESS_ALLOW_ALL=1 时跳过「调用者属于目标组织」校验。
+   * 仅允许 driver=mock（无真实引擎、无真实产品数据）时开启，用于本地跑通前端演示；
+   * 其余情况下配置即启动失败，避免真实部署误配成「任意组织可建会话」。
+   */
+  orgAccessAllowAll: boolean;
+  /**
+   * 当前 Gateway 实例标识（TECHHAVEN_GATEWAY_INSTANCE_ID）。PG 部署时写入
+   * agent_sessions.runner_id，用于归属 / 租约 / fencing（审查意见 F4）。
+   * 缺省按 hostname:pid:random 自动生成；显式注入便于多副本联调。
+   */
+  instanceId?: string;
 }
 
 /** 配置错误（≈ services/techhaven-mcp/src/config.ts 的 ConfigError 同构孪生，防漂移） */
@@ -144,6 +156,22 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     throw new ConfigError(`TECHHAVEN_AI_CONFIG_TIMEOUT_MS 必须是 100~60000 的整数，收到：${aiConfigTimeoutRaw}`);
   }
 
+  // 组织授权逃生舱：只允许 mock 驱动显式开启（真实链路必须走可信组织授权服务）
+  const orgAccessAllowAllRaw = (env.TECHHAVEN_ORG_ACCESS_ALLOW_ALL ?? "").trim();
+  if (orgAccessAllowAllRaw !== "" && orgAccessAllowAllRaw !== "0" && orgAccessAllowAllRaw !== "1") {
+    throw new ConfigError(`TECHHAVEN_ORG_ACCESS_ALLOW_ALL 只能是 0 | 1，收到：${orgAccessAllowAllRaw}`);
+  }
+  const orgAccessAllowAll = orgAccessAllowAllRaw === "1";
+  if (orgAccessAllowAll && driver !== "mock") {
+    throw new ConfigError("TECHHAVEN_ORG_ACCESS_ALLOW_ALL=1 仅允许 TECHHAVEN_ENGINE_DRIVER=mock 的本地演示，真实驱动必须配置组织授权服务");
+  }
+
+  // 实例标识（PG 归属用）：缺省自动生成；显式注入便于多副本联调
+  const instanceIdRaw = env.TECHHAVEN_GATEWAY_INSTANCE_ID?.trim() ?? "";
+  if (instanceIdRaw !== "" && (instanceIdRaw.length < 4 || instanceIdRaw.length > 128)) {
+    throw new ConfigError(`TECHHAVEN_GATEWAY_INSTANCE_ID 必须是 4~128 字符的标识符，收到长度：${instanceIdRaw.length}`);
+  }
+
   const providerId = (name: string, fallback: string): string => {
     const value = env[name]?.trim() || fallback;
     if (!/^[a-z0-9][a-z0-9._-]*$/.test(value)) {
@@ -175,5 +203,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     dshProviderOpenai: providerId("TECHHAVEN_DSH_PROVIDER_OPENAI", "openai"),
     dshProviderClaude: providerId("TECHHAVEN_DSH_PROVIDER_CLAUDE", "anthropic"),
     dshProviderGlm: providerId("TECHHAVEN_DSH_PROVIDER_GLM", "glm"),
+    orgAccessAllowAll,
+    instanceId: instanceIdRaw === "" ? undefined : instanceIdRaw,
   };
 }

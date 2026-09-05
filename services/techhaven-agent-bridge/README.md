@@ -65,7 +65,7 @@ npm start
 健康检查不需要认证：
 
 ```bash
-curl http://127.0.0.1:3092/healthz
+curl http://127.0.0.1:3093/healthz
 ```
 
 ## 完整配置
@@ -73,7 +73,7 @@ curl http://127.0.0.1:3092/healthz
 | 环境变量                           | 必填     | 默认值                           | 说明                                                                               |
 | ---------------------------------- | -------- | -------------------------------- | ---------------------------------------------------------------------------------- |
 | `TECHHAVEN_BRIDGE_TOKEN`           | 是       | 无                               | MCP → Bridge 的内部 Bearer。使用至少 32 字节随机值，不与 Gateway/旧后端 token 复用 |
-| `TECHHAVEN_BRIDGE_PORT`            | 否       | `3092`                           | 监听端口，范围 1–65535；监听地址固定为 `127.0.0.1`                                 |
+| `TECHHAVEN_BRIDGE_PORT`            | 否       | `3093`                           | 监听端口，范围 1–65535；监听地址固定为 `127.0.0.1`（3092 是 BFF，勿占用）          |
 | `TECHHAVEN_BRIDGE_LEDGER_FILE`     | 否       | `./data/bridge-operations.jsonl` | append-only 幂等台账；需放持久卷并限制读权限                                       |
 | `TECHHAVEN_LEGACY_BASE_URL`        | 是       | 无                               | 包含 `/api/v1`、不包含 `/rd` 的旧后端基址                                          |
 | `TECHHAVEN_LEGACY_RD_PREFIX`       | 否       | `/rd`                            | 旧研发接口公共路径，必须以 `/` 开头且不能含查询串                                  |

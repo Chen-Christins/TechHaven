@@ -230,7 +230,19 @@ const SAFE_CHILD_ENV_KEYS = [
   "SHELL",
 ] as const;
 
-/** 给含用户凭据的 runtime 构造最小环境，避免把 Gateway 其他 ambient secrets 一并继承。 */
+/**
+ * 给含用户凭据的 runtime 构造最小环境，避免把 Gateway 其他 ambient secrets 一并继承。
+ *
+ * 层次（后者覆盖前者）：
+ *   1. SAFE_CHILD_ENV_KEYS：操作系统/运行时必需项；
+ *   2. runtimeConfig.env：模型供应商凭据（用户配置或进程级凭据）；
+ *   3. runtimeConfig.mcpEnv：会话级 MCP 启动上下文（sid / 已授权 org / 专用 MCP 凭据）。
+ *
+ * 第 3 层是必需的：显式 env 会整体替换父环境（docs/DSH_SDK.md），而随附的
+ * dsh MCP 配置从 process.env 读 TECHHAVEN_AGENT_TOKEN / TECHHAVEN_TOKEN_SECRET。
+ * 少了它，「启用用户模型配置 + 随附 profile」这条组合路径必然在 MCP 初始化处失败
+ * （审查意见 F6）。这里仍然只放行白名单与显式下发的键，不恢复父环境。
+ */
 function isolatedRuntimeEnv(runtimeConfig: EngineRuntimeConfig): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
   for (const key of SAFE_CHILD_ENV_KEYS) {
@@ -238,6 +250,7 @@ function isolatedRuntimeEnv(runtimeConfig: EngineRuntimeConfig): NodeJS.ProcessE
     if (value !== undefined) env[key] = value;
   }
   for (const [key, value] of Object.entries(runtimeConfig.env)) env[key] = value;
+  for (const [key, value] of Object.entries(runtimeConfig.mcpEnv ?? {})) env[key] = value;
   return env;
 }
 

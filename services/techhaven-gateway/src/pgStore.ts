@@ -1,7 +1,35 @@
+import os from "node:os";
 import pg from "pg";
 import type { EngineEvent, SessionStatus } from "./types.js";
+import { log } from "./log.js";
 
 const ACTIVE_STATUSES: readonly SessionStatus[] = ["queued", "running", "awaiting_permission"];
+
+/** 租约时长（毫秒）：runner 必须在此周期内续约；过期视为失联 */
+const DEFAULT_LEASE_MS = 30_000;
+/** 心跳周期（毫秒）：定期续约 */
+const DEFAULT_HEARTBEAT_MS = 10_000;
+/** 单活门禁：advisory_lock 的 key；启动时拿不到则拒绝启动 */
+const SINGLETON_LOCK_KEY = 141402;
+
+export interface GatewayPgStoreOptions {
+  /** 当前实例 ID；按需注入，缺省生成 hostname:pid:random */
+  instanceId?: string;
+  leaseMs?: number;
+  heartbeatMs?: number;
+  /**
+   * 是否启用单活门禁。审查意见 F4：实例归属/租约/fencing token 完善前，
+   * PG 部署必须强制单活 —— 这里默认开启；联调多实例前通过 false 临时关闭。
+   */
+  enforceSingleton?: boolean;
+}
+
+function defaultInstanceId(): string {
+  const hostname = os.hostname().slice(0, 64);
+  const pid = process.pid;
+  const random = Math.random().toString(36).slice(2, 8);
+  return `${hostname}:${pid}:${random}`;
+}
 
 export interface PersistedGatewaySession {
   ownerActor?: string;
@@ -40,15 +68,38 @@ export class PgQuotaError extends Error {
   }
 }
 
-/** PostgreSQL 权威的 Gateway session/event adapter；JSONL 仅由 registry 继续作为 spool。 */
+/** PostgreSQL 权威的 Gateway session/event adapter；JSONL 仅由 registry 继续作为 spool。
+ *
+ * 实例归属（审查意见 F4）：每个会话记录 runner_id 与 lease_expires_at；
+ * restore 只接管「本实例的活动会话」与「租约已过期的失联会话」，
+ * 避免把仍在运行的其他实例的活动会话误标为 failed。
+ * 启动时默认强制单活（pg_try_advisory_lock），防止多实例互相抢占同一 PG 的活动会话。 */
 export class GatewayPgStore {
-  private constructor(private readonly pool: pg.Pool) {}
+  private singletonClient: pg.PoolClient | undefined;
+  private heartbeatTimer: NodeJS.Timeout | undefined;
+  private readonly instanceId: string;
+  private readonly leaseMs: number;
+  private readonly heartbeatMs: number;
 
-  static forTesting(pool: pg.Pool): GatewayPgStore {
-    return new GatewayPgStore(pool);
+  private constructor(
+    private readonly pool: pg.Pool,
+    private readonly schema: string,
+    options: GatewayPgStoreOptions = {},
+  ) {
+    this.instanceId = options.instanceId?.trim() || defaultInstanceId();
+    this.leaseMs = options.leaseMs ?? DEFAULT_LEASE_MS;
+    this.heartbeatMs = options.heartbeatMs ?? DEFAULT_HEARTBEAT_MS;
   }
 
-  static async connect(dbUrl: string, schema = "public"): Promise<GatewayPgStore> {
+  static forTesting(pool: pg.Pool, schema = "public", options: GatewayPgStoreOptions = {}): GatewayPgStore {
+    return new GatewayPgStore(pool, schema, { ...options, enforceSingleton: false });
+  }
+
+  static async connect(
+    dbUrl: string,
+    schema = "public",
+    options: GatewayPgStoreOptions = {},
+  ): Promise<GatewayPgStore> {
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schema)) throw new Error(`PostgreSQL schema 非法：${schema}`);
     const pool = new pg.Pool({
       connectionString: dbUrl,
@@ -58,20 +109,88 @@ export class GatewayPgStore {
     });
     try {
       await pool.query("SELECT 1");
-      return new GatewayPgStore(pool);
+      const store = new GatewayPgStore(pool, schema, options);
+      if (options.enforceSingleton !== false) await store.acquireSingleton();
+      store.startHeartbeat();
+      return store;
     } catch (error) {
       await pool.end().catch(() => undefined);
       throw error;
     }
   }
 
-  async restore(retentionMinutes: number): Promise<PersistedGatewaySession[]> {
-    const params: unknown[] = [];
-    let retention = "";
-    if (retentionMinutes > 0) {
-      params.push(retentionMinutes);
-      retention = `WHERE s.ended_at IS NULL OR s.ended_at > now() - ($1::text || ' minutes')::interval`;
+  /** 单活门禁：会话级 advisory_lock；进程崩溃/连接断开时锁自动释放 */
+  private async acquireSingleton(): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query<{ ok: boolean }>(
+        "SELECT pg_try_advisory_lock($1, 0) AS ok",
+        [SINGLETON_LOCK_KEY],
+      );
+      if (!result.rows[0]?.ok) {
+        client.release();
+        throw new Error(
+          `PG 部署当前强制单活：另一 Gateway 实例持有 advisory_lock(${SINGLETON_LOCK_KEY}, 0)。` +
+            `实例归属/租约/fencing 机制完善之前不允许多实例，关闭其他实例后再启动。`,
+        );
+      }
+      this.singletonClient = client;
+    } catch (err) {
+      void client.release();
+      throw err;
     }
+  }
+
+  /** 续约：本实例正在跑的活动会话必须定期延长 lease，否则会被新实例接管 */
+  private startHeartbeat(): void {
+    if (this.heartbeatMs <= 0) return;
+    this.heartbeatTimer = setInterval(() => {
+      void this.heartbeat();
+    }, this.heartbeatMs);
+    this.heartbeatTimer.unref();
+  }
+
+  private async heartbeat(): Promise<void> {
+    try {
+      await this.pool.query(
+        `UPDATE agent_sessions
+            SET lease_expires_at = now() + ($2::text || ' milliseconds')::interval
+          WHERE runner_id = $1
+            AND status = ANY($3::agent_session_status[])`,
+        [this.instanceId, String(this.leaseMs), ACTIVE_STATUSES],
+      );
+    } catch (err) {
+      log(`心跳续约失败（${this.instanceId}）：`, err);
+    }
+  }
+
+  /** 当前实例 ID（调试/审计用） */
+  get currentInstanceId(): string {
+    return this.instanceId;
+  }
+
+  async restore(retentionMinutes: number): Promise<PersistedGatewaySession[]> {
+    // 只恢复：
+    //   1. 本实例的活动会话（runner_id = instanceId 且仍在续约）
+    //   2. 租约已过期的活动会话（视为失联，可被本实例接管）
+    //   3. 保留期内已结束的会话
+    // 仍由其他实例持有的活动会话不恢复 —— 避免把它们误标为 failed（审查意见 F4）。
+    const instanceParam = this.instanceId;
+    const retention =
+      retentionMinutes > 0
+        ? `WHERE (s.ended_at IS NULL OR s.ended_at > now() - ($2::text || ' minutes')::interval)
+            AND (
+              s.ended_at IS NOT NULL
+              OR s.runner_id = $1
+              OR s.runner_id IS NULL
+              OR s.lease_expires_at IS NULL
+              OR s.lease_expires_at <= now()
+            )`
+        : `WHERE s.runner_id = $1
+             OR s.runner_id IS NULL
+             OR s.lease_expires_at IS NULL
+             OR s.lease_expires_at <= now()`;
+    const params: unknown[] = retentionMinutes > 0 ? [instanceParam, retentionMinutes] : [instanceParam];
     const sessions = await this.pool.query<SessionRow>(
       `SELECT s.id, s.sid, s.org_id, s.status, s.created_at, s.ended_at, s.exit_info
          FROM agent_sessions s
@@ -151,9 +270,11 @@ export class GatewayPgStore {
       if (!identityId) throw new Error("Gateway PG identity upsert 未返回 id");
       await client.query(
         `INSERT INTO agent_sessions
-           (sid, identity_id, org_id, engine, engine_version, profile, status, created_at, exit_info)
+           (sid, identity_id, org_id, engine, engine_version, profile, status, created_at, exit_info, runner_id, lease_expires_at)
          VALUES ($1, $2, $3, 'techhaven-gateway', '0.1.0', 'managed', 'queued', $4,
-                 jsonb_strip_nulls(jsonb_build_object('subject_type', $5::text, 'subject_id', $6::text, 'owner_actor', $7::text)))`,
+                 jsonb_strip_nulls(jsonb_build_object('subject_type', $5::text, 'subject_id', $6::text, 'owner_actor', $7::text)),
+                 $8,
+                 now() + ($9::text || ' milliseconds')::interval)`,
         [
           input.sid,
           identityId,
@@ -162,6 +283,8 @@ export class GatewayPgStore {
           input.subjectType ?? null,
           input.subjectId ?? null,
           input.ownerActor ?? null,
+          this.instanceId,
+          String(this.leaseMs),
         ],
       );
       await client.query("COMMIT");
@@ -220,6 +343,15 @@ export class GatewayPgStore {
   }
 
   async close(): Promise<void> {
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = undefined;
+    }
+    // 释放单活 advisory_lock（释放连接即可，会话级锁随连接断开自动释放）
+    if (this.singletonClient) {
+      void this.singletonClient.release();
+      this.singletonClient = undefined;
+    }
     await this.pool.end();
   }
 

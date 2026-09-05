@@ -4,7 +4,7 @@ import type { BridgeConfig } from "./config.js";
 import { LegacyBackendError, LegacyHttpClient } from "./legacyClient.js";
 
 const CONFIG: BridgeConfig = {
-  port: 3092,
+  port: 3093,
   bridgeToken: "bridge",
   legacyBaseUrl: "https://legacy.test/api/v1",
   legacyRdPrefix: "/rd",

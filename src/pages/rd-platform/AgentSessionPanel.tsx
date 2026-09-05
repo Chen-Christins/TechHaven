@@ -51,6 +51,7 @@ const STATUS_LABEL: Record<SessionStatus, string> = {
 const PROPOSAL_LABEL: Record<ProposalStatus, string> = {
   pending: "待产品审批",
   approved: "已批准，等待应用",
+  applying: "正在应用，不可撤回",
   rejected: "已拒绝",
   applied: "已应用",
   expired: "已过期",

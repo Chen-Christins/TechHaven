@@ -10,7 +10,7 @@ const BASE: NodeJS.ProcessEnv = {
 
 test("最小配置装载默认值并裁剪 base URL", () => {
   const config = loadConfig(BASE);
-  assert.equal(config.port, 3092);
+  assert.equal(config.port, 3093);
   assert.equal(config.legacyBaseUrl, "https://legacy.example/api/v1");
   assert.equal(config.legacyRdPrefix, "/rd");
   assert.equal(config.legacyAuthMode, "bearer");

@@ -4,11 +4,29 @@ import type { AddressInfo } from "node:net";
 import { AiConfigResolutionError, type AiConfigResolver } from "./aiConfig.js";
 import { loadConfig } from "./config.js";
 import { createGatewayServer } from "./http.js";
+import type { OrgAccessPort } from "./orgAccess.js";
 import type { ProposalPort } from "./proposals.js";
 import type { SessionRecord, SessionRegistry } from "./sessions.js";
 import type { EngineRuntimeConfig } from "./types.js";
 
 const GATEWAY_TOKEN = "gateway-test-token";
+
+/** 测试默认放行：把「调用者属于目标组织」的责任隔离在 orgAccess 模块；关注其他路由时可忽略。 */
+const ALLOW_ALL_ORG_ACCESS: OrgAccessPort = { requireMember: async () => undefined };
+
+/** 与审查意见 F1 对齐：精确控制成员关系，验证未授权请求被拦在创建会话之前。 */
+class FakeOrgAccess implements OrgAccessPort {
+  readonly calls: Array<{ actor: string; orgId: number }> = [];
+  constructor(private readonly allowed: (actor: string, orgId: number) => boolean) {}
+  async requireMember(actor: string, orgId: number): Promise<void> {
+    this.calls.push({ actor, orgId });
+    if (!this.allowed(actor, orgId)) {
+      const err = new Error("无权使用该组织的 AI 配置");
+      (err as { status?: number }).status = 403;
+      throw err;
+    }
+  }
+}
 
 function emptyProposalPort(): ProposalPort {
   return {
@@ -25,6 +43,7 @@ function emptyProposalPort(): ProposalPort {
 async function withServer(
   resolver: AiConfigResolver,
   run: (base: string, getCreated: () => Record<string, unknown> | undefined) => Promise<void>,
+  orgAccess: OrgAccessPort = ALLOW_ALL_ORG_ACCESS,
 ): Promise<void> {
   let created: Record<string, unknown> | undefined;
   const registry = {
@@ -41,7 +60,14 @@ async function withServer(
       };
     },
   } as unknown as SessionRegistry;
-  const server = createGatewayServer(loadConfig({ TECHHAVEN_GATEWAY_TOKEN: GATEWAY_TOKEN }), registry, emptyProposalPort(), resolver);
+  const server = createGatewayServer(
+    loadConfig({ TECHHAVEN_GATEWAY_TOKEN: GATEWAY_TOKEN }),
+    registry,
+    emptyProposalPort(),
+    resolver,
+    undefined,
+    orgAccess,
+  );
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
     server.listen(0, "127.0.0.1", resolve);

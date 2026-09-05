@@ -8,6 +8,7 @@ import { AiConfigResolutionError, type AiConfigResolver } from "./aiConfig.js";
 import { AiConfigStoreError, type AiConfigStore } from "./aiConfigStore.js";
 import { renderPrometheus } from "./metrics.js";
 import { GatewayError, sessionView, type SessionRegistry } from "./sessions.js";
+import { DenyAllOrgAccess, type OrgAccessPort } from "./orgAccess.js";
 import { readJsonBody, sendJson, sendError, jsonObject, requireString, optionalString, trustedActor } from "./httpSupport.js";
 import { handleEventsStream } from "./eventsStream.js";
 import { handleAiConfigRoutes } from "./aiConfigRoutes.js";
@@ -47,6 +48,11 @@ async function handleRequest(
   proposals: ProposalPort,
   aiConfigResolver?: AiConfigResolver,
   aiConfigStore?: AiConfigStore,
+  /**
+   * 组织授权端口（审查意见 F1）。缺省为 DenyAll：未接线时创建会话返回 503，
+   * 而不是沿用「请求体说哪个组织就是哪个组织」的旧行为。
+   */
+  orgAccess: OrgAccessPort = new DenyAllOrgAccess(),
 ): Promise<void> {
   const url = new URL(req.url ?? "/", "http://localhost");
   const path = url.pathname;
@@ -99,7 +105,11 @@ async function handleRequest(
       const body = await readJsonBody(req);
       const input = parseCreateBody(body);
       const ownerActor = trustedActor(req);
-      const runtimeConfig = aiConfigResolver ? await aiConfigResolver.resolve(ownerActor) : undefined;
+      // 授权先于一切副作用：成员校验通过才会占用组织配额、解析配置、启动 runner。
+      // orgId 来自请求体，未校验前一律不可信。
+      await orgAccess.requireMember(ownerActor, input.orgId);
+      // 同一个已授权 orgId 传给配置解析：组织共享配置的授权判定与会话归属必须一致。
+      const runtimeConfig = aiConfigResolver ? await aiConfigResolver.resolve(ownerActor, input.orgId) : undefined;
       const record = await registry.create({ ...input, ownerActor, runtimeConfig });
       sendJson(res, 201, { sid: record.sid, status: record.status });
       return;
@@ -237,9 +247,10 @@ export function createGatewayServer(
   proposals: ProposalPort,
   aiConfigResolver?: AiConfigResolver,
   aiConfigStore?: AiConfigStore,
+  orgAccess?: OrgAccessPort,
 ): http.Server {
   const server = http.createServer((req, res) => {
-    void handleRequest(req, res, config, registry, proposals, aiConfigResolver, aiConfigStore);
+    void handleRequest(req, res, config, registry, proposals, aiConfigResolver, aiConfigStore, orgAccess);
   });
   // 显式消费 clientError：默认行为是销毁 socket 并可能打出未处理异常日志
   server.on("clientError", (err, socket) => {
