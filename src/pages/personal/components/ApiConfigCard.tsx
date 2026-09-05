@@ -8,6 +8,23 @@ import { agentAiConfigService } from "@/services/agentAiConfigService";
 import styles from "../PersonalCenter.module.css";
 
 type ApiType = "openai" | "claude" | "glm";
+type ServiceProvider = "openai" | "anthropic" | "zhipu" | "custom";
+type ResponseType = "responses" | "chat_completions" | "messages";
+
+interface ProviderPreset {
+  type: ApiType;
+  responseType: ResponseType;
+  url: string;
+  keyPlaceholder: string;
+  defaultModel: string;
+}
+
+const PROVIDER_OPTIONS: SelectOption[] = [
+  { id: "openai", name: "OpenAI", color: "#10a37f" },
+  { id: "anthropic", name: "Anthropic", color: "#d97706" },
+  { id: "zhipu", name: "智谱 AI", color: "#4a6cf7" },
+  { id: "custom", name: "自定义兼容服务", color: "#64748b" },
+];
 
 const PROTOCOL_OPTIONS: SelectOption[] = [
   { id: "openai", name: "OpenAI 兼容协议", color: "#10a37f" },
@@ -15,23 +32,86 @@ const PROTOCOL_OPTIONS: SelectOption[] = [
   { id: "glm", name: "智谱 GLM 兼容协议", color: "#4a6cf7" },
 ];
 
-const DEFAULTS: Record<ApiType, { url: string; keyPlaceholder: string; defaultModel: string }> = {
+const RESPONSE_OPTIONS: Record<ApiType, SelectOption[]> = {
+  openai: [
+    { id: "responses", name: "Responses API (/responses)", color: "#10a37f" },
+    { id: "chat_completions", name: "Chat Completions (/chat/completions)", color: "#0ea5e9" },
+  ],
+  claude: [{ id: "messages", name: "Messages API (/messages)", color: "#d97706" }],
+  glm: [{ id: "chat_completions", name: "Chat Completions (/chat/completions)", color: "#4a6cf7" }],
+};
+
+const DEFAULTS: Record<ServiceProvider, ProviderPreset> = {
   openai: {
-    url: "https://api.openai.com/v1/chat/completions",
+    type: "openai",
+    responseType: "responses",
+    url: "https://api.openai.com/v1/responses",
     keyPlaceholder: "sk-...",
     defaultModel: "gpt-4o",
   },
-  claude: {
+  anthropic: {
+    type: "claude",
+    responseType: "messages",
     url: "https://api.anthropic.com/v1/messages",
     keyPlaceholder: "sk-ant-...",
     defaultModel: "claude-sonnet-4-6",
   },
-  glm: {
+  zhipu: {
+    type: "glm",
+    responseType: "chat_completions",
     url: "https://open.bigmodel.cn/api/paas/v4/chat/completions",
     keyPlaceholder: "xxx.xxxxxxxxxxxxxxxx",
     defaultModel: "glm-4.7-flash",
   },
+  custom: {
+    type: "openai",
+    responseType: "chat_completions",
+    url: "https://api.example.com/v1/chat/completions",
+    keyPlaceholder: "请输入完整 API Key",
+    defaultModel: "gpt-4o",
+  },
 };
+
+const DEFAULT_PROVIDER_BY_TYPE: Record<ApiType, ServiceProvider> = {
+  openai: "openai",
+  claude: "anthropic",
+  glm: "zhipu",
+};
+
+function defaultResponseType(type: ApiType): ResponseType {
+  return type === "claude" ? "messages" : "chat_completions";
+}
+
+function inferProvider(type: ApiType, rawUrl: string): ServiceProvider {
+  try {
+    const host = new URL(rawUrl).hostname.toLowerCase();
+    if (type === "openai" && host === "api.openai.com") return "openai";
+    if (type === "claude" && host === "api.anthropic.com") return "anthropic";
+    if (type === "glm" && host === "open.bigmodel.cn") return "zhipu";
+  } catch {
+    // URL 的具体错误由保存校验统一提示；这里仅用于兼容旧配置的 UI 推断。
+  }
+  return "custom";
+}
+
+function inferResponseType(type: ApiType, rawUrl: string): ResponseType {
+  if (/\/responses\/?$/i.test(rawUrl)) return compatibleResponseType(type, "responses");
+  if (/\/messages\/?$/i.test(rawUrl)) return compatibleResponseType(type, "messages");
+  if (/\/chat\/completions\/?$/i.test(rawUrl)) return compatibleResponseType(type, "chat_completions");
+  return defaultResponseType(type);
+}
+
+function compatibleResponseType(type: ApiType, value: unknown): ResponseType {
+  if (type === "openai" && (value === "responses" || value === "chat_completions")) return value;
+  if (type === "claude" && value === "messages") return value;
+  if (type === "glm" && value === "chat_completions") return value;
+  return defaultResponseType(type);
+}
+
+function replaceEndpointSuffix(raw: string, responseType: ResponseType): string {
+  const suffix = responseType === "responses" ? "/responses" : responseType === "messages" ? "/messages" : "/chat/completions";
+  return raw.replace(/\/(?:responses|messages|chat\/completions)\/?$/, suffix);
+}
 
 /**
  * 各协议在 dsh runtime 中落到的字段。
@@ -89,7 +169,9 @@ function validateReasoningEffort(raw: string): string | null {
 }
 
 const ApiConfigCard: React.FC = () => {
+  const [provider, setProvider] = useState<ServiceProvider>("openai");
   const [apiType, setApiType] = useState<ApiType>("openai");
+  const [responseType, setResponseType] = useState<ResponseType>("responses");
   const [url, setUrl] = useState(DEFAULTS.openai.url);
   const [apiKey, setApiKey] = useState("");
   const [model, setModel] = useState("");
@@ -103,6 +185,8 @@ const ApiConfigCard: React.FC = () => {
   // 保存从后端加载的原始配置，切类型时恢复
   const savedConfigRef = useRef<{
     type: ApiType;
+    provider: ServiceProvider;
+    response_type: ResponseType;
     url: string;
     api_key: string;
     model: string;
@@ -110,18 +194,23 @@ const ApiConfigCard: React.FC = () => {
     max_tokens: string;
   } | null>(null);
 
-  const current = DEFAULTS[apiType];
+  const current = DEFAULTS[provider];
   const dsh = DSH_FIELD[apiType];
+  const responseOptions = RESPONSE_OPTIONS[apiType];
 
   const applyConfig = (config: {
     type: ApiType;
+    provider: ServiceProvider;
+    response_type: ResponseType;
     url: string;
     api_key: string;
     model: string;
     reasoning_effort: string;
     max_tokens: string;
   }) => {
+    setProvider(config.provider);
     setApiType(config.type);
+    setResponseType(config.response_type);
     setUrl(config.url);
     setApiKey(config.api_key);
     maskedKeyRef.current = config.api_key;
@@ -131,13 +220,24 @@ const ApiConfigCard: React.FC = () => {
   };
 
   useEffect(() => {
-    agentAiConfigService.getAiConfig()
+    agentAiConfigService
+      .getAiConfig()
       .then((config) => {
         if (config) {
           const t: ApiType = config.type === "claude" || config.type === "glm" ? config.type : "openai";
+          const p: ServiceProvider =
+            config.provider === "openai" ||
+            config.provider === "anthropic" ||
+            config.provider === "zhipu" ||
+            config.provider === "custom"
+              ? config.provider
+              : inferProvider(t, config.url || DEFAULTS[DEFAULT_PROVIDER_BY_TYPE[t]].url);
+          const r = compatibleResponseType(t, config.response_type ?? inferResponseType(t, config.url || ""));
           const saved = {
             type: t,
-            url: config.url || DEFAULTS[t].url,
+            provider: p,
+            response_type: r,
+            url: config.url || DEFAULTS[p].url,
             api_key: config.api_key || "",
             model: config.model || "",
             reasoning_effort: config.reasoning_effort || "",
@@ -153,14 +253,27 @@ const ApiConfigCard: React.FC = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const handleProviderChange = (nextProvider: ServiceProvider) => {
+    const preset = DEFAULTS[nextProvider];
+    setProvider(nextProvider);
+    setApiType(preset.type);
+    setResponseType(preset.responseType);
+    setUrl(preset.url);
+    setModel("");
+  };
+
   const handleTypeChange = (type: ApiType) => {
-    const prevDefault = DEFAULTS[apiType].url;
+    const nextResponseType = defaultResponseType(type);
     setApiType(type);
-    // 如果 URL 还是旧协议的默认地址，自动切到新协议默认地址
-    if (url === prevDefault || url.trim() === "") {
-      setUrl(DEFAULTS[type].url);
-    }
+    setProvider("custom");
+    setResponseType(nextResponseType);
+    setUrl(replaceEndpointSuffix(url, nextResponseType));
     // key / model / max_tokens 保持不变，因为用户只有一个配置
+  };
+
+  const handleResponseTypeChange = (nextResponseType: ResponseType) => {
+    setResponseType(nextResponseType);
+    setUrl(replaceEndpointSuffix(url, nextResponseType));
   };
 
   const handleSave = async () => {
@@ -210,6 +323,8 @@ const ApiConfigCard: React.FC = () => {
       const keyToSend = keyTouchedRef.current ? apiKey.trim() : "";
       await agentAiConfigService.saveAiConfig({
         type: apiType,
+        provider,
+        response_type: responseType,
         url: url.trim(),
         api_key: keyToSend,
         model: model.trim() || undefined,
@@ -219,6 +334,8 @@ const ApiConfigCard: React.FC = () => {
       // 更新本地缓存，防止切走再切回来时丢失刚保存的配置
       savedConfigRef.current = {
         type: apiType,
+        provider,
+        response_type: responseType,
         url: url.trim(),
         api_key: keyToSend,
         model: model.trim(),
@@ -246,7 +363,23 @@ const ApiConfigCard: React.FC = () => {
         <span>AI 接口配置</span>
       </div>
       <div className={styles.editCardBody}>
-        {/* 协议类型 */}
+        <div className={styles.editFormGroup}>
+          <label className={styles.editLabel}>服务商</label>
+          <CustomSelect
+            name="服务商"
+            options={PROVIDER_OPTIONS}
+            value={PROVIDER_OPTIONS.find((o) => o.id === provider) || null}
+            onChange={(option) => {
+              if (option) handleProviderChange(option.id as ServiceProvider);
+            }}
+            hideBadge
+            placeholder="请选择服务商..."
+          />
+          <span className={styles.editHint}>
+            选择服务商会带入推荐的协议、接口类型和地址；中转、私有部署或其他兼容服务请选择“自定义兼容服务”
+          </span>
+        </div>
+
         <div className={styles.editFormGroup}>
           <label className={styles.editLabel}>协议类型</label>
           <CustomSelect
@@ -260,8 +393,27 @@ const ApiConfigCard: React.FC = () => {
             placeholder="请选择协议类型..."
           />
           <span className={styles.editHint}>
-            每个用户仅支持配置一套接口，切换协议类型不会清空已填写的内容。对应 dsh 的 provider route（经{" "}
+            决定鉴权环境变量和 dsh provider route；手动切换协议后，服务商会变为“自定义兼容服务”（经{" "}
             <span className={styles.editHintCode}>{dsh.provider}</span> 映射）
+          </span>
+        </div>
+
+        <div className={styles.editFormGroup}>
+          <label className={styles.editLabel}>接口类型</label>
+          <CustomSelect
+            name="接口类型"
+            options={responseOptions}
+            value={responseOptions.find((o) => o.id === responseType) || null}
+            onChange={(option) => {
+              if (option) handleResponseTypeChange(option.id as ResponseType);
+            }}
+            hideBadge
+            placeholder="请选择接口类型..."
+          />
+          <span className={styles.editHint}>
+            Responses API 使用 <span className={styles.editHintCode}>POST /responses</span>；Chat Completions 使用{" "}
+            <span className={styles.editHintCode}>POST /chat/completions</span>；Anthropic Messages 使用{" "}
+            <span className={styles.editHintCode}>POST /messages</span>。实际可用范围取决于模型和部署的 dsh provider route
           </span>
         </div>
 
@@ -273,13 +425,8 @@ const ApiConfigCard: React.FC = () => {
           </label>
           <Input value={url} onChange={(v) => setUrl(v)} placeholder={current.url} size="large" />
           <span className={styles.editHint}>
-            {apiType === "openai"
-              ? "支持 OpenAI 兼容接口，可填写中转/代理地址"
-              : apiType === "claude"
-                ? "支持 Anthropic 兼容接口，可填写中转/代理地址"
-                : "支持智谱 GLM 兼容接口，可填写中转/代理地址"}
-            。将作为 dsh 环境变量 <span className={styles.editHintCode}>{dsh.baseUrl}</span> 注入，末尾的 /chat/completions 或
-            /messages 会自动剥离
+            填写完整资源地址，也可使用中转/代理地址。将作为 dsh 环境变量 <span className={styles.editHintCode}>{dsh.baseUrl}</span>{" "}
+            注入，Gateway 会按所选接口类型剥离末尾的 /responses、/chat/completions 或 /messages
           </span>
         </div>
 

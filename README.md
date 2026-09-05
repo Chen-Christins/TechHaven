@@ -63,7 +63,7 @@ Agent 写入链路为：前端请求会话 → Gateway 驱动 dsh → agent 调 
 - `services/techhaven-agent-bridge/`：独立旧后端兼容层；规范化读接口、状态映射、内部身份、JSONL 幂等台账和写后对账。当前只支持单实例，真实旧后端尚待联调。
 - `services/techhaven-gateway/`：runner adapter、HTTP/SSE、配额、proposal 决策、JSONL/PG session-event 权威、loader 与 reconcile；mock driver smoke 为 41 项，另有环境门控 PG 恢复 smoke。
 - Gateway 可选通过内部服务身份按可信用户读取 AI 配置，并为每个 dsh 会话注入隔离的 provider/model/凭据环境；配置不进入浏览器、会话响应、日志或 JSONL。产品后端内部读取端点与 live dsh 仍需在测试环境联调。
-- 前端 Agent 助手：开发、测试和生产环境统一通过研发平台 `/rd/agent` 入口访问。页面内可切换本地 mock 与 Gateway 联调模式，也可打开“API 配置”复用个人中心的 OpenAI/Claude/GLM 接口配置；配置通过 `/user/ai-config` 交由站点后端保存，不写入浏览器存储。Gateway 经同源代理连接（鉴权头由代理注入，浏览器不持有网关 token）。活动 SID 在单标签页会话内做轻量检查点，刷新后查询同一会话并全量回放 UI；同页网络断线则按 `after=<lastSeq>` 增量续传。客户端见 `src/services/agentGatewayClient.ts`，契约见 `contracts/`。
+- 前端 Agent 助手：开发、测试和生产环境统一通过研发平台 `/rd/agent` 入口访问。页面内可切换本地 mock 与 Gateway 联调模式，也可打开“API 配置”，分别选择 OpenAI、Anthropic、智谱 AI 或自定义兼容服务，以及 Responses、Chat Completions 或 Messages 接口类型；配置通过 `/user/ai-config` 交由站点后端保存，不写入浏览器存储。Gateway 经同源代理连接（鉴权头由代理注入，浏览器不持有网关 token）。活动 SID 在单标签页会话内做轻量检查点，刷新后查询同一会话并全量回放 UI；同页网络断线则按 `after=<lastSeq>` 增量续传。客户端见 `src/services/agentGatewayClient.ts`，契约见 `contracts/`。
 
 当前准确成熟度：Agent 工具面、控制面、兼容层和 Agent 面板已 `implemented`，其中离线测试通过的部分标记为 `verified-mock`；PG 权威、并发锁、迁移/对账/live smoke 为 `implemented`。浏览器 mock runner 链路已实测；Bridge 与真实旧后端、live dsh、live PostgreSQL 和多租户沙箱尚未达到 `verified-integration`。禁止把编译或 mock 冒烟表述为生产完成。
 
@@ -478,12 +478,17 @@ sudo /srv/techhaven-agent-gateway/current/scripts/install-agent-gateway-systemd.
 
 之后同一工作流会自动改用 `systemd` 重启服务。内部 AI 配置读取端点仍由产品后端提供；一键启动负责部署和进程生命周期，不会把脱敏的浏览器配置当作可运行密钥。
 
+### 不依赖 GitHub 的服务器直部署
+
+Windows 本地可以通过 `npm run deploy:server -- -Server <服务器> -User <SSH用户> -DeployRoot /srv/techhaven` 一次完成前端与 Agent Gateway 的构建、最小化打包、SCP 上传、原子版本切换、进程重启和健康检查。首次发布会在服务器生成仅限属主读取的 mock 配置；真实 dsh、用户 API 配置内部端点、BFF 身份注入和 systemd 设置见 [服务器直部署指南](docs/SERVER_DEPLOYMENT.md)。该流程不要求使用 GitHub 或 GitHub Actions。
+
 ## 相关文档
 
 - [版本变更记录](CHANGELOG.md)
 - [架构基线](docs/ARCHITECTURE.md)
 - [推进路线](docs/ROADMAP.md)
 - [Agent 架构决策](docs/TH-RFC-001-agent-engine.md)
+- [服务器直部署指南](docs/SERVER_DEPLOYMENT.md)
 - [部分页面接口与数据协议](docs/README.md)
 
 ## License

@@ -50,7 +50,11 @@ export class FollowService {
   /**
    * 获取互相关注的用户列表（发起私信会话的搜索数据源）
    */
-  static async getMutualFollowingList(params?: { keyword?: string; offset?: number; size?: number }): Promise<MutualFollowListResponse> {
+  static async getMutualFollowingList(params?: {
+    keyword?: string;
+    offset?: number;
+    size?: number;
+  }): Promise<MutualFollowListResponse> {
     const response = await http.get<MutualFollowListResponse>("/user/mutual_following/list", {
       params: {
         keyword: params?.keyword ?? "",

@@ -416,6 +416,10 @@ export class AuthService {
 
 export interface AiConfigParams {
   type: "openai" | "claude" | "glm";
+  /** 实际服务商；custom 表示兼容/中转服务 */
+  provider?: "openai" | "anthropic" | "zhipu" | "custom";
+  /** 上游 API 的接口类型 */
+  response_type?: "responses" | "chat_completions" | "messages";
   url: string;
   api_key: string;
   model?: string;
@@ -426,6 +430,8 @@ export interface AiConfigParams {
 
 export interface AiConfig {
   type: "openai" | "claude" | "glm";
+  provider?: "openai" | "anthropic" | "zhipu" | "custom";
+  response_type?: "responses" | "chat_completions" | "messages";
   url: string;
   api_key: string;
   model: string;

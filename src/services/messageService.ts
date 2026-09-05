@@ -16,7 +16,10 @@ export class MessageService {
   /**
    * 获取单个会话的消息记录
    */
-  static async getMessages(conversationId: number | string, params?: { offset?: number; size?: number }): Promise<MessageListResponse> {
+  static async getMessages(
+    conversationId: number | string,
+    params?: { offset?: number; size?: number },
+  ): Promise<MessageListResponse> {
     const response = await http.get<MessageListResponse>(`/messages/conversations/${conversationId}`, {
       params: { offset: params?.offset ?? 0, size: params?.size ?? 50 },
     });

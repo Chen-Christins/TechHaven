@@ -19,11 +19,13 @@
 - 前端 Agent 面板重构为分层会话控制台，支持 mock/Gateway 双路径、事件概况、权限审批、明暗主题与窄屏布局。
 - 开发、测试和生产环境统一在研发平台暴露 `/rd/agent`“Agent 助手”入口，并可在页面内直接切换本地演示与 Gateway 联调模式。
 - Agent 助手增加“API 配置”入口，复用个人中心的 OpenAI/Claude/GLM 配置表单与 `/user/ai-config` 服务端保存链路，不在浏览器存储模型密钥。
+- API 配置把服务商、兼容协议和接口类型拆分：提供 OpenAI、Anthropic、智谱 AI、自定义兼容服务预设，并支持 Responses、Chat Completions、Messages；`provider` / `response_type` 写入保存契约，Gateway 校验组合并按接口类型归一化 base URL，旧配置按协议自动推断。
 - Gateway 增加按可信用户从产品内部端点解析 AI 配置的适配器，并按会话隔离 dsh runtime；供应商密钥只进入最小化子进程环境，不进入响应、日志或 JSONL。
 - `/rd/agent` 统一采用 `AuthRequired` 登录门禁（三环境一致可达；不使用 DEV 门禁——测试环境部署走 `build:test` 即 development 模式，DEV 门禁在该模式下会失效）。
 - AI 配置表单对齐 dsh 运行时字段：每个字段标注其运行时落点（provider route / BASE_URL / API_KEY / model / maxTokens），并把 Gateway 的失败关闭规则前置到保存时校验（脱敏串、回环外非 HTTPS 地址、带查询参数或内嵌凭据的 URL、非正整数 max_tokens、超长密钥）；密钥输入框改用 `autoComplete="new-password"` 防浏览器凭证管理器收藏（`Input` 组件补 `autoComplete` 透传）。
 - AI 配置补齐 dsh 推理档位 `reasoning_effort`（此前表单可配项少于 dsh 支持面）：表单输入 → `/user/ai-config` 契约 → Gateway 解析 → dsh 构造参数全链路透传；1~64 可见 ASCII 校验、缺省/空串视为未配置（用模型默认），非法值失败关闭且不回显原值；内部配置端点响应契约同步扩展（`aiConfig.test` 52→56 项）。
 - 增加 Agent 一键启动与测试部署：`npm run dev:agent` 自动构建/启动本地 Gateway 后拉起 Vite；`Deploy Agent Gateway` 工作流既可手动执行，也会跟随测试站静态发布，负责版本化上传、生产依赖安装、进程重启与 `/healthz` 门禁，并提供可选的 systemd 开机自启安装脚本。
+- 增加不依赖 GitHub 的服务器直部署：`npm run deploy:server` 在 Windows 本地构建最小发布包，经 SSH/SCP 上传 Linux，服务端采用版本目录和原子软链接切换，自动生成安全 mock 配置、安装运行依赖、重启 Gateway、执行健康检查、失败回滚并保留最近 5 个版本；部署参数、Nginx/BFF 边界和真实 dsh 配置写入独立 README。
 
 - 根前端单测基线（vitest）：Mermaid 安全严格模式与恶意注入回归、HTTP 1101 未授权状态同步回归（`npm test`）。
 - 凭据脱敏回归测试 9 项：`src/utils/websocket.test.ts`（6 项，WebSocket 建连日志不含 token / token_time 原文，脱敏不误伤 uid，重连不绕过，Cookie 值含 `=` 不截断）与 `src/hooks/useAiSummary.test.tsx`（3 项，AI-SSE 诊断日志不含 token 原文或 ≥6 位前缀，同时断言 `Authorization` 头仍正确携带）。两处均已用「临时改回旧写法 → 测试变红」反向验证测试有效性。
