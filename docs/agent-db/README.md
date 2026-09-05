@@ -7,6 +7,11 @@
 
 PR #122 修复使用 schema v0.5：新增 [004 成员授权与用量去重迁移](./migrations/004-v0.4-to-v0.5-access-and-usage.sql)。启用 AI 配置资产的部署须先迁移，再更新服务；组织共享授权需由可信管理通道同步到 `ai_org_memberships`，不会从用户偏好自动推导。详见 [配置与升级说明](../../services/techhaven-gateway/docs/AI_CONFIG_ASSETS.md)。
 
+2026-09 审查勘误新增两个迁移，PG 部署必须按顺序补齐后再升级服务：
+
+- [005 v0.5→v0.6 提案应用态](./migrations/005-v0.5-to-v0.6-proposal-applying.sql)：`proposal_status` 枚举新增 `applying`（应用阶段独占领取态），`agent_write_proposals` 增加 `apply_lease_expires_at` 应用租约列与索引。撤回与应用不再竞争同一段状态。
+- [006 v0.5→v0.7 会话实例归属](./migrations/006-v0.5-to-v0.7-session-ownership.sql)：`agent_sessions` 新增 `runner_id` / `lease_expires_at` 与两个索引。PG 启动恢复只接管本实例或租约过期的会话；实例归属/租约/fencing 完善前 PG 部署强制单活（advisory lock）。
+
 ## 一句话定位
 
 本数据平面承载 Agent Control（身份、会话、配额、审批、审计）与 Context（mini 语义层）的元数据。**域数据不搬**：工单、需求、缺陷、用户和组织仍归产品后端，本层只存引用和 Agent 运行事实。

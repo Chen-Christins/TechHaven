@@ -2,7 +2,7 @@
 
 `techhaven-agent-bridge` 是 Agent 系统与**不改造的旧 TechHaven 后端**之间的独立兼容层。它不访问 MySQL，也不替代产品后端；它只通过旧 HTTP API 读取和写入产品数据，把旧接口转换成 MCP 所需的稳定契约。
 
-> 当前状态：`implemented + verified-mock`。类型检查、14 项单测和 4 项本地假旧后端 HTTP smoke 已通过；在拿到真实旧后端地址、凭据、状态枚举和响应样本前，不能标记为 `verified-integration` 或生产可用。当前 JSONL 幂等台账只支持单实例。
+> 当前状态：`implemented + verified-mock`。类型检查、16 项单测和 4 项本地假旧后端 HTTP smoke 已通过；在拿到真实旧后端地址、凭据、状态枚举和响应样本前，不能标记为 `verified-integration` 或生产可用。当前 JSONL 幂等台账只支持单实例。
 
 ## 为什么单独部署
 
@@ -123,6 +123,8 @@ X-TechHaven-Org: <positive integer org id>
 `expectedFromStatus` 是乐观并发前置条件；旧后端当前状态不一致时返回 `STALE_PRECONDITION`。body 上限 1 MiB。
 
 ## 幂等、失败与恢复
+
+同一工单的读—校验—写—确认整段**按工单主体 `(orgId, kind, id)` 串行**：两个不同幂等键的提案改同一工单时，后到者排队等待，读到前者写入后的最新状态再做 `expectedFromStatus` 校验——避免并发读后互相覆盖（审查意见 F5）。幂等键只负责请求去重与重放，两者职责分离。
 
 一次状态变更按下面顺序执行：
 

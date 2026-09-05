@@ -14,6 +14,20 @@
 
 服务器使用版本目录和 `current` 软链接切换。Gateway 重启后若 20 秒内未通过 `/healthz`，脚本会恢复上一版本。服务器密钥保存在共享目录，不进入发布包。
 
+### 服务端口表
+
+| 服务    | 默认端口 | 说明                                                         |
+| ------- | -------- | ------------------------------------------------------------ |
+| Gateway | `3091`   | Agent 控制（`TECHHAVEN_GATEWAY_PORT`）                       |
+| BFF     | `3092`   | 身份桥（`TECHHAVEN_BFF_PORT`），Nginx `auth_request` 上游    |
+| Bridge  | `3093`   | 旧后端兼容层（`TECHHAVEN_BRIDGE_PORT`），MCP/Bridge 同机部署时用 |
+
+同机启动完整链路前先跑组合检查（静态核对各服务代码默认值、`.env.example` 与 MCP 的 Bridge URL 一致，无冲突即通过）：
+
+```bash
+node scripts/check-stack-ports.mjs
+```
+
 ## 前置条件
 
 本地 Windows：
@@ -129,6 +143,9 @@ TECHHAVEN_GATEWAY_STORE=jsonl
 TECHHAVEN_GATEWAY_DATA_DIR=/srv/techhaven/shared/data
 TECHHAVEN_PROPOSALS_FILE=/srv/techhaven/shared/proposals.jsonl
 
+# 会话实例 ID：多机/滚动发布时每台 Gateway 必须唯一（4–128 字符）
+TECHHAVEN_GATEWAY_INSTANCE_ID=<主机名或实例标识>
+
 TECHHAVEN_DSH_HOME=/srv/techhaven/shared/dsh
 TECHHAVEN_DSH_PROFILE=<部署使用的dsh-profile>
 
@@ -140,6 +157,19 @@ TECHHAVEN_DSH_PROVIDER_OPENAI=openai
 TECHHAVEN_DSH_PROVIDER_CLAUDE=anthropic
 TECHHAVEN_DSH_PROVIDER_GLM=glm
 ```
+
+### 组织授权（会话创建准入，必读）
+
+自 2026-09 审查勘误起，`POST /v1/sessions` 在创建会话前校验「调用者属于目标组织」：
+
+- 配置了 `TECHHAVEN_AI_CONFIG_URL`（Agent DB 配置资产）时，Gateway 以产品库 `ai_org_memberships` 为权威校验成员关系——这是推荐路径；
+- **真实 dsh 链路若既无授权源也未配置，创建会话会直接返回 503（fail-closed）**，这是预期行为，不是故障；
+- `TECHHAVEN_ORG_ACCESS_ALLOW_ALL=1` 逃生舱仅在 mock driver 下允许，真实部署设置会导致启动失败；
+- mock driver 本地演示默认放行，无需额外配置。
+
+### dsh 会话的 MCP 凭据链
+
+随附 dsh profile 挂载的 TechHaven MCP 需要 `TECHHAVEN_AGENT_TOKEN` / `TECHHAVEN_TOKEN_SECRET`。Gateway 现在会在会话启动时构造会话级 MCP 上下文（白名单凭据键 + sid/org 绑定）注入 dsh 子进程隔离环境，不再依赖父环境继承；启用用户模型配置 + 随附 MCP profile 的组合路径可正常完成 MCP 初始化。验证要点：proposal 事件携带的 sid/org 必须与 Gateway 会话一致。
 
 重新运行同一条 `npm run deploy:server` 即可安装固定版本的 dsh runtime、切换版本并重启。
 
@@ -177,4 +207,8 @@ tail -n 100 /srv/techhaven/shared/bff.log
 
 如果发布后健康检查失败，脚本会自动回滚并输出最近 100 行日志。成功发布后保留最近 5 个版本。
 
-当前自动发布只包含前端和 Agent Gateway。若要启用工单查询、proposal 审批和旧产品域写入，还需要另外部署 `services/techhaven-mcp` 与 `services/techhaven-agent-bridge`，并完成真实后端和 PostgreSQL 联调。
+当前自动发布只包含前端和 Agent Gateway。若要启用工单查询、proposal 审批和旧产品域写入，还需要另外部署 `services/techhaven-mcp` 与 `services/techhaven-agent-bridge`，并完成真实后端和 PostgreSQL 联调：
+
+- Bridge 监听 `127.0.0.1:3093`（3092 已分配给 BFF），MCP 的 `TECHHAVEN_BRIDGE_URL` 指向它；部署前跑 `node scripts/check-stack-ports.mjs` 确认全链路端口表一致；
+- MCP 的提案状态机含 `applying` 应用领取态：Bridge/MCP 与 Gateway 需同版本升级（contracts 已同步 `applying`），旧版 Gateway 会把新状态当成未知值；
+- 使用 PostgreSQL 权威模式时，先按顺序应用 `docs/agent-db/migrations/` 的 005（提案 applying 态）、006（会话实例归属）迁移再切换服务；PG 部署默认单活（advisory lock），多实例联调前不要并发启动第二个 Gateway。

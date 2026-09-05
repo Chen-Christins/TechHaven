@@ -83,6 +83,7 @@ TECHHAVEN_AI_CONFIG_MASTER_KEY=<上一步生成值>
 - 个人中心通过 `/v1/ai-configs/mode` 确认当前存储：assets 模式读写 Gateway 配置，只有明确返回 legacy 才使用产品后端接口。认证错误和服务异常均不回退。
 - 旧后端的脱敏密钥不能迁移成可用凭据；首次启用 assets 后，用户需在个人中心重新输入完整密钥。保存时自动选择该个人配置供 Agent 使用。
 - 已配置主密钥时，缺少 v0.5 表会阻断启动，避免数据库升级遗漏时静默切换存储。
+- **组织授权（审查意见 F1）**：启用配置资产后，Gateway 同时以 `ai_org_memberships` 为权威校验会话创建的组织成员关系（`AiConfigOrgAccess`）——「授权的 org」「解析配置的 org」「MCP 凭据绑定的 org」三者强制一致。未配置资产的真实 dsh 链路创建会话 fail-closed（503）；mock driver 本地演示默认放行。
 
 ## 已知边界
 

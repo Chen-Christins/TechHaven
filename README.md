@@ -215,6 +215,8 @@ npm ci && npm run typecheck && npm test && npm run smoke
 | `TECHHAVEN_GATEWAY_STORE`                | 否                 | `jsonl`                                  | `jsonl` 单实例 PoC，或 `postgres` 权威模式           |
 | `TECHHAVEN_GATEWAY_DB_URL`               | store=postgres     | 无                                       | Agent PostgreSQL 连接串，不是产品 MySQL              |
 | `TECHHAVEN_GATEWAY_DB_SCHEMA`            | 否                 | `public`                                 | PG schema 名                                         |
+| `TECHHAVEN_GATEWAY_INSTANCE_ID`          | PG 多实例          | `hostname:pid:random`                    | 会话实例归属与心跳续约依据（4–128 字符）             |
+| `TECHHAVEN_ORG_ACCESS_ALLOW_ALL`         | 否（仅 mock）      | 无                                       | `1` 跳过组织成员校验；真实链路设置即启动失败         |
 | `TECHHAVEN_PROPOSALS_FILE`               | JSONL proposal     | `../techhaven-mcp/audit/proposals.jsonl` | 与 MCP 共享的 proposal 事件文件                      |
 | `TECHHAVEN_MAX_SESSIONS_PER_ORG`         | 否                 | `3`                                      | 单组织活动会话配额                                   |
 | `TECHHAVEN_SESSION_RETENTION_MINUTES`    | 否                 | `30`                                     | 终态会话保留时间                                     |
@@ -282,9 +284,10 @@ npm ci && npm run typecheck && npm test && npm run smoke
 1. 确认旧后端可从 Bridge 所在机器访问，并冻结三类工单的真实请求/响应、认证方式和状态枚举。
 2. 启动一个 Bridge 实例；为 ledger 挂持久卷。MCP 与 Bridge 同机时保持 `127.0.0.1:3093`（3092 是 BFF，3091 是 Gateway），不要向公网开放。
 3. 构建 MCP，把 `TECHHAVEN_BACKEND=bridge`、Bridge URL/token 注入 dsh 的 MCP server 环境；每个会话注入独立 `TECHHAVEN_AGENT_TOKEN`。
-4. 启动 Gateway。开发验证用 `TECHHAVEN_ENGINE_DRIVER=mock`；接入真实 Agent 时使用已经验证的 dsh driver/profile。
+4. 启动 Gateway。开发验证用 `TECHHAVEN_ENGINE_DRIVER=mock`；接入真实 Agent 时使用已经验证的 dsh driver/profile。真实链路必须配置组织授权源（推荐走 `TECHHAVEN_AI_CONFIG_URL`，以 `ai_org_memberships` 校验成员关系），否则创建会话 fail-closed 返回 503。
 5. 由 Nginx/BFF 暴露同源 `/gateway/*`，在服务端注入 Gateway Bearer 和真实用户 actor；静态前端不能依赖 Vite 开发代理完成生产鉴权。
 6. 先使用只读工具联调，再用测试组织执行一个 staged 状态变更，核对 proposal、Bridge ledger、旧后端状态和 MySQL 最终数据。
+7. 使用 PG 权威模式时，按顺序应用 `docs/agent-db/migrations/` 的 004 → 005 → 006 迁移再切换服务；PG 部署默认单活，多实例联调前不要并发启动第二个 Gateway。全链路部署前跑 `node scripts/check-stack-ports.mjs` 核对端口表（Gateway 3091 / BFF 3092 / Bridge 3093）。
 
 最小的 Bridge/MCP 关键配置关系：
 

@@ -117,7 +117,8 @@ agent 调 update_ticket_status（合法迁移）
   → server 校验 scope + 状态机，创建提案（pending，TECHHAVEN_PROPOSAL_TTL_MINUTES 内有效），
     返回 { proposal: { id, status: "pending", to_status, expires_at } }   —— 变更未生效
   → 人工执行 `npm run proposal -- approve <id>`（或 reject / 放任过期）
-  → server proposal worker 检测到 approved：重读工单当前状态、重新过状态机 → 应用变更，补记 applied 事件
+  → server proposal worker 检测到 approved：先独占领取（pending/approved → applying，含应用租约），
+    再重读工单当前状态、重新过状态机 → 应用变更，补记 applied 事件
   → agent 可调用 get_proposal { id } 查询状态；查询本身不触发写入
   → 返回 { id, status: "applied", updated: {...} }
 ```
@@ -128,6 +129,7 @@ agent 调 update_ticket_status（合法迁移）
 
 - **快速失败**：工单不存在或迁移非法时直接报错，不产生提案——审批负担只留给合法请求。
 - **批准后二次校验**：应用前 server 重读工单当前状态、重新过状态机；审批窗口内工单若已被人工改动且迁移不再合法，提案转 rejected 并返回说明，不会硬改。
+- **应用独占领取（applying）**：worker 应用前先把提案领取为 `applying`（JSONL 单进程 CAS 等价；PG 事务内 UPDATE + 应用租约 `apply_lease_expires_at`，默认 5 分钟，租约过期允许重新领取）。领取后人工撤回/重复批准返回 409；应用异常由系统侧补偿为 rejected——杜绝「撤回成功但写入已发生」（审查意见 F2）。迁移 005（schema v0.6）为 authoritative 模式提供 `applying` 枚举与租约列。
 - **未决过期 = 默认拒绝**（安全侧倾斜）：`TECHHAVEN_PROPOSAL_TTL_MINUTES`（默认 30 分钟）内未批准即 expired。
 - **幂等**：已 applied 的提案重复查询不会重复应用。
 - **分级审批过渡**：staged 模式下只有列入 `TECHHAVEN_WRITE_STAGED_TOOLS`（默认 `update_ticket_status`）的写工具走提案；目标由 `tool_catalog` / `org_tool_policy` 服务端策略取代环境清单。

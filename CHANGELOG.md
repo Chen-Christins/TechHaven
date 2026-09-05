@@ -6,6 +6,16 @@
 
 ## [Unreleased]
 
+### 修复
+
+- **F1 · 会话创建组织授权**：`POST /v1/sessions` 增加组织成员校验端口（默认 fail-closed）。配置 Agent DB 配置资产时以 `ai_org_memberships` 为权威；mock driver 演示模式默认放行（CI smoke/本地演示开箱可用）；真实 dsh 链路未配置授权源时拒绝建会话。同一已授权 orgId 同步传入 AI 配置解析。
+- **F2 · 撤回与应用竞争**：提案状态机新增独占领取态 `applying`（`pending → approved → applying → applied`）。应用先领取（PG 事务内领取 + 应用租约）再执行业务写，期间人工撤回返回 409；应用异常由系统侧补偿为 rejected，不再出现「撤回成功但写入已发生」。含 migration 005（schema v0.6）与前后端状态同步。
+- **F3 · 服务端口冲突**：Bridge 默认端口 3092 → 3093，统一端口表 Gateway 3091 / BFF 3092 / Bridge 3093；新增 `scripts/check-stack-ports.mjs` 组合检查（静态核对各服务默认值、`.env.example` 与 MCP 的 Bridge URL 一致性）。
+- **F4 · PG 恢复误判其他实例**：`agent_sessions` 新增 `runner_id` / `lease_expires_at` 与心跳续约；启动恢复只接管本实例或租约过期的会话，并把仍在其他实例运行的会话排除在外；PG 部署默认以 advisory lock 强制单活。含 `TECHHAVEN_GATEWAY_INSTANCE_ID` 配置与 migration 006（schema v0.7）。
+- **F5 · Bridge 同工单并发覆盖**：串行化键由幂等键改为工单主体 `(orgId, kind, id)`，读—校验—写—确认整段排队；写请求携带 `expected_from_status` 条件前置，第二个提案读到新状态后必然 `STALE_PRECONDITION` 拒写。
+- **F6 · dsh/MCP 凭据链断裂**：新增会话级 MCP 启动上下文（白名单键 `TECHHAVEN_AGENT_TOKEN` / `TECHHAVEN_TOKEN_SECRET` + sid/org 绑定）并入 dsh 子进程隔离环境；不恢复父环境，修复「启用用户模型配置 + 随附 MCP profile」组合路径启动失败。
+- 回归：修复使 Gateway mock 冒烟（41 项）在 CI 上因组织授权 fail-closed 拒绝建会话导致的 26 项连锁失败；单测合计 Gateway 112 / MCP 35 / Bridge 16 / BFF 20 通过。
+
 ### 新增
 
 - 架构基线 `docs/ARCHITECTURE.md`：采用模块化产品域、Web BFF 逻辑边界、Ports & Adapters、Agent 控制面/执行面分离、服务端 proposal 权威、PostgreSQL 权威迁移和 OpenTelemetry 观测模型。
