@@ -116,15 +116,16 @@ async function main(): Promise<void> {
   }
 
   // 组织授权（审查意见 F1）：会话创建前校验「用户属于目标组织」。
-  // 有 Agent DB 配置资产 → 以 ai_org_memberships 为权威；否则只有显式开启的
-  // mock 演示逃生舱能放行；两者都没有时不注入端口，创建会话 fail-closed 返回 503。
+  // 有 Agent DB 配置资产 → 以 ai_org_memberships 为权威；mock driver 是本地演示 /
+  // CI 冒烟模式、没有真实写入面，默认走演示放行（否则开箱即 503，CI smoke 回归）；
+  // dsh 等真实 driver 无授权源时保持 fail-closed。
   let orgAccess: OrgAccessPort | undefined;
   if (aiConfigStore) {
     orgAccess = new AiConfigOrgAccess(aiConfigStore);
     log("组织授权已启用：会话创建前校验 ai_org_memberships 成员关系");
-  } else if (config.orgAccessAllowAll) {
+  } else if (config.driver === "mock") {
     orgAccess = new LocalDemoOrgAccess(log);
-    log("警告：组织授权已按 TECHHAVEN_ORG_ACCESS_ALLOW_ALL=1 跳过（仅 mock 本地演示），真实部署不得启用");
+    log("组织授权：mock driver 演示模式默认放行，不适用于真实部署");
   } else {
     log("警告：未配置可信组织授权服务，POST /v1/sessions 将返回 503（fail-closed）");
   }
