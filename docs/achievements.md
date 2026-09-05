@@ -3,6 +3,8 @@
 入口：个人中心（`/personal?tab=achievements`）→ 我的成就 Tab。
 对应组件：`src/pages/user/AchievementsTab.tsx`（外壳 `src/pages/user/Achievements.tsx` 已废弃，仅保留 Tab）。
 
+> 实现状态：`implemented (client-wired)`。页面已通过 `AuthService.getAchievements()` 调用 `/user/achievements`；本轮只核对静态调用链，live 后端响应、鉴权与数据完整性仍为 `unverified`。
+
 ## 数据模型
 
 ```ts

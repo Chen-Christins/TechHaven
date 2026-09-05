@@ -1,0 +1,146 @@
+name: Deploy Agent Gateway
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "要部署的分支"
+        required: false
+        default: master
+  workflow_run:
+    workflows: ["Deploy to Test Environment"]
+    types: [completed]
+
+concurrency:
+  group: deploy-agent-gateway-test
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.event.inputs.branch || github.ref_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: services/techhaven-gateway/package-lock.json
+
+      - name: Install Gateway dependencies
+        working-directory: services/techhaven-gateway
+        run: npm ci
+
+      - name: Verify and build Gateway
+        working-directory: services/techhaven-gateway
+        run: |
+          npm run typecheck
+          npm test
+          npm run build
+
+      - name: Package Gateway release
+        run: |
+          mkdir -p .agent-release/services/techhaven-gateway .agent-release/contracts .agent-release/scripts
+          cp -R services/techhaven-gateway/dist .agent-release/services/techhaven-gateway/dist
+          cp services/techhaven-gateway/package.json services/techhaven-gateway/package-lock.json .agent-release/services/techhaven-gateway/
+          cp contracts/package.json contracts/index.d.ts .agent-release/contracts/
+          cp scripts/agent-gateway-service.sh scripts/node-service.sh scripts/install-agent-gateway-systemd.sh .agent-release/scripts/
+          tar -czf agent-gateway-release.tgz -C .agent-release .
+
+      - name: Prepare remote Agent directory
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            ROOT="${{ secrets.TEST_AGENT_DEPLOY_PATH }}"
+            if [ -z "$ROOT" ] || [ "$ROOT" = "/" ]; then
+              echo "TEST_AGENT_DEPLOY_PATH is empty or root; aborting" >&2
+              exit 1
+            fi
+            mkdir -p "$ROOT/incoming" "$ROOT/releases" "$ROOT/shared"
+
+      - name: Upload Gateway release
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          source: agent-gateway-release.tgz
+          target: ${{ secrets.TEST_AGENT_DEPLOY_PATH }}/incoming
+
+      - name: Activate, restart, and verify Gateway
+        uses: appleboy/ssh-action@v1.0.0
+        env:
+          RELEASE_ID: ${{ github.event.workflow_run.head_sha || github.sha }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          envs: RELEASE_ID
+          script: |
+            set -eu
+            ROOT="${{ secrets.TEST_AGENT_DEPLOY_PATH }}"
+            RELEASE="$ROOT/releases/$RELEASE_ID"
+            ENV_FILE="$ROOT/shared/gateway.env"
+
+            case "$ROOT" in
+              /*) ;;
+              *) echo "TEST_AGENT_DEPLOY_PATH must be an absolute path" >&2; exit 1 ;;
+            esac
+            case "$RELEASE_ID" in
+              ""|*[!0-9a-f]*) echo "Invalid release id: $RELEASE_ID" >&2; exit 1 ;;
+            esac
+            if [ ! -f "$ENV_FILE" ]; then
+              echo "Missing $ENV_FILE" >&2
+              echo "Create it once from services/techhaven-gateway/.env.example and chmod 600 it." >&2
+              exit 1
+            fi
+
+            rm -rf "$RELEASE"
+            mkdir -p "$RELEASE"
+            tar -xzf "$ROOT/incoming/agent-gateway-release.tgz" -C "$RELEASE"
+            cd "$RELEASE/services/techhaven-gateway"
+            npm ci --omit=dev
+
+            set -a
+            . "$ENV_FILE"
+            set +a
+            if [ "${TECHHAVEN_ENGINE_DRIVER:-mock}" = "dsh" ]; then
+              npm install --no-save --omit=dev \
+                @deepseek-ai/dsh@0.1.1-rc.2 \
+                @deepseek-ai/dsh-sdk-client@0.1.1-rc.2
+              node -e "Promise.all([import('@deepseek-ai/dsh'), import('@deepseek-ai/dsh-sdk-client')])"
+            fi
+
+            ln -sfn "$RELEASE" "$ROOT/current"
+            chmod +x "$ROOT/current/scripts/agent-gateway-service.sh"
+            chmod +x "$ROOT/current/scripts/install-agent-gateway-systemd.sh"
+            if systemctl is-enabled techhaven-agent-gateway.service >/dev/null 2>&1; then
+              sudo -n systemctl restart techhaven-agent-gateway.service
+            else
+              "$ROOT/current/scripts/agent-gateway-service.sh" restart "$ROOT"
+            fi
+
+            ATTEMPT=0
+            until "$ROOT/current/scripts/agent-gateway-service.sh" health "$ROOT"; do
+              ATTEMPT=$((ATTEMPT + 1))
+              if [ "$ATTEMPT" -ge 20 ]; then
+                echo "Agent Gateway health check failed" >&2
+                tail -n 100 "$ROOT/shared/gateway.log" || true
+                exit 1
+              fi
+              sleep 1
+            done
+
+            rm -f "$ROOT/incoming/agent-gateway-release.tgz"
+            echo "Agent Gateway deployed: $RELEASE_ID"

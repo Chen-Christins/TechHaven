@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const httpMock = vi.hoisted(() => ({
   get: vi.fn(),
   post: vi.fn(),
+  postForm: vi.fn(),
 }));
 
 vi.mock("../utils/http", () => ({ default: httpMock }));
@@ -13,6 +14,7 @@ describe("MessageService", () => {
   beforeEach(() => {
     httpMock.get.mockReset();
     httpMock.post.mockReset();
+    httpMock.postForm.mockReset();
   });
 
   it("loads the conversation list", async () => {
@@ -40,12 +42,10 @@ describe("MessageService", () => {
 
   it("sends URL-encoded message text", async () => {
     const message = { id: 1, fromMe: true, text: "你好 & hello", create_time: 1 };
-    httpMock.post.mockResolvedValue({ data: message });
+    httpMock.postForm.mockResolvedValue({ data: message });
 
     await expect(MessageService.send(9, message.text)).resolves.toBe(message);
-    expect(httpMock.post).toHaveBeenCalledWith("/messages/conversations/9", "text=%E4%BD%A0%E5%A5%BD+%26+hello", {
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    });
+    expect(httpMock.postForm).toHaveBeenCalledWith("/messages/conversations/9", { text: message.text });
   });
 
   it("marks a conversation as read", async () => {
@@ -72,11 +72,9 @@ describe("MessageService", () => {
       unread: 0,
       messages: [],
     };
-    httpMock.post.mockResolvedValue({ data: conversation });
+    httpMock.postForm.mockResolvedValue({ data: conversation });
 
     await expect(MessageService.createConversation(conversation.peer_id)).resolves.toBe(conversation);
-    expect(httpMock.post).toHaveBeenCalledWith("/messages/conversations", "peer_id=user+7", {
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    });
+    expect(httpMock.postForm).toHaveBeenCalledWith("/messages/conversations", { peer_id: conversation.peer_id });
   });
 });
