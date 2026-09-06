@@ -2,9 +2,9 @@ name: CI Build Check
 
 on:
   push:
-    branches: ["master", "review/frontend-fixes", "feature/agent-ui"]
+    branches: ["master"]
   pull_request:
-    branches: ["master", "review/frontend-fixes"]
+    branches: ["master"]
 
 jobs:
   frontend:
