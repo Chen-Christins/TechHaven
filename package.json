@@ -1,7 +1,7 @@
 {
   "name": "techhaven",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.1.0",
   "license": "AGPL-3.0-only",
   "type": "module",
   "engines": {
@@ -9,8 +9,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "build:test": "tsc --noEmit && vite build --mode development",
+    "build": "tsc --noEmit -p tsconfig.build.json && vite build",
+    "build:test": "tsc --noEmit -p tsconfig.build.json && vite build --mode development",
     "preview": "vite preview",
     "test": "vitest run",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",

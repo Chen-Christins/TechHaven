@@ -107,7 +107,7 @@ jobs:
         id: changelog
         run: |
           TAG="${{ github.ref_name }}"
-          awk -v tag="$TAG" 'BEGIN{f=0} /^## /{if(f)exit} $0 ~ ("^## +\\[" tag "\\]"){f=1} f{print}' CHANGELOG.md > release_notes.md
+          awk -v tag="$TAG" 'BEGIN{f=0} /^## /{if(f)exit} $0 ~ ("^## +\\[" tag "\\]"){f=1;next} f{print}' CHANGELOG.md > release_notes.md
           if [ ! -s release_notes.md ]; then
             echo "见 CHANGELOG.md" > release_notes.md
           fi
