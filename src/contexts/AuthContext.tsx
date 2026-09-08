@@ -196,10 +196,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           tokenRef.current = newToken;
           setToken(newToken);
           tokenManager.setToken(newToken);
-          wsAuthRetry.current = 0;
-          // 重连：connect 会重新读取（已被服务端刷新的）S_TOKEN / S_TOKEN_TIME cookie
+          // 重连：先断开旧连接（使 connect 跳过 readyState 检查），再用新 token 建立新连接
+          notificationWS.disconnect();
           notificationWS.connect(user.id);
           if (!["用户", "1"].includes(String(user.role))) {
+            chatWS.disconnect();
             chatWS.connect(user.id);
           }
         } else {
@@ -234,9 +235,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           tokenRef.current = newToken;
           setToken(newToken);
           tokenManager.setToken(newToken);
-          // 重连：connect 会重新读取（已被服务端刷新的）S_TOKEN / S_TOKEN_TIME cookie
+          // 重连：先断开旧连接（使 connect 跳过 readyState 检查），再用新 token 建立新连接
+          notificationWS.disconnect();
           notificationWS.connect(user.id);
           if (!["用户", "1"].includes(String(user.role))) {
+            chatWS.disconnect();
             chatWS.connect(user.id);
           }
           connectPresence(user.id);
