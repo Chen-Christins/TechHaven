@@ -164,9 +164,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const wsAuthRetry = useRef(0);
   const WS_AUTH_MAX_RETRY = 2;
   useEffect(() => {
-    const unsubOpen = notificationWS.onOpen(() => {
-      wsAuthRetry.current = 0;
-    });
     // 聊天 WS 失败（如无权限/账号异常）绝不影响登录态，仅停止重连避免循环。
     // 会话失效由 notificationWS 统一处理。
     const unsubChatError = chatWS.onServerError(async () => {
@@ -211,7 +208,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     });
     return () => {
-      unsubOpen();
       unsubError();
       unsubChatError();
     };

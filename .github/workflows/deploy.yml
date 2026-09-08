@@ -3,6 +3,12 @@ name: Deploy and Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "要部署的分支（默认 master）"
+        required: false
+        default: master
 
 permissions:
   contents: write
@@ -13,6 +19,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,8 +42,15 @@ jobs:
       - name: Compute deploy paths
         id: deploy
         run: |
-          VERSION="${{ github.ref_name }}"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION="${{ github.ref_name }}"
+          else
+            BRANCH="${{ github.event.inputs.branch || 'master' }}"
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            VERSION=$(echo "$BRANCH" | sed 's|/|-|g')-${SHORT_SHA}
+          fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "trigger=${{ github.event_name }}" >> $GITHUB_OUTPUT
           DEPLOY_PATH="${{ secrets.DEPLOY_PATH }}"
           RELEASES_DIR="$(dirname "$DEPLOY_PATH")/releases"
           echo "releases_dir=$RELEASES_DIR" >> $GITHUB_OUTPUT
@@ -89,13 +104,16 @@ jobs:
             ln -sfn "$RELEASES_DIR/$VERSION" "$DEPLOY_PATH"
             echo "🔗 Symlink switched → $VERSION"
 
-            # 只保留最近 5 个 tag 版本，删除旧版本
+            # 只保留最近 5 个版本，删除旧版本（兼容 tag 和分支命名）
             cd "$RELEASES_DIR" 2>/dev/null || exit 0
-            REMOVED=$(ls -1d v* 2>/dev/null | sort -V | head -n -5)
-            if [ -n "$REMOVED" ]; then
-              echo "$REMOVED" | xargs rm -rf
+            REMOVED=$(ls -1d */ 2>/dev/null | sed 's|/$||' | sort -V | head -n -5 | head -n -0)
+            ALL_VERSIONS=$(ls -1d */ 2>/dev/null | sed 's|/$||' | sort -V)
+            KEEP=$(echo "$ALL_VERSIONS" | tail -n 5)
+            REMOVE=$(echo "$ALL_VERSIONS" | comm -23 - <(echo "$KEEP"))
+            if [ -n "$REMOVE" ]; then
+              echo "$REMOVE" | xargs rm -rf
               echo "🧹 Cleaned old versions:"
-              echo "$REMOVED" | sed 's/^/      /'
+              echo "$REMOVE" | sed 's/^/      /'
             fi
 
             echo "✅ Deployed: $VERSION"
@@ -104,6 +122,7 @@ jobs:
             ls -1d v* 2>/dev/null | sed 's/^/   /' || echo "   (none)"
 
       - name: Extract changelog for this version
+        if: github.event_name == 'push'
         id: changelog
         run: |
           TAG="${{ github.ref_name }}"
@@ -113,6 +132,7 @@ jobs:
           fi
 
       - name: Create GitHub Release
+        if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
