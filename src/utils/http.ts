@@ -148,81 +148,17 @@ export const clearAuthCookies = (): void => {
 export const tokenManager = new TokenManager();
 
 /**
- * 未授权（1101）回调注册表
+ * 业务错误回调注册表
  *
- * HTTP 层只负责清理内存 token，登录态（user/token/通知）由 AuthContext 持有。
- * 这里通过回调把两者解耦，避免 http.ts 反向依赖 AuthContext 造成循环引用。
+ * http.ts 不包含任何业务语义，具体 errno 的处理逻辑由
+ * errorHandlers.ts 等业务模块通过 setBusinessErrorHandler 注册。
  */
-type UnauthorizedHandler = () => void;
-let unauthorizedHandler: UnauthorizedHandler | null = null;
+type BusinessErrorHandler = (errno: number, data?: any) => void;
+let businessErrorHandler: BusinessErrorHandler | null = null;
 
-export const setUnauthorizedHandler = (handler: UnauthorizedHandler | null): void => {
-    unauthorizedHandler = handler;
+export const setBusinessErrorHandler = (handler: BusinessErrorHandler | null): void => {
+    businessErrorHandler = handler;
 };
-
-/**
- * 登录请求参数
- */
-export interface LoginParams {
-    auth_id: string; // 账号/邮箱
-    passwd: string; // 密码
-}
-
-/**
- * 登录响应数据
- */
-export interface LoginResponse {
-    token?: string;
-    user?: {
-        id: number;
-        name: string;
-        username: string;
-        email: string;
-        avatar: string;
-        role: string;
-        created_at: string;
-    };
-}
-
-/**
- * 注册请求参数
- */
-export interface RegisterParams {
-    account: string; // 账号
-    email: string; // 邮箱
-    passwd: string; // 原始密码（将被MD5加密）
-    auth_code: string; // 邮件验证码
-}
-
-/**
- * 重置密码请求参数
- */
-export interface ForgetPasswordParams {
-    email: string; // 邮箱
-    passwd: string; // 新密码
-    auth_code: string; // 验证码
-}
-
-/**
- * 发送验证码请求参数
- */
-export interface SendCodeParams {
-    email: string; // 邮箱
-    agent: string; // 用户代理
-    type: "1" | "2" | "3" | "4"; // 操作类型：1 注册 2 登录 3 密码重置 4 更换邮箱
-}
-
-/**
- * 验证码操作类型常量
- */
-export const CodeType = {
-    REGISTER: "1", // 注册
-    LOGIN: "2", // 登录
-    PASSWORD_RESET: "3", // 密码重置
-    EMAIL_CHANGE: "4", // 更换邮箱
-} as const;
-
-export type CodeType = (typeof CodeType)[keyof typeof CodeType];
 
 /**
  * HTTP请求配置接口
@@ -387,12 +323,8 @@ class HttpClient {
                             const fallbackMsg = (data as any)?.msg || (data as any)?.message || "请求失败";
                             const mappedMessage = getErrorMsg(errno, fallbackMsg);
 
-                            // 特殊 errno 处理
-                            if (errno === 1101) {
-                                // 未登录（token 过期 / 被顶下线）
-                                const fallback = (data as any)?.msg || (data as any)?.errstr || "";
-                                this.handleUnauthorized(detectInvalidReason(String(fallback)));
-                            }
+                            // 交给业务层处理（如 1101 未登录清理等）
+                            businessErrorHandler?.(errno, data);
 
                             throw new HttpError(mappedMessage, 200, response.config as HttpRequestConfig, errno);
                         }
@@ -428,101 +360,16 @@ class HttpClient {
                 let responseErrno: number | undefined;
 
                 if (error.response) {
-                    // 服务器返回了响应，但状态码不在 2xx 范围内
+                    // 服务器返回了响应（正常业务流不会出现非 200，做防御性处理）
                     const { status, data } = error.response;
                     code = status;
                     responseErrno = (data as any)?.errno;
+                    const fallbackMsg = (data as any)?.msg || (data as any)?.message;
 
-                    switch (status) {
-                        case 400:
-                            // 根据上下文判断具体错误类型
-                            const errorMsg = (data as any)?.msg || (data as any)?.message || "请求参数错误";
-                            if (errorMsg.includes("param account passwd empty")) {
-                                message = "账号和密码不能为空";
-                            } else if (errorMsg.includes("no param")) {
-                                message = "缺少必要参数";
-                            } else if (errorMsg.includes("invalid email format")) {
-                                message = "邮箱格式不正确";
-                            } else {
-                                message = errorMsg;
-                            }
-                            break;
-                        case 401:
-                            // 根据上下文判断具体错误类型
-                            const authErrorMsg = (data as any)?.msg || (data as any)?.message || "认证失败";
-                            if (authErrorMsg.includes("email exists")) {
-                                message = "邮箱已被注册";
-                            } else if (authErrorMsg.includes("account exists")) {
-                                message = "账号已被注册";
-                            } else {
-                                message = "未授权，请重新登录";
-                                this.handleUnauthorized();
-                            }
-                            break;
-                        case 402:
-                            // 根据上下文判断具体错误类型
-                            const formatErrorMsg = (data as any)?.msg || (data as any)?.message || "格式错误";
-                            if (formatErrorMsg.includes("invalid account")) {
-                                message = "账号格式不正确";
-                            } else if (formatErrorMsg.includes("invalid email format")) {
-                                message = "邮箱格式不正确";
-                            } else if (formatErrorMsg.includes("invalid auth_id")) {
-                                message = "账号或邮箱格式不正确";
-                            } else {
-                                message = "账号或邮箱格式不正确";
-                            }
-                            break;
-                        case 403:
-                            // 根据上下文判断具体错误类型
-                            const invalidMsg = (data as any)?.msg || (data as any)?.message || "账号状态异常";
-                            if (invalidMsg.includes("invalid auth_code")) {
-                                message = "验证码无效或已过期";
-                            } else if (invalidMsg.includes("invalid auth_id")) {
-                                message = "账号或邮箱不存在";
-                            } else if (invalidMsg.includes("invalid old password")) {
-                                message = "当前密码错误，请重新输入";
-                            } else {
-                                message = "账号状态异常";
-                            }
-                            break;
-                        case 404:
-                            message = "请求资源不存在";
-                            break;
-                        case 410:
-                            // 根据后端返回的具体错误信息判断
-                            const statusErrorMsg = (data as any)?.msg || (data as any)?.message || "账号状态异常";
-                            if (statusErrorMsg.includes("not login")) {
-                                message = "未登录，请重新登录";
-                                this.handleUnauthorized(detectInvalidReason(statusErrorMsg));
-                            } else if (statusErrorMsg.includes("account invalid state")) {
-                                message = "账号状态异常，请联系管理员";
-                            } else if (statusErrorMsg.includes("already login")) {
-                                message = "账号已在其他设备登录";
-                            } else if (statusErrorMsg.includes("invalid passwd")) {
-                                message = "密码错误，请重新输入";
-                            } else if (statusErrorMsg.includes("invalid state")) {
-                                message = "账号状态异常，请联系管理员";
-                            } else {
-                                message = "账号状态异常";
-                            }
-                            break;
-                        case 500:
-                            message = "服务器内部错误，请联系管理员";
-                            break;
-                        case 502:
-                            message = "网关错误";
-                            break;
-                        case 501:
-                            message = "服务器内部错误，请联系管理员";
-                            break;
-                        case 503:
-                            message = "服务不可用";
-                            break;
-                        case 504:
-                            message = "网关超时";
-                            break;
-                        default:
-                            message = (data as any)?.msg || (data as any)?.message || `请求失败 (${status})`;
+                    if (responseErrno) {
+                        message = getErrorMsg(responseErrno, fallbackMsg);
+                    } else {
+                        message = `请求失败 (${status})`;
                     }
                 } else if (error.request) {
                     // 请求已发出，但没有收到响应
@@ -540,18 +387,6 @@ class HttpClient {
                 return Promise.reject(httpError);
             },
         );
-    }
-
-    /**
-     * 处理未授权错误（token 过期 / 被顶下线）
-     * 清除认证 Cookie 与内存 token，并广播会话失效事件
-     */
-    private handleUnauthorized(reason: SessionInvalidReason = "expired"): void {
-        clearAuthCookies();
-        tokenManager.clearToken();
-        tokenManager.emitSessionInvalidated(reason);
-        // 同步清理 AuthContext 持有的登录态，避免出现"token 已清但 UI 仍显示已登录"的状态分裂
-        unauthorizedHandler?.();
     }
 
     /**

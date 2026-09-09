@@ -1,12 +1,68 @@
-import http, {
-    type LoginParams,
-    type LoginResponse,
-    type RegisterParams,
-    type ForgetPasswordParams,
-    type SendCodeParams,
-    type HttpResponse,
-    CodeType,
-} from "../utils/http";
+import http, { type HttpResponse } from "../utils/http";
+
+/**
+ * 登录请求参数
+ */
+interface LoginParams {
+    auth_id: string; // 账号/邮箱
+    passwd: string; // 密码
+}
+
+/**
+ * 登录响应数据
+ */
+interface LoginResponse {
+    token?: string;
+    user?: {
+        id: number;
+        name: string;
+        username: string;
+        email: string;
+        avatar: string;
+        role: string;
+        created_at: string;
+    };
+}
+
+/**
+ * 注册请求参数
+ */
+interface RegisterParams {
+    account: string; // 账号
+    email: string; // 邮箱
+    passwd: string; // 原始密码（将被MD5加密）
+    auth_code: string; // 邮件验证码
+}
+
+/**
+ * 重置密码请求参数
+ */
+interface ForgetPasswordParams {
+    email: string; // 邮箱
+    passwd: string; // 新密码
+    auth_code: string; // 验证码
+}
+
+/**
+ * 发送验证码请求参数
+ */
+interface SendCodeParams {
+    email: string; // 邮箱
+    agent: string; // 用户代理
+    type: "1" | "2" | "3" | "4"; // 操作类型：1 注册 2 登录 3 密码重置 4 更换邮箱
+}
+
+/**
+ * 验证码操作类型常量
+ */
+const CodeType = {
+    REGISTER: "1", // 注册
+    LOGIN: "2", // 登录
+    PASSWORD_RESET: "3", // 密码重置
+    EMAIL_CHANGE: "4", // 更换邮箱
+} as const;
+
+type CodeType = (typeof CodeType)[keyof typeof CodeType];
 
 const REQUIRE_CREDENTIALS = import.meta.env.VITE_REQUIRE_CREDENTIALS === "true";
 

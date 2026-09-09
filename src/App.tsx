@@ -15,17 +15,27 @@ import ThemeBackground from "./components/themeBackground";
 import SessionNotifier from "./components/auth/SessionNotifier";
 import { usePresenceConnection } from "./hooks/useOnlineCount";
 import { useDevToolsProtection } from "./hooks/useDevToolsProtection";
-import { initErrorCodes } from "./utils/errorCodes";
+import { initErrorCodes, refreshErrorCodes } from "./utils/errorCodes";
+import "./utils/errorHandlers"; // 注册业务 errno 处理器（1101 等）
 
 function AppContent() {
     usePresenceConnection();
     useDevToolsProtection();
 
-    // 应用启动时拉取一次错误码表
     const { settings } = useSiteSettings();
+
+    // 启动时立即加载错误码（不依赖 settings）
     useEffect(() => {
-        initErrorCodes(settings.language);
+        initErrorCodes();
+    }, []);
+
+    // settings 加载后，语言变化时刷新错误码
+    useEffect(() => {
+        if (settings.language) {
+            refreshErrorCodes(settings.language);
+        }
     }, [settings.language]);
+
     return (
         <>
             <IdleTimeoutHandler />

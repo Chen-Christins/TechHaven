@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { HttpClient, HttpError, tokenManager, setUnauthorizedHandler } from "./http";
+import { HttpClient, HttpError, tokenManager, setBusinessErrorHandler } from "./http";
 
 it("postForm preserves falsy values, encodes special text and omits only nullish fields", async () => {
     let sent = "";
@@ -45,7 +45,7 @@ const unauthorizedAdapter: import("axios").AxiosRequestConfig["adapter"] = async
 describe("HTTP 未授权（1101）处理", () => {
     beforeEach(() => {
         tokenManager.clearToken();
-        setUnauthorizedHandler(null);
+        setBusinessErrorHandler(null);
     });
 
     it("收到 1101 时抛出 HttpError 并清空内存 token", async () => {
@@ -60,8 +60,10 @@ describe("HTTP 未授权（1101）处理", () => {
 
     it("收到 1101 时通过注册回调同步清空 AuthContext 登录态", async () => {
         let notified = 0;
-        setUnauthorizedHandler(() => {
-            notified += 1;
+        setBusinessErrorHandler((errno) => {
+            if (errno === 1101) {
+                notified += 1;
+            }
         });
         tokenManager.setToken("tok-123");
         const client = new HttpClient({ baseURL: "http://test.local" });
