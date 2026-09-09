@@ -189,6 +189,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const res = await AuthService.refreshToken(user.id);
         if (res.errno === 0 && res.data?.token) {
+          wsAuthRetry.current = 0;
           const newToken = res.data.token;
           tokenRef.current = newToken;
           setToken(newToken);
@@ -227,6 +228,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const res = await AuthService.refreshToken(user.id);
         if (res.errno === 0 && res.data?.token) {
+          wsAuthRetry.current = 0;
           const newToken = res.data.token;
           tokenRef.current = newToken;
           setToken(newToken);

@@ -10,6 +10,10 @@ import http, {
 
 const REQUIRE_CREDENTIALS = import.meta.env.VITE_REQUIRE_CREDENTIALS === "true";
 
+// 多个调用方同时续期时只允许后端处理一次 token 轮换。
+let refreshTokenPromise: Promise<Awaited<ReturnType<typeof http.post<{ uid: string; token: string; token_time: number }>>>> | null =
+  null;
+
 /**
  * 用户信息接口
  */
@@ -214,15 +218,23 @@ export class AuthService {
    * @returns 新 token / token_time，并写入新 cookie
    */
   static async refreshToken(uid: number | string) {
+    if (refreshTokenPromise) return refreshTokenPromise;
+
     const formData = new URLSearchParams();
     formData.append("uid", String(uid));
 
-    return http.post<{ uid: string; token: string; token_time: number }>("/user/refresh_token", formData.toString(), {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      withCredentials: REQUIRE_CREDENTIALS,
-    });
+    refreshTokenPromise = http
+      .post<{ uid: string; token: string; token_time: number }>("/user/refresh_token", formData.toString(), {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        withCredentials: REQUIRE_CREDENTIALS,
+      })
+      .finally(() => {
+        refreshTokenPromise = null;
+      });
+
+    return refreshTokenPromise;
   }
 
   /**

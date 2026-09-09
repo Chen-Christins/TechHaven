@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import { WebSocketClient } from "./websocket";
+import { tokenManager } from "./http";
 
 /**
  * token 脱敏回归测试（R0 安全项）。
@@ -23,6 +24,10 @@ class MockWebSocket {
 
   readyState = MockWebSocket.CONNECTING;
   readonly url: string;
+  onopen: (() => void) | null = null;
+  onmessage: ((event: MessageEvent) => void) | null = null;
+  onclose: ((event: CloseEvent) => void) | null = null;
+  onerror: ((event: Event) => void) | null = null;
 
   constructor(url: string) {
     this.url = url;
@@ -58,6 +63,7 @@ function captureConsole(client: WebSocketClient, uid: string | number | undefine
 describe("WebSocket 建连 token 处理", () => {
   beforeEach(() => {
     MockWebSocket.instances = [];
+    tokenManager.clearToken();
     (globalThis as { WebSocket?: unknown }).WebSocket = MockWebSocket;
     // jsdom 下直接写 document.cookie 即可，过期时间设到未来避免被丢弃
     document.cookie = `S_TOKEN=${TOKEN}; path=/`;
@@ -136,5 +142,20 @@ describe("WebSocket 建连 token 处理", () => {
     expect(MockWebSocket.instances).toHaveLength(2);
     expect(second.join("\n")).not.toContain(TOKEN);
     expect(second.join("\n")).toContain("***");
+  });
+
+  it("旧连接异步关闭时不会为新连接调度重连", () => {
+    vi.useFakeTimers();
+    const client = new WebSocketClient("/ws/v1/notification");
+    captureConsole(client, 1);
+    const first = MockWebSocket.instances[0];
+    first.readyState = MockWebSocket.CLOSED;
+
+    captureConsole(client, 1);
+    first.onclose?.({ code: 1006, reason: "", wasClean: false } as CloseEvent);
+
+    vi.advanceTimersByTime(31000);
+    expect(MockWebSocket.instances).toHaveLength(2);
+    vi.useRealTimers();
   });
 });

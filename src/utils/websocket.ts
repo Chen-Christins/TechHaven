@@ -1,4 +1,5 @@
 import { getErrorMsg } from "./errorCodes";
+import { tokenManager } from "./http";
 
 type MessageHandler = (data: any) => void;
 type EventHandler = (event?: Event) => void;
@@ -51,6 +52,8 @@ export class WebSocketClient {
   private authFailed = false;
   private pendingSend: string[] = [];
   private uid: string | number | undefined;
+  /** 每次建连递增；旧连接的异步事件不能影响新连接。 */
+  private connectionGeneration = 0;
 
   /**
    * @param path WebSocket 路径，如 "/notification"
@@ -88,6 +91,8 @@ export class WebSocketClient {
     }
     this.intentionalClose = false;
     this.authFailed = false;
+    this.clearReconnectTimer();
+    const generation = ++this.connectionGeneration;
 
     // 页面卸载时标记为主动关闭，避免触发无意义的自动重连调度
     const handleBeforeUnload = () => {
@@ -95,7 +100,8 @@ export class WebSocketClient {
     };
     window.addEventListener("beforeunload", handleBeforeUnload, { once: true });
 
-    const token = getCookie("S_TOKEN");
+    // 内存中的 token 是 HTTP 请求使用的权威凭据；Cookie 只作为初始化时的后备来源。
+    const token = tokenManager.getToken() || getCookie("S_TOKEN");
     const tokenTime = getCookie("S_TOKEN_TIME");
 
     const params = new URLSearchParams();
@@ -113,9 +119,13 @@ export class WebSocketClient {
     if (logParams.has("token_time")) logParams.set("token_time", "***");
     console.log("[WS] 正在连接:", `${this.basePath}?${logParams.toString()}`, { uid: this.uid });
 
-    this.ws = new WebSocket(connectUrl);
+    const socket = new WebSocket(connectUrl);
+    this.ws = socket;
 
-    this.ws.onopen = () => {
+    const isCurrentConnection = () => this.ws === socket && this.connectionGeneration === generation;
+
+    socket.onopen = () => {
+      if (!isCurrentConnection()) return;
       console.log("[WS] 连接已建立");
       this.authFailed = false;
       while (this.pendingSend.length > 0) {
@@ -125,7 +135,8 @@ export class WebSocketClient {
       this.openHandlers.forEach((fn) => fn());
     };
 
-    this.ws.onmessage = (event: MessageEvent) => {
+    socket.onmessage = (event: MessageEvent) => {
+      if (!isCurrentConnection()) return;
       try {
         const data = JSON.parse(event.data);
         // 服务端错误帧：携带 errno 且不为 0，按 HTTP API 同样的 errno/errstr 格式解析
@@ -159,7 +170,8 @@ export class WebSocketClient {
       }
     };
 
-    this.ws.onclose = (event: CloseEvent) => {
+    socket.onclose = (event: CloseEvent) => {
+      if (!isCurrentConnection()) return;
       console.log("[WS] 连接关闭, code:", event.code, "reason:", event.reason || "(无)");
       this.closeHandlers.forEach((fn) => fn(event));
       // 鉴权失败时交由上层处理（刷新 token / 登出），不再触发自动重连
@@ -168,7 +180,8 @@ export class WebSocketClient {
       }
     };
 
-    this.ws.onerror = (event: Event) => {
+    socket.onerror = (event: Event) => {
+      if (!isCurrentConnection()) return;
       console.error("[WS] 连接错误:", event);
       this.errorHandlers.forEach((fn) => fn(event));
     };
@@ -177,6 +190,7 @@ export class WebSocketClient {
   /** 断开连接（不重连） */
   disconnect() {
     this.intentionalClose = true;
+    this.connectionGeneration++;
     this.clearReconnectTimer();
     this.ws?.close();
     this.ws = null;
