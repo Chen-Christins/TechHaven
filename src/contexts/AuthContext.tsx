@@ -1,11 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback, type ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthService } from "../services/authService";
-import { tokenManager, getTokenFromCookie, getCookie, clearAuthCookies, setUnauthorizedHandler } from "../utils/http";
+import { tokenManager, getTokenFromCookie, clearAuthCookies, setUnauthorizedHandler } from "../utils/http";
 import { notificationWS, chatWS } from "../utils/websocket";
 import { setFaviconBadge } from "../utils/favicon";
 import { resetNotificationState } from "../utils/notificationState";
-import { connectPresence } from "../services/presenceService";
 
 // 用户信息类型
 export interface User {
@@ -154,119 +153,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [isAuthenticated, user]);
 
-  // 跟踪当前 token，供 WS 鉴权错误处理时比对 Cookie 中是否为新 token
-  const tokenRef = useRef<string | null>(null);
-  useEffect(() => {
-    tokenRef.current = token;
-  }, [token]);
-
-  // WS 鉴权失败（token 过期 / 不匹配 / 账号异常）时刷新 token 并重连
-  const wsAuthRetry = useRef(0);
-  const WS_AUTH_MAX_RETRY = 2;
+  // WebSocket 错误不负责轮换 token。token 只由主动续期计时器更新，
+  // 避免页面首次建立 WS 后收到 1101 就导致每次刷新页面都调用 refresh_token。
   useEffect(() => {
     // 聊天 WS 失败（如无权限/账号异常）绝不影响登录态，仅停止重连避免循环。
-    // 会话失效由 notificationWS 统一处理。
-    const unsubChatError = chatWS.onServerError(async () => {
+    const unsubChatError = chatWS.onServerError(() => {
       chatWS.disconnect();
     });
-    const unsubError = notificationWS.onServerError(async (err) => {
+    const unsubError = notificationWS.onServerError((err) => {
       // 账号状态异常（1103），刷新 token 无意义，直接登出
       if (err.errno === 1103) {
         clearAuthRuntimeState();
         return;
       }
-      // 仅处理 token 相关鉴权错误（1101：过期 / 不匹配）
-      if (err.errno !== 1101) return;
-
-      // 无用户上下文或已达到最大重试次数，放弃并清理登录态
-      if (!user?.id || wsAuthRetry.current >= WS_AUTH_MAX_RETRY) {
-        clearAuthRuntimeState();
-        return;
-      }
-      wsAuthRetry.current += 1;
-
-      // 调用 refresh_token 无感续期，服务端会写入新 cookie
-      try {
-        const res = await AuthService.refreshToken(user.id);
-        if (res.errno === 0 && res.data?.token) {
-          const newToken = res.data.token;
-          tokenRef.current = newToken;
-          setToken(newToken);
-          tokenManager.setToken(newToken);
-          // 重连：先断开旧连接（使 connect 跳过 readyState 检查），再用新 token 建立新连接
-          notificationWS.disconnect();
-          notificationWS.connect(user.id);
-          if (!["用户", "1"].includes(String(user.role))) {
-            chatWS.disconnect();
-            chatWS.connect(user.id);
-          }
-        } else {
-          clearAuthRuntimeState();
-        }
-      } catch {
-        clearAuthRuntimeState();
-      }
+      // 1101 只代表该 WebSocket 会话被服务端拒绝，不能据此轮换全局 token。
+      // HTTP 请求收到 1101 时仍由 http.ts 统一清理登录态；主动续期由下方计时器负责。
+      if (err.errno === 1101) notificationWS.disconnect();
     });
     return () => {
       unsubError();
       unsubChatError();
     };
-  }, [user]);
-
-  // Token 主动续期：S_TOKEN_TIME 快过期前刷新 token，成功后回写并重连 WS
-  const refreshingRef = useRef(false);
-  useEffect(() => {
-    if (!isAuthenticated || !user?.id) return;
-
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    let disposed = false;
-
-    const doRefresh = async () => {
-      if (disposed || refreshingRef.current) return;
-      refreshingRef.current = true;
-      try {
-        const res = await AuthService.refreshToken(user.id);
-        if (res.errno === 0 && res.data?.token) {
-          const newToken = res.data.token;
-          tokenRef.current = newToken;
-          setToken(newToken);
-          tokenManager.setToken(newToken);
-          // 重连：先断开旧连接（使 connect 跳过 readyState 检查），再用新 token 建立新连接
-          notificationWS.disconnect();
-          notificationWS.connect(user.id);
-          if (!["用户", "1"].includes(String(user.role))) {
-            chatWS.disconnect();
-            chatWS.connect(user.id);
-          }
-          connectPresence(user.id);
-        }
-      } catch {
-        // 网络异常等：交由 1101 会话失效或下一轮调度处理
-      } finally {
-        refreshingRef.current = false;
-      }
-    };
-
-    const schedule = () => {
-      if (timer) clearTimeout(timer);
-      const tokenTimeStr = getCookie("S_TOKEN_TIME");
-      if (!tokenTimeStr) return;
-      const ts = Number(tokenTimeStr);
-      if (!Number.isFinite(ts) || ts <= 0) return;
-      const tokenTimeMs = ts > 1e12 ? ts : ts * 1000;
-      const remaining = tokenTimeMs - Date.now();
-      if (remaining <= 0) return; // 已过期，交由 1101 处理
-      // 提前 60s 刷新（下限 30s），避免短 token 高频请求
-      const delay = Math.max(remaining - 60 * 1000, 30 * 1000);
-      timer = setTimeout(doRefresh, delay);
-    };
-
-    schedule();
-    return () => {
-      disposed = true;
-      if (timer) clearTimeout(timer);
-    };
-  }, [isAuthenticated, user, token, connectPresence]);
+  }, [clearAuthRuntimeState]);
 
   // 登录方法
   const login = async (authId: string, password: string) => {

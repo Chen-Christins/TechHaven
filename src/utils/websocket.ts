@@ -1,4 +1,5 @@
 import { getErrorMsg } from "./errorCodes";
+import { tokenManager } from "./http";
 
 type MessageHandler = (data: any) => void;
 type EventHandler = (event?: Event) => void;
@@ -38,7 +39,7 @@ export class WebSocketClient {
   private ws: WebSocket | null = null;
   private basePath: string;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 50;
+  private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private messageHandlers: Map<string, Set<MessageHandler>> = new Map();
@@ -51,6 +52,9 @@ export class WebSocketClient {
   private authFailed = false;
   private pendingSend: string[] = [];
   private uid: string | number | undefined;
+  /** 每次建连递增；旧连接的异步事件不能影响新连接。 */
+  private connectionGeneration = 0;
+  private hasOpened = false;
 
   /**
    * @param path WebSocket 路径，如 "/notification"
@@ -78,6 +82,11 @@ export class WebSocketClient {
     return this.ws?.readyState === WebSocket.OPEN;
   }
 
+  /** 当前客户端在本次生命周期内是否至少成功建立过一次连接。 */
+  get hasEstablishedConnection(): boolean {
+    return this.hasOpened;
+  }
+
   /** 建立连接（uid 从 AuthContext 传入，token / token_time 从 Cookie 读取） */
   connect(uid?: string | number) {
     if (uid !== undefined) {
@@ -88,6 +97,8 @@ export class WebSocketClient {
     }
     this.intentionalClose = false;
     this.authFailed = false;
+    this.clearReconnectTimer();
+    const generation = ++this.connectionGeneration;
 
     // 页面卸载时标记为主动关闭，避免触发无意义的自动重连调度
     const handleBeforeUnload = () => {
@@ -95,7 +106,8 @@ export class WebSocketClient {
     };
     window.addEventListener("beforeunload", handleBeforeUnload, { once: true });
 
-    const token = getCookie("S_TOKEN");
+    // 内存中的 token 是 HTTP 请求使用的权威凭据；Cookie 只作为初始化时的后备来源。
+    const token = tokenManager.getToken() || getCookie("S_TOKEN");
     const tokenTime = getCookie("S_TOKEN_TIME");
 
     const params = new URLSearchParams();
@@ -113,10 +125,18 @@ export class WebSocketClient {
     if (logParams.has("token_time")) logParams.set("token_time", "***");
     console.log("[WS] 正在连接:", `${this.basePath}?${logParams.toString()}`, { uid: this.uid });
 
-    this.ws = new WebSocket(connectUrl);
+    const socket = new WebSocket(connectUrl);
+    this.ws = socket;
+    let hasOpened = false;
 
-    this.ws.onopen = () => {
+    const isCurrentConnection = () => this.ws === socket && this.connectionGeneration === generation;
+
+    socket.onopen = () => {
+      if (!isCurrentConnection()) return;
       console.log("[WS] 连接已建立");
+      hasOpened = true;
+      this.hasOpened = true;
+      this.reconnectAttempts = 0;
       this.authFailed = false;
       while (this.pendingSend.length > 0) {
         const msg = this.pendingSend.shift();
@@ -125,7 +145,8 @@ export class WebSocketClient {
       this.openHandlers.forEach((fn) => fn());
     };
 
-    this.ws.onmessage = (event: MessageEvent) => {
+    socket.onmessage = (event: MessageEvent) => {
+      if (!isCurrentConnection()) return;
       try {
         const data = JSON.parse(event.data);
         // 服务端错误帧：携带 errno 且不为 0，按 HTTP API 同样的 errno/errstr 格式解析
@@ -159,16 +180,21 @@ export class WebSocketClient {
       }
     };
 
-    this.ws.onclose = (event: CloseEvent) => {
+    socket.onclose = (event: CloseEvent) => {
+      if (!isCurrentConnection()) return;
       console.log("[WS] 连接关闭, code:", event.code, "reason:", event.reason || "(无)");
       this.closeHandlers.forEach((fn) => fn(event));
       // 鉴权失败时交由上层处理（刷新 token / 登出），不再触发自动重连
-      if (!this.intentionalClose && !this.authFailed) {
+      // 握手从未成功时通常是代理/服务端拒绝了该 endpoint。
+      // 不自动重试，避免通知、在线、聊天三个单例持续刷屏并反复发起失败握手。
+      // 已经建立过的连接断开后才进入有限指数退避重连。
+      if (hasOpened && !this.intentionalClose && !this.authFailed) {
         this.scheduleReconnect();
       }
     };
 
-    this.ws.onerror = (event: Event) => {
+    socket.onerror = (event: Event) => {
+      if (!isCurrentConnection()) return;
       console.error("[WS] 连接错误:", event);
       this.errorHandlers.forEach((fn) => fn(event));
     };
@@ -177,11 +203,24 @@ export class WebSocketClient {
   /** 断开连接（不重连） */
   disconnect() {
     this.intentionalClose = true;
+    this.connectionGeneration++;
     this.clearReconnectTimer();
-    this.ws?.close();
+    const socket = this.ws;
     this.ws = null;
+    if (socket) {
+      // Chrome 会把 close(CONNECTING) 报告为“closed before the connection was established”。
+      // 握手阶段不调用 close，只解绑事件并让浏览器自然结束；已建立的连接才主动关闭。
+      socket.onmessage = null;
+      socket.onclose = null;
+      socket.onerror = null;
+      socket.onopen = null;
+      if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CLOSING) {
+        socket.close();
+      }
+    }
     this.pendingSend = [];
     this.reconnectAttempts = 0;
+    this.hasOpened = false;
   }
 
   /** 发送消息 */
@@ -244,7 +283,12 @@ export class WebSocketClient {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) return;
     const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts), 30000);
     this.reconnectAttempts++;
-    this.reconnectTimer = setTimeout(() => this.connect(), delay);
+    const generation = this.connectionGeneration;
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      if (this.connectionGeneration !== generation || this.intentionalClose) return;
+      this.connect();
+    }, delay);
   }
 
   private clearReconnectTimer() {
