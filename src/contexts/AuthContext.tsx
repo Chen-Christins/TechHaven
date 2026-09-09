@@ -5,7 +5,6 @@ import { tokenManager, getTokenFromCookie, getCookie, clearAuthCookies, setUnaut
 import { notificationWS, chatWS } from "../utils/websocket";
 import { setFaviconBadge } from "../utils/favicon";
 import { resetNotificationState } from "../utils/notificationState";
-import { connectPresence } from "../services/presenceService";
 
 // 用户信息类型
 export interface User {
@@ -194,13 +193,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           tokenRef.current = newToken;
           setToken(newToken);
           tokenManager.setToken(newToken);
-          // 重连：先断开旧连接（使 connect 跳过 readyState 检查），再用新 token 建立新连接
-          notificationWS.disconnect();
-          notificationWS.connect(user.id);
-          if (!["用户", "1"].includes(String(user.role))) {
-            chatWS.disconnect();
-            chatWS.connect(user.id);
-          }
+          // 已建立的 WS 不因 token 轮换而重建。新 token 会用于下一次自然重连，
+          // 避免在旧握手尚未结束时关闭并立即创建多个并发连接。
         } else {
           clearAuthRuntimeState();
         }
@@ -233,14 +227,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           tokenRef.current = newToken;
           setToken(newToken);
           tokenManager.setToken(newToken);
-          // 重连：先断开旧连接（使 connect 跳过 readyState 检查），再用新 token 建立新连接
-          notificationWS.disconnect();
-          notificationWS.connect(user.id);
-          if (!["用户", "1"].includes(String(user.role))) {
-            chatWS.disconnect();
-            chatWS.connect(user.id);
-          }
-          connectPresence(user.id);
+          // 已建立的 WS 不因 token 轮换而重建，避免产生并发握手。
         }
       } catch {
         // 网络异常等：交由 1101 会话失效或下一轮调度处理
@@ -268,7 +255,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       disposed = true;
       if (timer) clearTimeout(timer);
     };
-  }, [isAuthenticated, user, token, connectPresence]);
+  }, [isAuthenticated, user, token]);
 
   // 登录方法
   const login = async (authId: string, password: string) => {

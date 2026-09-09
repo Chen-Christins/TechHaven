@@ -158,4 +158,18 @@ describe("WebSocket 建连 token 处理", () => {
     expect(MockWebSocket.instances).toHaveLength(2);
     vi.useRealTimers();
   });
+
+  it("握手从未成功时不会自动重连刷屏", () => {
+    vi.useFakeTimers();
+    const client = new WebSocketClient("/ws/v1/notification");
+    captureConsole(client, 1);
+    const socket = MockWebSocket.instances[0];
+
+    socket.readyState = MockWebSocket.CLOSED;
+    socket.onclose?.({ code: 1006, reason: "", wasClean: false } as CloseEvent);
+    vi.advanceTimersByTime(60000);
+
+    expect(MockWebSocket.instances).toHaveLength(1);
+    vi.useRealTimers();
+  });
 });

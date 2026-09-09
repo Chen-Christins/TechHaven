@@ -39,7 +39,7 @@ export class WebSocketClient {
   private ws: WebSocket | null = null;
   private basePath: string;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 50;
+  private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private messageHandlers: Map<string, Set<MessageHandler>> = new Map();
@@ -121,12 +121,15 @@ export class WebSocketClient {
 
     const socket = new WebSocket(connectUrl);
     this.ws = socket;
+    let hasOpened = false;
 
     const isCurrentConnection = () => this.ws === socket && this.connectionGeneration === generation;
 
     socket.onopen = () => {
       if (!isCurrentConnection()) return;
       console.log("[WS] 连接已建立");
+      hasOpened = true;
+      this.reconnectAttempts = 0;
       this.authFailed = false;
       while (this.pendingSend.length > 0) {
         const msg = this.pendingSend.shift();
@@ -175,7 +178,10 @@ export class WebSocketClient {
       console.log("[WS] 连接关闭, code:", event.code, "reason:", event.reason || "(无)");
       this.closeHandlers.forEach((fn) => fn(event));
       // 鉴权失败时交由上层处理（刷新 token / 登出），不再触发自动重连
-      if (!this.intentionalClose && !this.authFailed) {
+      // 握手从未成功时通常是代理/服务端拒绝了该 endpoint。
+      // 不自动重试，避免通知、在线、聊天三个单例持续刷屏并反复发起失败握手。
+      // 已经建立过的连接断开后才进入有限指数退避重连。
+      if (hasOpened && !this.intentionalClose && !this.authFailed) {
         this.scheduleReconnect();
       }
     };
@@ -192,8 +198,19 @@ export class WebSocketClient {
     this.intentionalClose = true;
     this.connectionGeneration++;
     this.clearReconnectTimer();
-    this.ws?.close();
+    const socket = this.ws;
     this.ws = null;
+    if (socket) {
+      // Chrome 会把 close(CONNECTING) 报告为“closed before the connection was established”。
+      // 握手阶段不调用 close，只解绑事件并让浏览器自然结束；已建立的连接才主动关闭。
+      socket.onmessage = null;
+      socket.onclose = null;
+      socket.onerror = null;
+      socket.onopen = null;
+      if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CLOSING) {
+        socket.close();
+      }
+    }
     this.pendingSend = [];
     this.reconnectAttempts = 0;
   }
@@ -258,7 +275,12 @@ export class WebSocketClient {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) return;
     const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts), 30000);
     this.reconnectAttempts++;
-    this.reconnectTimer = setTimeout(() => this.connect(), delay);
+    const generation = this.connectionGeneration;
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      if (this.connectionGeneration !== generation || this.intentionalClose) return;
+      this.connect();
+    }, delay);
   }
 
   private clearReconnectTimer() {
