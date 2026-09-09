@@ -35,7 +35,7 @@ export interface DashboardActivity {
 
 export interface DashboardRecentUser {
     name: string;
-    role: string;
+    role: number;
     avatar: string;
     status: "active" | "inactive";
 }

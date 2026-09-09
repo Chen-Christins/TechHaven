@@ -9,7 +9,7 @@ interface User {
     id: number | string;
     name: string;
     avatar?: string;
-    role?: string;
+    role?: number;
     email: string;
 }
 

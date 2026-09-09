@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Outlet } from "react-router-dom";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { isAdmin } from "@/types/roles";
 import MaintenancePage from "./MaintenancePage";
 
 const MaintenanceGuard: React.FC = () => {
@@ -9,8 +10,8 @@ const MaintenanceGuard: React.FC = () => {
     const { user, isAuthenticated, logout } = useAuth();
     const loggedOutRef = useRef(false);
 
-    const isAdmin = user?.role === "管理员";
-    const blocked = !loading && settings.maintenanceMode && !isAdmin;
+    const admin = isAdmin(user?.role);
+    const blocked = !loading && settings.maintenanceMode && !admin;
 
     useEffect(() => {
         if (blocked && isAuthenticated && !loggedOutRef.current) {

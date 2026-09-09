@@ -23,6 +23,7 @@ import DashboardService, {
     type DashboardActivity,
     type DashboardRecentUser,
 } from "@/services/dashboardService";
+import { PlatformRoleLabel } from "@/types/roles";
 import styles from "./Dashboard.module.css";
 
 const Dashboard: React.FC = () => {
@@ -192,13 +193,8 @@ const Dashboard: React.FC = () => {
     };
 
     // 角色名称映射
-    const getRoleName = (role: string) => {
-        const roleMap: Record<string, string> = {
-            admin: "管理员",
-            moderator: "版主",
-            user: "普通用户",
-        };
-        return roleMap[role] || role;
+    const getRoleName = (role: number) => {
+        return PlatformRoleLabel[role as keyof typeof PlatformRoleLabel] || String(role);
     };
 
     // 获取变化指示器

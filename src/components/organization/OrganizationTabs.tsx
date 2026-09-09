@@ -22,6 +22,7 @@ import {
     FaPlus,
 } from "react-icons/fa";
 import type { Member, Task, OrganizationDetail } from "@/types/organization";
+import { OrgRole, OrgRoleLabel, isAdmin } from "@/types/roles";
 import Avatar from "../avatar/Avatar";
 import styles from "./Organization.module.css";
 import Modal from "../modal/Modal";
@@ -36,7 +37,7 @@ import Loading from "../loading/Loading";
 
 interface OrganizationTabsProps {
     org: OrganizationDetail | null;
-    userRole: "leader" | "admin" | "member" | "guest" | null;
+    userRole: OrgRole | null;
     currentUser?: any;
     showPendingRequests: boolean;
     showTasks: boolean;
@@ -191,7 +192,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                     >
                         成员列表
                     </button>
-                    {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+                    {((userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)) && (
                         <button
                             className={`${styles.tabButton} ${showPendingRequests ? styles.activeTab : ""}`}
                             onClick={() => onTabChange(true, false)}
@@ -199,7 +200,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                             待处理请求
                         </button>
                     )}
-                    {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+                    {((userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)) && (
                         <button
                             className={`${styles.tabButton} ${showTasks ? styles.activeTab : ""}`}
                             onClick={() => onTabChange(false, true)}
@@ -207,7 +208,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                             任务列表
                         </button>
                     )}
-                    {userRole !== "guest" && (
+                    {userRole != null && (
                         <button
                             className={`${styles.tabButton} ${showRepos ? styles.activeTab : ""}`}
                             onClick={() => onTabChange(false, false, true)}
@@ -233,7 +234,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                             </button>
                         </>
                     )}
-                    {showPendingRequests && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+                    {showPendingRequests && ((userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)) && (
                         <>
                             <span className={styles.tabsCount}>共 {pendingRequests.length} 个请求</span>
                             <button
@@ -249,7 +250,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                             </button>
                         </>
                     )}
-                    {showTasks && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+                    {showTasks && ((userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)) && (
                         <>
                             <button className={styles.refreshButton} onClick={() => onRefreshTasks()} title="刷新任务列表">
                                 <span className={styles.refreshIcon}>
@@ -263,7 +264,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                             </button>
                         </>
                     )}
-                    {showRepos && userRole !== "guest" && (
+                    {showRepos && userRole != null && (
                         <button className={styles.createButton} onClick={() => setRepoModalVisible(true)}>
                             <FaPlus />
                             添加仓库
@@ -310,24 +311,24 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                                             </td>
                                             <td data-label="角色">
                                                 <span
-                                                    className={`${styles.roleBadge} ${member.role === "组织管理员" ? styles.admin : member.role === "研发主管" ? styles.moderator : styles.user}`}
+                                                    className={`${styles.roleBadge} ${member.role === OrgRole.ORG_ADMIN ? styles.admin : member.role === OrgRole.DEV_LEAD ? styles.moderator : styles.user}`}
                                                 >
-                                                    {member.role === "组织管理员" && (
+                                                    {member.role === OrgRole.ORG_ADMIN && (
                                                         <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />
                                                     )}
-                                                    {member.role === "研发主管" && (
+                                                    {member.role === OrgRole.DEV_LEAD && (
                                                         <FaUserShield style={{ color: "#4caf50", marginRight: 4 }} />
                                                     )}
-                                                    {member.role === "开发者" && (
+                                                    {member.role === OrgRole.DEVELOPER && (
                                                         <FaCode style={{ color: "#2196f3", marginRight: 4 }} />
                                                     )}
-                                                    {member.role === "报告者" && (
+                                                    {member.role === OrgRole.REPORTER && (
                                                         <FaUserCheck style={{ color: "#2196f3", marginRight: 4 }} />
                                                     )}
-                                                    {member.role === "普通成员" && (
+                                                    {member.role === OrgRole.MEMBER && (
                                                         <FaUser style={{ color: "#2196f3", marginRight: 4 }} />
                                                     )}
-                                                    {member.role || "普通成员"}
+                                                    {OrgRoleLabel[member.role || OrgRole.MEMBER]}
                                                 </span>
                                             </td>
                                             <td data-label="状态">
@@ -424,7 +425,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
             )}
 
             {/* 待处理请求视图 */}
-            {showPendingRequests && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+            {showPendingRequests && ((userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)) && (
                 <>
                     {pendingRequestsLoading ? (
                         <div style={{ padding: "40px 0" }}>
@@ -530,7 +531,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
             )}
 
             {/* 任务列表视图 */}
-            {showTasks && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+            {showTasks && ((userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)) && (
                 <>
                     {tasksLoading ? (
                         <div style={{ padding: "40px 0" }}>
@@ -541,7 +542,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                             <FaTasks className={styles.emptyIcon} />
                             <h3 className={styles.emptyTitle}>暂无任务</h3>
                             <p className={styles.emptySubtext}>
-                                {userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员"
+                                {(userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)
                                     ? '点击"创建任务"按钮来创建第一个任务'
                                     : "当前组织还没有发布任何任务"}
                             </p>
@@ -732,10 +733,10 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
             )}
 
             {/* 仓库列表视图 */}
-            {showRepos && userRole !== "guest" && (
+            {showRepos && userRole != null && (
                 <OrganizationRepos
                     orgId={org?.id || ""}
-                    canManage={userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员"}
+                    canManage={(userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)}
                     onChange={onReposChange}
                 />
             )}
@@ -922,25 +923,29 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                                 <div className={styles.detailValue}>
                                     <span
                                         className={`${styles.roleBadge} ${
-                                            selectedMember.role === "组织管理员"
+                                            selectedMember.role === OrgRole.ORG_ADMIN
                                                 ? styles.admin
-                                                : selectedMember.role === "研发主管"
+                                                : selectedMember.role === OrgRole.DEV_LEAD
                                                   ? styles.moderator
                                                   : styles.user
                                         }`}
                                     >
-                                        {selectedMember.role === "组织管理员" && (
+                                        {selectedMember.role === OrgRole.ORG_ADMIN && (
                                             <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />
                                         )}
-                                        {selectedMember.role === "研发主管" && (
+                                        {selectedMember.role === OrgRole.DEV_LEAD && (
                                             <FaUserShield style={{ color: "#4caf50", marginRight: 4 }} />
                                         )}
-                                        {selectedMember.role === "开发者" && <FaCode style={{ color: "#2196f3", marginRight: 4 }} />}
-                                        {selectedMember.role === "报告者" && (
+                                        {selectedMember.role === OrgRole.DEVELOPER && (
+                                            <FaCode style={{ color: "#2196f3", marginRight: 4 }} />
+                                        )}
+                                        {selectedMember.role === OrgRole.REPORTER && (
                                             <FaUserCheck style={{ color: "#2196f3", marginRight: 4 }} />
                                         )}
-                                        {selectedMember.role === "普通成员" && <FaUser style={{ color: "#2196f3", marginRight: 4 }} />}
-                                        {selectedMember.role || "普通成员"}
+                                        {selectedMember.role === OrgRole.MEMBER && (
+                                            <FaUser style={{ color: "#2196f3", marginRight: 4 }} />
+                                        )}
+                                        {OrgRoleLabel[selectedMember.role || OrgRole.MEMBER]}
                                     </span>
                                 </div>
                             </div>

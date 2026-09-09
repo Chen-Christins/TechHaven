@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo, type Re
 import { useAuth } from "./AuthContext";
 import { RdPlatformService } from "../services/rdPlatformService";
 import type { RdOrgInfo } from "../types/rdPlatform";
+import { isAdmin as checkIsAdmin } from "../types/roles";
 
 interface RdOrgContextType {
     orgs: RdOrgInfo[];
@@ -42,7 +43,7 @@ export const RdOrgProvider: React.FC<{ children: ReactNode; initialOrgId?: strin
     const [loading, setLoading] = useState(true);
     const [selectedOrgId, setSelectedOrgId] = useState(initialOrgId);
 
-    const isAdmin = user?.role === "管理员";
+    const isAdmin = checkIsAdmin(user?.role);
 
     useEffect(() => {
         if (!user) {

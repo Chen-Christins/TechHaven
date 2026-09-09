@@ -20,6 +20,7 @@ import Modal from "@/components/modal/Modal";
 import { confirm } from "@/components/confirm/Confirm";
 import message from "@/components/message/Message";
 import type { SelectOption } from "@/types/index";
+import { PlatformRoleLabel, PlatformRoleCSS, PlatformRoleByKey } from "@/types/roles";
 import styles from "./UserManagement.module.css";
 import { AuthService } from "@/services/authService";
 import { formatToChinaTime } from "@/utils/utils";
@@ -53,27 +54,6 @@ interface FilterOptions {
     status: string;
     dateRange: string;
 }
-
-const MAP_STR_ROLE_NUM: Record<string, number> = {
-    admin: 2,
-    editor: 3,
-    checker: 4,
-    user: 1,
-};
-
-const MAP_NUM_ROLE_STR: Record<number, string> = {
-    2: "管理员",
-    3: "编辑",
-    4: "审核者",
-    1: "普通用户",
-};
-
-const MAP_ROLE_CSS: Record<number, string> = {
-    1: "user",
-    2: "admin",
-    3: "editor",
-    4: "checker",
-};
 
 const UserManagement: React.FC = () => {
     // 状态管理
@@ -144,7 +124,7 @@ const UserManagement: React.FC = () => {
                 };
 
                 if (filters.role) {
-                    params.role = MAP_STR_ROLE_NUM[filters.role];
+                    params.role = PlatformRoleByKey[filters.role];
                 }
                 // 假设 1=active, 2=inactive (根据实际后端定义调整)
                 if (filters.status) {
@@ -208,7 +188,7 @@ const UserManagement: React.FC = () => {
     const roleOptions: SelectOption[] = [
         { id: "", name: "全部角色", color: "#6c757d" },
         { id: "admin", name: "管理员", color: "#dc3545" },
-        { id: "checker", name: "审核者", color: "#28a745" },
+        { id: "checker", name: "审核员", color: "#28a745" },
         { id: "editor", name: "编辑", color: "#ffc107" },
         { id: "user", name: "普通用户", color: "#007bff" },
     ];
@@ -223,7 +203,7 @@ const UserManagement: React.FC = () => {
         { id: "1", name: "普通用户", color: "#007bff" },
         { id: "2", name: "管理员", color: "#dc3545" },
         { id: "3", name: "编辑", color: "#ffc107" },
-        { id: "4", name: "审核者", color: "#28a745" },
+        { id: "4", name: "审核员", color: "#28a745" },
     ];
 
     const createStateOptions: SelectOption[] = [
@@ -593,8 +573,10 @@ const UserManagement: React.FC = () => {
                                         </div>
                                     </td>
                                     <td>
-                                        <span className={`${styles.roleBadge} ${styles[MAP_ROLE_CSS[user.role] || "user"]}`}>
-                                            {MAP_NUM_ROLE_STR[user.role] || user.role}
+                                        <span
+                                            className={`${styles.roleBadge} ${styles[PlatformRoleCSS[user.role as keyof typeof PlatformRoleCSS] || "user"]}`}
+                                        >
+                                            {PlatformRoleLabel[user.role as keyof typeof PlatformRoleLabel] || user.role}
                                         </span>
                                     </td>
                                     <td>
@@ -810,8 +792,10 @@ const UserManagement: React.FC = () => {
                             <div>
                                 <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "4px" }}>角色</div>
                                 <div style={{ fontSize: "15px", fontWeight: 500 }}>
-                                    <span className={`${styles.roleBadge} ${styles[MAP_ROLE_CSS[detailUser.role] || "user"]}`}>
-                                        {MAP_NUM_ROLE_STR[detailUser.role] || detailUser.role}
+                                    <span
+                                        className={`${styles.roleBadge} ${styles[PlatformRoleCSS[detailUser.role as keyof typeof PlatformRoleCSS] || "user"]}`}
+                                    >
+                                        {PlatformRoleLabel[detailUser.role as keyof typeof PlatformRoleLabel] || detailUser.role}
                                     </span>
                                 </div>
                             </div>

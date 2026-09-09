@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { OrganizationService } from "@/services/organizationService";
 import { formatToChinaTime } from "@/utils/utils";
 import type { PersonalOrganization } from "@/types/organization";
+import { OrgRole } from "@/types/roles";
 import styles from "../PersonalCenter.module.css";
 
 const MyOrganizationsTab: React.FC = () => {
@@ -34,7 +35,7 @@ const MyOrganizationsTab: React.FC = () => {
                     type: org.type || "未知类型",
                     description: org.org_description || "暂无描述",
                     memberCount: org.count ?? 0,
-                    role: org.role === 5 ? "会长" : org.role === 4 ? "管理员" : "成员",
+                    role: (Number(org.role) || OrgRole.MEMBER) as OrgRole,
                     createTime: org.join_time ? formatToChinaTime(org.join_time) : "未知时间",
                     status: "active", // 该接口无状态字段，默认 active
                     avatar: undefined, // 该接口无头像字段

@@ -26,6 +26,7 @@ import message from "@/components/message/Message";
 import Modal from "@/components/modal/Modal";
 import styles from "./AssignmentManagement.module.css";
 import AssignmentService, { type AssignmentStatsResponse } from "@/services/assignmentService";
+import { AssignmentStatus, AssignmentPriority } from "@/types/enums";
 
 // 模拟任务数据接口
 interface Assignment {
@@ -46,29 +47,29 @@ interface Assignment {
 }
 
 const STATE_STR_MAP_NUMBER: Record<string, number> = {
-    draft: 0,
-    active: 1,
-    closed: 2,
-};
-
-const PRIORITY_STR_MAP_NUMBER: Record<string, number> = {
-    low: 1,
-    medium: 2,
-    high: 3,
-    urgent: 4,
+    [AssignmentStatus.DRAFT]: AssignmentStatus.DRAFT,
+    [AssignmentStatus.OPEN]: AssignmentStatus.OPEN,
+    [AssignmentStatus.CLOSED]: AssignmentStatus.CLOSED,
 };
 
 const STATE_NUMBER_MAP_STR: Record<number, string> = {
-    0: "draft",
-    1: "active",
-    2: "closed",
+    [AssignmentStatus.DRAFT]: "draft",
+    [AssignmentStatus.OPEN]: "active",
+    [AssignmentStatus.CLOSED]: "closed",
+};
+
+const PRIORITY_STR_MAP_NUMBER: Record<string, number> = {
+    low: AssignmentPriority.LOW,
+    medium: AssignmentPriority.MEDIUM,
+    high: AssignmentPriority.HIGH,
+    urgent: AssignmentPriority.URGENT,
 };
 
 const PRIORITY_NUMBER_MAP_STR: Record<number, string> = {
-    1: "low",
-    2: "medium",
-    3: "high",
-    4: "urgent",
+    [AssignmentPriority.LOW]: "low",
+    [AssignmentPriority.MEDIUM]: "medium",
+    [AssignmentPriority.HIGH]: "high",
+    [AssignmentPriority.URGENT]: "urgent",
 };
 
 const AssignmentManagement: React.FC = () => {

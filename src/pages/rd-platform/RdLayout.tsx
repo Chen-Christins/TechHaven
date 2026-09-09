@@ -278,7 +278,7 @@ const RdLayout: React.FC = () => {
         const { selectedOrgId, currentOrgRole } = useRdOrg();
         const orgRoleName = orgRoleNames[currentOrgRole] || "";
         // 全部组织 → 显示系统角色；具体组织 → 显示组织内角色
-        const roleOverride = !selectedOrgId ? user?.role || "" : orgRoleName;
+        const roleOverride = !selectedOrgId ? String(user?.role || "") : orgRoleName;
         return (
             <div className={styles.rdTopBarActions}>
                 <ThemeToggle />

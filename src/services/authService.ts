@@ -24,7 +24,7 @@ export interface UserInfo {
     account: string;
     email: string;
     name: string;
-    role: string;
+    role: number;
     create_time: number;
     is_deleted: number;
     update_time: number;

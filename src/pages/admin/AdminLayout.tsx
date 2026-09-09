@@ -23,6 +23,7 @@ import Notification from "@/components/notification/Notification";
 import UserDropdown from "@/components/userDropdown/UserDropdown";
 import Footer from "@/components/footer/Footer";
 import { useAuth } from "@/contexts/AuthContext";
+import { isAdmin } from "@/types/roles";
 
 interface NavItem {
     id: string;
@@ -64,7 +65,7 @@ const AdminLayout: React.FC = () => {
     }
 
     // 权限校验：非管理员禁止访问
-    if (user.role !== "管理员") {
+    if (!isAdmin(user.role)) {
         return (
             <div
                 style={{

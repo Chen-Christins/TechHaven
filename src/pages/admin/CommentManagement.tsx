@@ -25,6 +25,7 @@ import { confirm } from "@/components/confirm/Confirm";
 import CommentService from "@/services/commentService";
 import type { AdminComment } from "@/types/comment";
 import type { SelectOption } from "@/types/index";
+import { CommentStatusLabel, type CommentStatus } from "@/types/enums";
 import styles from "./CommentManagement.module.css";
 
 interface FilterOptions {
@@ -413,10 +414,7 @@ const CommentManagement: React.FC = () => {
                                         </div>
                                         <div className={styles.commentInfo}>
                                             <span className={`${styles.statusBadge} ${styles[comment.status]}`}>
-                                                {comment.status === "approved" && "已通过"}
-                                                {comment.status === "pending" && "待审核"}
-                                                {comment.status === "rejected" && "已拒绝"}
-                                                {comment.status === "spam" && "垃圾评论"}
+                                                {CommentStatusLabel[comment.status as CommentStatus] || comment.status}
                                             </span>
                                             {comment.is_reported && (
                                                 <span className={styles.reportedBadge}>
@@ -501,10 +499,7 @@ const CommentManagement: React.FC = () => {
                                                             <span
                                                                 className={`${styles.statusBadge} ${styles[reply.status]} ${styles.small}`}
                                                             >
-                                                                {reply.status === "approved" && "已通过"}
-                                                                {reply.status === "pending" && "待审核"}
-                                                                {reply.status === "rejected" && "已拒绝"}
-                                                                {reply.status === "spam" && "垃圾评论"}
+                                                                {CommentStatusLabel[reply.status as CommentStatus] || reply.status}
                                                             </span>
                                                         </div>
                                                     </div>

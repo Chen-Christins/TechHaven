@@ -1,11 +1,13 @@
 // 个人中心中组织的类型定义
+import type { OrgRole } from "./roles";
+
 export interface PersonalOrganization {
     id: string;
     name: string;
     type: string;
     description?: string;
     memberCount: number;
-    role: "会长" | "管理员" | "成员";
+    role: OrgRole;
     createTime?: string;
     status?: "active" | "inactive";
     avatar?: string;
@@ -17,7 +19,7 @@ export interface Member {
     user_id: string;
     name: string;
     avatar?: string;
-    role?: string;
+    role?: OrgRole | null;
     status?: "active" | "inactive";
     email?: string;
     joinTime?: string;

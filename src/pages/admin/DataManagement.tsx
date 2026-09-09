@@ -36,6 +36,7 @@ import DataService from "@/services/dataService";
 import http from "@/utils/http";
 import type { BackupRecord, DataStats, ExportRecord } from "@/services/dataService";
 import type { SelectOption } from "@/types/index";
+import { BackupStatusLabel, type BackupStatus } from "@/types/enums";
 import styles from "./DataManagement.module.css";
 
 // 筛选条件接口
@@ -734,9 +735,7 @@ const DataManagement: React.FC = () => {
                                                     <td>
                                                         <span className={`${styles.statusBadge} ${styles[backup.status]}`}>
                                                             <span className={styles.statusIndicator}></span>
-                                                            {backup.status === "completed" && "已完成"}
-                                                            {backup.status === "processing" && "处理中"}
-                                                            {backup.status === "failed" && "失败"}
+                                                            {BackupStatusLabel[backup.status as BackupStatus] || backup.status}
                                                         </span>
                                                     </td>
                                                     <td>
@@ -845,9 +844,7 @@ const DataManagement: React.FC = () => {
                                                 <td>
                                                     <span className={`${styles.statusBadge} ${styles[exportItem.status]}`}>
                                                         <span className={styles.statusIndicator}></span>
-                                                        {exportItem.status === "completed" && "已完成"}
-                                                        {exportItem.status === "processing" && "处理中"}
-                                                        {exportItem.status === "failed" && "失败"}
+                                                        {BackupStatusLabel[exportItem.status as BackupStatus] || exportItem.status}
                                                     </span>
                                                 </td>
                                                 <td>{formatToChinaTime(Number(exportItem.createdAt))}</td>

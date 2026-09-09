@@ -1,3 +1,5 @@
+import type { PlatformRole } from "./roles";
+
 // 文章类型
 export interface Article {
     author: string;
@@ -42,7 +44,7 @@ export interface UserProfile {
     bio: string;
     account: string;
     email: string;
-    role: "admin" | "editor" | "user";
+    role: PlatformRole;
     location: string;
     website?: string;
     joinDate: string;

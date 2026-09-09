@@ -18,6 +18,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Loading from "@/components/loading/Loading";
+import { isAdmin } from "@/types/roles";
 import Skeleton from "@/components/skeleton/Skeleton";
 import ThemeToggle from "@/components/themeToggle/ThemeToggle";
 import Notification from "@/components/notification/Notification";
@@ -107,7 +108,7 @@ const PersonalCenter: React.FC = () => {
               id: user.id,
               name: user.name || user.account || "用户",
               avatar: user.avatar || "https://picsum.photos/id/64/200", // 默认头像
-              role: user.role || "用户",
+              role: user.role,
               email: user.email,
           }
         : null;
@@ -523,7 +524,7 @@ const PersonalCenter: React.FC = () => {
                             <Notification />
 
                             {/* 用户信息区域 */}
-                            <UserDropdown user={currentUser} onLogout={handleLogout} showAdminLink={currentUser?.role === "管理员"} />
+                            <UserDropdown user={currentUser} onLogout={handleLogout} showAdminLink={isAdmin(currentUser?.role)} />
                         </div>
                     </header>
 

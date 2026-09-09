@@ -32,6 +32,7 @@ import Input from "@/components/input/Input";
 import Loading from "@/components/loading/Loading";
 import { confirm } from "@/components/confirm/Confirm";
 import type { SelectOption } from "@/types/index";
+import { PlatformRoleLabel, PlatformRoleByKey } from "@/types/roles";
 import styles from "./ArticleManagement.module.css";
 import ArticleService, { type ListAdminArticlesResponse, type ArticleStatsResponse } from "@/services/articleService";
 import { CategoryService } from "@/services/categoryService";
@@ -89,20 +90,6 @@ const STATE_MAP: Record<number, Article["status"]> = {
     2: "published",
     3: "rejected",
     4: "private",
-};
-
-const ROLE_MAP: Record<number, string> = {
-    1: "用户",
-    2: "管理员",
-    3: "编辑",
-    4: "审核员",
-};
-
-const REVERSE_ROLE_MAP: Record<string, number> = {
-    user: 1,
-    admin: 2,
-    editor: 3,
-    checker: 4,
 };
 
 const REVERSE_STATE_MAP: Record<string, number> = {
@@ -171,7 +158,7 @@ const ArticleManagement: React.FC = () => {
 
             const res: ArticleStatsResponse = await ArticleService.getAdminArticleStats({
                 category_id: filters.category || undefined,
-                role: filters.authorRole ? REVERSE_ROLE_MAP[filters.authorRole] : undefined,
+                role: filters.authorRole ? PlatformRoleByKey[filters.authorRole] : undefined,
                 days,
                 keyword: filters.search || undefined,
             });
@@ -212,7 +199,7 @@ const ArticleManagement: React.FC = () => {
                     state: stateValue || 0, // 获取所有状态的文章
                     keyword: filters.search,
                     category_id: filters.category,
-                    role: filters.authorRole ? REVERSE_ROLE_MAP[filters.authorRole] : -1,
+                    role: filters.authorRole ? PlatformRoleByKey[filters.authorRole] : -1,
                     days: days,
                 });
 
@@ -225,7 +212,7 @@ const ArticleManagement: React.FC = () => {
                         summary: article.summary.substring(0, 45) + "...",
                         author: article.author,
                         authorEmail: article.email,
-                        authorRole: ROLE_MAP[article.author_role] || "用户", // 使用API提供的author_role字段
+                        authorRole: PlatformRoleLabel[article.author_role as keyof typeof PlatformRoleLabel] || "用户", // 使用API提供的author_role字段
                         category: "默认分类", // 占位符，API未提供
                         tags: [], // 占位符，API未提供
                         status: STATE_MAP[article.state] || "draft",

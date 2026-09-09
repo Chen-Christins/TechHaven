@@ -5,6 +5,7 @@ import { tokenManager, getTokenFromCookie, clearAuthCookies, setUnauthorizedHand
 import { notificationWS, chatWS } from "../utils/websocket";
 import { setFaviconBadge } from "../utils/favicon";
 import { resetNotificationState } from "../utils/notificationState";
+import { canChat } from "../types/roles";
 
 // 用户信息类型
 export interface User {
@@ -16,7 +17,7 @@ export interface User {
     bio?: string;
     website?: string;
     github?: string;
-    role: string;
+    role: number;
     login_time: number | string;
     status: number | string;
     following_count?: number;
@@ -37,14 +38,6 @@ interface AuthContextType {
 
 // 创建认证上下文
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// 状态映射
-const ROLE_MAP: Record<string, string> = {
-    1: "用户",
-    2: "管理员",
-    3: "编辑",
-    4: "审核员",
-};
 
 // 认证提供者组件
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -105,8 +98,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
                     if (userResponse.data && userResponse.errno === 0) {
                         const userData = userResponse.data;
-                        userData.role = ROLE_MAP[userData.role] || "用户";
-                        setUser(userData);
+                        userData.role = Number(userData.role) || 1;
+                        setUser(userData as User);
                     } else {
                         clearAuthRuntimeState();
                     }
@@ -143,7 +136,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (isAuthenticated && user) {
             notificationWS.connect(user.id);
             // 普通用户无私信权限，不建立聊天连接（后端同样拒绝，避免重连循环）
-            if (!["用户", "1"].includes(String(user.role))) {
+            if (canChat(user.role)) {
                 chatWS.connect(user.id);
             } else {
                 chatWS.disconnect();
@@ -216,8 +209,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
                     if (userResponse.data && userResponse.errno === 0) {
                         const updatedUser = userResponse.data;
-                        updatedUser.role = ROLE_MAP[updatedUser.role] || "用户";
-                        setUser(updatedUser);
+                        updatedUser.role = Number(updatedUser.role) || 1;
+                        setUser(updatedUser as User);
                     } else {
                         console.warn("⚠️ 用户信息接口返回异常:", userResponse);
                     }
