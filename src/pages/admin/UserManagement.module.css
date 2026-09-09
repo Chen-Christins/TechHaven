@@ -1,726 +1,726 @@
 .userManagement {
-  max-width: 100%;
+    max-width: 100%;
 }
 
 /* 页面头部 */
 .pageHeader {
-  composes: pageHeader from "./AdminPageShared.module.css";
+    composes: pageHeader from "./AdminPageShared.module.css";
 }
 
 .pageTitle {
-  composes: pageTitle from "./AdminPageShared.module.css";
+    composes: pageTitle from "./AdminPageShared.module.css";
 }
 
 .pageDescription {
-  composes: pageDescription from "./AdminPageShared.module.css";
+    composes: pageDescription from "./AdminPageShared.module.css";
 }
 
 .headerActions {
-  composes: headerActions from "./AdminPageShared.module.css";
+    composes: headerActions from "./AdminPageShared.module.css";
 }
 
 /* 统计卡片 */
 .statsContainer {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
 }
 
 .statCard {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 20px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
 }
 
 .statCard:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
 }
 
 .statIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  margin-bottom: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 12px;
 }
 
 .statIcon.primary {
-  background-color: var(--primary-light);
-  color: var(--primary);
+    background-color: var(--primary-light);
+    color: var(--primary);
 }
 
 .statIcon.success {
-  background-color: var(--success-light);
-  color: var(--success);
+    background-color: var(--success-light);
+    color: var(--success);
 }
 
 .statIcon.warning {
-  background-color: var(--warn-light);
-  color: var(--warning);
+    background-color: var(--warn-light);
+    color: var(--warning);
 }
 
 .statIcon.error {
-  background-color: var(--error-light);
-  color: var(--error);
+    background-color: var(--error-light);
+    color: var(--error);
 }
 
 .statValue {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 4px;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
 }
 
 .statLabel {
-  font-size: 14px;
-  color: var(--text-secondary);
+    font-size: 14px;
+    color: var(--text-secondary);
 }
 
 /* 筛选和搜索区域 */
 .filterSection {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
 }
 
 .filterHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
 }
 
 .filterTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .filterActions {
-  display: flex;
-  gap: 8px;
+    display: flex;
+    gap: 8px;
 }
 
 .filterForm {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  align-items: end;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: end;
 }
 
 .filterGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .filterLabel {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
 }
 
 .filterInput,
 .filterSelect {
-  padding: 8px 12px;
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
-  background-color: var(--input-bg);
-  color: var(--text-primary);
-  font-size: 14px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
 }
 
 .filterInput:focus,
 .filterSelect:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: var(--focus-ring);
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: var(--focus-ring);
 }
 
 /* 用户表格 */
 .tableContainer {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  overflow-y: hidden;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    overflow-y: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .tableHeader {
-  padding: 20px;
-  border-bottom: 1px solid var(--border-primary);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .tableTitle {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
 }
 
 .tableActions {
-  display: flex;
-  gap: 8px;
+    display: flex;
+    gap: 8px;
 }
 
 .usersTable {
-  width: 100%;
-  min-width: 600px;
-  border-collapse: collapse;
+    width: 100%;
+    min-width: 600px;
+    border-collapse: collapse;
 }
 
 .usersTable th {
-  padding: 12px 16px;
-  text-align: center;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-primary);
-  white-space: nowrap;
+    padding: 12px 16px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-primary);
+    white-space: nowrap;
 }
 
 .usersTable th:first-child {
-  text-align: left;
-  padding-left: 24px;
+    text-align: left;
+    padding-left: 24px;
 }
 
 .usersTable tbody tr {
-  border-bottom: 1px solid var(--border-primary);
+    border-bottom: 1px solid var(--border-primary);
 }
 
 .usersTable tbody tr:hover {
-  background-color: var(--bg-hover);
+    background-color: var(--bg-hover);
 }
 
 .usersTable td {
-  padding: 16px;
-  font-size: 14px;
-  color: var(--text-primary);
-  vertical-align: middle;
-  text-align: center;
+    padding: 16px;
+    font-size: 14px;
+    color: var(--text-primary);
+    vertical-align: middle;
+    text-align: center;
 }
 
 /* 用户信息列左对齐 */
 .usersTable td:nth-child(1) {
-  text-align: left;
-  padding-left: 24px;
+    text-align: left;
+    padding-left: 24px;
 }
 
 /* 用户信息单元格 */
 .userInfo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  justify-content: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: flex-start;
 }
 
 .userAvatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--border-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-primary);
 }
 
 .userAvatarPlaceholder {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-tertiary);
-  font-size: 18px;
-  flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+    font-size: 18px;
+    flex-shrink: 0;
 }
 
 .userDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .userName {
-  font-weight: 600;
-  color: var(--text-primary);
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .userEmail {
-  font-size: 12px;
-  color: var(--text-secondary);
+    font-size: 12px;
+    color: var(--text-secondary);
 }
 
 /* 状态标签 */
 .statusBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .statusBadge.active {
-  background-color: var(--success-light);
-  color: var(--success);
+    background-color: var(--success-light);
+    color: var(--success);
 }
 
 .statusBadge.inactive {
-  background-color: var(--error-light);
-  color: var(--error);
+    background-color: var(--error-light);
+    color: var(--error);
 }
 
 .statusBadge.pending {
-  background-color: var(--primary-light);
-  color: var(--primary);
+    background-color: var(--primary-light);
+    color: var(--primary);
 }
 
 .statusIndicator {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: currentColor;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
 }
 
 /* 角色标签 */
 .roleBadge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .roleBadge.admin {
-  background-color: var(--error-light);
-  color: var(--error);
+    background-color: var(--error-light);
+    color: var(--error);
 }
 
 .roleBadge.editor {
-  background-color: var(--warn-light);
-  color: var(--warning);
+    background-color: var(--warn-light);
+    color: var(--warning);
 }
 
 .roleBadge.checker {
-  background-color: var(--success-light);
-  color: var(--success);
+    background-color: var(--success-light);
+    color: var(--success);
 }
 
 .roleBadge.user {
-  background-color: var(--bg-secondary);
-  color: var(--text-secondary);
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
 }
 
 /* 操作按钮 */
 .actionButtons {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
 }
 
 .actionButton {
-  padding: 6px 8px;
-  background: none;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  color: var(--text-secondary);
-  font-size: 14px;
+    padding: 6px 8px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 14px;
 }
 
 .actionButton:hover {
-  background-color: var(--bg-hover);
-  color: var(--text-primary);
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
 }
 
 .actionButton.edit:hover {
-  color: var(--primary);
+    color: var(--primary);
 }
 
 .actionButton.delete:hover {
-  color: var(--error);
+    color: var(--error);
 }
 
 /* 分页 */
 .paginationContainer {
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
 }
 
 .paginationInfo {
-  font-size: 14px;
-  color: var(--text-secondary);
+    font-size: 14px;
+    color: var(--text-secondary);
 }
 
 .paginationControls {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .paginationButton {
-  min-width: 32px;
-  height: 32px;
-  padding: 0 8px;
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
-  color: var(--text-primary);
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .paginationButton:hover:not(:disabled) {
-  background-color: var(--bg-hover);
-  border-color: var(--primary);
+    background-color: var(--bg-hover);
+    border-color: var(--primary);
 }
 
 .paginationButton.active {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: white;
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
 }
 
 .paginationButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .paginationEllipsis {
-  padding: 0 8px;
-  color: var(--text-tertiary);
+    padding: 0 8px;
+    color: var(--text-tertiary);
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .pageHeader {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+    .pageHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-  .headerActions {
-    width: 100%;
-    justify-content: flex-start;
-  }
+    .headerActions {
+        width: 100%;
+        justify-content: flex-start;
+    }
 
-  .statsContainer {
-    grid-template-columns: 1fr;
-  }
+    .statsContainer {
+        grid-template-columns: 1fr;
+    }
 
-  .filterForm {
-    grid-template-columns: 1fr;
-  }
+    .filterForm {
+        grid-template-columns: 1fr;
+    }
 
-  .tableContainer {
-    overflow-x: auto;
-  }
+    .tableContainer {
+        overflow-x: auto;
+    }
 
-  .usersTable {
-    min-width: 600px;
-  }
+    .usersTable {
+        min-width: 600px;
+    }
 
-  .paginationContainer {
-    flex-direction: column;
-    align-items: center;
-  }
+    .paginationContainer {
+        flex-direction: column;
+        align-items: center;
+    }
 
-  .actionButtons {
-    flex-direction: column;
-    gap: 4px;
-  }
+    .actionButtons {
+        flex-direction: column;
+        gap: 4px;
+    }
 }
 
 @media (max-width: 480px) {
-  .pageTitle {
-    font-size: 1.2rem;
-  }
+    .pageTitle {
+        font-size: 1.2rem;
+    }
 
-  .statCard {
-    padding: 14px;
-  }
+    .statCard {
+        padding: 14px;
+    }
 
-  .statValue {
-    font-size: 22px;
-  }
+    .statValue {
+        font-size: 22px;
+    }
 
-  .filterSection {
-    padding: 12px;
-  }
+    .filterSection {
+        padding: 12px;
+    }
 
-  .tableContainer {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+    .tableContainer {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
 
-  .usersTable {
-    min-width: 0;
-  }
+    .usersTable {
+        min-width: 0;
+    }
 
-  .usersTable th,
-  .usersTable td {
-    padding: 10px 6px;
-    font-size: 0.75rem;
-  }
+    .usersTable th,
+    .usersTable td {
+        padding: 10px 6px;
+        font-size: 0.75rem;
+    }
 
-  /* 隐藏: 注册时间(4) 最后登录(5) 文章数(6) 评论数(7) */
-  .usersTable th:nth-child(4),
-  .usersTable td:nth-child(4),
-  .usersTable th:nth-child(5),
-  .usersTable td:nth-child(5),
-  .usersTable th:nth-child(6),
-  .usersTable td:nth-child(6),
-  .usersTable th:nth-child(7),
-  .usersTable td:nth-child(7) {
-    display: none;
-  }
+    /* 隐藏: 注册时间(4) 最后登录(5) 文章数(6) 评论数(7) */
+    .usersTable th:nth-child(4),
+    .usersTable td:nth-child(4),
+    .usersTable th:nth-child(5),
+    .usersTable td:nth-child(5),
+    .usersTable th:nth-child(6),
+    .usersTable td:nth-child(6),
+    .usersTable th:nth-child(7),
+    .usersTable td:nth-child(7) {
+        display: none;
+    }
 
-  .actionButton {
-    padding: 4px 6px;
-    font-size: 12px;
-  }
+    .actionButton {
+        padding: 4px 6px;
+        font-size: 12px;
+    }
 
-  .paginationButton {
-    min-width: 28px;
-    height: 28px;
-    font-size: 12px;
-  }
+    .paginationButton {
+        min-width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
 }
 
 /* 通用按钮样式 */
 .btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
 }
 
 .btnPrimary {
-  background-color: var(--primary);
-  color: white;
+    background-color: var(--primary);
+    color: white;
 }
 
 .btnPrimary:hover {
-  background-color: var(--primary-hover);
+    background-color: var(--primary-hover);
 }
 
 .btnSecondary {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
 }
 
 .btnSecondary:hover {
-  background-color: var(--bg-hover);
-  border-color: var(--border-secondary);
+    background-color: var(--bg-hover);
+    border-color: var(--border-secondary);
 }
 
 .btnOutline {
-  background-color: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-primary);
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-primary);
 }
 
 .btnOutline:hover {
-  background-color: var(--bg-hover);
-  color: var(--text-primary);
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
 }
 
 .btnSm {
-  padding: 6px 12px;
-  font-size: 13px;
+    padding: 6px 12px;
+    font-size: 13px;
 }
 
 .btnIcon {
-  padding: 8px;
-  border-radius: 50%;
+    padding: 8px;
+    border-radius: 50%;
 }
 
 /* 模态框表单样式 */
 .formGroup {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 .formLabel {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 8px;
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 8px;
 }
 
 .formInput {
-  width: 100%;
+    width: 100%;
 }
 
 .formTextarea {
-  width: 100%;
-  min-height: 80px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
-  background-color: var(--input-bg);
-  color: var(--text-primary);
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
-  outline: none;
-  box-sizing: border-box;
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
 }
 
 .formTextarea:focus {
-  border-color: var(--primary);
-  box-shadow: var(--focus-ring);
+    border-color: var(--primary);
+    box-shadow: var(--focus-ring);
 }
 
 @media (max-width: 640px) {
-  .tableContainer {
-    overflow: visible;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-  }
+    .tableContainer {
+        overflow: visible;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+    }
 
-  .tableHeader {
-    background: var(--card-bg);
-    border: 1px solid var(--border-primary);
-    border-radius: 8px;
-    margin-bottom: 12px;
-  }
+    .tableHeader {
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
 
-  .usersTable,
-  .usersTable tbody,
-  .usersTable tr,
-  .usersTable td {
-    display: block;
-    width: 100%;
-  }
+    .usersTable,
+    .usersTable tbody,
+    .usersTable tr,
+    .usersTable td {
+        display: block;
+        width: 100%;
+    }
 
-  .usersTable {
-    min-width: 0;
-  }
+    .usersTable {
+        min-width: 0;
+    }
 
-  .usersTable thead {
-    display: none;
-  }
+    .usersTable thead {
+        display: none;
+    }
 
-  .usersTable tbody {
-    display: grid;
-    gap: 12px;
-  }
+    .usersTable tbody {
+        display: grid;
+        gap: 12px;
+    }
 
-  .usersTable tbody tr {
-    background: var(--card-bg);
-    border: 1px solid var(--border-primary);
-    border-radius: 8px;
-    padding: 12px;
-  }
+    .usersTable tbody tr {
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        padding: 12px;
+    }
 
-  .usersTable td,
-  .usersTable td:nth-child(1),
-  .usersTable td:nth-child(4),
-  .usersTable td:nth-child(5),
-  .usersTable td:nth-child(6),
-  .usersTable td:nth-child(7) {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 8px 0;
-    text-align: right;
-    font-size: 14px;
-  }
+    .usersTable td,
+    .usersTable td:nth-child(1),
+    .usersTable td:nth-child(4),
+    .usersTable td:nth-child(5),
+    .usersTable td:nth-child(6),
+    .usersTable td:nth-child(7) {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 8px 0;
+        text-align: right;
+        font-size: 14px;
+    }
 
-  .usersTable td::before {
-    flex: 0 0 auto;
-    color: var(--text-tertiary);
-    font-size: 12px;
-    font-weight: 600;
-    text-align: left;
-  }
+    .usersTable td::before {
+        flex: 0 0 auto;
+        color: var(--text-tertiary);
+        font-size: 12px;
+        font-weight: 600;
+        text-align: left;
+    }
 
-  .usersTable td:nth-child(1) {
-    display: block;
-    text-align: left;
-    padding-bottom: 12px;
-    margin-bottom: 4px;
-    border-bottom: 1px solid var(--border-primary);
-  }
+    .usersTable td:nth-child(1) {
+        display: block;
+        text-align: left;
+        padding-bottom: 12px;
+        margin-bottom: 4px;
+        border-bottom: 1px solid var(--border-primary);
+    }
 
-  .usersTable td:nth-child(1)::before {
-    display: none;
-  }
+    .usersTable td:nth-child(1)::before {
+        display: none;
+    }
 
-  .usersTable td:nth-child(2)::before {
-    content: "角色";
-  }
+    .usersTable td:nth-child(2)::before {
+        content: "角色";
+    }
 
-  .usersTable td:nth-child(3)::before {
-    content: "状态";
-  }
+    .usersTable td:nth-child(3)::before {
+        content: "状态";
+    }
 
-  .usersTable td:nth-child(4)::before {
-    content: "注册时间";
-  }
+    .usersTable td:nth-child(4)::before {
+        content: "注册时间";
+    }
 
-  .usersTable td:nth-child(5)::before {
-    content: "最后登录";
-  }
+    .usersTable td:nth-child(5)::before {
+        content: "最后登录";
+    }
 
-  .usersTable td:nth-child(6)::before {
-    content: "文章数";
-  }
+    .usersTable td:nth-child(6)::before {
+        content: "文章数";
+    }
 
-  .usersTable td:nth-child(7)::before {
-    content: "评论数";
-  }
+    .usersTable td:nth-child(7)::before {
+        content: "评论数";
+    }
 
-  .usersTable td:nth-child(8)::before {
-    content: "操作";
-  }
+    .usersTable td:nth-child(8)::before {
+        content: "操作";
+    }
 
-  .actionButtons {
-    flex-direction: row;
-    justify-content: flex-end;
-  }
+    .actionButtons {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
 
-  .paginationContainer {
-    margin-top: 12px;
-    background: var(--card-bg);
-    border: 1px solid var(--border-primary);
-    border-radius: 8px;
-  }
+    .paginationContainer {
+        margin-top: 12px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+    }
 }

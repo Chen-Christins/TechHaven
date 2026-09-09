@@ -1,51 +1,51 @@
 .backToTop {
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, #3182ce, #2c5282);
-  color: #ffffff;
-  border: 2px solid #3182ce;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(49, 130, 246, 0.5);
-  font-size: 20px;
-  font-weight: bold;
-  outline: none;
-  text-decoration: none;
-  opacity: 0;
-  transform: translateY(20px);
-  pointer-events: auto;
-  user-select: none;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #3182ce, #2c5282);
+    color: #ffffff;
+    border: 2px solid #3182ce;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(49, 130, 246, 0.5);
+    font-size: 20px;
+    font-weight: bold;
+    outline: none;
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: auto;
+    user-select: none;
 }
 
 /* 淡入动画 */
 .backToTop.show {
-  opacity: 1;
-  transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .backToTop:hover {
-  background: linear-gradient(135deg, #2c5282, #2a4e7c);
-  transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(49, 130, 246, 0.4);
+    background: linear-gradient(135deg, #2c5282, #2a4e7c);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(49, 130, 246, 0.4);
 }
 
 .backToTop:active {
-  transform: scale(0.95);
+    transform: scale(0.95);
 }
 
 .backToTop:focus {
-  outline: 2px solid #3182ce;
-  outline-offset: 2px;
+    outline: 2px solid #3182ce;
+    outline-offset: 2px;
 }
 
 /* 移动端适配 */
 @media (max-width: 768px) {
-  .backToTop {
-    width: 45px;
-    height: 45px;
-    font-size: 18px;
-  }
+    .backToTop {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
 }

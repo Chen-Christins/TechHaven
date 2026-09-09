@@ -1,25 +1,25 @@
 import React from "react";
 import {
-  FaCrown,
-  FaUserShield,
-  FaUser,
-  FaUserCheck,
-  FaCode,
-  FaEye,
-  FaSync,
-  FaUserMinus,
-  FaCog,
-  FaTasks,
-  FaEdit,
-  FaTrash,
-  FaCalendarAlt,
-  FaFlag,
-  FaHourglassHalf,
-  FaPlayCircle,
-  FaStopCircle,
-  FaCheck,
-  FaTimes,
-  FaPlus,
+    FaCrown,
+    FaUserShield,
+    FaUser,
+    FaUserCheck,
+    FaCode,
+    FaEye,
+    FaSync,
+    FaUserMinus,
+    FaCog,
+    FaTasks,
+    FaEdit,
+    FaTrash,
+    FaCalendarAlt,
+    FaFlag,
+    FaHourglassHalf,
+    FaPlayCircle,
+    FaStopCircle,
+    FaCheck,
+    FaTimes,
+    FaPlus,
 } from "react-icons/fa";
 import type { Member, Task, OrganizationDetail } from "@/types/organization";
 import Avatar from "../avatar/Avatar";
@@ -35,940 +35,995 @@ import OrganizationService from "@/services/organizationService";
 import Loading from "../loading/Loading";
 
 interface OrganizationTabsProps {
-  org: OrganizationDetail | null;
-  userRole: "leader" | "admin" | "member" | "guest" | null;
-  currentUser?: any;
-  showPendingRequests: boolean;
-  showTasks: boolean;
-  showRepos: boolean;
-  members: Member[];
-  membersTotal: number;
-  page: number;
-  isRefreshing: boolean;
-  pendingRequests: Member[];
-  pendingRequestsTotal: number;
-  pendingRequestsPage: number;
-  pendingRequestsLoading: boolean;
-  tasks: Task[];
-  tasksTotal: number;
-  tasksPage: number;
-  tasksLoading: boolean;
-  roleModalVisible: boolean;
-  selectedTask: Task | null;
-  taskPreviewModalVisible: boolean;
-  memberPreviewModalVisible: boolean;
-  selectedMember: Member | null;
-  selectedRole: number;
-  getAvailableRoleOptions: () => any[];
-  onTabChange: (showPending: boolean, showTasks: boolean, showRepos?: boolean) => void;
-  onRefreshMembers: () => void;
-  onRefreshPending: () => void;
-  onPageChange: (newPage: number) => void;
-  onPendingPageChange: (newPage: number) => void;
-  onTasksPageChange: (newPage: number) => void;
-  onActionPendingRequest: (requestId: string, action: "accept" | "reject") => void;
-  onKickMember: (member: Member) => void;
-  onSetMemberRole: (member: Member) => void;
-  onRoleModalClose: () => void;
-  onTaskPreviewModalClose: () => void;
-  onMemberPreviewModalClose: () => void;
-  onViewMember: (member: Member) => void;
-  onRoleChange: (role: number) => void;
-  onConfirmRole: () => void;
-  onCreateTask: () => void;
-  onRefreshTasks: (page?: number) => void;
-  onEditTask: (task: Task) => void;
-  onViewTask: (task: Task) => void;
-  onDeleteTask: (task: Task) => void;
-  canManageMember: (member: Member) => boolean;
-  canSetRole: (member: Member) => boolean;
-  canManageTask: () => boolean;
-  onReposChange?: (delta: number) => void;
+    org: OrganizationDetail | null;
+    userRole: "leader" | "admin" | "member" | "guest" | null;
+    currentUser?: any;
+    showPendingRequests: boolean;
+    showTasks: boolean;
+    showRepos: boolean;
+    members: Member[];
+    membersTotal: number;
+    page: number;
+    isRefreshing: boolean;
+    pendingRequests: Member[];
+    pendingRequestsTotal: number;
+    pendingRequestsPage: number;
+    pendingRequestsLoading: boolean;
+    tasks: Task[];
+    tasksTotal: number;
+    tasksPage: number;
+    tasksLoading: boolean;
+    roleModalVisible: boolean;
+    selectedTask: Task | null;
+    taskPreviewModalVisible: boolean;
+    memberPreviewModalVisible: boolean;
+    selectedMember: Member | null;
+    selectedRole: number;
+    getAvailableRoleOptions: () => any[];
+    onTabChange: (showPending: boolean, showTasks: boolean, showRepos?: boolean) => void;
+    onRefreshMembers: () => void;
+    onRefreshPending: () => void;
+    onPageChange: (newPage: number) => void;
+    onPendingPageChange: (newPage: number) => void;
+    onTasksPageChange: (newPage: number) => void;
+    onActionPendingRequest: (requestId: string, action: "accept" | "reject") => void;
+    onKickMember: (member: Member) => void;
+    onSetMemberRole: (member: Member) => void;
+    onRoleModalClose: () => void;
+    onTaskPreviewModalClose: () => void;
+    onMemberPreviewModalClose: () => void;
+    onViewMember: (member: Member) => void;
+    onRoleChange: (role: number) => void;
+    onConfirmRole: () => void;
+    onCreateTask: () => void;
+    onRefreshTasks: (page?: number) => void;
+    onEditTask: (task: Task) => void;
+    onViewTask: (task: Task) => void;
+    onDeleteTask: (task: Task) => void;
+    canManageMember: (member: Member) => boolean;
+    canSetRole: (member: Member) => boolean;
+    canManageTask: () => boolean;
+    onReposChange?: (delta: number) => void;
 }
 
 const PAGE_SIZE = 15;
 const TASKS_PAGE_SIZE = 15; // 任务列表每页显示的条数
 
 const statusClassMap = {
-  draft: styles.statusDraft,
-  active: styles.statusActive,
-  closed: styles.statusClosed,
-  // 其它状态...
+    draft: styles.statusDraft,
+    active: styles.statusActive,
+    closed: styles.statusClosed,
+    // 其它状态...
 };
 
 const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
-  org,
-  currentUser,
-  userRole,
-  showPendingRequests,
-  showTasks,
-  showRepos,
-  members,
-  membersTotal,
-  page,
-  isRefreshing,
-  pendingRequests,
-  pendingRequestsTotal,
-  pendingRequestsPage,
-  pendingRequestsLoading,
-  tasks,
-  tasksTotal,
-  tasksPage,
-  tasksLoading,
-  roleModalVisible,
-  taskPreviewModalVisible,
-  memberPreviewModalVisible,
-  selectedMember,
-  selectedRole,
-  selectedTask,
-  getAvailableRoleOptions,
-  onTabChange,
-  onRefreshMembers,
-  onRefreshPending,
-  onPageChange,
-  onPendingPageChange,
-  onTasksPageChange,
-  onActionPendingRequest,
-  onKickMember,
-  onSetMemberRole,
-  onRoleModalClose,
-  onTaskPreviewModalClose,
-  onMemberPreviewModalClose,
-  onViewMember,
-  onRoleChange,
-  onConfirmRole,
-  onCreateTask,
-  onRefreshTasks,
-  onEditTask,
-  onViewTask,
-  onDeleteTask,
-  canManageMember,
-  canSetRole,
-  canManageTask,
-  onReposChange,
+    org,
+    currentUser,
+    userRole,
+    showPendingRequests,
+    showTasks,
+    showRepos,
+    members,
+    membersTotal,
+    page,
+    isRefreshing,
+    pendingRequests,
+    pendingRequestsTotal,
+    pendingRequestsPage,
+    pendingRequestsLoading,
+    tasks,
+    tasksTotal,
+    tasksPage,
+    tasksLoading,
+    roleModalVisible,
+    taskPreviewModalVisible,
+    memberPreviewModalVisible,
+    selectedMember,
+    selectedRole,
+    selectedTask,
+    getAvailableRoleOptions,
+    onTabChange,
+    onRefreshMembers,
+    onRefreshPending,
+    onPageChange,
+    onPendingPageChange,
+    onTasksPageChange,
+    onActionPendingRequest,
+    onKickMember,
+    onSetMemberRole,
+    onRoleModalClose,
+    onTaskPreviewModalClose,
+    onMemberPreviewModalClose,
+    onViewMember,
+    onRoleChange,
+    onConfirmRole,
+    onCreateTask,
+    onRefreshTasks,
+    onEditTask,
+    onViewTask,
+    onDeleteTask,
+    canManageMember,
+    canSetRole,
+    canManageTask,
+    onReposChange,
 }) => {
-  // 仓库添加相关状态
-  const [repoModalVisible, setRepoModalVisible] = React.useState(false);
-  const [repoForm, setRepoForm] = React.useState({ name: "", url: "", token: "" });
+    // 仓库添加相关状态
+    const [repoModalVisible, setRepoModalVisible] = React.useState(false);
+    const [repoForm, setRepoForm] = React.useState({ name: "", url: "", token: "" });
 
-  const handleAddRepo = async () => {
-    if (!repoForm.name.trim()) {
-      message.warn("请输入仓库名称");
-      return;
-    }
-    if (!repoForm.url.trim()) {
-      message.warn("请输入仓库地址");
-      return;
-    }
-    if (!repoForm.url.trim().startsWith("https://github.com/")) {
-      message.warn("暂仅支持 GitHub 仓库（https://github.com/...）");
-      return;
-    }
-    try {
-      await OrganizationService.addRepo({
-        org_id: org?.id || "",
-        name: repoForm.name.trim(),
-        url: repoForm.url.trim(),
-        token: repoForm.token.trim() || undefined,
-      });
-      setRepoForm({ name: "", url: "", token: "" });
-      setRepoModalVisible(false);
-      message.success("仓库添加成功");
-      onReposChange?.(1);
-    } catch {
-      message.error("添加仓库失败");
-    }
-  };
+    const handleAddRepo = async () => {
+        if (!repoForm.name.trim()) {
+            message.warn("请输入仓库名称");
+            return;
+        }
+        if (!repoForm.url.trim()) {
+            message.warn("请输入仓库地址");
+            return;
+        }
+        if (!repoForm.url.trim().startsWith("https://github.com/")) {
+            message.warn("暂仅支持 GitHub 仓库（https://github.com/...）");
+            return;
+        }
+        try {
+            await OrganizationService.addRepo({
+                org_id: org?.id || "",
+                name: repoForm.name.trim(),
+                url: repoForm.url.trim(),
+                token: repoForm.token.trim() || undefined,
+            });
+            setRepoForm({ name: "", url: "", token: "" });
+            setRepoModalVisible(false);
+            message.success("仓库添加成功");
+            onReposChange?.(1);
+        } catch {
+            message.error("添加仓库失败");
+        }
+    };
 
-  return (
-    <div className={styles.tableContainer}>
-      {/* Tab切换按钮 + 右侧操作区 */}
-      <div className={styles.tabsHeader}>
-        <div className={styles.tabsNav}>
-          <button
-            className={`${styles.tabButton} ${!showPendingRequests && !showTasks && !showRepos ? styles.activeTab : ""}`}
-            onClick={() => onTabChange(false, false, false)}
-          >
-            成员列表
-          </button>
-          {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
-            <button
-              className={`${styles.tabButton} ${showPendingRequests ? styles.activeTab : ""}`}
-              onClick={() => onTabChange(true, false)}
-            >
-              待处理请求
-            </button>
-          )}
-          {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
-            <button className={`${styles.tabButton} ${showTasks ? styles.activeTab : ""}`} onClick={() => onTabChange(false, true)}>
-              任务列表
-            </button>
-          )}
-          {userRole !== "guest" && (
-            <button
-              className={`${styles.tabButton} ${showRepos ? styles.activeTab : ""}`}
-              onClick={() => onTabChange(false, false, true)}
-            >
-              仓库列表
-            </button>
-          )}
-        </div>
-        <div className={styles.tabsActions}>
-          {!showPendingRequests && !showTasks && !showRepos && (
-            <>
-              <span className={styles.tabsCount}>共 {membersTotal} 个成员</span>
-              <button
-                className={`${styles.refreshButton} ${isRefreshing ? styles.loading : ""}`}
-                title="刷新成员列表"
-                onClick={onRefreshMembers}
-                disabled={isRefreshing}
-              >
-                <span className={styles.refreshIcon}>
-                  <FaSync />
-                </span>
-                刷新
-              </button>
-            </>
-          )}
-          {showPendingRequests && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
-            <>
-              <span className={styles.tabsCount}>共 {pendingRequests.length} 个请求</span>
-              <button
-                className={`${styles.refreshButton} ${pendingRequestsLoading ? styles.loading : ""}`}
-                title="刷新待处理请求"
-                onClick={onRefreshPending}
-                disabled={pendingRequestsLoading}
-              >
-                <span className={styles.refreshIcon}>
-                  <FaSync />
-                </span>
-                刷新
-              </button>
-            </>
-          )}
-          {showTasks && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
-            <>
-              <button className={styles.refreshButton} onClick={() => onRefreshTasks()} title="刷新任务列表">
-                <span className={styles.refreshIcon}>
-                  <FaSync />
-                </span>
-                刷新
-              </button>
-              <button className={styles.createButton} onClick={onCreateTask}>
-                <FaPlus />
-                创建任务
-              </button>
-            </>
-          )}
-          {showRepos && userRole !== "guest" && (
-            <button className={styles.createButton} onClick={() => setRepoModalVisible(true)}>
-              <FaPlus />
-              添加仓库
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* 成员列表视图 */}
-      {!showPendingRequests && !showTasks && !showRepos && (
-        <>
-          {isRefreshing && (!members || members.length === 0) ? (
-            <div style={{ padding: "40px 0" }}>
-              <Loading />
-            </div>
-          ) : (
-            <table className={styles.usersTable}>
-              <thead>
-                <tr>
-                  <th>用户信息</th>
-                  <th>角色</th>
-                  <th>状态</th>
-                  <th>加入时间</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {members && members.length > 0 ? (
-                  members.map((member) => (
-                    <tr key={member.id} className={styles.tableRow}>
-                      <td>
-                        <div className={styles.userInfo}>
-                          <Avatar src={member.avatar} name={member.name} size={40} className={styles.userAvatar} />
-                          <div className={styles.userDetails}>
-                            <div className={styles.userName}>{member.name}</div>
-                            {member.email && <div className={styles.userEmail}>{member.email}</div>}
-                          </div>
-                        </div>
-                      </td>
-                      <td data-label="角色">
-                        <span
-                          className={`${styles.roleBadge} ${member.role === "组织管理员" ? styles.admin : member.role === "研发主管" ? styles.moderator : styles.user}`}
+    return (
+        <div className={styles.tableContainer}>
+            {/* Tab切换按钮 + 右侧操作区 */}
+            <div className={styles.tabsHeader}>
+                <div className={styles.tabsNav}>
+                    <button
+                        className={`${styles.tabButton} ${!showPendingRequests && !showTasks && !showRepos ? styles.activeTab : ""}`}
+                        onClick={() => onTabChange(false, false, false)}
+                    >
+                        成员列表
+                    </button>
+                    {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+                        <button
+                            className={`${styles.tabButton} ${showPendingRequests ? styles.activeTab : ""}`}
+                            onClick={() => onTabChange(true, false)}
                         >
-                          {member.role === "组织管理员" && <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />}
-                          {member.role === "研发主管" && <FaUserShield style={{ color: "#4caf50", marginRight: 4 }} />}
-                          {member.role === "开发者" && <FaCode style={{ color: "#2196f3", marginRight: 4 }} />}
-                          {member.role === "报告者" && <FaUserCheck style={{ color: "#2196f3", marginRight: 4 }} />}
-                          {member.role === "普通成员" && <FaUser style={{ color: "#2196f3", marginRight: 4 }} />}
-                          {member.role || "普通成员"}
-                        </span>
-                      </td>
-                      <td data-label="状态">
-                        <span className={`${styles.statusBadge} ${member.status === "active" ? styles.active : styles.inactive}`}>
-                          <span className={styles.statusIndicator}></span>
-                          {member.status === "active" ? "活跃" : "非活跃"}
-                        </span>
-                      </td>
-                      <td data-label="加入时间">{member.joinTime || "-"}</td>
-                      <td data-label="操作">
-                        <div className={styles.actionButtons}>
-                          <button
-                            className={`${styles.actionButton} ${styles.viewButton}`}
-                            title="查看详情"
-                            onClick={() => onViewMember(member)}
-                          >
-                            <FaEye />
-                          </button>
-                          {canManageMember(member) && (
-                            <>
-                              <button
-                                className={`${styles.actionButton} ${styles.kickButton}`}
-                                title="踢出组织"
-                                onClick={() => onKickMember(member)}
-                              >
-                                <FaUserMinus />
-                              </button>
-                              {canSetRole(member) && (
+                            待处理请求
+                        </button>
+                    )}
+                    {(userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+                        <button
+                            className={`${styles.tabButton} ${showTasks ? styles.activeTab : ""}`}
+                            onClick={() => onTabChange(false, true)}
+                        >
+                            任务列表
+                        </button>
+                    )}
+                    {userRole !== "guest" && (
+                        <button
+                            className={`${styles.tabButton} ${showRepos ? styles.activeTab : ""}`}
+                            onClick={() => onTabChange(false, false, true)}
+                        >
+                            仓库列表
+                        </button>
+                    )}
+                </div>
+                <div className={styles.tabsActions}>
+                    {!showPendingRequests && !showTasks && !showRepos && (
+                        <>
+                            <span className={styles.tabsCount}>共 {membersTotal} 个成员</span>
+                            <button
+                                className={`${styles.refreshButton} ${isRefreshing ? styles.loading : ""}`}
+                                title="刷新成员列表"
+                                onClick={onRefreshMembers}
+                                disabled={isRefreshing}
+                            >
+                                <span className={styles.refreshIcon}>
+                                    <FaSync />
+                                </span>
+                                刷新
+                            </button>
+                        </>
+                    )}
+                    {showPendingRequests && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+                        <>
+                            <span className={styles.tabsCount}>共 {pendingRequests.length} 个请求</span>
+                            <button
+                                className={`${styles.refreshButton} ${pendingRequestsLoading ? styles.loading : ""}`}
+                                title="刷新待处理请求"
+                                onClick={onRefreshPending}
+                                disabled={pendingRequestsLoading}
+                            >
+                                <span className={styles.refreshIcon}>
+                                    <FaSync />
+                                </span>
+                                刷新
+                            </button>
+                        </>
+                    )}
+                    {showTasks && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+                        <>
+                            <button className={styles.refreshButton} onClick={() => onRefreshTasks()} title="刷新任务列表">
+                                <span className={styles.refreshIcon}>
+                                    <FaSync />
+                                </span>
+                                刷新
+                            </button>
+                            <button className={styles.createButton} onClick={onCreateTask}>
+                                <FaPlus />
+                                创建任务
+                            </button>
+                        </>
+                    )}
+                    {showRepos && userRole !== "guest" && (
+                        <button className={styles.createButton} onClick={() => setRepoModalVisible(true)}>
+                            <FaPlus />
+                            添加仓库
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* 成员列表视图 */}
+            {!showPendingRequests && !showTasks && !showRepos && (
+                <>
+                    {isRefreshing && (!members || members.length === 0) ? (
+                        <div style={{ padding: "40px 0" }}>
+                            <Loading />
+                        </div>
+                    ) : (
+                        <table className={styles.usersTable}>
+                            <thead>
+                                <tr>
+                                    <th>用户信息</th>
+                                    <th>角色</th>
+                                    <th>状态</th>
+                                    <th>加入时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {members && members.length > 0 ? (
+                                    members.map((member) => (
+                                        <tr key={member.id} className={styles.tableRow}>
+                                            <td>
+                                                <div className={styles.userInfo}>
+                                                    <Avatar
+                                                        src={member.avatar}
+                                                        name={member.name}
+                                                        size={40}
+                                                        className={styles.userAvatar}
+                                                    />
+                                                    <div className={styles.userDetails}>
+                                                        <div className={styles.userName}>{member.name}</div>
+                                                        {member.email && <div className={styles.userEmail}>{member.email}</div>}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td data-label="角色">
+                                                <span
+                                                    className={`${styles.roleBadge} ${member.role === "组织管理员" ? styles.admin : member.role === "研发主管" ? styles.moderator : styles.user}`}
+                                                >
+                                                    {member.role === "组织管理员" && (
+                                                        <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />
+                                                    )}
+                                                    {member.role === "研发主管" && (
+                                                        <FaUserShield style={{ color: "#4caf50", marginRight: 4 }} />
+                                                    )}
+                                                    {member.role === "开发者" && (
+                                                        <FaCode style={{ color: "#2196f3", marginRight: 4 }} />
+                                                    )}
+                                                    {member.role === "报告者" && (
+                                                        <FaUserCheck style={{ color: "#2196f3", marginRight: 4 }} />
+                                                    )}
+                                                    {member.role === "普通成员" && (
+                                                        <FaUser style={{ color: "#2196f3", marginRight: 4 }} />
+                                                    )}
+                                                    {member.role || "普通成员"}
+                                                </span>
+                                            </td>
+                                            <td data-label="状态">
+                                                <span
+                                                    className={`${styles.statusBadge} ${member.status === "active" ? styles.active : styles.inactive}`}
+                                                >
+                                                    <span className={styles.statusIndicator}></span>
+                                                    {member.status === "active" ? "活跃" : "非活跃"}
+                                                </span>
+                                            </td>
+                                            <td data-label="加入时间">{member.joinTime || "-"}</td>
+                                            <td data-label="操作">
+                                                <div className={styles.actionButtons}>
+                                                    <button
+                                                        className={`${styles.actionButton} ${styles.viewButton}`}
+                                                        title="查看详情"
+                                                        onClick={() => onViewMember(member)}
+                                                    >
+                                                        <FaEye />
+                                                    </button>
+                                                    {canManageMember(member) && (
+                                                        <>
+                                                            <button
+                                                                className={`${styles.actionButton} ${styles.kickButton}`}
+                                                                title="踢出组织"
+                                                                onClick={() => onKickMember(member)}
+                                                            >
+                                                                <FaUserMinus />
+                                                            </button>
+                                                            {canSetRole(member) && (
+                                                                <button
+                                                                    className={`${styles.actionButton} ${styles.roleButton}`}
+                                                                    title="设置角色"
+                                                                    onClick={() => onSetMemberRole(member)}
+                                                                >
+                                                                    <FaCog />
+                                                                </button>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={5} style={{ padding: 0 }}>
+                                            <div className={styles.emptyState}>
+                                                <FaUser className={styles.emptyIcon} />
+                                                <h3 className={styles.emptyTitle}>暂无成员</h3>
+                                                <p className={styles.emptySubtext}>该组织还没有成员加入</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                    {/* 分页区块 */}
+                    {membersTotal > 0 && (
+                        <div className={styles.pagination}>
+                            <div className={styles.paginationInfo}>
+                                显示 {(page - 1) * PAGE_SIZE + 1} - {Math.min(page * PAGE_SIZE, membersTotal)} 条， 共 {membersTotal}{" "}
+                                条记录
+                            </div>
+                            <div className={styles.paginationControls}>
                                 <button
-                                  className={`${styles.actionButton} ${styles.roleButton}`}
-                                  title="设置角色"
-                                  onClick={() => onSetMemberRole(member)}
+                                    className={styles.paginationButton}
+                                    disabled={page === 1}
+                                    onClick={() => onPageChange(page - 1)}
                                 >
-                                  <FaCog />
+                                    上一页
                                 </button>
-                              )}
-                            </>
-                          )}
+                                {Array.from({ length: Math.ceil(membersTotal / PAGE_SIZE) }, (_, i) => (
+                                    <button
+                                        key={i + 1}
+                                        className={`${styles.paginationButton} ${page === i + 1 ? styles.active : ""}`}
+                                        onClick={() => onPageChange(i + 1)}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    className={styles.paginationButton}
+                                    disabled={page === Math.ceil(membersTotal / PAGE_SIZE)}
+                                    onClick={() => onPageChange(page + 1)}
+                                >
+                                    下一页
+                                </button>
+                            </div>
                         </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} style={{ padding: 0 }}>
-                      <div className={styles.emptyState}>
-                        <FaUser className={styles.emptyIcon} />
-                        <h3 className={styles.emptyTitle}>暂无成员</h3>
-                        <p className={styles.emptySubtext}>该组织还没有成员加入</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
-          {/* 分页区块 */}
-          {membersTotal > 0 && (
-            <div className={styles.pagination}>
-              <div className={styles.paginationInfo}>
-                显示 {(page - 1) * PAGE_SIZE + 1} - {Math.min(page * PAGE_SIZE, membersTotal)} 条， 共 {membersTotal} 条记录
-              </div>
-              <div className={styles.paginationControls}>
-                <button className={styles.paginationButton} disabled={page === 1} onClick={() => onPageChange(page - 1)}>
-                  上一页
-                </button>
-                {Array.from({ length: Math.ceil(membersTotal / PAGE_SIZE) }, (_, i) => (
-                  <button
-                    key={i + 1}
-                    className={`${styles.paginationButton} ${page === i + 1 ? styles.active : ""}`}
-                    onClick={() => onPageChange(i + 1)}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                <button
-                  className={styles.paginationButton}
-                  disabled={page === Math.ceil(membersTotal / PAGE_SIZE)}
-                  onClick={() => onPageChange(page + 1)}
-                >
-                  下一页
-                </button>
-              </div>
-            </div>
-          )}
-        </>
-      )}
+                    )}
+                </>
+            )}
 
-      {/* 待处理请求视图 */}
-      {showPendingRequests && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
-        <>
-          {pendingRequestsLoading ? (
-            <div style={{ padding: "40px 0" }}>
-              <Loading />
-            </div>
-          ) : (
-            <table className={styles.usersTable}>
-              <thead>
-                <tr>
-                  <th>用户信息</th>
-                  <th>申请时间</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendingRequests.length > 0 ? (
-                  pendingRequests.map((request) => (
-                    <tr key={request.id} className={styles.tableRow}>
-                      <td>
-                        <div className={styles.userInfo}>
-                          <Avatar src={request.avatar} name={request.name} size={40} className={styles.userAvatar} />
-                          <div className={styles.userDetails}>
-                            <div className={styles.userName}>{request.name}</div>
-                            {request.email && <div className={styles.userEmail}>{request.email}</div>}
-                          </div>
+            {/* 待处理请求视图 */}
+            {showPendingRequests && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+                <>
+                    {pendingRequestsLoading ? (
+                        <div style={{ padding: "40px 0" }}>
+                            <Loading />
                         </div>
-                      </td>
-                      <td data-label="申请时间">{request.joinTime || "-"}</td>
-                      <td data-label="操作">
-                        <div className={styles.actionButtons}>
-                          <button
-                            className={`${styles.actionButton} ${styles.acceptButton}`}
-                            title="接受"
-                            onClick={() => onActionPendingRequest(request.id, "accept")}
-                          >
-                            <FaCheck />
-                          </button>
-                          <button
-                            className={`${styles.actionButton} ${styles.rejectButton}`}
-                            title="拒绝"
-                            onClick={() => onActionPendingRequest(request.id, "reject")}
-                          >
-                            <FaTimes />
-                          </button>
+                    ) : (
+                        <table className={styles.usersTable}>
+                            <thead>
+                                <tr>
+                                    <th>用户信息</th>
+                                    <th>申请时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {pendingRequests.length > 0 ? (
+                                    pendingRequests.map((request) => (
+                                        <tr key={request.id} className={styles.tableRow}>
+                                            <td>
+                                                <div className={styles.userInfo}>
+                                                    <Avatar
+                                                        src={request.avatar}
+                                                        name={request.name}
+                                                        size={40}
+                                                        className={styles.userAvatar}
+                                                    />
+                                                    <div className={styles.userDetails}>
+                                                        <div className={styles.userName}>{request.name}</div>
+                                                        {request.email && <div className={styles.userEmail}>{request.email}</div>}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td data-label="申请时间">{request.joinTime || "-"}</td>
+                                            <td data-label="操作">
+                                                <div className={styles.actionButtons}>
+                                                    <button
+                                                        className={`${styles.actionButton} ${styles.acceptButton}`}
+                                                        title="接受"
+                                                        onClick={() => onActionPendingRequest(request.id, "accept")}
+                                                    >
+                                                        <FaCheck />
+                                                    </button>
+                                                    <button
+                                                        className={`${styles.actionButton} ${styles.rejectButton}`}
+                                                        title="拒绝"
+                                                        onClick={() => onActionPendingRequest(request.id, "reject")}
+                                                    >
+                                                        <FaTimes />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={3} style={{ padding: 0 }}>
+                                            <div className={styles.emptyState}>
+                                                <FaHourglassHalf className={styles.emptyIcon} />
+                                                <h3 className={styles.emptyTitle}>暂无待处理请求</h3>
+                                                <p className={styles.emptySubtext}>所有申请已处理完毕</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                    {/* 分页区块 - 待处理请求 */}
+                    {pendingRequestsTotal > 0 && (
+                        <div className={styles.pagination}>
+                            <div className={styles.paginationInfo}>
+                                显示 {(pendingRequestsPage - 1) * PAGE_SIZE + 1} -{" "}
+                                {Math.min(pendingRequestsPage * PAGE_SIZE, pendingRequestsTotal)} 条， 共 {pendingRequestsTotal} 条记录
+                            </div>
+                            <div className={styles.paginationControls}>
+                                <button
+                                    className={styles.paginationButton}
+                                    disabled={pendingRequestsPage === 1}
+                                    onClick={() => onPendingPageChange(pendingRequestsPage - 1)}
+                                >
+                                    上一页
+                                </button>
+                                {Array.from({ length: Math.ceil(pendingRequestsTotal / PAGE_SIZE) }, (_, i) => (
+                                    <button
+                                        key={i + 1}
+                                        className={`${styles.paginationButton} ${pendingRequestsPage === i + 1 ? styles.active : ""}`}
+                                        onClick={() => onPendingPageChange(i + 1)}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    className={styles.paginationButton}
+                                    disabled={pendingRequestsPage === Math.ceil(pendingRequestsTotal / PAGE_SIZE)}
+                                    onClick={() => onPendingPageChange(pendingRequestsPage + 1)}
+                                >
+                                    下一页
+                                </button>
+                            </div>
                         </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={3} style={{ padding: 0 }}>
-                      <div className={styles.emptyState}>
-                        <FaHourglassHalf className={styles.emptyIcon} />
-                        <h3 className={styles.emptyTitle}>暂无待处理请求</h3>
-                        <p className={styles.emptySubtext}>所有申请已处理完毕</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
-          {/* 分页区块 - 待处理请求 */}
-          {pendingRequestsTotal > 0 && (
-            <div className={styles.pagination}>
-              <div className={styles.paginationInfo}>
-                显示 {(pendingRequestsPage - 1) * PAGE_SIZE + 1} - {Math.min(pendingRequestsPage * PAGE_SIZE, pendingRequestsTotal)}{" "}
-                条， 共 {pendingRequestsTotal} 条记录
-              </div>
-              <div className={styles.paginationControls}>
-                <button
-                  className={styles.paginationButton}
-                  disabled={pendingRequestsPage === 1}
-                  onClick={() => onPendingPageChange(pendingRequestsPage - 1)}
-                >
-                  上一页
-                </button>
-                {Array.from({ length: Math.ceil(pendingRequestsTotal / PAGE_SIZE) }, (_, i) => (
-                  <button
-                    key={i + 1}
-                    className={`${styles.paginationButton} ${pendingRequestsPage === i + 1 ? styles.active : ""}`}
-                    onClick={() => onPendingPageChange(i + 1)}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                <button
-                  className={styles.paginationButton}
-                  disabled={pendingRequestsPage === Math.ceil(pendingRequestsTotal / PAGE_SIZE)}
-                  onClick={() => onPendingPageChange(pendingRequestsPage + 1)}
-                >
-                  下一页
-                </button>
-              </div>
-            </div>
-          )}
-        </>
-      )}
+                    )}
+                </>
+            )}
 
-      {/* 任务列表视图 */}
-      {showTasks && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
-        <>
-          {tasksLoading ? (
-            <div style={{ padding: "40px 0" }}>
-              <Loading />
-            </div>
-          ) : tasks.length === 0 ? (
-            <div className={styles.emptyState}>
-              <FaTasks className={styles.emptyIcon} />
-              <h3 className={styles.emptyTitle}>暂无任务</h3>
-              <p className={styles.emptySubtext}>
-                {userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员"
-                  ? '点击"创建任务"按钮来创建第一个任务'
-                  : "当前组织还没有发布任何任务"}
-              </p>
-            </div>
-          ) : (
-            <table className={styles.usersTable}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: "left" }}>任务信息</th>
-                  <th>优先级</th>
-                  <th>负责人</th>
-                  <th>截止时间</th>
-                  <th>状态</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tasks.length > 0 ? (
-                  tasks.map((task) => (
-                    <tr key={task.id} className={styles.tableRow}>
-                      <td>
-                        <div className={styles.userInfo}>
-                          <div
-                            className={styles.userAvatar}
-                            style={{
-                              background: "var(--primary-light)",
-                              color: "var(--primary)",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <FaTasks />
-                          </div>
-                          <div className={styles.userDetails}>
-                            <div className={styles.userName}>{task.title}</div>
-                            {task.description && (
-                              <div
-                                className={styles.userEmail}
-                                style={{
-                                  marginTop: "4px",
-                                  fontSize: "12px",
-                                  color: "var(--text-secondary)",
-                                  lineHeight: "1.4",
-                                }}
-                              >
-                                {task.description}
-                              </div>
-                            )}
-                          </div>
+            {/* 任务列表视图 */}
+            {showTasks && (userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员") && (
+                <>
+                    {tasksLoading ? (
+                        <div style={{ padding: "40px 0" }}>
+                            <Loading />
                         </div>
-                      </td>
-                      <td data-label="优先级" style={{ textAlign: "center" }}>
-                        <span className={`${styles.priorityBadge} ${styles[task.priority]}`}>
-                          <FaFlag />
-                          {task.priority === "low" && "低"}
-                          {task.priority === "medium" && "中"}
-                          {task.priority === "high" && "高"}
-                          {task.priority === "urgent" && "紧急"}
-                        </span>
-                      </td>
-                      <td data-label="负责人" style={{ textAlign: "center" }}>
-                        {task.assignee_name || (
-                          <span
-                            style={{
-                              color: "var(--text-secondary)",
-                              fontStyle: "italic",
-                            }}
-                          >
-                            未分配
-                          </span>
-                        )}
-                      </td>
-                      <td data-label="截止时间" style={{ textAlign: "center" }}>
-                        {task.due_date ? (
-                          <span
-                            style={{
-                              color: "var(--warning)",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "4px",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <FaCalendarAlt />
-                            {new Date(task.due_date).toLocaleDateString()}
-                          </span>
-                        ) : (
-                          <span
-                            style={{
-                              color: "var(--text-secondary)",
-                              fontStyle: "italic",
-                            }}
-                          >
-                            无截止日期
-                          </span>
-                        )}
-                      </td>
-                      <td data-label="状态" style={{ textAlign: "center" }}>
-                        <span className={`${styles.statusBadge} ${styles[task.status]}`}>
-                          {task.status === "draft" && <FaHourglassHalf />}
-                          {task.status === "draft" && "草稿"}
-                          {task.status === "active" && <FaPlayCircle />}
-                          {task.status === "active" && "进行中"}
-                          {task.status === "closed" && <FaStopCircle />}
-                          {task.status === "closed" && "已关闭"}
-                        </span>
-                      </td>
-                      <td data-label="操作" style={{ textAlign: "center" }}>
-                        <div className={styles.actionButtons} style={{ justifyContent: "center" }}>
-                          <button className={styles.actionButton} title="查看详情" onClick={() => onViewTask(task)}>
-                            <FaEye />
-                          </button>
-                          {canManageTask() && (
-                            <>
-                              <button className={styles.actionButton} title="编辑任务" onClick={() => onEditTask(task)}>
-                                <FaEdit />
-                              </button>
-                              <button
-                                className={`${styles.actionButton} ${styles.rejectButton}`}
-                                title="删除任务"
-                                onClick={() => onDeleteTask(task)}
-                              >
-                                <FaTrash />
-                              </button>
-                            </>
-                          )}
+                    ) : tasks.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            <FaTasks className={styles.emptyIcon} />
+                            <h3 className={styles.emptyTitle}>暂无任务</h3>
+                            <p className={styles.emptySubtext}>
+                                {userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员"
+                                    ? '点击"创建任务"按钮来创建第一个任务'
+                                    : "当前组织还没有发布任何任务"}
+                            </p>
                         </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} style={{ padding: 0 }}>
-                      <div className={styles.emptyState}>
-                        <FaTasks className={styles.emptyIcon} />
-                        <h3 className={styles.emptyTitle}>暂无任务</h3>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
-          {/* 分页区块 - 任务列表 */}
-          {tasksTotal > 0 && (
-            <div className={styles.pagination}>
-              <div className={styles.paginationInfo}>
-                显示 {(tasksPage - 1) * TASKS_PAGE_SIZE + 1} - {Math.min(tasksPage * TASKS_PAGE_SIZE, tasksTotal)} 条， 共 {tasksTotal}{" "}
-                条记录
-              </div>
-              <div className={styles.paginationControls}>
-                <button
-                  className={styles.paginationButton}
-                  disabled={tasksPage === 1}
-                  onClick={() => onTasksPageChange(tasksPage - 1)}
-                >
-                  上一页
-                </button>
-                {Array.from({ length: Math.ceil(tasksTotal / TASKS_PAGE_SIZE) }, (_, i) => (
-                  <button
-                    key={i + 1}
-                    className={`${styles.paginationButton} ${tasksPage === i + 1 ? styles.active : ""}`}
-                    onClick={() => onRefreshTasks(i + 1)}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                <button
-                  className={styles.paginationButton}
-                  disabled={tasksPage === Math.ceil(tasksTotal / TASKS_PAGE_SIZE)}
-                  onClick={() => onTasksPageChange(tasksPage + 1)}
-                >
-                  下一页
-                </button>
-              </div>
-            </div>
-          )}
-        </>
-      )}
+                    ) : (
+                        <table className={styles.usersTable}>
+                            <thead>
+                                <tr>
+                                    <th style={{ textAlign: "left" }}>任务信息</th>
+                                    <th>优先级</th>
+                                    <th>负责人</th>
+                                    <th>截止时间</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {tasks.length > 0 ? (
+                                    tasks.map((task) => (
+                                        <tr key={task.id} className={styles.tableRow}>
+                                            <td>
+                                                <div className={styles.userInfo}>
+                                                    <div
+                                                        className={styles.userAvatar}
+                                                        style={{
+                                                            background: "var(--primary-light)",
+                                                            color: "var(--primary)",
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                        }}
+                                                    >
+                                                        <FaTasks />
+                                                    </div>
+                                                    <div className={styles.userDetails}>
+                                                        <div className={styles.userName}>{task.title}</div>
+                                                        {task.description && (
+                                                            <div
+                                                                className={styles.userEmail}
+                                                                style={{
+                                                                    marginTop: "4px",
+                                                                    fontSize: "12px",
+                                                                    color: "var(--text-secondary)",
+                                                                    lineHeight: "1.4",
+                                                                }}
+                                                            >
+                                                                {task.description}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td data-label="优先级" style={{ textAlign: "center" }}>
+                                                <span className={`${styles.priorityBadge} ${styles[task.priority]}`}>
+                                                    <FaFlag />
+                                                    {task.priority === "low" && "低"}
+                                                    {task.priority === "medium" && "中"}
+                                                    {task.priority === "high" && "高"}
+                                                    {task.priority === "urgent" && "紧急"}
+                                                </span>
+                                            </td>
+                                            <td data-label="负责人" style={{ textAlign: "center" }}>
+                                                {task.assignee_name || (
+                                                    <span
+                                                        style={{
+                                                            color: "var(--text-secondary)",
+                                                            fontStyle: "italic",
+                                                        }}
+                                                    >
+                                                        未分配
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td data-label="截止时间" style={{ textAlign: "center" }}>
+                                                {task.due_date ? (
+                                                    <span
+                                                        style={{
+                                                            color: "var(--warning)",
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            gap: "4px",
+                                                            justifyContent: "center",
+                                                        }}
+                                                    >
+                                                        <FaCalendarAlt />
+                                                        {new Date(task.due_date).toLocaleDateString()}
+                                                    </span>
+                                                ) : (
+                                                    <span
+                                                        style={{
+                                                            color: "var(--text-secondary)",
+                                                            fontStyle: "italic",
+                                                        }}
+                                                    >
+                                                        无截止日期
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td data-label="状态" style={{ textAlign: "center" }}>
+                                                <span className={`${styles.statusBadge} ${styles[task.status]}`}>
+                                                    {task.status === "draft" && <FaHourglassHalf />}
+                                                    {task.status === "draft" && "草稿"}
+                                                    {task.status === "active" && <FaPlayCircle />}
+                                                    {task.status === "active" && "进行中"}
+                                                    {task.status === "closed" && <FaStopCircle />}
+                                                    {task.status === "closed" && "已关闭"}
+                                                </span>
+                                            </td>
+                                            <td data-label="操作" style={{ textAlign: "center" }}>
+                                                <div className={styles.actionButtons} style={{ justifyContent: "center" }}>
+                                                    <button
+                                                        className={styles.actionButton}
+                                                        title="查看详情"
+                                                        onClick={() => onViewTask(task)}
+                                                    >
+                                                        <FaEye />
+                                                    </button>
+                                                    {canManageTask() && (
+                                                        <>
+                                                            <button
+                                                                className={styles.actionButton}
+                                                                title="编辑任务"
+                                                                onClick={() => onEditTask(task)}
+                                                            >
+                                                                <FaEdit />
+                                                            </button>
+                                                            <button
+                                                                className={`${styles.actionButton} ${styles.rejectButton}`}
+                                                                title="删除任务"
+                                                                onClick={() => onDeleteTask(task)}
+                                                            >
+                                                                <FaTrash />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={5} style={{ padding: 0 }}>
+                                            <div className={styles.emptyState}>
+                                                <FaTasks className={styles.emptyIcon} />
+                                                <h3 className={styles.emptyTitle}>暂无任务</h3>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                    {/* 分页区块 - 任务列表 */}
+                    {tasksTotal > 0 && (
+                        <div className={styles.pagination}>
+                            <div className={styles.paginationInfo}>
+                                显示 {(tasksPage - 1) * TASKS_PAGE_SIZE + 1} - {Math.min(tasksPage * TASKS_PAGE_SIZE, tasksTotal)} 条，
+                                共 {tasksTotal} 条记录
+                            </div>
+                            <div className={styles.paginationControls}>
+                                <button
+                                    className={styles.paginationButton}
+                                    disabled={tasksPage === 1}
+                                    onClick={() => onTasksPageChange(tasksPage - 1)}
+                                >
+                                    上一页
+                                </button>
+                                {Array.from({ length: Math.ceil(tasksTotal / TASKS_PAGE_SIZE) }, (_, i) => (
+                                    <button
+                                        key={i + 1}
+                                        className={`${styles.paginationButton} ${tasksPage === i + 1 ? styles.active : ""}`}
+                                        onClick={() => onRefreshTasks(i + 1)}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    className={styles.paginationButton}
+                                    disabled={tasksPage === Math.ceil(tasksTotal / TASKS_PAGE_SIZE)}
+                                    onClick={() => onTasksPageChange(tasksPage + 1)}
+                                >
+                                    下一页
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
 
-      {/* 仓库列表视图 */}
-      {showRepos && userRole !== "guest" && (
-        <OrganizationRepos
-          orgId={org?.id || ""}
-          canManage={userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员"}
-          onChange={onReposChange}
-        />
-      )}
-
-      {/* Role Selection Modal */}
-      <Modal
-        visible={roleModalVisible}
-        title={`设置 ${selectedMember?.name} 的角色`}
-        onClose={onRoleModalClose}
-        footer={
-          <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-            <button onClick={onRoleModalClose} className={styles.cancelButton}>
-              取消
-            </button>
-            <button onClick={onConfirmRole} className={styles.confirmButton}>
-              确认
-            </button>
-          </div>
-        }
-        width="450px"
-        size="small"
-      >
-        <div className={styles.roleSelectionContainer}>
-          <p className={styles.roleSelectionDescription}>请为 {selectedMember?.name} 选择合适的角色</p>
-          <div className={styles.roleOptions}>
-            {getAvailableRoleOptions().map((role) => (
-              <label key={role.value} className={`${styles.roleOption} ${selectedRole === role.value ? styles.selectedRole : ""}`}>
-                <input
-                  type="radio"
-                  name="role"
-                  value={role.value}
-                  checked={selectedRole === role.value}
-                  onChange={(e) => onRoleChange(parseInt(e.target.value))}
-                  style={{ display: "none" }}
+            {/* 仓库列表视图 */}
+            {showRepos && userRole !== "guest" && (
+                <OrganizationRepos
+                    orgId={org?.id || ""}
+                    canManage={userRole === "leader" || userRole === "admin" || currentUser?.role === "管理员"}
+                    onChange={onReposChange}
                 />
-                <div className={styles.roleOptionContent}>
-                  <div className={styles.roleIcon}>{role.icon}</div>
-                  <div className={styles.roleInfo}>
-                    <div className={styles.roleLabel}>{role.label}</div>
-                    <div className={styles.roleDescription}>{role.description}</div>
-                  </div>
-                  <div className={styles.roleRadio}>
-                    <div className={styles.radioCircle}></div>
-                  </div>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>
-      </Modal>
+            )}
 
-      {/* 预览模态框 */}
-      <Modal
-        visible={taskPreviewModalVisible}
-        title="任务详情预览"
-        onClose={onTaskPreviewModalClose}
-        width={600}
-        footer={
-          <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={onTaskPreviewModalClose}>
-            关闭
-          </button>
-        }
-      >
-        {selectedTask ? (
-          <div>
-            <div className={styles.detailGroup}>
-              <div className={styles.detailLabel}>任务标题</div>
-              <div className={styles.detailValue} style={{ fontSize: "18px", fontWeight: 600 }}>
-                {selectedTask.title}
-              </div>
-            </div>
-            <div className={styles.detailRow}>
-              <div className={styles.detailGroup}>
-                <div className={styles.detailLabel}>优先级</div>
-                <div className={styles.detailValue}>
-                  <span className={`${styles.priorityBadge} ${styles[selectedTask.priority]}`}>
-                    <FaFlag />
-                    {selectedTask.priority === "low" && "低"}
-                    {selectedTask.priority === "medium" && "中"}
-                    {selectedTask.priority === "high" && "高"}
-                    {selectedTask.priority === "urgent" && "紧急"}
-                  </span>
+            {/* Role Selection Modal */}
+            <Modal
+                visible={roleModalVisible}
+                title={`设置 ${selectedMember?.name} 的角色`}
+                onClose={onRoleModalClose}
+                footer={
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                        <button onClick={onRoleModalClose} className={styles.cancelButton}>
+                            取消
+                        </button>
+                        <button onClick={onConfirmRole} className={styles.confirmButton}>
+                            确认
+                        </button>
+                    </div>
+                }
+                width="450px"
+                size="small"
+            >
+                <div className={styles.roleSelectionContainer}>
+                    <p className={styles.roleSelectionDescription}>请为 {selectedMember?.name} 选择合适的角色</p>
+                    <div className={styles.roleOptions}>
+                        {getAvailableRoleOptions().map((role) => (
+                            <label
+                                key={role.value}
+                                className={`${styles.roleOption} ${selectedRole === role.value ? styles.selectedRole : ""}`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="role"
+                                    value={role.value}
+                                    checked={selectedRole === role.value}
+                                    onChange={(e) => onRoleChange(parseInt(e.target.value))}
+                                    style={{ display: "none" }}
+                                />
+                                <div className={styles.roleOptionContent}>
+                                    <div className={styles.roleIcon}>{role.icon}</div>
+                                    <div className={styles.roleInfo}>
+                                        <div className={styles.roleLabel}>{role.label}</div>
+                                        <div className={styles.roleDescription}>{role.description}</div>
+                                    </div>
+                                    <div className={styles.roleRadio}>
+                                        <div className={styles.radioCircle}></div>
+                                    </div>
+                                </div>
+                            </label>
+                        ))}
+                    </div>
                 </div>
-              </div>
-              <div className={styles.detailGroup}>
-                <div className={styles.detailLabel}>当前状态</div>
-                <div className={styles.detailValue}>
-                  <span className={`${styles.statusBadge} ${statusClassMap[selectedTask.status] || ""}`}>
-                    {selectedTask.status === "draft" && <FaHourglassHalf />}
-                    {selectedTask.status === "draft" && "草稿"}
-                    {selectedTask.status === "active" && <FaPlayCircle />}
-                    {selectedTask.status === "active" && "进行中"}
-                    {selectedTask.status === "closed" && <FaStopCircle />}
-                    {selectedTask.status === "closed" && "已关闭"}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className={styles.detailRow}>
-              <div className={styles.detailGroup}>
-                <div className={styles.detailLabel}>负责人</div>
-                <div className={styles.detailValue}>{selectedTask.assignee_name || selectedTask.assignee || "未分配"}</div>
-              </div>
-              <div className={styles.detailGroup}>
-                <div className={styles.detailLabel}>截止时间</div>
-                <div className={styles.detailValue}>
-                  {selectedTask.due_date ? new Date(selectedTask.due_date).toLocaleString() : "无截止日期"}
-                </div>
-              </div>
-            </div>
-            <div className={styles.detailRow}>
-              <div className={styles.detailGroup}>
-                <div className={styles.detailLabel}>文件大小限制</div>
-                <div className={styles.detailValue}>{selectedTask.maxFileSize ? `${selectedTask.maxFileSize} MB` : "未设置"}</div>
-              </div>
-              <div className={styles.detailGroup}>
-                <div className={styles.detailLabel}>允许文件格式</div>
-                <div className={styles.detailValue}>{selectedTask.allowedTypes?.join(", ") || "不限"}</div>
-              </div>
-            </div>
-            <div className={styles.detailGroup}>
-              <div className={styles.detailLabel}>任务描述</div>
-              <div
-                className={styles.detailValue}
-                style={{
-                  background: "var(--bg-secondary)",
-                  padding: "12px",
-                  borderRadius: "6px",
-                  minHeight: "80px",
-                }}
-              >
-                {selectedTask.description || "暂无描述"}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div
-            style={{
-              textAlign: "center",
-              color: "var(--text-secondary)",
-              padding: "40px",
-            }}
-          >
-            未选择任务
-          </div>
-        )}
-      </Modal>
+            </Modal>
 
-      {/* 成员预览模态框 */}
-      <Modal
-        visible={memberPreviewModalVisible}
-        title="成员详情预览"
-        onClose={onMemberPreviewModalClose}
-        width={420}
-        footer={
-          <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={onMemberPreviewModalClose}>
-            关闭
-          </button>
-        }
-      >
-        {selectedMember ? (
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
-              <Avatar src={selectedMember.avatar} name={selectedMember.name} size={80} />
-              <div>
-                <div style={{ fontSize: "18px", fontWeight: 600 }}>{selectedMember.name}</div>
-                {selectedMember.email && (
-                  <div style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "4px" }}>{selectedMember.email}</div>
+            {/* 预览模态框 */}
+            <Modal
+                visible={taskPreviewModalVisible}
+                title="任务详情预览"
+                onClose={onTaskPreviewModalClose}
+                width={600}
+                footer={
+                    <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={onTaskPreviewModalClose}>
+                        关闭
+                    </button>
+                }
+            >
+                {selectedTask ? (
+                    <div>
+                        <div className={styles.detailGroup}>
+                            <div className={styles.detailLabel}>任务标题</div>
+                            <div className={styles.detailValue} style={{ fontSize: "18px", fontWeight: 600 }}>
+                                {selectedTask.title}
+                            </div>
+                        </div>
+                        <div className={styles.detailRow}>
+                            <div className={styles.detailGroup}>
+                                <div className={styles.detailLabel}>优先级</div>
+                                <div className={styles.detailValue}>
+                                    <span className={`${styles.priorityBadge} ${styles[selectedTask.priority]}`}>
+                                        <FaFlag />
+                                        {selectedTask.priority === "low" && "低"}
+                                        {selectedTask.priority === "medium" && "中"}
+                                        {selectedTask.priority === "high" && "高"}
+                                        {selectedTask.priority === "urgent" && "紧急"}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className={styles.detailGroup}>
+                                <div className={styles.detailLabel}>当前状态</div>
+                                <div className={styles.detailValue}>
+                                    <span className={`${styles.statusBadge} ${statusClassMap[selectedTask.status] || ""}`}>
+                                        {selectedTask.status === "draft" && <FaHourglassHalf />}
+                                        {selectedTask.status === "draft" && "草稿"}
+                                        {selectedTask.status === "active" && <FaPlayCircle />}
+                                        {selectedTask.status === "active" && "进行中"}
+                                        {selectedTask.status === "closed" && <FaStopCircle />}
+                                        {selectedTask.status === "closed" && "已关闭"}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className={styles.detailRow}>
+                            <div className={styles.detailGroup}>
+                                <div className={styles.detailLabel}>负责人</div>
+                                <div className={styles.detailValue}>
+                                    {selectedTask.assignee_name || selectedTask.assignee || "未分配"}
+                                </div>
+                            </div>
+                            <div className={styles.detailGroup}>
+                                <div className={styles.detailLabel}>截止时间</div>
+                                <div className={styles.detailValue}>
+                                    {selectedTask.due_date ? new Date(selectedTask.due_date).toLocaleString() : "无截止日期"}
+                                </div>
+                            </div>
+                        </div>
+                        <div className={styles.detailRow}>
+                            <div className={styles.detailGroup}>
+                                <div className={styles.detailLabel}>文件大小限制</div>
+                                <div className={styles.detailValue}>
+                                    {selectedTask.maxFileSize ? `${selectedTask.maxFileSize} MB` : "未设置"}
+                                </div>
+                            </div>
+                            <div className={styles.detailGroup}>
+                                <div className={styles.detailLabel}>允许文件格式</div>
+                                <div className={styles.detailValue}>{selectedTask.allowedTypes?.join(", ") || "不限"}</div>
+                            </div>
+                        </div>
+                        <div className={styles.detailGroup}>
+                            <div className={styles.detailLabel}>任务描述</div>
+                            <div
+                                className={styles.detailValue}
+                                style={{
+                                    background: "var(--bg-secondary)",
+                                    padding: "12px",
+                                    borderRadius: "6px",
+                                    minHeight: "80px",
+                                }}
+                            >
+                                {selectedTask.description || "暂无描述"}
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div
+                        style={{
+                            textAlign: "center",
+                            color: "var(--text-secondary)",
+                            padding: "40px",
+                        }}
+                    >
+                        未选择任务
+                    </div>
                 )}
-              </div>
-            </div>
-            <div className={styles.detailRow}>
-              <div className={styles.detailGroup}>
-                <div className={styles.detailLabel}>角色</div>
-                <div className={styles.detailValue}>
-                  <span
-                    className={`${styles.roleBadge} ${
-                      selectedMember.role === "组织管理员"
-                        ? styles.admin
-                        : selectedMember.role === "研发主管"
-                          ? styles.moderator
-                          : styles.user
-                    }`}
-                  >
-                    {selectedMember.role === "组织管理员" && <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />}
-                    {selectedMember.role === "研发主管" && <FaUserShield style={{ color: "#4caf50", marginRight: 4 }} />}
-                    {selectedMember.role === "开发者" && <FaCode style={{ color: "#2196f3", marginRight: 4 }} />}
-                    {selectedMember.role === "报告者" && <FaUserCheck style={{ color: "#2196f3", marginRight: 4 }} />}
-                    {selectedMember.role === "普通成员" && <FaUser style={{ color: "#2196f3", marginRight: 4 }} />}
-                    {selectedMember.role || "普通成员"}
-                  </span>
-                </div>
-              </div>
-              <div className={styles.detailGroup}>
-                <div className={styles.detailLabel}>状态</div>
-                <div className={styles.detailValue}>
-                  <span className={`${styles.statusBadge} ${selectedMember.status === "active" ? styles.active : styles.inactive}`}>
-                    <span className={styles.statusIndicator}></span>
-                    {selectedMember.status === "active" ? "活跃" : "非活跃"}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className={styles.detailGroup}>
-              <div className={styles.detailLabel}>加入时间</div>
-              <div className={styles.detailValue}>{selectedMember.joinTime || "-"}</div>
-            </div>
-          </div>
-        ) : (
-          <div
-            style={{
-              textAlign: "center",
-              color: "var(--text-secondary)",
-              padding: "40px",
-            }}
-          >
-            未选择成员
-          </div>
-        )}
-      </Modal>
+            </Modal>
 
-      {/* 添加仓库 Modal */}
-      <Modal
-        visible={repoModalVisible}
-        title="添加仓库"
-        onClose={() => setRepoModalVisible(false)}
-        width={520}
-        footer={
-          <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-            <button className={styles.cancelButton} onClick={() => setRepoModalVisible(false)}>
-              取消
-            </button>
-            <button className={styles.confirmButton} onClick={handleAddRepo}>
-              添加
-            </button>
-          </div>
-        }
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div>
-            <label className={styles.formLabel}>仓库名称 *</label>
-            <Input
-              placeholder="如 frontend-web"
-              value={repoForm.name}
-              onChange={(v) => setRepoForm((prev) => ({ ...prev, name: v }))}
-              size="large"
-            />
-          </div>
-          <div>
-            <label className={styles.formLabel}>仓库地址 *</label>
-            <Input
-              placeholder="仅支持 GitHub：https://github.com/org/repo"
-              value={repoForm.url}
-              onChange={(v) => setRepoForm((prev) => ({ ...prev, url: v }))}
-              size="large"
-            />
-          </div>
-          <div>
-            <label className={styles.formLabel}>GitHub Token（选填）</label>
-            <Input
-              type="password"
-              placeholder="Personal Access Token，用于拉取仓库信息"
-              value={repoForm.token}
-              onChange={(v) => setRepoForm((prev) => ({ ...prev, token: v }))}
-              size="large"
-            />
-          </div>
+            {/* 成员预览模态框 */}
+            <Modal
+                visible={memberPreviewModalVisible}
+                title="成员详情预览"
+                onClose={onMemberPreviewModalClose}
+                width={420}
+                footer={
+                    <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={onMemberPreviewModalClose}>
+                        关闭
+                    </button>
+                }
+            >
+                {selectedMember ? (
+                    <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
+                            <Avatar src={selectedMember.avatar} name={selectedMember.name} size={80} />
+                            <div>
+                                <div style={{ fontSize: "18px", fontWeight: 600 }}>{selectedMember.name}</div>
+                                {selectedMember.email && (
+                                    <div style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "4px" }}>
+                                        {selectedMember.email}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className={styles.detailRow}>
+                            <div className={styles.detailGroup}>
+                                <div className={styles.detailLabel}>角色</div>
+                                <div className={styles.detailValue}>
+                                    <span
+                                        className={`${styles.roleBadge} ${
+                                            selectedMember.role === "组织管理员"
+                                                ? styles.admin
+                                                : selectedMember.role === "研发主管"
+                                                  ? styles.moderator
+                                                  : styles.user
+                                        }`}
+                                    >
+                                        {selectedMember.role === "组织管理员" && (
+                                            <FaCrown style={{ color: "#f7b500", marginRight: 4 }} />
+                                        )}
+                                        {selectedMember.role === "研发主管" && (
+                                            <FaUserShield style={{ color: "#4caf50", marginRight: 4 }} />
+                                        )}
+                                        {selectedMember.role === "开发者" && <FaCode style={{ color: "#2196f3", marginRight: 4 }} />}
+                                        {selectedMember.role === "报告者" && (
+                                            <FaUserCheck style={{ color: "#2196f3", marginRight: 4 }} />
+                                        )}
+                                        {selectedMember.role === "普通成员" && <FaUser style={{ color: "#2196f3", marginRight: 4 }} />}
+                                        {selectedMember.role || "普通成员"}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className={styles.detailGroup}>
+                                <div className={styles.detailLabel}>状态</div>
+                                <div className={styles.detailValue}>
+                                    <span
+                                        className={`${styles.statusBadge} ${selectedMember.status === "active" ? styles.active : styles.inactive}`}
+                                    >
+                                        <span className={styles.statusIndicator}></span>
+                                        {selectedMember.status === "active" ? "活跃" : "非活跃"}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className={styles.detailGroup}>
+                            <div className={styles.detailLabel}>加入时间</div>
+                            <div className={styles.detailValue}>{selectedMember.joinTime || "-"}</div>
+                        </div>
+                    </div>
+                ) : (
+                    <div
+                        style={{
+                            textAlign: "center",
+                            color: "var(--text-secondary)",
+                            padding: "40px",
+                        }}
+                    >
+                        未选择成员
+                    </div>
+                )}
+            </Modal>
+
+            {/* 添加仓库 Modal */}
+            <Modal
+                visible={repoModalVisible}
+                title="添加仓库"
+                onClose={() => setRepoModalVisible(false)}
+                width={520}
+                footer={
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                        <button className={styles.cancelButton} onClick={() => setRepoModalVisible(false)}>
+                            取消
+                        </button>
+                        <button className={styles.confirmButton} onClick={handleAddRepo}>
+                            添加
+                        </button>
+                    </div>
+                }
+            >
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    <div>
+                        <label className={styles.formLabel}>仓库名称 *</label>
+                        <Input
+                            placeholder="如 frontend-web"
+                            value={repoForm.name}
+                            onChange={(v) => setRepoForm((prev) => ({ ...prev, name: v }))}
+                            size="large"
+                        />
+                    </div>
+                    <div>
+                        <label className={styles.formLabel}>仓库地址 *</label>
+                        <Input
+                            placeholder="仅支持 GitHub：https://github.com/org/repo"
+                            value={repoForm.url}
+                            onChange={(v) => setRepoForm((prev) => ({ ...prev, url: v }))}
+                            size="large"
+                        />
+                    </div>
+                    <div>
+                        <label className={styles.formLabel}>GitHub Token（选填）</label>
+                        <Input
+                            type="password"
+                            placeholder="Personal Access Token，用于拉取仓库信息"
+                            value={repoForm.token}
+                            onChange={(v) => setRepoForm((prev) => ({ ...prev, token: v }))}
+                            size="large"
+                        />
+                    </div>
+                </div>
+            </Modal>
         </div>
-      </Modal>
-    </div>
-  );
+    );
 };
 
 export default OrganizationTabs;

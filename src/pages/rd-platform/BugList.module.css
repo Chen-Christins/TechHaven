@@ -1,147 +1,147 @@
 /* ---- Detail field (renderField helper) ---- */
 .detailField {
-  margin-bottom: 14px;
+    margin-bottom: 14px;
 }
 
 .detailFieldLabel {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  display: block;
-  margin-bottom: 2px;
+    font-size: 13px;
+    color: var(--text-tertiary);
+    display: block;
+    margin-bottom: 2px;
 }
 
 .detailFieldValue {
-  font-size: 14px;
-  color: var(--text-primary);
-  font-weight: 500;
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
 }
 
 /* ---- Modal footer ---- */
 .modalFooter {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
 }
 
 .modalCancelBtn {
-  padding: 10px 20px;
-  background: var(--card-bg);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
+    padding: 10px 20px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
 }
 
 .modalSubmitBtn {
-  padding: 10px 20px;
-  background: var(--primary);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
+    padding: 10px 20px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
 }
 
 /* ---- Modal detail view ---- */
 .detailBadges {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
 }
 
 .detailGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 8px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-primary);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-primary);
 }
 
 .detailSectionTitle {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
 }
 
 .detailDescription {
-  font-size: 14px;
-  color: var(--text-primary);
-  line-height: 1.8;
-  white-space: pre-wrap;
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.8;
+    white-space: pre-wrap;
 }
 
 .detailSection {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 .detailSectionLast {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 /* ---- Create / Edit form ---- */
 .formContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .formRow {
-  display: flex;
-  gap: 16px;
+    display: flex;
+    gap: 16px;
 }
 
 .formField {
-  flex: 1;
+    flex: 1;
 }
 
 .formLabel {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
 }
 
 .formLabelRequired {
-  color: #ef4444;
+    color: #ef4444;
 }
 
 .formTextarea {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  font-size: 14px;
-  color: var(--text-primary);
-  background-color: var(--bg-primary);
-  resize: vertical;
-  font-family: inherit;
-  line-height: 1.6;
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.6;
 }
 
 @media (max-width: 640px) {
-  .modalFooter {
-    flex-direction: column-reverse;
-  }
+    .modalFooter {
+        flex-direction: column-reverse;
+    }
 
-  .modalCancelBtn,
-  .modalSubmitBtn {
-    width: 100%;
-  }
+    .modalCancelBtn,
+    .modalSubmitBtn {
+        width: 100%;
+    }
 
-  .detailBadges {
-    flex-wrap: wrap;
-  }
+    .detailBadges {
+        flex-wrap: wrap;
+    }
 
-  .detailGrid {
-    grid-template-columns: 1fr;
-  }
+    .detailGrid {
+        grid-template-columns: 1fr;
+    }
 
-  .formRow {
-    flex-direction: column;
-  }
+    .formRow {
+        flex-direction: column;
+    }
 }

@@ -17,12 +17,12 @@ let errorMessages: Record<string, string> = {};
 
 // 应用启动时尝试从 localStorage 恢复缓存
 try {
-  const cached = localStorage.getItem(STORAGE_KEY);
-  if (cached) {
-    errorMessages = JSON.parse(cached);
-  }
+    const cached = localStorage.getItem(STORAGE_KEY);
+    if (cached) {
+        errorMessages = JSON.parse(cached);
+    }
 } catch {
-  // localStorage 不可用或数据损坏，从空表开始
+    // localStorage 不可用或数据损坏，从空表开始
 }
 
 /**
@@ -30,22 +30,24 @@ try {
  * 使用原生 fetch 避免与 http.ts 循环依赖
  */
 export async function initErrorCodes(lang: string): Promise<void> {
-  try {
-    const res = await fetch(`/api/v1/error-codes?lang=${encodeURIComponent(lang)}`);
-    if (!res.ok) return;
-    const json = await res.json();
-    const data = json.data || json;
-    if (data && typeof data === "object") {
-      errorMessages = data;
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      } catch {
-        // localStorage 满或不可写，忽略
-      }
+    try {
+        const res = await fetch(`/api/v1/error-codes?lang=${encodeURIComponent(lang)}`);
+        if (!res.ok) {
+            return;
+        }
+        const json = await res.json();
+        const data = json.data || json;
+        if (data && typeof data === "object") {
+            errorMessages = data;
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            } catch {
+                // localStorage 满或不可写，忽略
+            }
+        }
+    } catch {
+        // 静默降级：如果 localStorage 有旧缓存就用，没有则 fallback 到调用方传入的消息
     }
-  } catch {
-    // 静默降级：如果 localStorage 有旧缓存就用，没有则 fallback 到调用方传入的消息
-  }
 }
 
 /**
@@ -55,5 +57,5 @@ export async function initErrorCodes(lang: string): Promise<void> {
  * @returns 匹配的错误消息，或 fallbackMsg，或 "未知错误"
  */
 export function getErrorMsg(errno: number | string, fallbackMsg?: string): string {
-  return errorMessages[String(errno)] || fallbackMsg || "未知错误";
+    return errorMessages[String(errno)] || fallbackMsg || "未知错误";
 }

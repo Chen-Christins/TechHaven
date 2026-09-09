@@ -1,6 +1,6 @@
 .msgPage {
-  height: 100vh;
-  overflow: hidden;
+    height: 100vh;
+    overflow: hidden;
 }
 
 /* 全局有 *{transition:all}，会去过渡不可插值的 background(简写+var)，
@@ -24,457 +24,457 @@
 .modalMask,
 .modalBox,
 .modalItem {
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease,
-    border-color 0.3s ease,
-    opacity 0.3s ease;
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease,
+        border-color 0.3s ease,
+        opacity 0.3s ease;
 }
 
 .wrapper {
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
-  max-width: var(--page-max-width);
-  margin: 0 auto;
-  padding: 20px 1.8rem 24px;
-  display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    max-width: var(--page-max-width);
+    margin: 0 auto;
+    padding: 20px 1.8rem 24px;
+    display: flex;
 }
 
 .chatLayout {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  width: 100%;
-  height: 100%;
-  min-height: 480px;
-  background: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 14px;
-  overflow: hidden;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    width: 100%;
+    height: 100%;
+    min-height: 480px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 14px;
+    overflow: hidden;
 }
 
 /* conversation list */
 .convList {
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid var(--border-primary);
-  min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-primary);
+    min-height: 0;
 }
 
 .convSearch {
-  padding: 14px;
-  border-bottom: 1px solid var(--border-primary);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+    padding: 14px;
+    border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .newChatBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
-  padding: 8px 0;
-  border: 1px dashed var(--border-primary);
-  border-radius: 8px;
-  background: none;
-  color: var(--text-secondary);
-  font-size: 13px;
-  cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 8px 0;
+    border: 1px dashed var(--border-primary);
+    border-radius: 8px;
+    background: none;
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
 }
 
 .newChatBtn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-light);
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-light);
 }
 
 .convItems {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
 }
 
 .convEmpty {
-  padding: 24px 14px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--text-tertiary);
+    padding: 24px 14px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-tertiary);
 }
 
 .convItem {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  cursor: pointer;
-  border-bottom: 1px solid var(--border-primary);
-  position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-primary);
+    position: relative;
 }
 
 .convDelete {
-  position: absolute;
-  right: 14px;
-  top: 12px;
-  opacity: 0;
-  background: none;
-  border: none;
-  color: var(--text-tertiary);
-  font-size: 13px;
-  cursor: pointer;
-  padding: 2px;
-  border-radius: 6px;
+    position: absolute;
+    right: 14px;
+    top: 12px;
+    opacity: 0;
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 6px;
 }
 
 .convItem:hover .convDelete {
-  opacity: 1;
+    opacity: 1;
 }
 
 /* hover 时隐藏时间，避免与删除图标重叠 */
 .convItem:hover .convTime {
-  opacity: 0;
+    opacity: 0;
 }
 
 .convDelete:hover {
-  color: #ef4444;
-  background: var(--bg-hover);
+    color: #ef4444;
+    background: var(--bg-hover);
 }
 
 .convItem:hover {
-  background: var(--bg-hover);
+    background: var(--bg-hover);
 }
 
 .convActive {
-  background: var(--primary-light);
+    background: var(--primary-light);
 }
 
 .convAvatar {
-  position: relative;
-  flex-shrink: 0;
+    position: relative;
+    flex-shrink: 0;
 }
 
 .onlineDot {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  font-size: 10px;
-  color: #22c55e;
-  background: var(--card-bg);
-  border-radius: 50%;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    font-size: 10px;
+    color: #22c55e;
+    background: var(--card-bg);
+    border-radius: 50%;
 }
 
 .convInfo {
-  flex: 1;
-  min-width: 0;
+    flex: 1;
+    min-width: 0;
 }
 
 .convTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
 }
 
 .convName {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .convTime {
-  font-size: 11px;
-  color: var(--text-tertiary);
+    font-size: 11px;
+    color: var(--text-tertiary);
 }
 
 .convBottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
 }
 
 .convPreview {
-  font-size: 13px;
-  color: var(--text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
+    font-size: 13px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
 }
 
 .convUnread {
-  flex-shrink: 0;
-  font-size: 11px;
-  color: #fff;
-  background: #ef4444;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    flex-shrink: 0;
+    font-size: 11px;
+    color: #fff;
+    background: #ef4444;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* chat window */
 .chatWindow {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .chatHeader {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-primary);
 }
 
 .backBtn {
-  display: none;
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 16px;
-  cursor: pointer;
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 16px;
+    cursor: pointer;
 }
 
 .chatName {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .chatStatus {
-  font-size: 12px;
-  color: var(--text-tertiary);
+    font-size: 12px;
+    color: var(--text-tertiary);
 }
 
 .chatBody {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-height: 0;
-  background: var(--bg-secondary);
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 0;
+    background: var(--bg-secondary);
 }
 
 .chatEmpty {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  color: var(--text-tertiary);
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--text-tertiary);
 }
 
 /* 发起会话弹窗 */
 .modalMask {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
 }
 
 .modalBox {
-  width: 100%;
-  max-width: 420px;
-  max-height: 70vh;
-  display: flex;
-  flex-direction: column;
-  background: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 14px;
-  overflow: hidden;
+    width: 100%;
+    max-width: 420px;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 14px;
+    overflow: hidden;
 }
 
 .modalHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-primary);
 }
 
 .modalClose {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
 }
 
 .modalSearch {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border-primary);
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-primary);
 }
 
 .modalList {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 200px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 200px;
 }
 
 .modalItem {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  cursor: pointer;
-  border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-primary);
 }
 
 .modalItem:hover {
-  background: var(--bg-hover);
+    background: var(--bg-hover);
 }
 
 .modalItemInfo {
-  flex: 1;
-  min-width: 0;
+    flex: 1;
+    min-width: 0;
 }
 
 .modalItemName {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
 }
 
 .modalItemAccount {
-  font-size: 12px;
-  color: var(--text-tertiary);
+    font-size: 12px;
+    color: var(--text-tertiary);
 }
 
 .modalItemLoading {
-  flex-shrink: 0;
-  font-size: 12px;
-  color: var(--primary);
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--primary);
 }
 
 .msgRow {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-  max-width: 75%;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    max-width: 75%;
 }
 
 .msgMine {
-  flex-direction: row-reverse;
-  align-self: flex-end;
+    flex-direction: row-reverse;
+    align-self: flex-end;
 }
 
 .bubbleWrap {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
 }
 
 .msgMine .bubbleWrap {
-  align-items: flex-end;
+    align-items: flex-end;
 }
 
 .bubble {
-  padding: 10px 14px;
-  background: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  border-bottom-left-radius: 3px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--text-primary);
-  word-break: break-word;
+    padding: 10px 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    border-bottom-left-radius: 3px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    word-break: break-word;
 }
 
 .bubbleMine {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 3px;
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 3px;
 }
 
 .bubbleTime {
-  font-size: 11px;
-  color: var(--text-tertiary);
+    font-size: 11px;
+    color: var(--text-tertiary);
 }
 
 .chatInput {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 18px;
-  border-top: 1px solid var(--border-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-top: 1px solid var(--border-primary);
 }
 
 .emojiBtn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 20px;
-  cursor: pointer;
-  flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 20px;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
 .textInput {
-  flex: 1;
-  border: 1px solid var(--border-primary);
-  border-radius: 20px;
-  padding: 9px 16px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 14px;
-  outline: none;
+    flex: 1;
+    border: 1px solid var(--border-primary);
+    border-radius: 20px;
+    padding: 9px 16px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
 }
 
 .textInput:focus {
-  border-color: var(--primary);
+    border-color: var(--primary);
 }
 
 .sendBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 50%;
-  background: var(--primary);
-  color: #fff;
-  cursor: pointer;
-  flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
 .sendBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
-  .chatLayout {
-    grid-template-columns: 1fr;
-    height: 100%;
-  }
-  .chatWindow {
-    display: none;
-  }
-  .showChat .convList {
-    display: none;
-  }
-  .showChat .chatWindow {
-    display: flex;
-  }
-  .backBtn {
-    display: inline-flex;
-  }
+    .chatLayout {
+        grid-template-columns: 1fr;
+        height: 100%;
+    }
+    .chatWindow {
+        display: none;
+    }
+    .showChat .convList {
+        display: none;
+    }
+    .showChat .chatWindow {
+        display: flex;
+    }
+    .backBtn {
+        display: inline-flex;
+    }
 }

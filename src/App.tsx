@@ -18,51 +18,51 @@ import { useDevToolsProtection } from "./hooks/useDevToolsProtection";
 import { initErrorCodes } from "./utils/errorCodes";
 
 function AppContent() {
-  usePresenceConnection();
-  useDevToolsProtection();
+    usePresenceConnection();
+    useDevToolsProtection();
 
-  // 应用启动时拉取一次错误码表
-  const { settings } = useSiteSettings();
-  useEffect(() => {
-    initErrorCodes(settings.language);
-  }, [settings.language]);
-  return (
-    <>
-      <IdleTimeoutHandler />
-      <MessageProvider>
-        <ConfirmProvider>
-          <ThemeBackground />
-          <SessionNotifier />
-          <SimpleBar
-            style={{
-              maxHeight: "100vh",
-              width: "100vw",
-              overflowX: "hidden",
-            }}
-            autoHide={false}
-          >
-            <RouterConfig />
-          </SimpleBar>
-        </ConfirmProvider>
-      </MessageProvider>
-    </>
-  );
+    // 应用启动时拉取一次错误码表
+    const { settings } = useSiteSettings();
+    useEffect(() => {
+        initErrorCodes(settings.language);
+    }, [settings.language]);
+    return (
+        <>
+            <IdleTimeoutHandler />
+            <MessageProvider>
+                <ConfirmProvider>
+                    <ThemeBackground />
+                    <SessionNotifier />
+                    <SimpleBar
+                        style={{
+                            maxHeight: "100vh",
+                            width: "100vw",
+                            overflowX: "hidden",
+                        }}
+                        autoHide={false}
+                    >
+                        <RouterConfig />
+                    </SimpleBar>
+                </ConfirmProvider>
+            </MessageProvider>
+        </>
+    );
 }
 
 function App() {
-  return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <LayoutWidthProvider>
-            <SiteSettingsProvider>
-              <AppContent />
-            </SiteSettingsProvider>
-          </LayoutWidthProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </BrowserRouter>
-  );
+    return (
+        <BrowserRouter>
+            <ThemeProvider>
+                <AuthProvider>
+                    <LayoutWidthProvider>
+                        <SiteSettingsProvider>
+                            <AppContent />
+                        </SiteSettingsProvider>
+                    </LayoutWidthProvider>
+                </AuthProvider>
+            </ThemeProvider>
+        </BrowserRouter>
+    );
 }
 
 export default App;

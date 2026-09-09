@@ -4,12 +4,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIdleTimeout } from "@/hooks/useIdleTimeout";
 
 const IdleTimeoutHandler: React.FC = () => {
-  const { settings } = useSiteSettings();
-  const { isAuthenticated, logout } = useAuth();
+    const { settings } = useSiteSettings();
+    const { isAuthenticated, logout } = useAuth();
 
-  useIdleTimeout(settings.sessionTimeout, logout, isAuthenticated);
+    useIdleTimeout(settings.sessionTimeout, logout, isAuthenticated);
 
-  return null;
+    return null;
 };
 
 export default IdleTimeoutHandler;

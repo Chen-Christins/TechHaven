@@ -6,21 +6,21 @@ import { useNavigate, useSearchParams } from "react-router-dom";
  * 不使用 localStorage，完全基于 URL 持久化。
  */
 export function useRdNavigate() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
-  return (to: string) => {
-    const org = searchParams.get("org");
-    if (!org) {
-      navigate(to);
-      return;
-    }
-    // 避免重复追加 org 参数
-    if (to.includes("org=")) {
-      navigate(to);
-      return;
-    }
-    const separator = to.includes("?") ? "&" : "?";
-    navigate(`${to}${separator}org=${org}`);
-  };
+    return (to: string) => {
+        const org = searchParams.get("org");
+        if (!org) {
+            navigate(to);
+            return;
+        }
+        // 避免重复追加 org 参数
+        if (to.includes("org=")) {
+            navigate(to);
+            return;
+        }
+        const separator = to.includes("?") ? "&" : "?";
+        navigate(`${to}${separator}org=${org}`);
+    };
 }

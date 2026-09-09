@@ -1,354 +1,354 @@
 .container {
-  min-height: 100vh;
-  background-color: transparent;
-  display: flex;
-  flex-direction: column;
+    min-height: 100vh;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
 }
 
 .mainContent {
-  flex: 1;
-  max-width: var(--page-max-width);
-  margin: 0 auto;
-  width: 100%;
-  padding: 1rem 1.8rem;
+    flex: 1;
+    max-width: var(--page-max-width);
+    margin: 0 auto;
+    width: 100%;
+    padding: 1rem 1.8rem;
 }
 
 .pageHeader {
-  margin-bottom: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .pageHeaderTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .pageTitle {
-  font-size: 1.8rem;
-  color: var(--text-primary);
-  font-weight: 600;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .applyBtn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  background: var(--primary);
-  color: #fff;
-  cursor: pointer;
-  white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
 }
 
 .applyBtn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .filterBar {
-  display: flex;
-  gap: 1rem;
+    display: flex;
+    gap: 1rem;
 }
 
 .filterBtn {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border-primary);
-  background: var(--bg-card);
-  border-radius: 20px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-primary);
+    background: var(--bg-card);
+    border-radius: 20px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
 }
 
 .filterBtn:hover {
-  background: var(--bg-hover);
+    background: var(--bg-hover);
 }
 
 .filterBtn.active {
-  background: var(--primary);
-  color: var(--text-inverse);
-  border-color: var(--primary);
+    background: var(--primary);
+    color: var(--text-inverse);
+    border-color: var(--primary);
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .card {
-  background: var(--bg-card);
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border-primary);
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border-primary);
 }
 
 .cardTitle {
-  font-size: 1.2rem;
-  color: var(--text-primary);
-  margin: 0 0 0.8rem 0;
-  font-weight: 600;
-  line-height: 1.4;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin: 0 0 0.8rem 0;
+    font-weight: 600;
+    line-height: 1.4;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
 }
 
 .cardHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
 }
 
 .orgName {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 0.8rem 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 0.8rem 0;
 }
 
 .courseBadge {
-  background: var(--primary-light);
-  color: var(--primary);
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  display: inline-block;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-block;
 }
 
 .statusBadge {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
-  font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 .statusActive {
-  color: var(--success);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
+    color: var(--success);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
 }
 
 .statusInactive {
-  color: var(--error);
-  font-weight: 500;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
+    color: var(--error);
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .cardDesc {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin-bottom: 1.5rem;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  flex: 1;
-  white-space: pre-wrap;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+    white-space: pre-wrap;
 }
 
 .cardFooter {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-primary);
-  margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-primary);
+    margin-top: auto;
 }
 
 .cardMetric {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--text-tertiary);
-  font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
 }
 
 .actionBtn {
-  padding: 0.5rem 1.2rem;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .btnPrimary {
-  background: var(--button-primary);
-  color: var(--text-inverse);
-  box-shadow: 0 2px 8px 0 rgba(59, 130, 246, 0.04);
+    background: var(--button-primary);
+    color: var(--text-inverse);
+    box-shadow: 0 2px 8px 0 rgba(59, 130, 246, 0.04);
 }
 
 .btnPrimary:hover {
-  background: var(--button-primary-hover);
+    background: var(--button-primary-hover);
 }
 
 .btnSecondary {
-  background: var(--button-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
+    background: var(--button-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
 }
 
 .btnSecondary:hover {
-  background: var(--button-secondary-hover);
+    background: var(--button-secondary-hover);
 }
 
 .joined {
-  color: var(--success);
-  font-weight: 600;
-  font-size: 1rem;
-  margin-left: 1rem;
+    color: var(--success);
+    font-weight: 600;
+    font-size: 1rem;
+    margin-left: 1rem;
 }
 
 .emptyState {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  text-align: center;
-  background: var(--card-bg);
-  border-radius: 16px;
-  border: 1px solid var(--border-primary);
-  color: var(--text-secondary);
-  margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-primary);
+    color: var(--text-secondary);
+    margin-top: 2rem;
 }
 
 .emptyIcon {
-  font-size: 4rem;
-  margin-bottom: 1.5rem;
-  color: var(--text-tertiary);
-  opacity: 0.5;
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-tertiary);
+    opacity: 0.5;
 }
 
 .emptyText {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
 }
 
 .emptySubtext {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
+    font-size: 0.95rem;
+    color: var(--text-secondary);
 }
 
 .loginBtn {
-  padding: 1rem 3rem;
-  border-radius: 50px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1.1rem;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.8rem;
-  background: var(--primary);
-  color: white;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-  margin: 0 auto;
-  letter-spacing: 0.5px;
+    padding: 1rem 3rem;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    margin: 0 auto;
+    letter-spacing: 0.5px;
 }
 
 .loginBtn:hover {
-  background: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);
 }
 
 .loginBtn:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
 /* 响应式 */
 @media (max-width: 768px) {
-  .mainContent {
-    padding: 1.2rem 1rem;
-  }
+    .mainContent {
+        padding: 1.2rem 1rem;
+    }
 
-  .pageHeader {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
+    .pageHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
 
-  .pageHeaderTop {
-    width: 100%;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
+    .pageHeaderTop {
+        width: 100%;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
 
-  .pageTitle {
-    font-size: 1.4rem;
-  }
+    .pageTitle {
+        font-size: 1.4rem;
+    }
 
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
 
-  .card {
-    padding: 1.2rem;
-  }
+    .card {
+        padding: 1.2rem;
+    }
 }
 
 @media (max-width: 480px) {
-  .mainContent {
-    padding: 1rem 0.8rem;
-  }
+    .mainContent {
+        padding: 1rem 0.8rem;
+    }
 
-  .card {
-    padding: 1rem;
-  }
+    .card {
+        padding: 1rem;
+    }
 
-  .cardTitle {
-    font-size: 1.05rem;
-  }
+    .cardTitle {
+        font-size: 1.05rem;
+    }
 
-  .filterBar {
-    gap: 0.5rem;
-  }
+    .filterBar {
+        gap: 0.5rem;
+    }
 
-  .filterBtn {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.82rem;
-  }
+    .filterBtn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.82rem;
+    }
 }

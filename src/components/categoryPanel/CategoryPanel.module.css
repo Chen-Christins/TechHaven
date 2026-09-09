@@ -2,296 +2,296 @@
    面板容器 — 与其他侧边栏卡片保持统一
    ════════════════════════════════════════ */
 .categoryPanel {
-  background-color: var(--card-bg);
-  border-radius: 10px;
-  padding: 1.25rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-primary);
-  margin-bottom: 0.5rem;
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-primary);
+    margin-bottom: 0.5rem;
 }
 
 /* ════════════════════════════════════════
    面板标题
    ════════════════════════════════════════ */
 .panelTitle {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  padding-bottom: 0.7rem;
-  border-bottom: 1px solid var(--border-primary);
-  margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--border-primary);
+    margin-bottom: 0.4rem;
 }
 
 .titleIcon {
-  font-size: 0.9rem;
-  color: var(--primary);
-  opacity: 0.75;
+    font-size: 0.9rem;
+    color: var(--primary);
+    opacity: 0.75;
 }
 
 /* ════════════════════════════════════════
    分类列表
    ════════════════════════════════════════ */
 .categoryList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 /* ════════════════════════════════════════
    父分类项
    ════════════════════════════════════════ */
 .parentItem {
-  margin-bottom: 0.1rem;
+    margin-bottom: 0.1rem;
 }
 
 .parentCategory {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  border-radius: 8px;
-  padding: 0.4rem 0.3rem;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 0.4rem 0.3rem;
 }
 
 .parentCategory:hover {
-  background-color: var(--bg-hover);
+    background-color: var(--bg-hover);
 }
 
 /* 展开/折叠按钮 */
 .toggleBtn {
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-tertiary);
-  flex-shrink: 0;
-  border-radius: 4px;
-  margin-right: 0.15rem;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+    border-radius: 4px;
+    margin-right: 0.15rem;
 }
 
 .parentCategory:hover .toggleBtn {
-  color: var(--text-secondary);
+    color: var(--text-secondary);
 }
 
 .chevron {
-  font-size: 0.7rem;
+    font-size: 0.7rem;
 }
 
 /* 父分类链接 — 点击筛选 */
 .parentLink {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  text-decoration: none;
-  color: var(--text-primary);
-  font-weight: 500;
-  font-size: 0.95rem;
-  gap: 0.5rem;
-  min-width: 0;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.95rem;
+    gap: 0.5rem;
+    min-width: 0;
 }
 
 .parentLink:hover {
-  color: var(--primary);
+    color: var(--primary);
 }
 
 /* 彩色圆点 */
 .colorDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  opacity: 0.7;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    opacity: 0.7;
 }
 
 .parentCategory:hover .colorDot {
-  opacity: 1;
+    opacity: 1;
 }
 
 .parentName {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* 父分类右侧元信息 — 整体包裹容器 */
 .parentMeta {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  flex-shrink: 0;
-  padding: 0.15rem 0.35rem;
-  border-radius: 6px;
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+    padding: 0.15rem 0.35rem;
+    border-radius: 6px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-light);
 }
 
 /* ════════════════════════════════════════
    子分类容器（带动画过渡）
    ════════════════════════════════════════ */
 .childrenContainer {
-  overflow: hidden;
+    overflow: hidden;
 }
 
 .collapsed {
-  max-height: 0;
-  opacity: 0;
-  padding: 0;
+    max-height: 0;
+    opacity: 0;
+    padding: 0;
 }
 
 .expanded {
-  max-height: 500px;
-  opacity: 1;
-  padding: 0.15rem 0 0.15rem 1.6rem;
+    max-height: 500px;
+    opacity: 1;
+    padding: 0.15rem 0 0.15rem 1.6rem;
 }
 
 .childrenList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  border-left: 1px solid var(--border-primary);
-  padding-left: 0.75rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-left: 1px solid var(--border-primary);
+    padding-left: 0.75rem;
 }
 
 /* 子分类项 */
 .childItem {
-  margin-bottom: 0.05rem;
+    margin-bottom: 0.05rem;
 }
 
 /* 子分类链接 */
 .childLink {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  padding: 0.35rem 0.5rem;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  border-radius: 6px;
-  cursor: pointer;
-  gap: 0.45rem;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    padding: 0.35rem 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    border-radius: 6px;
+    cursor: pointer;
+    gap: 0.45rem;
 }
 
 .childLink:hover {
-  background-color: var(--bg-hover);
-  color: var(--primary);
+    background-color: var(--bg-hover);
+    color: var(--primary);
 }
 
 .childDot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  opacity: 0.5;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    opacity: 0.5;
 }
 
 .childLink:hover .childDot {
-  opacity: 1;
+    opacity: 1;
 }
 
 .childName {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .childMeta {
-  display: flex;
-  align-items: center;
-  gap: 0.2rem;
-  flex-shrink: 0;
-  padding: 0.1rem 0.3rem;
-  border-radius: 5px;
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    flex-shrink: 0;
+    padding: 0.1rem 0.3rem;
+    border-radius: 5px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-light);
 }
 
 /* ════════════════════════════════════════
    统计项 — 父/子统一
    ════════════════════════════════════════ */
 .metaItem {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.2rem;
-  color: var(--text-tertiary);
-  font-size: 0.72rem;
-  font-weight: 500;
-  line-height: 1.4;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    color: var(--text-tertiary);
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1.4;
 }
 
 .parentMeta .metaItem:first-child,
 .childMeta .metaItem:first-child {
-  color: var(--primary);
+    color: var(--primary);
 }
 
 .metaIcon {
-  font-size: 0.65rem;
-  opacity: 0.65;
+    font-size: 0.65rem;
+    opacity: 0.65;
 }
 
 /* ════════════════════════════════════════
    选中状态
    ════════════════════════════════════════ */
 .categorySelected {
-  color: var(--primary) !important;
-  font-weight: 600;
-  background-color: rgba(59, 130, 246, 0.07);
-  border-radius: 6px;
+    color: var(--primary) !important;
+    font-weight: 600;
+    background-color: rgba(59, 130, 246, 0.07);
+    border-radius: 6px;
 }
 
 /* ════════════════════════════════════════
    骨架屏
    ════════════════════════════════════════ */
 .skeletonList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.3rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.3rem 0;
 }
 
 .skeletonRow {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.15rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.15rem 0;
 }
 
 .skeletonBadge {
-  border-radius: 8px !important;
-  margin-left: auto;
+    border-radius: 8px !important;
+    margin-left: auto;
 }
 
 /* ════════════════════════════════════════
    空状态
    ════════════════════════════════════════ */
 .emptyState {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 1.5rem 0;
-  color: var(--text-tertiary);
-  font-size: 0.9rem;
-  font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1.5rem 0;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .emptyIcon {
-  font-size: 1.4rem;
-  opacity: 0.4;
+    font-size: 1.4rem;
+    opacity: 0.4;
 }
 
 /* ════════════════════════════════════════
    响应式
    ════════════════════════════════════════ */
 @media (max-width: 768px) {
-  .categoryPanel {
-    padding: 1rem;
-  }
+    .categoryPanel {
+        padding: 1rem;
+    }
 
-  .panelTitle {
-    font-size: 1rem;
-  }
+    .panelTitle {
+        font-size: 1rem;
+    }
 }

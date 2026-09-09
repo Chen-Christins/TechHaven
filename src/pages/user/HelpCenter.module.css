@@ -1,316 +1,316 @@
 .hero {
-  text-align: center;
-  padding: 24px 0 32px;
+    text-align: center;
+    padding: 24px 0 32px;
 }
 
 .heroIcon {
-  font-size: 44px;
-  color: var(--primary);
-  margin-bottom: 12px;
+    font-size: 44px;
+    color: var(--primary);
+    margin-bottom: 12px;
 }
 
 .heroTitle {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 6px;
 }
 
 .heroDesc {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0 0 20px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 20px;
 }
 
 .heroSearch {
-  max-width: 520px;
-  margin: 0 auto;
+    max-width: 520px;
+    margin: 0 auto;
 }
 
 .catRow {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
 }
 
 .catCard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 20px 16px;
-  background: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    cursor: pointer;
 }
 
 .catCard:hover {
-  border-color: var(--primary);
+    border-color: var(--primary);
 }
 
 .catIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    font-size: 22px;
 }
 
 .catName {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .catCount {
-  font-size: 12px;
-  color: var(--text-tertiary);
+    font-size: 12px;
+    color: var(--text-tertiary);
 }
 
 .layout {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 20px;
-  align-items: stretch;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 20px;
+    align-items: stretch;
 }
 
 .faqCard {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .faqList {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .faqItem {
-  border-bottom: 1px solid var(--border-primary);
+    border-bottom: 1px solid var(--border-primary);
 }
 
 .faqItem:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .faqQ {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  padding: 16px 0;
-  background: none;
-  border: none;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-primary);
-  text-align: left;
-  cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 16px 0;
+    background: none;
+    border: none;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
 }
 
 .faqChevron {
-  flex-shrink: 0;
-  color: var(--text-tertiary);
+    flex-shrink: 0;
+    color: var(--text-tertiary);
 }
 
 .faqOpen {
-  transform: rotate(180deg);
-  color: var(--primary);
+    transform: rotate(180deg);
+    color: var(--primary);
 }
 
 .faqA {
-  padding: 0 0 16px;
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.7;
+    padding: 0 0 16px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
 }
 
 .faqEmpty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  color: var(--text-tertiary);
-  font-size: 14px;
-  text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    color: var(--text-tertiary);
+    font-size: 14px;
+    text-align: center;
 }
 
 .faqEmptyIcon {
-  font-size: 40px;
-  margin-bottom: 12px;
-  opacity: 0.4;
-  color: var(--text-tertiary);
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+    color: var(--text-tertiary);
 }
 
 .faqEmptyHint {
-  margin: 8px 0 0;
-  font-size: 13px;
-  color: var(--text-tertiary);
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--text-tertiary);
 }
 
 .textarea {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
-  box-sizing: border-box;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
 }
 
 .textarea:focus {
-  outline: none;
-  border-color: var(--primary);
+    outline: none;
+    border-color: var(--primary);
 }
 
 .authGate {
-  text-align: center;
-  background: var(--card-bg);
-  border-radius: 16px;
-  border: 1px solid var(--border-light);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.04),
-    0 4px 16px rgba(0, 0, 0, 0.04);
-  margin: 3rem auto;
-  max-width: 480px;
-  padding: 3.5rem 2rem 3rem;
+    text-align: center;
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 4px 16px rgba(0, 0, 0, 0.04);
+    margin: 3rem auto;
+    max-width: 480px;
+    padding: 3.5rem 2rem 3rem;
 }
 
 .authIconCircle {
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.75rem;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--primary) 12%, transparent),
-    color-mix(in srgb, var(--accent, #6366f1) 12%, transparent)
-  );
-  border: 2px solid color-mix(in srgb, var(--primary) 18%, transparent);
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.75rem;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary) 12%, transparent),
+        color-mix(in srgb, var(--accent, #6366f1) 12%, transparent)
+    );
+    border: 2px solid color-mix(in srgb, var(--primary) 18%, transparent);
 }
 
 .authIconCircle svg {
-  font-size: 2.2rem;
-  color: var(--primary);
+    font-size: 2.2rem;
+    color: var(--primary);
 }
 
 .authTitle {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem;
 }
 
 .authSubtext {
-  color: var(--text-secondary);
-  margin: 0 0 2rem;
-  font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin: 0 0 2rem;
+    font-size: 0.95rem;
 }
 
 .authActions {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
 }
 
 .authBtn {
-  min-width: 130px;
-  padding: 8px 20px;
-  background: var(--primary);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  white-space: nowrap;
+    min-width: 130px;
+    padding: 8px 20px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
 }
 
 .authBtn:hover {
-  filter: brightness(1.08);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
 }
 
 .authBtn:active {
-  transform: translateY(0);
+    transform: translateY(0);
 }
 
 .authBackBtn {
-  min-width: 130px;
-  padding: 8px 20px;
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  white-space: nowrap;
+    min-width: 130px;
+    padding: 8px 20px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
 }
 
 .authBackBtn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
 @media (max-width: 900px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-  .catRow {
-    grid-template-columns: repeat(2, 1fr);
-  }
+    .layout {
+        grid-template-columns: 1fr;
+    }
+    .catRow {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 768px) {
-  .hero {
-    padding: 20px 0 24px;
-  }
+    .hero {
+        padding: 20px 0 24px;
+    }
 
-  .heroTitle {
-    font-size: 22px;
-  }
+    .heroTitle {
+        font-size: 22px;
+    }
 
-  .catCard {
-    padding: 16px 12px;
-  }
+    .catCard {
+        padding: 16px 12px;
+    }
 
-  .authGate {
-    padding: 2.5rem 1.25rem 2rem;
-    margin: 2rem auto;
-  }
+    .authGate {
+        padding: 2.5rem 1.25rem 2rem;
+        margin: 2rem auto;
+    }
 }
 
 @media (max-width: 480px) {
-  .catRow {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
+    .catRow {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
 
-  .catCard {
-    padding: 14px 10px;
-  }
+    .catCard {
+        padding: 14px 10px;
+    }
 }
