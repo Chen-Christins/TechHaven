@@ -112,14 +112,14 @@ export const canRemoveMember = (
     isSelf: boolean,
 ): boolean => {
     if (!myRole || myRole < OrgRole.DEV_LEAD) {
-		return false;
-	}
+        return false;
+    }
     if (isSelf) {
-		return false;
-	}
+        return false;
+    }
     if (myRole === OrgRole.DEV_LEAD && targetMemberRole === OrgRole.ORG_ADMIN) {
-		return false;
-	}
+        return false;
+    }
     return true;
 };
 
@@ -135,14 +135,14 @@ export const canSetMemberRole = (
     isSelf: boolean,
 ): boolean => {
     if (!myRole || myRole < OrgRole.DEV_LEAD) {
-		return false;
-	}
+        return false;
+    }
     if (isSelf) {
-		return false;
-	}
+        return false;
+    }
     if (myRole === OrgRole.DEV_LEAD && targetMemberRole === OrgRole.ORG_ADMIN) {
-		return false;
-	}
+        return false;
+    }
     return true;
 };
 

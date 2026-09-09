@@ -21,7 +21,7 @@ import BroadcastMarquee from "../broadcastMarquee/BroadcastMarquee";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import Avatar from "../avatar/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { isNormalUser } from "@/types/roles";
+import { isNormalUser, PlatformRoleLabel, type PlatformRole as PlatformRoleType } from "@/types/roles";
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
@@ -45,7 +45,7 @@ const Navbar: React.FC = () => {
         ? {
               name: user.name || user.account || "用户",
               avatar: user.avatar || "https://picsum.photos/id/64/200", // 默认头像
-              role: user.role || "用户",
+              role: user.role ? PlatformRoleLabel[user.role as PlatformRoleType] || "用户" : "用户",
               email: user.email,
           }
         : null;

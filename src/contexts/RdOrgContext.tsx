@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from "react";
 import { useAuth } from "./AuthContext";
+import { useNavigate } from "react-router-dom";
 import { RdPlatformService } from "../services/rdPlatformService";
 import type { RdOrgInfo } from "../types/rdPlatform";
 import { isAdmin as checkIsAdmin } from "../types/roles";
+import { FaBuilding, FaHome, FaLock } from "react-icons/fa";
 
 interface RdOrgContextType {
     orgs: RdOrgInfo[];
@@ -38,7 +40,8 @@ export const useRdOrg = (): RdOrgContextType => {
 };
 
 export const RdOrgProvider: React.FC<{ children: ReactNode; initialOrgId?: string }> = ({ children, initialOrgId = "" }) => {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
     const [orgs, setOrgs] = useState<RdOrgInfo[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedOrgId, setSelectedOrgId] = useState(initialOrgId);
@@ -121,6 +124,112 @@ export const RdOrgProvider: React.FC<{ children: ReactNode; initialOrgId?: strin
                 }}
             >
                 加载组织信息...
+            </div>
+        );
+    }
+
+    if (orgs.length === 0) {
+        return (
+            <div
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "100vh",
+                    backgroundColor: "transparent",
+                    color: "var(--text-primary)",
+                    padding: "20px",
+                }}
+            >
+                <div
+                    style={{
+                        fontSize: "64px",
+                        color: "#f0a020",
+                        marginBottom: "24px",
+                        opacity: 0.9,
+                    }}
+                >
+                    <FaLock />
+                </div>
+                <h1
+                    style={{
+                        fontSize: "28px",
+                        fontWeight: "bold",
+                        marginBottom: "12px",
+                        color: "var(--text-primary)",
+                    }}
+                >
+                    暂无组织
+                </h1>
+                <p
+                    style={{
+                        fontSize: "16px",
+                        color: "var(--text-secondary)",
+                        marginBottom: "32px",
+                        textAlign: "center",
+                        maxWidth: "480px",
+                        lineHeight: "1.6",
+                    }}
+                >
+                    您还没有加入任何组织，请先加入或创建一个组织后再使用研发平台。
+                    <br />
+                    请前往组织页面查找并申请加入您所属的团队，或联系组织管理员为您开通权限。
+                </p>
+                <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "center" }}>
+                    <button
+                        onClick={() => navigate("/organizations/list")}
+                        style={{
+                            padding: "10px 24px",
+                            backgroundColor: "var(--primary)",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "15px",
+                            fontWeight: "500",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                        }}
+                    >
+                        <FaBuilding /> 加入组织
+                    </button>
+                    <button
+                        onClick={() => navigate("/")}
+                        style={{
+                            padding: "10px 24px",
+                            backgroundColor: "transparent",
+                            color: "var(--text-primary)",
+                            border: "1px solid var(--border-primary)",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "15px",
+                            fontWeight: "500",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                        }}
+                    >
+                        <FaHome /> 返回首页
+                    </button>
+                    <button
+                        onClick={() => logout()}
+                        style={{
+                            padding: "10px 24px",
+                            backgroundColor: "transparent",
+                            color: "var(--text-primary)",
+                            border: "1px solid var(--border-primary)",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "15px",
+                            fontWeight: "500",
+                        }}
+                    >
+                        切换账号
+                    </button>
+                </div>
             </div>
         );
     }

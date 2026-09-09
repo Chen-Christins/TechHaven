@@ -4,6 +4,7 @@ import { encodeId } from "@/utils/hashId";
 import { FaUserCircle, FaCog, FaSignOutAlt, FaHome } from "react-icons/fa";
 import Avatar from "../avatar/Avatar";
 import styles from "./UserDropdown.module.css";
+import { PlatformRoleLabel, type PlatformRole } from "@/types/roles";
 
 interface User {
     id: number | string;
@@ -78,7 +79,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
                     <div className={styles.userName}>{user.name}</div>
                     {(roleOverride || user.role) && (
                         <div className={styles.userRole} title={roleTitle}>
-                            {roleOverride || user.role}
+                            {roleOverride || (user.role ? PlatformRoleLabel[user.role as PlatformRole] || user.role : "")}
                         </div>
                     )}
                 </div>

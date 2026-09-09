@@ -1853,10 +1853,26 @@ body {
 
     html[data-skin][data-cursor="custom"] body,
     html[data-skin][data-cursor="custom"] body * {
-        cursor: var(--theme-cursor) !important;
+        cursor: var(--theme-cursor);
     }
 
-    html[data-skin][data-cursor="custom"] :is(a, button, select, summary, label[for], [role="button"], [role="link"], [role="switch"]),
+    html[data-skin][data-cursor="custom"]
+        :is(
+            a,
+            button,
+            select,
+            summary,
+            label[for],
+            [role="button"],
+            [role="link"],
+            [role="switch"],
+            [role="tab"],
+            [role="menuitem"],
+            [role="option"],
+            [role="treeitem"],
+            [role="radio"],
+            [role="menuitemcheckbox"]
+        ),
     html[data-skin][data-cursor="custom"]
         input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"]) {
         cursor: var(--theme-pointer) !important;
