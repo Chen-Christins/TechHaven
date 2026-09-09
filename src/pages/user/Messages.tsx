@@ -11,6 +11,7 @@ import FollowService from "@/services/followService";
 import { chatWS } from "@/utils/websocket";
 import { confirm } from "@/components/confirm/Confirm";
 import { useAuth } from "@/contexts/AuthContext";
+import { isNormalUser } from "@/types/roles";
 import type { ChatMsg, Conversation } from "@/types/message";
 import type { MutualFollowUser } from "@/types/follow";
 
@@ -36,8 +37,8 @@ const formatMsgTime = (ts: number): string => {
 
 const Messages: React.FC = () => {
     const { user } = useAuth();
-    // 普通用户无权限使用私信（兼容 role 为中文名或数字；后端同样校验）
-    const denied = !user || ["用户", "1"].includes(String(user.role));
+    // 普通用户无权限使用私信
+    const denied = !user || isNormalUser(user.role);
 
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [messages, setMessages] = useState<ChatMsg[]>([]);

@@ -21,6 +21,7 @@ import BroadcastMarquee from "../broadcastMarquee/BroadcastMarquee";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import Avatar from "../avatar/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { isNormalUser } from "@/types/roles";
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
@@ -49,8 +50,8 @@ const Navbar: React.FC = () => {
           }
         : null;
 
-    // 普通用户无权限使用私信（兼容 role 为中文名或数字）
-    const isNormalUser = ["用户", "1"].includes(String(user?.role));
+    // 普通用户无权限使用私信
+    const normalUser = isNormalUser(user?.role);
 
     // 导航链接数据（包含图标和路径）
     const navLinks = [
@@ -290,7 +291,7 @@ const Navbar: React.FC = () => {
                                                 撰写文章
                                             </div>
                                             <div className={styles.dropdownDivider}></div>
-                                            {!isNormalUser && (
+                                            {!normalUser && (
                                                 <>
                                                     <div
                                                         className={styles.dropdownItem}

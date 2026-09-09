@@ -58,7 +58,7 @@ export const OrgRoleLabel: Record<OrgRole, string> = {
     [OrgRole.ORG_ADMIN]: "组织管理员",
 };
 
-// ===== 组织权限判断 =====
+// ===== 工单级别权限（仅看组织角色自身等级） =====
 
 export const OrgPermission = {
     /** 能否创建需求/缺陷 */
@@ -69,8 +69,6 @@ export const OrgPermission = {
     canEdit: (role: number) => role >= OrgRole.REPORTER,
     /** 能否删除工单（研发主管及以上） */
     canDelete: (role: number) => role >= OrgRole.DEV_LEAD,
-    /** 能否管理组织成员 */
-    canManageMembers: (role: number) => role >= OrgRole.ORG_ADMIN,
 };
 
 // ===== 平台角色辅助函数 =====
@@ -83,3 +81,90 @@ export const isNormalUser = (role?: number | null): boolean => Number(role) === 
 
 /** 是否有私信权限（非普通用户） */
 export const canChat = (role?: number | null): boolean => !isNormalUser(role);
+
+// ===== 组合权限（平台角色 + 组织角色）=====
+
+/**
+ * 是否可以管理组织（查看待处理请求、任务列表、管理仓库等）
+ * 语义：组织内研发主管及以上，或者是平台管理员
+ */
+export const canManageOrg = (orgRole: number | null | undefined, platformRole?: number | null): boolean => {
+    return (orgRole != null && orgRole >= OrgRole.DEV_LEAD) || isAdmin(platformRole);
+};
+
+/**
+ * 是否可以管理组织任务（创建、编辑、删除）
+ * 语义：组织内研发主管及以上
+ */
+export const canManageOrgTask = (orgRole: number | null | undefined): boolean => {
+    return orgRole != null && orgRole >= OrgRole.DEV_LEAD;
+};
+
+/**
+ * 是否可以踢出指定成员
+ * @param myRole 当前用户组织角色
+ * @param targetMemberRole 目标成员角色
+ * @param isSelf 是否是自己
+ */
+export const canRemoveMember = (
+    myRole: number | null | undefined,
+    targetMemberRole: number | null | undefined,
+    isSelf: boolean,
+): boolean => {
+    if (!myRole || myRole < OrgRole.DEV_LEAD) {
+		return false;
+	}
+    if (isSelf) {
+		return false;
+	}
+    if (myRole === OrgRole.DEV_LEAD && targetMemberRole === OrgRole.ORG_ADMIN) {
+		return false;
+	}
+    return true;
+};
+
+/**
+ * 是否可以设置指定成员的角色
+ * @param myRole 当前用户组织角色
+ * @param targetMemberRole 目标成员角色
+ * @param isSelf 是否是自己
+ */
+export const canSetMemberRole = (
+    myRole: number | null | undefined,
+    targetMemberRole: number | null | undefined,
+    isSelf: boolean,
+): boolean => {
+    if (!myRole || myRole < OrgRole.DEV_LEAD) {
+		return false;
+	}
+    if (isSelf) {
+		return false;
+	}
+    if (myRole === OrgRole.DEV_LEAD && targetMemberRole === OrgRole.ORG_ADMIN) {
+		return false;
+	}
+    return true;
+};
+
+/**
+ * 获取当前用户可设置的角色选项（纯数值 + 中文标签，不含 UI 元素）
+ */
+export const getAvailableRoles = (myRole: number | null | undefined): { value: OrgRole; label: string }[] => {
+    if (myRole === OrgRole.DEV_LEAD) {
+        return [
+            { value: OrgRole.MEMBER, label: OrgRoleLabel[OrgRole.MEMBER] },
+            { value: OrgRole.REPORTER, label: OrgRoleLabel[OrgRole.REPORTER] },
+            { value: OrgRole.DEVELOPER, label: OrgRoleLabel[OrgRole.DEVELOPER] },
+        ];
+    }
+    if (myRole === OrgRole.ORG_ADMIN) {
+        return [
+            { value: OrgRole.MEMBER, label: OrgRoleLabel[OrgRole.MEMBER] },
+            { value: OrgRole.REPORTER, label: OrgRoleLabel[OrgRole.REPORTER] },
+            { value: OrgRole.DEVELOPER, label: OrgRoleLabel[OrgRole.DEVELOPER] },
+            { value: OrgRole.DEV_LEAD, label: OrgRoleLabel[OrgRole.DEV_LEAD] },
+            { value: OrgRole.ORG_ADMIN, label: OrgRoleLabel[OrgRole.ORG_ADMIN] },
+        ];
+    }
+    return [];
+};

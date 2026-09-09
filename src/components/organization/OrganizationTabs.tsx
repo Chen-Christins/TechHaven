@@ -22,7 +22,7 @@ import {
     FaPlus,
 } from "react-icons/fa";
 import type { Member, Task, OrganizationDetail } from "@/types/organization";
-import { OrgRole, OrgRoleLabel, isAdmin } from "@/types/roles";
+import { OrgRole, OrgRoleLabel, canManageOrg } from "@/types/roles";
 import Avatar from "../avatar/Avatar";
 import styles from "./Organization.module.css";
 import Modal from "../modal/Modal";
@@ -192,7 +192,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                     >
                         成员列表
                     </button>
-                    {((userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)) && (
+                    {canManageOrg(userRole, currentUser?.role) && (
                         <button
                             className={`${styles.tabButton} ${showPendingRequests ? styles.activeTab : ""}`}
                             onClick={() => onTabChange(true, false)}
@@ -200,7 +200,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                             待处理请求
                         </button>
                     )}
-                    {((userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)) && (
+                    {canManageOrg(userRole, currentUser?.role) && (
                         <button
                             className={`${styles.tabButton} ${showTasks ? styles.activeTab : ""}`}
                             onClick={() => onTabChange(false, true)}
@@ -234,7 +234,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                             </button>
                         </>
                     )}
-                    {showPendingRequests && ((userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)) && (
+                    {showPendingRequests && canManageOrg(userRole, currentUser?.role) && (
                         <>
                             <span className={styles.tabsCount}>共 {pendingRequests.length} 个请求</span>
                             <button
@@ -250,7 +250,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                             </button>
                         </>
                     )}
-                    {showTasks && ((userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)) && (
+                    {showTasks && canManageOrg(userRole, currentUser?.role) && (
                         <>
                             <button className={styles.refreshButton} onClick={() => onRefreshTasks()} title="刷新任务列表">
                                 <span className={styles.refreshIcon}>
@@ -425,7 +425,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
             )}
 
             {/* 待处理请求视图 */}
-            {showPendingRequests && ((userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)) && (
+            {showPendingRequests && canManageOrg(userRole, currentUser?.role) && (
                 <>
                     {pendingRequestsLoading ? (
                         <div style={{ padding: "40px 0" }}>
@@ -531,7 +531,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
             )}
 
             {/* 任务列表视图 */}
-            {showTasks && ((userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)) && (
+            {showTasks && canManageOrg(userRole, currentUser?.role) && (
                 <>
                     {tasksLoading ? (
                         <div style={{ padding: "40px 0" }}>
@@ -542,7 +542,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
                             <FaTasks className={styles.emptyIcon} />
                             <h3 className={styles.emptyTitle}>暂无任务</h3>
                             <p className={styles.emptySubtext}>
-                                {(userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)
+                                {canManageOrg(userRole, currentUser?.role)
                                     ? '点击"创建任务"按钮来创建第一个任务'
                                     : "当前组织还没有发布任何任务"}
                             </p>
@@ -736,7 +736,7 @@ const OrganizationTabs: React.FC<OrganizationTabsProps> = ({
             {showRepos && userRole != null && (
                 <OrganizationRepos
                     orgId={org?.id || ""}
-                    canManage={(userRole != null && userRole >= OrgRole.DEV_LEAD) || isAdmin(currentUser?.role)}
+                    canManage={canManageOrg(userRole, currentUser?.role)}
                     onChange={onReposChange}
                 />
             )}

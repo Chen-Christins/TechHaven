@@ -20,7 +20,7 @@ import DatePicker from "@/components/datePicker/DatePicker";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import Modal from "@/components/modal/Modal";
 import AssignmentService from "@/services/assignmentService";
-import { OrgRole, OrgRoleLabel } from "@/types/roles";
+import { OrgRole, OrgRoleLabel, canManageOrgTask, canRemoveMember, canSetMemberRole, getAvailableRoles } from "@/types/roles";
 import { OrgMembershipStatusLabel, AssignmentStatus, AssignmentPriority } from "@/types/enums";
 // import type { Assignment } from '../../types';
 
@@ -277,7 +277,7 @@ const OrganizationDetail: React.FC = () => {
         if (!id || !currentUser) {
             return;
         }
-        if (showPendingRequests && userRole != null && userRole >= OrgRole.DEV_LEAD) {
+        if (showPendingRequests && canManageOrgTask(userRole)) {
             fetchPendingRequests(pendingRequestsPage);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -285,7 +285,7 @@ const OrganizationDetail: React.FC = () => {
 
     // Function to fetch pending join requests if user is an admin/leader (真正分页)
     const fetchPendingRequests = async (pageNum: number = 1) => {
-        if (!currentUser || !id || !userRole || userRole < OrgRole.DEV_LEAD) {
+        if (!currentUser || !id || !canManageOrgTask(userRole)) {
             return;
         }
         setPendingRequestsLoading(true);
@@ -502,88 +502,35 @@ const OrganizationDetail: React.FC = () => {
 
     // Function to check if current user can manage a specific member
     const canManageMember = (member: Member) => {
-        if (!userRole || userRole < OrgRole.DEV_LEAD) {
-            return false;
-        }
-
-        // 研发主管不能管理组织管理员和自己
-        if (userRole === OrgRole.DEV_LEAD) {
-            if (member.role === OrgRole.ORG_ADMIN) {
-                return false;
-            }
-            if (member.name === currentUser?.name) {
-                return false;
-            }
-        }
-
-        // 组织管理员不能管理自己
-        if (userRole === OrgRole.ORG_ADMIN && member.name === currentUser?.name) {
-            return false;
-        }
-
-        return true;
+        return canRemoveMember(userRole, member.role, member.name === currentUser?.name);
     };
 
     // Function to check if current user can set role for a specific member
     const canSetRole = (member: Member) => {
-        if (!userRole || userRole < OrgRole.DEV_LEAD) {
-            return false;
-        }
-
-        // 研发主管不能设置组织管理员的角色，也不能设置自己的角色
-        if (userRole === OrgRole.DEV_LEAD) {
-            if (member.role === OrgRole.ORG_ADMIN) {
-                return false;
-            }
-            if (member.name === currentUser?.name) {
-                return false;
-            }
-            return true;
-        }
-
-        // 组织管理员可以设置任何人的角色（除了自己）
-        if (userRole === OrgRole.ORG_ADMIN) {
-            return member.name !== currentUser?.name;
-        }
-
-        return false;
+        return canSetMemberRole(userRole, member.role, member.name === currentUser?.name);
     };
 
     // Function to get available role options based on current user's role
     const getAvailableRoleOptions = () => {
-        if (userRole === OrgRole.DEV_LEAD) {
-            // 研发主管只能设置普通成员/报告者/开发者
-            return [
-                { value: OrgRole.MEMBER, label: OrgRoleLabel[OrgRole.MEMBER], icon: <FaUser />, description: "基础成员权限" },
-                {
-                    value: OrgRole.REPORTER,
-                    label: OrgRoleLabel[OrgRole.REPORTER],
-                    icon: <FaUserCheck />,
-                    description: "可创建需求和缺陷",
-                },
-                { value: OrgRole.DEVELOPER, label: OrgRoleLabel[OrgRole.DEVELOPER], icon: <FaCode />, description: "可参与开发工作" },
-            ];
-        } else if (userRole === OrgRole.ORG_ADMIN) {
-            // 组织管理员可以设置任何角色
-            return [
-                { value: OrgRole.MEMBER, label: OrgRoleLabel[OrgRole.MEMBER], icon: <FaUser />, description: "基础成员权限" },
-                {
-                    value: OrgRole.REPORTER,
-                    label: OrgRoleLabel[OrgRole.REPORTER],
-                    icon: <FaUserCheck />,
-                    description: "可创建需求和缺陷",
-                },
-                { value: OrgRole.DEVELOPER, label: OrgRoleLabel[OrgRole.DEVELOPER], icon: <FaCode />, description: "可参与开发工作" },
-                {
-                    value: OrgRole.DEV_LEAD,
-                    label: OrgRoleLabel[OrgRole.DEV_LEAD],
-                    icon: <FaUserShield />,
-                    description: "可管理所有工单",
-                },
-                { value: OrgRole.ORG_ADMIN, label: OrgRoleLabel[OrgRole.ORG_ADMIN], icon: <FaCrown />, description: "组织最高权限" },
-            ];
-        }
-        return [];
+        const iconMap: Record<number, React.ReactNode> = {
+            [OrgRole.MEMBER]: <FaUser />,
+            [OrgRole.REPORTER]: <FaUserCheck />,
+            [OrgRole.DEVELOPER]: <FaCode />,
+            [OrgRole.DEV_LEAD]: <FaUserShield />,
+            [OrgRole.ORG_ADMIN]: <FaCrown />,
+        };
+        const descriptionMap: Record<number, string> = {
+            [OrgRole.MEMBER]: "基础成员权限",
+            [OrgRole.REPORTER]: "可创建需求和缺陷",
+            [OrgRole.DEVELOPER]: "可参与开发工作",
+            [OrgRole.DEV_LEAD]: "可管理所有工单",
+            [OrgRole.ORG_ADMIN]: "组织最高权限",
+        };
+        return getAvailableRoles(userRole).map((r) => ({
+            ...r,
+            icon: iconMap[r.value],
+            description: descriptionMap[r.value],
+        }));
     };
     // 任务相关函数
     const fetchTasksList = useCallback(
@@ -831,7 +778,7 @@ const OrganizationDetail: React.FC = () => {
 
     // 检查是否可以管理任务
     const canManageTask = () => {
-        return userRole != null && userRole >= OrgRole.DEV_LEAD;
+        return canManageOrgTask(userRole);
     };
 
     const handleJoin = async () => {
