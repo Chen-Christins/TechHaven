@@ -177,6 +177,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // 仅处理 token 相关鉴权错误（1101：过期 / 不匹配）
       if (err.errno !== 1101) return;
 
+      // 页面刷新后的首次握手失败不能证明 HTTP 会话已过期。
+      // 若这里刷新 token，会导致每次刷新页面都轮换一次 token，并再次制造 WS 竞态。
+      // 只有已经成功建立过连接、运行中断线后收到 1101，才执行无感续期。
+      if (!notificationWS.hasEstablishedConnection) {
+        notificationWS.disconnect();
+        return;
+      }
+
       // 无用户上下文或已达到最大重试次数，放弃并清理登录态
       if (!user?.id || wsAuthRetry.current >= WS_AUTH_MAX_RETRY) {
         clearAuthRuntimeState();

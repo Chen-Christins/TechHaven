@@ -54,6 +54,7 @@ export class WebSocketClient {
   private uid: string | number | undefined;
   /** 每次建连递增；旧连接的异步事件不能影响新连接。 */
   private connectionGeneration = 0;
+  private hasOpened = false;
 
   /**
    * @param path WebSocket 路径，如 "/notification"
@@ -79,6 +80,11 @@ export class WebSocketClient {
   /** 是否已连接 */
   get isConnected(): boolean {
     return this.ws?.readyState === WebSocket.OPEN;
+  }
+
+  /** 当前客户端在本次生命周期内是否至少成功建立过一次连接。 */
+  get hasEstablishedConnection(): boolean {
+    return this.hasOpened;
   }
 
   /** 建立连接（uid 从 AuthContext 传入，token / token_time 从 Cookie 读取） */
@@ -129,6 +135,7 @@ export class WebSocketClient {
       if (!isCurrentConnection()) return;
       console.log("[WS] 连接已建立");
       hasOpened = true;
+      this.hasOpened = true;
       this.reconnectAttempts = 0;
       this.authFailed = false;
       while (this.pendingSend.length > 0) {
@@ -213,6 +220,7 @@ export class WebSocketClient {
     }
     this.pendingSend = [];
     this.reconnectAttempts = 0;
+    this.hasOpened = false;
   }
 
   /** 发送消息 */
