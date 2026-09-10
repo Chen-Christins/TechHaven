@@ -6,7 +6,7 @@ const httpMock = vi.hoisted(() => ({
     postForm: vi.fn(),
 }));
 
-vi.mock("../utils/http", () => ({ default: httpMock }));
+vi.mock("../infra/http.ts", () => ({ default: httpMock }));
 
 import MessageService from "./messageService";
 
