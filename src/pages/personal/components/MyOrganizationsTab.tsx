@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { OrganizationService } from "@/services/OrganizationService.ts";
 import { formatToChinaTime } from "@/utils/Utils.ts";
 import type { PersonalOrganization } from "@/types/Organization.ts";
-import { OrgRole } from "@/types/Roles.ts";
+import { OrgRole, OrgRoleLabel } from "@/types/Roles.ts";
 import styles from "../PersonalCenter.module.css";
 
 const MyOrganizationsTab: React.FC = () => {
@@ -96,7 +96,7 @@ const MyOrganizationsTab: React.FC = () => {
                             <p className={styles.orgDescription}>{org.description}</p>
                             <div className={styles.orgStats}>
                                 <span>成员: {org.memberCount}</span>
-                                <span>角色: {org.role}</span>
+                                <span>角色: {OrgRoleLabel[org.role as OrgRole] || org.role}</span>
                             </div>
                             <div className={styles.orgTime}>加入于 {org.createTime}</div>
                         </div>
