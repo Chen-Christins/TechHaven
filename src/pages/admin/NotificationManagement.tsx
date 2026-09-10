@@ -6,8 +6,8 @@ import Button from "@/components/button/Button";
 import DatePicker from "@/components/datePicker/DatePicker";
 import Switch from "@/components/switch/Switch";
 import message from "@/components/message/Message";
-import NotificationService from "@/services/notificationService";
-import type { SelectOption } from "@/types/index";
+import NotificationService from "@/services/NotificationService.ts";
+import type { SelectOption } from "@/types";
 import styles from "./NotificationManagement.module.css";
 
 const BROADCAST_LEVEL_OPTIONS: SelectOption[] = [

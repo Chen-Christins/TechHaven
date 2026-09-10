@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { useRdNavigate } from "@/hooks/useRdNavigate";
-import { formatDateTime } from "@/utils/utils";
+import { useRdNavigate } from "@/hooks/UseRdNavigate.ts";
+import { formatDateTime } from "@/utils/Utils.ts";
 import { FaArrowLeft, FaEdit, FaSave, FaTimes, FaClipboardList, FaBug, FaTasks } from "react-icons/fa";
 import styles from "./TicketDetail.module.css";
 import Loading from "@/components/loading/Loading";
@@ -10,11 +10,11 @@ import DatePicker from "@/components/datePicker/DatePicker";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import message from "@/components/message/Message";
 import { useRdOrg } from "@/contexts/RdOrgContext";
-import { RdPlatformService as RdAPI } from "@/services/rdPlatformService";
+import { RdPlatformService as RdAPI } from "@/services/RdPlatformService.ts";
 import AssigneeDisplay from "@/components/assigneeDisplay/AssigneeDisplay";
-import { decodeId } from "@/utils/hashId";
+import { decodeId } from "@/utils/HashId.ts";
 import type { SelectOption } from "../../types";
-import type { Requirement, Bug, Task } from "@/types/rdPlatform";
+import type { Requirement, Bug, Task } from "@/types/RdPlatform.ts";
 
 // ---- Option lists ----
 

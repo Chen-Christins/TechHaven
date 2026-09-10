@@ -18,7 +18,7 @@ import {
 import styles from "./Settings.module.css";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import message from "@/components/message/Message";
-import SettingsService, { type SiteSettings, type EmailSettings, type SystemSettings } from "@/services/settingsService";
+import SettingsService, { type SiteSettings, type EmailSettings, type SystemSettings } from "@/services/SettingsService.ts";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
 const Settings: React.FC = () => {

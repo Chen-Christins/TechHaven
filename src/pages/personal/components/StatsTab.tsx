@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import * as echarts from "echarts";
-import type { UserStats } from "@/services/authService";
+import type { UserStats } from "@/services/AuthService.ts";
 import styles from "../PersonalCenter.module.css";
 
 interface Props {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaTimes } from "react-icons/fa";
-import NotificationService from "@/services/notificationService";
+import NotificationService from "@/services/NotificationService.ts";
 import styles from "./BroadcastMarquee.module.css";
 
 interface BroadcastItem {

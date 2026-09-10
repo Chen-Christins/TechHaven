@@ -57,7 +57,7 @@ WebSocket is closed before the connection was established
 
 ### WebSocket 客户端
 
-修复位于 `src/utils/websocket.ts`：
+修复位于 `../src/infra/Websocket.ts`：
 
 - 为每次连接分配递增的 generation，只允许当前连接处理 `open`、`message`、`close` 和 `error` 事件。
 - 记录连接是否真正触发过 `open`。
@@ -79,7 +79,7 @@ WebSocket is closed before the connection was established
 
 ### Token 刷新
 
-修复位于 `src/services/authService.ts`：
+修复位于 `../src/services/AuthService.ts`：
 
 - `refresh_token` 保留为显式服务方法，但不再由页面初始化或 WebSocket 首次握手自动调用。
 - 当前前端不根据含义不明确的 `S_TOKEN_TIME` 猜测 token 过期时间。

@@ -3,12 +3,12 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import styles from "./ProfilePage.module.css";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
-import { encodeId, decodeId } from "@/utils/hashId";
+import { encodeId, decodeId } from "@/utils/HashId.ts";
 import BackToTop from "@/components/backToTop/BackToTop";
 import { useAuth } from "@/contexts/AuthContext";
-import AuthService from "@/services/authService";
-import ArticleService from "@/services/articleService";
-import LabelService from "@/services/labelService";
+import AuthService from "@/services/AuthService.ts";
+import ArticleService from "@/services/ArticleService.ts";
+import LabelService from "@/services/LabelService.ts";
 import {
     MapPin,
     Mail,
@@ -26,9 +26,9 @@ import {
     Loader2,
     Edit,
 } from "lucide-react";
-import type { Article, UserProfile } from "@/types/index";
-import type { UserStats } from "@/services/authService";
-import FollowService from "@/services/followService";
+import type { Article, UserProfile } from "@/types";
+import type { UserStats } from "@/services/AuthService.ts";
+import FollowService from "@/services/FollowService.ts";
 import message from "@/components/message/Message";
 import AchievementsTab from "@/pages/user/AchievementsTab";
 

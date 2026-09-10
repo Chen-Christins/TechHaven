@@ -1,27 +1,27 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { decodeId } from "@/utils/hashId";
+import { decodeId } from "@/utils/HashId.ts";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import OrganizationDetailSkeleton from "@/components/organization/OrganizationDetailSkeleton";
 import AuthRequired from "@/components/auth/AuthRequired";
 import { useAuth } from "@/contexts/AuthContext";
 import styles from "./OrganizationDetail.module.css";
-import OrganizationService from "@/services/organizationService";
-import type { GetOrganizationDetailResponse, JoinOrganizationResponse } from "@/services/organizationService";
+import OrganizationService from "@/services/OrganizationService.ts";
+import type { GetOrganizationDetailResponse, JoinOrganizationResponse } from "@/services/OrganizationService.ts";
 import message from "@/components/message/Message";
 import { confirm } from "@/components/confirm/Confirm";
 import OrganizationInfo from "@/components/organization/OrganizationInfo";
 import OrganizationTabs from "@/components/organization/OrganizationTabs";
-import type { Member, OrganizationDetail as OrganizationDetailType, MemberStats, Task } from "@/types/organization";
+import type { Member, OrganizationDetail as OrganizationDetailType, MemberStats, Task } from "@/types/Organization.ts";
 import { FaUser, FaUserShield, FaCrown, FaUserCheck, FaCode } from "react-icons/fa";
 import Input from "@/components/input/Input";
 import DatePicker from "@/components/datePicker/DatePicker";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import Modal from "@/components/modal/Modal";
-import AssignmentService from "@/services/assignmentService";
-import { OrgRole, OrgRoleLabel, canManageOrgTask, canRemoveMember, canSetMemberRole, getAvailableRoles } from "@/types/roles";
-import { OrgMembershipStatusLabel, AssignmentStatus, AssignmentPriority } from "@/types/enums";
+import AssignmentService from "@/services/AssignmentService.ts";
+import { OrgRole, OrgRoleLabel, canManageOrgTask, canRemoveMember, canSetMemberRole, getAvailableRoles } from "@/types/Roles.ts";
+import { OrgMembershipStatusLabel, AssignmentStatus, AssignmentPriority } from "@/types/Enums.ts";
 // import type { Assignment } from '../../types';
 
 const STATE_STR_MAP_NUMBER: Record<string, number> = {

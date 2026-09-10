@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { encodeId } from "@/utils/hashId";
+import { encodeId } from "@/utils/HashId.ts";
 import { FaUserMinus, FaUserSlash } from "react-icons/fa";
-import FollowService from "@/services/followService";
-import type { FollowUser } from "@/types/follow";
+import FollowService from "@/services/FollowService.ts";
+import type { FollowUser } from "@/types/Follow.ts";
 import Avatar from "@/components/avatar/Avatar";
 import styles from "../PersonalCenter.module.css";
 

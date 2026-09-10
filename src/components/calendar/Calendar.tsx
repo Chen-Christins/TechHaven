@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { FaCalendarAlt } from "react-icons/fa";
 import styles from "./Calendar.module.css";
-import { ArticleService } from "@/services/articleService";
+import { ArticleService } from "@/services/ArticleService.ts";
 
 interface DayInfo {
     day: number;

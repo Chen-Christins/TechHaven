@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { decodeId } from "@/utils/hashId";
+import { decodeId } from "@/utils/HashId.ts";
 import {
     FaArrowLeft,
     FaBookOpen,
@@ -21,10 +21,10 @@ import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import AuthRequired from "@/components/auth/AuthRequired";
 import Skeleton from "@/components/skeleton/Skeleton";
-import AssignmentService from "@/services/assignmentService";
+import AssignmentService from "@/services/AssignmentService.ts";
 import styles from "./AssignmentSubmissions.module.css";
 import message from "@/components/message/Message";
-import FileService from "@/services/fileService";
+import FileService from "@/services/FileService.ts";
 import ErrorState from "@/components/errorState/ErrorState";
 
 interface Assignment {

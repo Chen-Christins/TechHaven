@@ -1,9 +1,9 @@
-import { useRdList } from "@/hooks/useRdList";
-import { useOrgMemberOptions } from "@/hooks/useOrgMemberOptions";
+import { useRdList } from "@/hooks/UseRdList.ts";
+import { useOrgMemberOptions } from "@/hooks/UseOrgMemberOptions.ts";
 import React, { useState } from "react";
-import { useRdNavigate } from "@/hooks/useRdNavigate";
-import { formatDateTime } from "@/utils/utils";
-import { encodeId } from "@/utils/hashId";
+import { useRdNavigate } from "@/hooks/UseRdNavigate.ts";
+import { formatDateTime } from "@/utils/Utils.ts";
+import { encodeId } from "@/utils/HashId.ts";
 import {
     FaPlus,
     FaEye,
@@ -26,11 +26,11 @@ import { confirm } from "@/components/confirm/Confirm";
 import message from "@/components/message/Message";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRdOrg } from "@/contexts/RdOrgContext";
-import { RdPlatformService as RdAPI } from "@/services/rdPlatformService";
+import { RdPlatformService as RdAPI } from "@/services/RdPlatformService.ts";
 import AssigneeDisplay from "@/components/assigneeDisplay/AssigneeDisplay";
 import type { SelectOption } from "../../types";
-import type { Bug } from "@/types/rdPlatform";
-import { OrgPermission } from "@/types/rdPlatform";
+import type { Bug } from "@/types/RdPlatform.ts";
+import { OrgPermission } from "@/types/RdPlatform.ts";
 
 // ---- constants ----
 const statusOptions: SelectOption[] = [

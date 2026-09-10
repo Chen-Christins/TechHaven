@@ -1,9 +1,9 @@
-import { AGENT_ENABLED } from "@/config/features";
+import { AGENT_ENABLED } from "@/config/Features";
 import { FaRobot } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import { useLocation, Outlet, useSearchParams } from "react-router-dom";
-import { useRdNavigate } from "@/hooks/useRdNavigate";
-import { encodeId, decodeId } from "@/utils/hashId";
+import { useRdNavigate } from "@/hooks/UseRdNavigate.ts";
+import { encodeId, decodeId } from "@/utils/HashId.ts";
 import {
     FaHome,
     FaBars,
@@ -27,7 +27,7 @@ import AuthRequired from "@/components/auth/AuthRequired";
 import OrgSelector from "@/components/orgSelector/OrgSelector";
 import { useAuth } from "@/contexts/AuthContext";
 import { RdOrgProvider, useRdOrg } from "@/contexts/RdOrgContext";
-import { RdPlatformService } from "@/services/rdPlatformService";
+import { RdPlatformService } from "@/services/RdPlatformService.ts";
 
 interface NavItem {
     id: string;

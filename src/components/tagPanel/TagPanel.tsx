@@ -1,7 +1,7 @@
 import React from "react";
 import { FaTags } from "react-icons/fa";
 import styles from "./TagPanel.module.css";
-import type { Tag } from "@/types/index";
+import type { Tag } from "@/types";
 import Skeleton from "../skeleton/Skeleton";
 
 export interface TagPanelProps {

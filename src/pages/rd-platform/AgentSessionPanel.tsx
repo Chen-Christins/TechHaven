@@ -19,9 +19,9 @@ import Modal from "@/components/modal/Modal";
 import Skeleton from "@/components/skeleton/Skeleton";
 import message from "@/components/message/Message";
 import AgentApiConfigCard from "./AgentApiConfigCard";
-import { createGatewaySession } from "@/services/agentSession/gateway";
-import { createMockSession } from "@/services/agentSession/mock";
-import type { SessionHandle, PermissionDecision } from "@/services/agentSession/types";
+import { createGatewaySession } from "@/services/agentSession/Gateway.ts";
+import { createMockSession } from "@/services/agentSession/Mock.ts";
+import type { SessionHandle, PermissionDecision } from "@/services/agentSession/Types.ts";
 import type { EngineEvent as SharedEngineEvent, ProposalStatus, SessionStatus as SharedSessionStatus } from "../../contracts/agent";
 import styles from "./AgentSessionPanel.module.css";
 

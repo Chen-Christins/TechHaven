@@ -22,8 +22,8 @@ import DashboardService, {
     type DashboardTrend,
     type DashboardActivity,
     type DashboardRecentUser,
-} from "@/services/dashboardService";
-import { PlatformRoleLabel } from "@/types/roles";
+} from "@/services/DashboardService.ts";
+import { PlatformRoleLabel } from "@/types/Roles.ts";
 import styles from "./Dashboard.module.css";
 
 const Dashboard: React.FC = () => {

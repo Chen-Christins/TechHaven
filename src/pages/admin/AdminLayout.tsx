@@ -23,7 +23,7 @@ import Notification from "@/components/notification/Notification";
 import UserDropdown from "@/components/userDropdown/UserDropdown";
 import Footer from "@/components/footer/Footer";
 import { useAuth } from "@/contexts/AuthContext";
-import { isAdmin } from "@/types/roles";
+import { isAdmin } from "@/types/Roles.ts";
 
 interface NavItem {
     id: string;

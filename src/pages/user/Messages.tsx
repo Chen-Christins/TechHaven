@@ -6,14 +6,14 @@ import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import Avatar from "@/components/avatar/Avatar";
 import Input from "@/components/input/Input";
-import MessageService from "@/services/messageService";
-import FollowService from "@/services/followService";
-import { chatWS } from "@/services/wsInstances";
+import MessageService from "@/services/MessageService.ts";
+import FollowService from "@/services/FollowService.ts";
+import { chatWS } from "@/services/WsInstances.ts";
 import { confirm } from "@/components/confirm/Confirm";
 import { useAuth } from "@/contexts/AuthContext";
-import { isNormalUser } from "@/types/roles";
-import type { ChatMsg, Conversation } from "@/types/message";
-import type { MutualFollowUser } from "@/types/follow";
+import { isNormalUser } from "@/types/Roles.ts";
+import type { ChatMsg, Conversation } from "@/types/Message.ts";
+import type { MutualFollowUser } from "@/types/Follow.ts";
 
 /** 将 Unix 时间戳格式化为展示时间（今天 HH:MM / 昨天 HH:MM / 日期） */
 const formatMsgTime = (ts: number): string => {

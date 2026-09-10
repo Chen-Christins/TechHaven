@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { FaQuoteLeft, FaSyncAlt } from "react-icons/fa";
-import { getDailyQuote, type DailyQuote as DailyQuoteData } from "@/services/quoteService";
+import { getDailyQuote, type DailyQuote as DailyQuoteData } from "@/services/QuoteService.ts";
 import styles from "./DailyQuote.module.css";
 
 const STORAGE_KEY = "dailyQuote";

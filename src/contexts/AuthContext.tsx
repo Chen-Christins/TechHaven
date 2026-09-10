@@ -1,12 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthService } from "../services/authService";
-import { tokenManager } from "../utils/tokenManager";
-import { getTokenFromCookie, clearAuthCookies } from "../utils/cookieHelper";
-import { notificationWS, chatWS } from "../services/wsInstances";
-import { setFaviconBadge } from "../utils/favicon";
-import { resetNotificationState } from "../utils/notificationState";
-import { canChat } from "../types/roles";
+import { AuthService } from "../services/AuthService.ts";
+import { tokenManager } from "../auth/TokenManager.ts";
+import { getTokenFromCookie, clearAuthCookies } from "../auth/CookieHelper.ts";
+import { notificationWS, chatWS } from "../services/WsInstances.ts";
+import { setFaviconBadge } from "../utils/Favicon.ts";
+import { resetNotificationState } from "../utils/NotificationState.ts";
+import { canChat } from "../types/Roles.ts";
 
 // 用户信息类型
 export interface User {
@@ -47,6 +47,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [loading, setLoading] = useState(true);
     const [loginError, setLoginError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const authGenerationRef = useRef(0);
+
+    const disconnectWebSockets = useCallback(() => {
+        notificationWS.disconnect();
+        chatWS.disconnect();
+    }, []);
 
     const extractToken = (response: any): string | null => {
         const candidates = [
@@ -69,16 +75,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     const clearAuthRuntimeState = useCallback(() => {
+        disconnectWebSockets();
         setUser(null);
         setToken(null);
         tokenManager.clearToken();
         clearAuthCookies();
         resetNotificationState();
         setFaviconBadge(0);
-    }, []);
+    }, [disconnectWebSockets]);
 
     // 初始化认证状态
     useEffect(() => {
+        const generation = ++authGenerationRef.current;
         const initAuth = async () => {
             try {
                 const cookieToken = getTokenFromCookie();
@@ -96,27 +104,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 try {
                     const userResponse = await AuthService.getUserInfo();
 
-                    if (userResponse.data && userResponse.errno === 0) {
+                    if (
+                        generation === authGenerationRef.current &&
+                        tokenManager.getToken() === cookieToken &&
+                        userResponse.data &&
+                        userResponse.errno === 0
+                    ) {
                         const userData = userResponse.data;
                         userData.role = Number(userData.role) || 1;
                         setUser(userData as User);
-                    } else {
+                    } else if (generation === authGenerationRef.current) {
                         clearAuthRuntimeState();
                     }
                 } catch (_userError) {
-                    clearAuthRuntimeState();
+                    if (generation === authGenerationRef.current) {
+                        clearAuthRuntimeState();
+                    }
                 }
             } finally {
-                setLoading(false);
+                if (generation === authGenerationRef.current) {
+                    setLoading(false);
+                }
             }
         };
 
-        initAuth();
+        void initAuth();
+        return () => {
+            if (authGenerationRef.current === generation) {
+                authGenerationRef.current++;
+            }
+        };
     }, []);
 
     // 会话失效（token 过期 / 被顶下线）→ 清除登录态并跳转登录页
     useEffect(() => {
         const handleSessionInvalidated = () => {
+            authGenerationRef.current++;
             clearAuthRuntimeState();
             if (!window.location.pathname.startsWith("/auth")) {
                 navigate("/auth");
@@ -129,11 +152,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, [clearAuthRuntimeState, navigate]);
 
     // 计算是否已认证（必须在 WebSocket useEffect 之前声明）
-    const isAuthenticated = !!user;
+    const isAuthenticated = Boolean(user && token);
 
     // WebSocket 连接管理 — 在 AuthProvider 层持久化，不会随路由切换重连
     useEffect(() => {
-        if (isAuthenticated && user) {
+        const activeToken = tokenManager.getToken();
+        if (isAuthenticated && user && token && activeToken === token) {
             notificationWS.connect(user.id);
             // 普通用户无私信权限，不建立聊天连接（后端同样拒绝，避免重连循环）
             if (canChat(user.role)) {
@@ -146,7 +170,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             chatWS.disconnect();
             setFaviconBadge(0); // 退出登录或未认证时清除 favicon 角标
         }
-    }, [isAuthenticated, user]);
+    }, [isAuthenticated, token, user]);
 
     // WebSocket 错误不负责轮换 token。token 只由主动续期计时器更新，
     // 避免页面首次建立 WS 后收到 1101 就导致每次刷新页面都调用 refresh_token。
@@ -162,7 +186,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 return;
             }
             // 1101 只代表该 WebSocket 会话被服务端拒绝，不能据此轮换全局 token。
-            // HTTP 请求收到 1101 时仍由 http.ts 统一清理登录态；主动续期由下方计时器负责。
+            // HTTP 请求收到 1101 时仍由 Http.ts 统一清理登录态；主动续期由下方计时器负责。
             if (err.errno === 1101) {
                 notificationWS.disconnect();
             }
@@ -179,13 +203,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     const loginWithRetry = async (authId: string, password: string, retried: boolean) => {
+        const generation = ++authGenerationRef.current;
         try {
             setLoginError(null);
             setLoading(true);
+            disconnectWebSockets();
+            setUser(null);
+            setToken(null);
+            tokenManager.clearToken();
             resetNotificationState();
             setFaviconBadge(0);
 
             const response = await AuthService.login(authId, password);
+            if (generation !== authGenerationRef.current) {
+                return;
+            }
 
             if (response.errno === 0) {
                 let userToken = extractToken(response);
@@ -194,23 +226,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     userToken = getTokenFromCookie();
                 }
 
-                if (userToken) {
-                    setToken(userToken);
-                    tokenManager.setToken(userToken);
+                if (!userToken) {
+                    throw new Error("登录成功但未获取到认证令牌");
                 }
+
+                tokenManager.setToken(userToken);
+                setToken(userToken);
 
                 // 获取最新的用户信息
                 try {
                     const userResponse = await AuthService.getUserInfo();
 
-                    if (userResponse.data && userResponse.errno === 0) {
+                    if (
+                        generation === authGenerationRef.current &&
+                        tokenManager.getToken() === userToken &&
+                        userResponse.data &&
+                        userResponse.errno === 0
+                    ) {
                         const updatedUser = userResponse.data;
                         updatedUser.role = Number(updatedUser.role) || 1;
                         setUser(updatedUser as User);
                     } else {
-                        console.warn("⚠️ 用户信息接口返回异常:", userResponse);
+                        throw new Error("登录成功但用户信息校验失败");
                     }
                 } catch (_userError) {
+                    if (generation !== authGenerationRef.current || tokenManager.getToken() !== userToken) {
+                        return;
+                    }
                     // 如果获取用户信息失败，使用登录响应中的用户信息
                     if ((response.data as any)?.user) {
                         const fallbackUserData = (response.data as any).user;
@@ -222,12 +264,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                             status: fallbackUserData.status || "active",
                         };
                         setUser(fallbackUser);
+                    } else {
+                        throw _userError;
                     }
                 }
             } else {
                 console.warn("⚠️ 登录响应状态异常:", response);
             }
         } catch (error: any) {
+            if (generation !== authGenerationRef.current) {
+                return;
+            }
             // 2010 USER_ALREADY_LOGIN：本设备已有登录态，先登出再重试一次登录
             if (!retried && error?.errno === 2010) {
                 try {
@@ -239,27 +286,39 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 return loginWithRetry(authId, password, true);
             }
             setLoginError(error.message || "登录失败");
+            clearAuthRuntimeState();
             throw error;
         } finally {
-            setLoading(false);
+            if (generation === authGenerationRef.current) {
+                setLoading(false);
+            }
         }
     };
 
     // 登出方法
     const logout = async () => {
+        const generation = ++authGenerationRef.current;
         try {
             setLoading(true);
             // 调用后端登出接口
             await AuthService.logout();
+            if (generation !== authGenerationRef.current) {
+                return;
+            }
             // 清除内存状态
             clearAuthRuntimeState();
             setLoginError(null);
         } catch (error) {
+            if (generation !== authGenerationRef.current) {
+                return;
+            }
             console.error("登出失败:", error);
             // 即使后端登出失败，也清除本地状态
             clearAuthRuntimeState();
         } finally {
-            setLoading(false);
+            if (generation === authGenerationRef.current) {
+                setLoading(false);
+            }
         }
     };
 

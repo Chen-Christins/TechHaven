@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ArticleView from "./ArticleView";
-import ArticleService from "@/services/articleService";
+import ArticleService from "@/services/ArticleService.ts";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import BackToTop from "@/components/backToTop/BackToTop";
-import { formatToChinaTime } from "@/utils/utils";
-import { decodeId } from "@/utils/hashId";
+import { formatToChinaTime } from "@/utils/Utils.ts";
+import { decodeId } from "@/utils/HashId.ts";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthRequired from "@/components/auth/AuthRequired";
 import ArticleErrorView from "@/components/articleView/ArticleErrorView";

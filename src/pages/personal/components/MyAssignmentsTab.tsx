@@ -6,9 +6,9 @@ import CustomSelect from "@/components/customSelect/CustomSelect";
 import ErrorState from "@/components/errorState/ErrorState";
 import Input from "@/components/input/Input";
 import Skeleton from "@/components/skeleton/Skeleton";
-import AssignmentService, { type GetUserAssignmentsResponse } from "@/services/assignmentService";
-import type { SelectOption } from "@/types/index";
-import { encodeId } from "@/utils/hashId";
+import AssignmentService, { type GetUserAssignmentsResponse } from "@/services/AssignmentService.ts";
+import type { SelectOption } from "@/types";
+import { encodeId } from "@/utils/HashId.ts";
 import styles from "../PersonalCenter.module.css";
 
 type Assignment = GetUserAssignmentsResponse["list"][number];

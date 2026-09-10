@@ -201,7 +201,7 @@ BrowserRouter
 
 ### HTTP 与实时通信
 
-- 普通业务 API 按领域封装在 `src/services/` 中，并复用 `src/utils/http.ts` 的 Axios 实例。
+- 普通业务 API 按领域封装在 `src/services/` 中，并复用 `src/infra/Http.ts` 的 Axios 实例。
 - HTTP 层统一处理业务 `errno`、动态错误码表、HTTP 错误和认证失效。
 - AI 摘要使用原生 Fetch 读取 SSE 流。
 - 通知和在线状态使用两个独立 WebSocket 连接，登录后连接、登出后断开，并支持自动重连。

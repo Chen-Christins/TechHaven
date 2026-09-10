@@ -12,7 +12,7 @@ import SearchPanel from "@/components/searchArticle/SearchArticle";
 import ThemeStylePanel from "@/components/themeStylePanel/ThemeStylePanel";
 import DailyQuote from "@/components/dailyQuote/DailyQuote";
 import BackToTop from "@/components/backToTop/BackToTop";
-import LabelService from "@/services/labelService";
+import LabelService from "@/services/LabelService.ts";
 import PageSkeleton from "@/components/pageSkeleton/PageSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 

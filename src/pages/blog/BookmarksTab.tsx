@@ -3,7 +3,7 @@ import { FaFolder, FaBookmark, FaRegClock, FaRegEye, FaRegUser, FaTrash, FaCheck
 import styles from "./BlogPage.module.css";
 import bmStyles from "./Bookmarks.module.css";
 import message from "@/components/message/Message";
-import { MOCK_ARTICLES, type BlogArticle } from "./mockBlog";
+import { MOCK_ARTICLES, type BlogArticle } from "./MockBlog";
 
 interface Folder {
     id: string;

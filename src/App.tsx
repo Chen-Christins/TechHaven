@@ -13,10 +13,10 @@ import IdleTimeoutHandler from "./components/sessionTimeout/IdleTimeoutHandler";
 import RouterConfig from "./router/RouterConfig";
 import ThemeBackground from "./components/themeBackground";
 import SessionNotifier from "./components/auth/SessionNotifier";
-import { usePresenceConnection } from "./hooks/useOnlineCount";
-import { useDevToolsProtection } from "./hooks/useDevToolsProtection";
-import { initErrorCodes, refreshErrorCodes } from "./utils/errorCodes";
-import "./utils/errorHandlers"; // 注册业务 errno 处理器（1101 等）
+import { usePresenceConnection } from "./hooks/UseOnlineCount.ts";
+import { useDevToolsProtection } from "./hooks/UseDevToolsProtection.ts";
+import { initErrorCodes, refreshErrorCodes } from "./utils/ErrorCodes.ts";
+import "./utils/ErrorHandlers.ts"; // 注册业务 errno 处理器（1101 等）
 
 function AppContent() {
     usePresenceConnection();

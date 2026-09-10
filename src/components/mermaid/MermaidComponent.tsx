@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./MermaidComponent.module.css";
-import { MERMAID_INIT_CONFIG } from "./mermaidConfig";
+import { MERMAID_INIT_CONFIG } from "./MermaidConfig";
 
 type MermaidInstance = Awaited<typeof import("mermaid")>["default"];
 

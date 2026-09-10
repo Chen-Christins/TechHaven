@@ -17,7 +17,7 @@ import {
     FaFlag,
 } from "react-icons/fa";
 import DatePicker from "@/components/datePicker/DatePicker";
-import { formatDateTime } from "@/utils/utils";
+import { formatDateTime } from "@/utils/Utils.ts";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import Input from "@/components/input/Input";
 import Loading from "@/components/loading/Loading";
@@ -25,8 +25,8 @@ import { confirm } from "@/components/confirm/Confirm";
 import message from "@/components/message/Message";
 import Modal from "@/components/modal/Modal";
 import styles from "./AssignmentManagement.module.css";
-import AssignmentService, { type AssignmentStatsResponse } from "@/services/assignmentService";
-import { AssignmentStatus, AssignmentPriority } from "@/types/enums";
+import AssignmentService, { type AssignmentStatsResponse } from "@/services/AssignmentService.ts";
+import { AssignmentStatus, AssignmentPriority } from "@/types/Enums.ts";
 
 // 模拟任务数据接口
 interface Assignment {

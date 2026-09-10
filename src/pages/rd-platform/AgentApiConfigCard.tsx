@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { FaRobot, FaKey, FaGlobe, FaCogs } from "react-icons/fa";
 import Input from "@/components/input/Input";
 import CustomSelect from "@/components/customSelect/CustomSelect";
-import type { SelectOption } from "@/types/index";
+import type { SelectOption } from "@/types";
 import { message } from "@/components/message/Message";
-import { agentAiConfigService } from "@/services/agentAiConfigService";
+import { agentAiConfigService } from "@/services/AgentAiConfigService.ts";
 import styles from "../personal/PersonalCenter.module.css";
 import ErrorState from "@/components/errorState/ErrorState";
 
