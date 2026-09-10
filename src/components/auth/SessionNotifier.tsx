@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { tokenManager, type SessionInvalidReason } from "@/auth/tokenManager.ts";
+import { tokenManager, type SessionInvalidReason } from "@/auth/TokenManager.ts";
 import message from "@/components/message/Message";
 
 /**

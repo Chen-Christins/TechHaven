@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import FileService from "@/services/fileService";
+import FileService from "@/services/FileService.ts";
 import message from "@/components/message/Message";
 import styles from "./ChunkUploadTest.module.css";
 

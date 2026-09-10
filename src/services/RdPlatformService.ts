@@ -2,7 +2,7 @@
 // R&D Platform Service — Real API calls
 // ============================================================
 
-import http from "../infra/http.ts";
+import http from "../infra/Http.ts";
 import type {
     Requirement,
     Bug,
@@ -14,7 +14,7 @@ import type {
     TaskFilters,
     RdTrendAnalysisData,
     RdTrendFilters,
-} from "../types/rdPlatform";
+} from "../types/RdPlatform.ts";
 
 // ---------------------------------------------------------------------------
 // Helpers — transform backend ↔ frontend format

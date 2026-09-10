@@ -6,8 +6,8 @@ import Button from "@/components/button/Button";
 import ErrorState from "@/components/errorState/ErrorState";
 import Loading from "@/components/loading/Loading";
 import { useRdOrg } from "@/contexts/RdOrgContext";
-import RdPlatformService from "@/services/rdPlatformService";
-import type { RdTrendAnalysisData } from "@/types/rdPlatform";
+import RdPlatformService from "@/services/RdPlatformService.ts";
+import type { RdTrendAnalysisData } from "@/types/RdPlatform.ts";
 import styles from "./TrendAnalysis.module.css";
 
 type TrendPeriod = 7 | 30;

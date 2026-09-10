@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { HttpClient, HttpError, setBusinessErrorHandler } from "./http.ts";
-import { tokenManager } from "../auth/tokenManager.ts";
+import { HttpClient, HttpError, setBusinessErrorHandler } from "./Http.ts";
+import { tokenManager } from "../auth/TokenManager.ts";
 
 it("postForm preserves falsy values, encodes special text and omits only nullish fields", async () => {
     let sent = "";

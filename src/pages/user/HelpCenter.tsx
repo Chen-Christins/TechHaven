@@ -26,7 +26,7 @@ import message from "@/components/message/Message";
 import Loading from "@/components/loading/Loading";
 import { useAuth } from "@/contexts/AuthContext";
 import type { SelectOption } from "../../types";
-import { HelpService, type HelpFaq } from "../../services/helpService";
+import { HelpService, type HelpFaq } from "../../services/HelpService.ts";
 
 const CATEGORIES = [
     { name: "入门", icon: <FaRocket />, color: "#3b82f6" },

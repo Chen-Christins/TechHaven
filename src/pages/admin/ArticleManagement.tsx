@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { encodeId } from "@/utils/hashId";
+import { encodeId } from "@/utils/HashId.ts";
 import {
     FaFileAlt,
     FaPlus,
@@ -31,12 +31,12 @@ import CustomSelect from "@/components/customSelect/CustomSelect";
 import Input from "@/components/input/Input";
 import Loading from "@/components/loading/Loading";
 import { confirm } from "@/components/confirm/Confirm";
-import type { SelectOption } from "@/types/index";
-import { PlatformRoleLabel, PlatformRoleByKey } from "@/types/roles";
+import type { SelectOption } from "@/types";
+import { PlatformRoleLabel, PlatformRoleByKey } from "@/types/Roles.ts";
 import styles from "./ArticleManagement.module.css";
-import ArticleService, { type ListAdminArticlesResponse, type ArticleStatsResponse } from "@/services/articleService";
-import { CategoryService } from "@/services/categoryService";
-import { formatToChinaTime } from "@/utils/utils";
+import ArticleService, { type ListAdminArticlesResponse, type ArticleStatsResponse } from "@/services/ArticleService.ts";
+import { CategoryService } from "@/services/CategoryService.ts";
+import { formatToChinaTime } from "@/utils/Utils.ts";
 import message from "@/components/message/Message";
 
 // 文章接口定义

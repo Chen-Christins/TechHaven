@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthService } from "../services/authService";
-import { tokenManager } from "../auth/tokenManager.ts";
-import { getTokenFromCookie, clearAuthCookies } from "../auth/cookieHelper.ts";
-import { notificationWS, chatWS } from "../services/wsInstances";
-import { setFaviconBadge } from "../utils/favicon";
-import { resetNotificationState } from "../utils/notificationState";
-import { canChat } from "../types/roles";
+import { AuthService } from "../services/AuthService.ts";
+import { tokenManager } from "../auth/TokenManager.ts";
+import { getTokenFromCookie, clearAuthCookies } from "../auth/CookieHelper.ts";
+import { notificationWS, chatWS } from "../services/WsInstances.ts";
+import { setFaviconBadge } from "../utils/Favicon.ts";
+import { resetNotificationState } from "../utils/NotificationState.ts";
+import { canChat } from "../types/Roles.ts";
 
 // 用户信息类型
 export interface User {
@@ -186,7 +186,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 return;
             }
             // 1101 只代表该 WebSocket 会话被服务端拒绝，不能据此轮换全局 token。
-            // HTTP 请求收到 1101 时仍由 http.ts 统一清理登录态；主动续期由下方计时器负责。
+            // HTTP 请求收到 1101 时仍由 Http.ts 统一清理登录态；主动续期由下方计时器负责。
             if (err.errno === 1101) {
                 notificationWS.disconnect();
             }

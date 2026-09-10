@@ -6,9 +6,9 @@ const httpMock = vi.hoisted(() => ({
     postForm: vi.fn(),
 }));
 
-vi.mock("../infra/http.ts", () => ({ default: httpMock }));
+vi.mock("../infra/Http.ts", () => ({ default: httpMock }));
 
-import MessageService from "./messageService";
+import MessageService from "./MessageService.ts";
 
 describe("MessageService", () => {
     beforeEach(() => {

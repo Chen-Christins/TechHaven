@@ -21,7 +21,7 @@ import BroadcastMarquee from "../broadcastMarquee/BroadcastMarquee";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import Avatar from "../avatar/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { isNormalUser, PlatformRoleLabel, type PlatformRole as PlatformRoleType } from "@/types/roles";
+import { isNormalUser, PlatformRoleLabel, type PlatformRole as PlatformRoleType } from "@/types/Roles.ts";
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();

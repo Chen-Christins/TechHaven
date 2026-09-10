@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse, AxiosError } from "axios";
-import { getErrorMsg } from "../utils/errorCodes.ts";
-import { tokenManager } from "../auth/tokenManager.ts";
+import { getErrorMsg } from "../utils/ErrorCodes.ts";
+import { tokenManager } from "../auth/TokenManager.ts";
 
 /**
  * HTTP 请求响应接口
@@ -17,8 +17,8 @@ export interface HttpResponse<T = any> {
 /**
  * 业务错误回调注册表
  *
- * http.ts 不包含任何业务语义，具体 errno 的处理逻辑由
- * errorHandlers.ts 等业务模块通过 setBusinessErrorHandler 注册。
+ * Http.ts 不包含任何业务语义，具体 errno 的处理逻辑由
+ * ErrorHandlers.ts 等业务模块通过 setBusinessErrorHandler 注册。
  */
 type BusinessErrorHandler = (errno: number, data?: any) => void;
 let businessErrorHandler: BusinessErrorHandler | null = null;

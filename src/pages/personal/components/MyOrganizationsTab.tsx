@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { FaUsers, FaPlus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { encodeId } from "@/utils/hashId";
+import { encodeId } from "@/utils/HashId.ts";
 import Loading from "@/components/loading/Loading";
 import { useAuth } from "@/contexts/AuthContext";
-import { OrganizationService } from "@/services/organizationService";
-import { formatToChinaTime } from "@/utils/utils";
-import type { PersonalOrganization } from "@/types/organization";
-import { OrgRole } from "@/types/roles";
+import { OrganizationService } from "@/services/OrganizationService.ts";
+import { formatToChinaTime } from "@/utils/Utils.ts";
+import type { PersonalOrganization } from "@/types/Organization.ts";
+import { OrgRole } from "@/types/Roles.ts";
 import styles from "../PersonalCenter.module.css";
 
 const MyOrganizationsTab: React.FC = () => {

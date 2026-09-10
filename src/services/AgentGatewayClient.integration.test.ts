@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { EventEnvelope } from "../contracts/agent";
-import { AgentGatewayClient } from "./agentGatewayClient";
+import { AgentGatewayClient } from "./AgentGatewayClient.ts";
 
 // 本测试文件使用 node 进程环境；根 tsconfig 面向浏览器（types: ["vite/client"]），
 // 这里用文件内声明避免把 @types/node 的全局 setTimeout 等拖进整个编译

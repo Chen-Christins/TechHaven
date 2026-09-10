@@ -1,4 +1,4 @@
-import type { PublicSiteSettings } from "../services/settingsService";
+import type { PublicSiteSettings } from "../services/SettingsService.ts";
 
 export const SITE_SETTINGS_CACHE_KEY = "publicSiteSettings";
 

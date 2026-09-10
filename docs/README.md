@@ -14,7 +14,7 @@
 
 ## 通用约定
 
-所有接口基于 `../src/infra/http.ts` 中的 `HttpClient`，遵循以下约定：
+所有接口基于 `../src/infra/Http.ts` 中的 `HttpClient`，遵循以下约定：
 
 - **Base URL**：`VITE_USE_PROXY=true` 时为 `/api/v1`，否则为 `VITE_API_BASE_URL`（如 `http://8.148.82.38:8078`）。
 - **鉴权**：请求拦截器自动附加 `Authorization: Bearer <token>`，token 来自内存态 `TokenManager`（取自 `S_TOKEN` Cookie），**不**使用 localStorage。
@@ -30,5 +30,5 @@
   }
   ```
   响应拦截器在 `errno === 0 || success` 时视为成功；`errno === 1101` 触发未登录处理（清除 token）。
-- **错误码**：HTTP 状态码与业务码映射见 `src/utils/errorCodes.ts`（`getErrorMsg`）。常用：400 参数错误、401 未授权、403 状态异常、404 资源不存在、500 服务器错误。
+- **错误码**：HTTP 状态码与业务码映射见 `../src/utils/ErrorCodes.ts`（`getErrorMsg`）。常用：400 参数错误、401 未授权、403 状态异常、404 资源不存在、500 服务器错误。
 - **约定说明**：下列协议中的字段、枚举值与前端 mock 一一对应；请求/响应示例省略 `HttpResponse` 外层，仅展示 `data` 部分。

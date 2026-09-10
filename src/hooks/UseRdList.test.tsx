@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import { useRdList } from "./useRdList";
+import { useRdList } from "./UseRdList.ts";
 
 const errors = vi.hoisted(() => vi.fn());
 vi.mock("../components/message/Message", () => ({ default: { error: errors } }));

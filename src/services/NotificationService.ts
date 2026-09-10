@@ -1,5 +1,5 @@
-import http from "../infra/http.ts";
-import type { NotificationListResponse } from "../types/notification";
+import http from "../infra/Http.ts";
+import type { NotificationListResponse } from "../types/Notification.ts";
 
 export class NotificationService {
     /**

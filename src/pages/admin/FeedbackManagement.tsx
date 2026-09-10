@@ -23,10 +23,10 @@ import Modal from "@/components/modal/Modal";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import { confirm } from "@/components/confirm/Confirm";
 import message from "@/components/message/Message";
-import type { SelectOption } from "@/types/index";
-import { formatDateTime } from "@/utils/utils";
-import { HelpService, type FeedbackItem, type HelpFaq } from "@/services/helpService";
-import { OrganizationService } from "@/services/organizationService";
+import type { SelectOption } from "@/types";
+import { formatDateTime } from "@/utils/Utils.ts";
+import { HelpService, type FeedbackItem, type HelpFaq } from "@/services/HelpService.ts";
+import { OrganizationService } from "@/services/OrganizationService.ts";
 
 const TYPE_LABELS: Record<string, string> = {
     bug: "问题反馈",

@@ -5,7 +5,7 @@
  * chatWS：聊天频道（/ws/v1/messages）
  */
 
-import { WebSocketClient } from "../infra/websocket.ts";
+import { WebSocketClient } from "../infra/Websocket.ts";
 
 /** 通知 WebSocket 单例 */
 export const notificationWS = new WebSocketClient("/ws/v1/notification");

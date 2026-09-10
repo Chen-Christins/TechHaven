@@ -7,8 +7,8 @@ import message from "@/components/message/Message";
 import { confirm } from "@/components/confirm/Confirm";
 import Loading from "@/components/loading/Loading";
 import ErrorState from "@/components/errorState/ErrorState";
-import DeviceService, { type LoginDevice } from "@/services/deviceService";
-import { formatRelativeTime } from "@/utils/utils";
+import DeviceService, { type LoginDevice } from "@/services/DeviceService.ts";
+import { formatRelativeTime } from "@/utils/Utils.ts";
 
 const isMobilePlatform = (platform: string): boolean => /ios|android|mobile/i.test(platform || "");
 

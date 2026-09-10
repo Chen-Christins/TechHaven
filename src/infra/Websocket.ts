@@ -1,6 +1,6 @@
-import { getErrorMsg } from "../utils/errorCodes.ts";
-import { tokenManager } from "../auth/tokenManager.ts";
-import { getCookie } from "../auth/cookieHelper.ts";
+import { getErrorMsg } from "../utils/ErrorCodes.ts";
+import { tokenManager } from "../auth/TokenManager.ts";
+import { getCookie } from "../auth/CookieHelper.ts";
 
 type MessageHandler = (data: unknown) => void;
 type EventHandler = (event?: Event) => void;

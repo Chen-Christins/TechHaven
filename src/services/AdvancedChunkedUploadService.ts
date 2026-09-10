@@ -1,4 +1,4 @@
-import { FileService } from "./fileService";
+import { FileService } from "./FileService.ts";
 
 /**
  * 高级分块上传服务配置

@@ -1,4 +1,4 @@
-import http from "../infra/http.ts";
+import http from "../infra/Http.ts";
 import type {
     CommentListResponse,
     CreateCommentResponse,
@@ -6,7 +6,7 @@ import type {
     AdminCommentListResponse,
     BatchOperationResponse,
     CommentStatsResponse,
-} from "../types/comment";
+} from "../types/Comment.ts";
 
 export class CommentService {
     /** 获取文章评论列表 */

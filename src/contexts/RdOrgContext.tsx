@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from "react";
 import { useAuth } from "./AuthContext";
 import { useNavigate } from "react-router-dom";
-import { RdPlatformService } from "../services/rdPlatformService";
-import type { RdOrgInfo } from "../types/rdPlatform";
-import { isAdmin as checkIsAdmin } from "../types/roles";
+import { RdPlatformService } from "../services/RdPlatformService.ts";
+import type { RdOrgInfo } from "../types/RdPlatform.ts";
+import { isAdmin as checkIsAdmin } from "../types/Roles.ts";
 import { FaBuilding, FaHome, FaLock } from "react-icons/fa";
 
 interface RdOrgContextType {

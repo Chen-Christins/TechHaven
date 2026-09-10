@@ -1,4 +1,4 @@
-import type { PlatformRole } from "./roles";
+import type { PlatformRole } from "./Roles.ts";
 
 // 文章类型
 export interface Article {

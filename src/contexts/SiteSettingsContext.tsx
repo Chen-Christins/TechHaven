@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from "react";
-import SettingsService from "../services/settingsService";
-import { resetOriginalFavicon } from "../utils/favicon";
-import { readSiteSettingsCache, writeSiteSettingsCache } from "../utils/siteSettingsCache";
+import SettingsService from "../services/SettingsService.ts";
+import { resetOriginalFavicon } from "../utils/Favicon.ts";
+import { readSiteSettingsCache, writeSiteSettingsCache } from "../utils/SiteSettingsCache.ts";
 
 export interface SiteSettingsState {
     siteName: string;

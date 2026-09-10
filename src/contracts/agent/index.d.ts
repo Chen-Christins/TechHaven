@@ -52,7 +52,7 @@ export type EngineEventPayload =
 /**
  * 事件信封：SSE 数据帧本体（可辨识联合，`type` 与 `payload` 一一对应）。
  * - `seq` 会话内递增；`eventId = "<sessionId>:<seq>"`，与 SSE `id:` 对齐，
- *   断线重连经 Last-Event-ID / `?after=` 回放（见 Gateway http.ts）。
+ *   断线重连经 Last-Event-ID / `?after=` 回放（见 Gateway Http.ts）。
  * - `occurredAt` 与载荷内不再重复携带时间；`traceId` 由 R2 OpenTelemetry 接入后填充，
  *   PoC 阶段固定空串。
  */

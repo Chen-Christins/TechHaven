@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import CustomSelect from "../components/customSelect/CustomSelect";
-import type { SelectOption } from "../types/index";
+import type { SelectOption } from "../types";
 
 const SampleCustomSelect: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState<SelectOption | null>(null);

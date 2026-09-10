@@ -1,4 +1,4 @@
-import http from "../infra/http.ts";
+import http from "../infra/Http.ts";
 
 /**
  * 删除标签请求参数类型

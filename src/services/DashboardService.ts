@@ -1,4 +1,4 @@
-import http from "../infra/http.ts";
+import http from "../infra/Http.ts";
 
 export interface DashboardStats {
     total_users: number;

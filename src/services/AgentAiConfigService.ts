@@ -1,5 +1,5 @@
-import { AuthService, type AiConfig, type AiConfigParams } from "./authService";
-import { agentRequest } from "./agentRequest";
+import { AuthService, type AiConfig, type AiConfigParams } from "./AuthService.ts";
+import { agentRequest } from "./AgentRequest.ts";
 
 interface Asset extends AiConfig {
     id: number;

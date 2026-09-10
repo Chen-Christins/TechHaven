@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { decodeId } from "@/utils/hashId";
+import { decodeId } from "@/utils/HashId.ts";
 import {
     FaCloudUploadAlt,
     FaFileAlt,
@@ -17,8 +17,8 @@ import Footer from "@/components/footer/Footer";
 import message from "@/components/message/Message";
 import AuthRequired from "@/components/auth/AuthRequired";
 import AssignmentSubmitSkeleton from "./AssignmentSubmitSkeleton";
-import AssignmentService from "@/services/assignmentService";
-import FileService from "@/services/fileService";
+import AssignmentService from "@/services/AssignmentService.ts";
+import FileService from "@/services/FileService.ts";
 import ErrorState from "@/components/errorState/ErrorState";
 import styles from "./AssignmentSubmit.module.css";
 

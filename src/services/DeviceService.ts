@@ -1,4 +1,4 @@
-import http, { type HttpResponse } from "../infra/http.ts";
+import http, { type HttpResponse } from "../infra/Http.ts";
 
 /**
  * 登录设备信息

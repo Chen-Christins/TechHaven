@@ -23,7 +23,7 @@ import message from "@/components/message/Message";
 import Modal from "@/components/modal/Modal";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import styles from "./OrganizationManagement.module.css";
-import OrganizationService, { type OrganizationStatsResponse, type ApplyItem } from "@/services/organizationService";
+import OrganizationService, { type OrganizationStatsResponse, type ApplyItem } from "@/services/OrganizationService.ts";
 
 interface Organization {
     id: string;

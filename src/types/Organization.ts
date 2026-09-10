@@ -1,5 +1,5 @@
 // 个人中心中组织的类型定义
-import type { OrgRole } from "./roles";
+import type { OrgRole } from "./Roles.ts";
 
 export interface PersonalOrganization {
     id: string;

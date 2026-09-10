@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { createGatewaySession } from "./gateway";
+import { createGatewaySession } from "./Gateway.ts";
 
 const client = vi.hoisted(() => ({
     createSession: vi.fn(async () => ({ sid: "session-1" })),

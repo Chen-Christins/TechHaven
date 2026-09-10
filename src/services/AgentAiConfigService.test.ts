@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { AgentAiConfigService } from "./agentAiConfigService";
-import { AuthService } from "./authService";
+import { AgentAiConfigService } from "./AgentAiConfigService.ts";
+import { AuthService } from "./AuthService.ts";
 
 const input = { type: "openai" as const, url: "https://example.com/v1/responses", api_key: "test-key" };
 const json = (data: unknown, status = 200) =>

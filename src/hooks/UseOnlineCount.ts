@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { connectPresence, disconnectPresence, subscribeOnlineCount, getOnlineCount } from "../services/presenceService";
+import { connectPresence, disconnectPresence, subscribeOnlineCount, getOnlineCount } from "../services/PresenceService.ts";
 
 /** 在 App 层使用：管理在线状态 WebSocket 连接生命周期 */
 export function usePresenceConnection() {

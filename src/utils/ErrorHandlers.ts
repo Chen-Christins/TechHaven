@@ -2,12 +2,12 @@
  * 业务错误码处理器
  *
  * 所有与业务语义相关的 errno 处理逻辑都集中在这里，
- * http.ts 只负责调用 setBusinessErrorHandler 注册的回调。
+ * Http.ts 只负责调用 setBusinessErrorHandler 注册的回调。
  */
 
-import { tokenManager, detectInvalidReason, type SessionInvalidReason } from "../auth/tokenManager.ts";
-import { clearAuthCookies } from "../auth/cookieHelper.ts";
-import { setBusinessErrorHandler } from "../infra/http.ts";
+import { tokenManager, detectInvalidReason, type SessionInvalidReason } from "../auth/TokenManager.ts";
+import { clearAuthCookies } from "../auth/CookieHelper.ts";
+import { setBusinessErrorHandler } from "../infra/Http.ts";
 
 // ---------- 1101：未登录（token 过期 / 被顶下线） ----------
 

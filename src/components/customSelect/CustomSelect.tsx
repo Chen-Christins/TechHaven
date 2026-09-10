@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import type { CustomSelectProps, SelectOption } from "@/types/index";
+import type { CustomSelectProps, SelectOption } from "@/types";
 import styles from "./CustomSelect.module.css";
 
 const CustomSelect: React.FC<CustomSelectProps> = ({

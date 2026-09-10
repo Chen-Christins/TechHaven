@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaFire, FaPenNib, FaComments, FaStar, FaMedal, FaCode, FaHeart, FaRocket, FaTrophy } from "react-icons/fa";
 import styles from "./UserPage.module.css";
 import acStyles from "./Achievements.module.css";
-import { AuthService, type AchievementData, type AchievementBadge } from "@/services/authService";
+import { AuthService, type AchievementData, type AchievementBadge } from "@/services/AuthService.ts";
 import message from "@/components/message/Message";
 
 const ICON_MAP: Record<string, React.ReactNode> = {

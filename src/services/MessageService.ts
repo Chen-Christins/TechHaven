@@ -1,5 +1,5 @@
-import http from "../infra/http.ts";
-import type { ChatMsg, Conversation, ConversationListResponse, MessageListResponse } from "../types/message";
+import http from "../infra/Http.ts";
+import type { ChatMsg, Conversation, ConversationListResponse, MessageListResponse } from "../types/Message.ts";
 
 /**
  * 私信服务

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useRdNavigate } from "@/hooks/useRdNavigate";
-import { formatDateTime } from "@/utils/utils";
-import { encodeId } from "@/utils/hashId";
+import { useRdNavigate } from "@/hooks/UseRdNavigate.ts";
+import { formatDateTime } from "@/utils/Utils.ts";
+import { encodeId } from "@/utils/HashId.ts";
 import {
     FaEye,
     FaEdit,
@@ -23,10 +23,10 @@ import Modal from "@/components/modal/Modal";
 import Loading from "@/components/loading/Loading";
 import message from "@/components/message/Message";
 import { useRdOrg } from "@/contexts/RdOrgContext";
-import { RdPlatformService as RdAPI } from "@/services/rdPlatformService";
+import { RdPlatformService as RdAPI } from "@/services/RdPlatformService.ts";
 import AssigneeDisplay from "@/components/assigneeDisplay/AssigneeDisplay";
 import type { SelectOption } from "../../types";
-import type { Requirement, Bug, Task } from "@/types/rdPlatform";
+import type { Requirement, Bug, Task } from "@/types/RdPlatform.ts";
 
 const reqStatusOptions: SelectOption[] = [
     { id: "", name: "全部状态", color: "#6c757d" },

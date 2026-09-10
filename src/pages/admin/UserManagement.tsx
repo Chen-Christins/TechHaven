@@ -19,11 +19,11 @@ import Avatar from "@/components/avatar/Avatar";
 import Modal from "@/components/modal/Modal";
 import { confirm } from "@/components/confirm/Confirm";
 import message from "@/components/message/Message";
-import type { SelectOption } from "@/types/index";
-import { PlatformRoleLabel, PlatformRoleCSS, PlatformRoleByKey } from "@/types/roles";
+import type { SelectOption } from "@/types";
+import { PlatformRoleLabel, PlatformRoleCSS, PlatformRoleByKey } from "@/types/Roles.ts";
 import styles from "./UserManagement.module.css";
-import { AuthService } from "@/services/authService";
-import { formatToChinaTime } from "@/utils/utils";
+import { AuthService } from "@/services/AuthService.ts";
+import { formatToChinaTime } from "@/utils/Utils.ts";
 
 // 用户接口定义
 interface UserListItem {

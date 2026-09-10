@@ -1,4 +1,4 @@
-import http from "../infra/http.ts";
+import http from "../infra/Http.ts";
 
 /**
  * 查询分类响应类型

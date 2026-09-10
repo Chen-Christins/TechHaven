@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
-import { WebSocketClient } from "./websocket.ts";
-import { tokenManager } from "../auth/tokenManager.ts";
+import { WebSocketClient } from "./Websocket.ts";
+import { tokenManager } from "../auth/TokenManager.ts";
 
 /**
  * token 脱敏回归测试（R0 安全项）。

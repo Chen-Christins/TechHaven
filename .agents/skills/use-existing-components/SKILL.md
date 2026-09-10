@@ -12,7 +12,7 @@
 
 **在开发中，如非必要，禁止使用 `localStorage` 和 `sessionStorage`，避免用户篡改数据。**
 
-- 敏感数据（如 token、用户信息）必须使用 **内存存储**（参考 `../../../src/infra/http.ts` 中的 `TokenManager` 类），不持久化到浏览器存储
+- 敏感数据（如 token、用户信息）必须使用 **内存存储**（参考 `../../../src/infra/Http.ts` 中的 `TokenManager` 类），不持久化到浏览器存储
 - 确需持久化的非敏感配置（如主题偏好、布局宽度），可例外使用 `localStorage`（参考 `ThemeContext` 和 `LayoutWidthContext` 的实现）
 - **禁止**将权限标识、用户角色、付费状态等安全相关数据放入 `localStorage`/`sessionStorage`，必须通过 API 实时校验
 

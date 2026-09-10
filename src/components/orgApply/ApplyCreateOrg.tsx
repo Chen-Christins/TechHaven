@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FaBuilding, FaTimes } from "react-icons/fa";
 import styles from "./ApplyCreateOrg.module.css";
-import OrganizationService from "@/services/organizationService";
+import OrganizationService from "@/services/OrganizationService.ts";
 import message from "@/components/message/Message";
 
 interface ApplyCreateOrgProps {

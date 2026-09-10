@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { RdPlatformService } from "../services/rdPlatformService";
+import { RdPlatformService } from "../services/RdPlatformService.ts";
 import type { SelectOption } from "../types";
 
 export function useOrgMemberOptions(enabled: boolean, orgId: string): SelectOption[] {

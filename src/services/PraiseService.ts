@@ -1,5 +1,5 @@
-import http from "../infra/http.ts";
-import type { PraiseToggleResponse, PraiseListResponse } from "../types/praise";
+import http from "../infra/Http.ts";
+import type { PraiseToggleResponse, PraiseListResponse } from "../types/Praise.ts";
 
 export class PraiseService {
     /**

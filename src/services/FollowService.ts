@@ -1,5 +1,5 @@
-import http from "../infra/http.ts";
-import type { FollowListResponse, MutualFollowListResponse } from "../types/follow";
+import http from "../infra/Http.ts";
+import type { FollowListResponse, MutualFollowListResponse } from "../types/Follow.ts";
 
 /**
  * 关注服务

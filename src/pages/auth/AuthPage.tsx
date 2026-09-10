@@ -5,7 +5,7 @@ import styles from "./AuthPage.module.css"; // 导入 CSS Modules
 import Footer from "@/components/footer/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
-import { AuthService } from "@/services/authService";
+import { AuthService } from "@/services/AuthService.ts";
 
 // 定义表单类型
 type FormType = "login" | "register" | "forgotPassword";

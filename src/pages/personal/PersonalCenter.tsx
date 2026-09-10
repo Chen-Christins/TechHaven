@@ -18,7 +18,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Loading from "@/components/loading/Loading";
-import { isAdmin } from "@/types/roles";
+import { isAdmin } from "@/types/Roles.ts";
 import Skeleton from "@/components/skeleton/Skeleton";
 import ThemeToggle from "@/components/themeToggle/ThemeToggle";
 import Notification from "@/components/notification/Notification";
@@ -26,7 +26,7 @@ import UserDropdown from "@/components/userDropdown/UserDropdown";
 import Footer from "@/components/footer/Footer";
 import Avatar from "@/components/avatar/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import AuthService, { type UserStats } from "@/services/authService";
+import AuthService, { type UserStats } from "@/services/AuthService.ts";
 import styles from "./PersonalCenter.module.css";
 import MyArticlesTab from "./components/MyArticlesTab";
 import MyTagsTab from "./components/MyTagsTab";

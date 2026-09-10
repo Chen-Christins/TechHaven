@@ -66,9 +66,9 @@ export interface RdOrgInfo {
     role: number;
 }
 
-// OrgRole / OrgPermission 已迁移到 types/roles.ts，此处 re-export 保持向后兼容
-export { OrgRole, OrgPermission } from "./roles";
-export type { OrgRole as OrgRoleType } from "./roles";
+// OrgRole / OrgPermission 已迁移到 types/Roles.ts，此处 re-export 保持向后兼容
+export { OrgRole, OrgPermission } from "./Roles.ts";
+export type { OrgRole as OrgRoleType } from "./Roles.ts";
 
 /** 代码审查 - CodeReview */
 export interface CodeReview {

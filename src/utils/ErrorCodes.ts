@@ -40,7 +40,7 @@ try {
 
 /**
  * 初始化错误码表（应用入口调用一次，不依赖 settings）
- * 使用原生 fetch 避免与 http.ts 循环依赖
+ * 使用原生 fetch 避免与 Http.ts 循环依赖
  */
 export async function initErrorCodes(lang?: string): Promise<void> {
     const targetLang = lang || navigator.language || "zh-CN";

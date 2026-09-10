@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { EventEnvelope, ProposalView } from "../contracts/agent";
-import { AgentGatewayClient } from "./agentGatewayClient";
+import { AgentGatewayClient } from "./AgentGatewayClient.ts";
 
 function envelope(sid: string, seq: number, text = `event-${seq}`): EventEnvelope {
     return {

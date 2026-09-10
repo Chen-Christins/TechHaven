@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { agentRequest } from "./agentRequest";
+import { agentRequest } from "./AgentRequest.ts";
 
 afterEach(() => vi.restoreAllMocks());
 describe("Agent service outage boundary", () => {

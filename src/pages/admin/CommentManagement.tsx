@@ -22,10 +22,10 @@ import Input from "@/components/input/Input";
 import Loading from "@/components/loading/Loading";
 import Avatar from "@/components/avatar/Avatar";
 import { confirm } from "@/components/confirm/Confirm";
-import CommentService from "@/services/commentService";
-import type { AdminComment } from "@/types/comment";
-import type { SelectOption } from "@/types/index";
-import { CommentStatusLabel, type CommentStatus } from "@/types/enums";
+import CommentService from "@/services/CommentService.ts";
+import type { AdminComment } from "@/types/Comment.ts";
+import type { SelectOption } from "@/types";
+import { CommentStatusLabel, type CommentStatus } from "@/types/Enums.ts";
 import styles from "./CommentManagement.module.css";
 
 interface FilterOptions {

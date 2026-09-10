@@ -1,4 +1,4 @@
-import http from "../infra/http.ts";
+import http from "../infra/Http.ts";
 
 export type FeedbackType = "bug" | "feature" | "other";
 

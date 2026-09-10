@@ -10,7 +10,7 @@
  * 重试耗尽后以 failed 回调收尾（绝不静默悬空）。
  */
 
-import { agentRequest } from "./agentRequest";
+import { agentRequest } from "./AgentRequest.ts";
 import type {
     CreateSessionRequest,
     CreateSessionResponse,

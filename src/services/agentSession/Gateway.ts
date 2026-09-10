@@ -1,6 +1,6 @@
-import { AgentGatewayClient } from "../agentGatewayClient";
+import { AgentGatewayClient } from "../AgentGatewayClient.ts";
 import type { EngineEvent, EventEnvelope } from "../../contracts/agent";
-import type { SessionHandle, EngineEventListener } from "./types";
+import type { SessionHandle, EngineEventListener } from "./Types.ts";
 
 /** 事件信封 → 面板 UI 事件（seq/ts 还原自信封；payload 为契约可辨识联合） */
 const toUiEvent = (env: EventEnvelope): EngineEvent => {

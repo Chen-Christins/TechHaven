@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { encodeId } from "@/utils/hashId";
+import { encodeId } from "@/utils/HashId.ts";
 import ReactMarkdown from "react-markdown";
 import { articleMarkdownComponents, articleMarkdownPlugins } from "@/components/articleView/markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import CommentNode from "@/components/commentTree/CommentNode";
-import type { ArticleComment } from "@/types/comment";
+import type { ArticleComment } from "@/types/Comment.ts";
 import {
     Eye,
     Heart,
@@ -24,9 +24,9 @@ import {
 import styles from "./ArticleView.module.css";
 import Avatar from "@/components/avatar/Avatar";
 import AiSummary from "@/components/articleView/AiSummary";
-import FollowService from "@/services/followService";
-import PraiseService from "@/services/praiseService";
-import CommentService from "@/services/commentService";
+import FollowService from "@/services/FollowService.ts";
+import PraiseService from "@/services/PraiseService.ts";
+import CommentService from "@/services/CommentService.ts";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import message from "@/components/message/Message";

@@ -4,8 +4,8 @@ import Loading from "@/components/loading/Loading";
 import { confirm } from "@/components/confirm/Confirm";
 import { message } from "@/components/message/Message";
 import { useAuth } from "@/contexts/AuthContext";
-import LabelService from "@/services/labelService";
-import { formatToChinaTime } from "@/utils/utils";
+import LabelService from "@/services/LabelService.ts";
+import { formatToChinaTime } from "@/utils/Utils.ts";
 import styles from "../PersonalCenter.module.css";
 
 // 个人标签类型

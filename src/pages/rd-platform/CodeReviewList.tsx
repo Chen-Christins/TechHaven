@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { encodeId, decodeId } from "@/utils/hashId";
-import { formatDateTime, formatRelativeTime } from "@/utils/utils";
+import { encodeId, decodeId } from "@/utils/HashId.ts";
+import { formatDateTime, formatRelativeTime } from "@/utils/Utils.ts";
 import {
     FaSync,
     FaEye,
@@ -25,7 +25,7 @@ import Loading from "@/components/loading/Loading";
 import message from "@/components/message/Message";
 import { confirm } from "@/components/confirm/Confirm";
 import { useRdOrg } from "@/contexts/RdOrgContext";
-import OrganizationService from "@/services/organizationService";
+import OrganizationService from "@/services/OrganizationService.ts";
 import type { SelectOption } from "../../types";
 
 // ---- PR 数据映射 ----

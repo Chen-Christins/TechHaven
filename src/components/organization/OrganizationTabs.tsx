@@ -21,8 +21,8 @@ import {
     FaTimes,
     FaPlus,
 } from "react-icons/fa";
-import type { Member, Task, OrganizationDetail } from "@/types/organization";
-import { OrgRole, OrgRoleLabel, canManageOrg } from "@/types/roles";
+import type { Member, Task, OrganizationDetail } from "@/types/Organization.ts";
+import { OrgRole, OrgRoleLabel, canManageOrg } from "@/types/Roles.ts";
 import Avatar from "../avatar/Avatar";
 import styles from "./Organization.module.css";
 import Modal from "../modal/Modal";
@@ -32,7 +32,7 @@ import message from "@/components/message/Message";
 // import dayjs from 'dayjs';
 import "dayjs/locale/zh-cn";
 import OrganizationRepos from "./OrganizationRepos";
-import OrganizationService from "@/services/organizationService";
+import OrganizationService from "@/services/OrganizationService.ts";
 import Loading from "../loading/Loading";
 
 interface OrganizationTabsProps {

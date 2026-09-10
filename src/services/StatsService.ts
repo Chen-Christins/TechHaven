@@ -1,5 +1,5 @@
-import http from "../infra/http.ts";
-import type { StatsData } from "../types/index";
+import http from "../infra/Http.ts";
+import type { StatsData } from "../types";
 
 interface StatsApiResponse {
     online_users: number;

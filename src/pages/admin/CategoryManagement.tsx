@@ -7,10 +7,10 @@ import Loading from "@/components/loading/Loading";
 import Modal from "@/components/modal/Modal";
 import { confirm } from "@/components/confirm/Confirm";
 import message from "@/components/message/Message";
-import type { SelectOption } from "@/types/index";
+import type { SelectOption } from "@/types";
 import styles from "./CategoryManagement.module.css";
-import CategoryService from "@/services/categoryService";
-import { formatDateTime } from "@/utils/utils";
+import CategoryService from "@/services/CategoryService.ts";
+import { formatDateTime } from "@/utils/Utils.ts";
 
 interface Category {
     id: string | number;

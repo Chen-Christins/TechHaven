@@ -1,5 +1,5 @@
 import type { EngineEvent, SessionStatus, ProposalView } from "../../contracts/agent";
-import type { SessionHandle, EngineEventListener, PermissionDecision } from "./types";
+import type { SessionHandle, EngineEventListener, PermissionDecision } from "./Types.ts";
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 

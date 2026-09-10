@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // Assuming react-router-dom is used
-import { encodeId } from "@/utils/hashId";
+import { encodeId } from "@/utils/HashId.ts";
 import { FaBuilding, FaCheckCircle, FaUserFriends, FaLock, FaClipboardList, FaArrowRight, FaPlus } from "react-icons/fa";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import Skeleton from "@/components/skeleton/Skeleton";
 import ApplyCreateOrg from "@/components/orgApply/ApplyCreateOrg";
 import styles from "./OrganizationList.module.css";
-import OrganizationService from "@/services/organizationService";
+import OrganizationService from "@/services/OrganizationService.ts";
 import message from "@/components/message/Message";
 import AuthRequired from "@/components/auth/AuthRequired";
 import { useAuth } from "@/contexts/AuthContext";
