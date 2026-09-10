@@ -18,7 +18,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Loading from "@/components/loading/Loading";
-import { isAdmin } from "@/types/Roles.ts";
+import { isAdmin, PlatformRole, PlatformRoleLabel } from "@/types/Roles.ts";
 import Skeleton from "@/components/skeleton/Skeleton";
 import ThemeToggle from "@/components/themeToggle/ThemeToggle";
 import Notification from "@/components/notification/Notification";
@@ -536,7 +536,9 @@ const PersonalCenter: React.FC = () => {
                             <div className={styles.profileInfo}>
                                 <div className={styles.profileName}>
                                     {currentUser.name}
-                                    <span className={styles.profileRoleTag}>{currentUser.role}</span>
+                                    <span className={styles.profileRoleTag}>
+                                        {PlatformRoleLabel[currentUser.role as PlatformRole] || currentUser.role}
+                                    </span>
                                 </div>
                                 <div className={styles.profileMeta}>
                                     <span className={styles.profileEmail}>{currentUser.email}</span>
