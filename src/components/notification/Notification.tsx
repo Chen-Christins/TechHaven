@@ -36,7 +36,7 @@ import {
     decrementUnreadCount,
 } from "@/utils/notificationState";
 import { getSettings, setTypeEnabled, subscribe as subscribeSettings, type NotifType } from "@/utils/notificationSettingsState";
-import { notificationWS } from "@/utils/websocket";
+import { notificationWS } from "@/services/wsInstances";
 import { playNotificationSound } from "@/utils/notificationSound";
 import { useAuth } from "@/contexts/AuthContext";
 import Modal from "../modal/Modal";

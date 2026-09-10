@@ -1,5 +1,6 @@
 import { getErrorMsg } from "./errorCodes";
-import { tokenManager } from "./http";
+import { tokenManager } from "./tokenManager";
+import { getCookie } from "./cookieHelper";
 
 type MessageHandler = (data: any) => void;
 type EventHandler = (event?: Event) => void;
@@ -12,28 +13,6 @@ export interface WsServerError {
 }
 
 type ServerErrorHandler = (err: WsServerError) => void;
-
-/**
- * 从 Cookie 中读取指定 key 的值。
- *
- * 用 indexOf 而非 split("=") 取值：Cookie 值本身允许含 "="（base64 填充、JWT 分段等），
- * split 会在第一个 "=" 处切断导致 token 被静默截断 —— 表现为「Cookie 明明有值却鉴权失败」。
- */
-function getCookie(key: string): string | null {
-    const cookies = document.cookie.split(";");
-    for (const cookie of cookies) {
-        const trimmed = cookie.trim();
-        const eq = trimmed.indexOf("=");
-        if (eq < 0) {
-            continue;
-        }
-        if (trimmed.slice(0, eq) !== key) {
-            continue;
-        }
-        return decodeURIComponent(trimmed.slice(eq + 1));
-    }
-    return null;
-}
 
 /**
  * WebSocket 客户端封装
@@ -66,9 +45,6 @@ export class WebSocketClient {
     constructor(path: string) {
         const explicit = import.meta.env.VITE_WS_URL;
         const wsProto = window.location.protocol === "https:" ? "wss" : "ws";
-        // 显式配置了非回环地址（如线上 wss://域名）则用显式配置；
-        // 否则（未配置或 127.0.0.1/localhost）用当前页面 origin 推导，
-        // 避免手机/局域网通过非本机主机访问时连到 127.0.0.1 导致失败
         const isLoopback = !explicit || /^wss?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?/i.test(explicit);
         const baseUrl = isLoopback ? `${wsProto}://${window.location.host}` : explicit;
         const cleanBase = baseUrl.replace(/\/+$/, "");
@@ -76,22 +52,18 @@ export class WebSocketClient {
         this.basePath = `${cleanBase}${cleanPath}`;
     }
 
-    /** 获取连接状态 */
     get readyState(): number {
         return this.ws?.readyState ?? WebSocket.CLOSED;
     }
 
-    /** 是否已连接 */
     get isConnected(): boolean {
         return this.ws?.readyState === WebSocket.OPEN;
     }
 
-    /** 当前客户端在本次生命周期内是否至少成功建立过一次连接。 */
     get hasEstablishedConnection(): boolean {
         return this.hasOpened;
     }
 
-    /** 建立连接（uid 从 AuthContext 传入，token / token_time 从 Cookie 读取） */
     connect(uid?: string | number) {
         if (uid !== undefined) {
             this.uid = uid;
@@ -104,13 +76,11 @@ export class WebSocketClient {
         this.clearReconnectTimer();
         const generation = ++this.connectionGeneration;
 
-        // 页面卸载时标记为主动关闭，避免触发无意义的自动重连调度
         const handleBeforeUnload = () => {
             this.intentionalClose = true;
         };
         window.addEventListener("beforeunload", handleBeforeUnload, { once: true });
 
-        // 内存中的 token 是 HTTP 请求使用的权威凭据；Cookie 只作为初始化时的后备来源。
         const token = tokenManager.getToken() || getCookie("S_TOKEN");
         const tokenTime = getCookie("S_TOKEN_TIME");
 
@@ -125,9 +95,6 @@ export class WebSocketClient {
             params.set("token_time", tokenTime);
         }
 
-        // token 属于长时凭据：仅用于建连，绝不进入日志/控制台
-        // 注意：当前仍通过 query 传递，是因为后端鉴权依赖该参数；
-        // 迁移到同源 Cookie 或一次性 ticket 需要后端配合，见 docs/ROADMAP.md R0
         const connectUrl = `${this.basePath}?${params.toString()}`;
 
         const logParams = new URLSearchParams(params);
@@ -167,7 +134,6 @@ export class WebSocketClient {
             }
             try {
                 const data = JSON.parse(event.data);
-                // 服务端错误帧：携带 errno 且不为 0，按 HTTP API 同样的 errno/errstr 格式解析
                 if (data && typeof data === "object" && typeof data.errno === "number" && data.errno !== 0) {
                     const errstr = typeof data.errstr === "string" ? data.errstr : typeof data.msg === "string" ? data.msg : "";
                     const parsed: WsServerError = {
@@ -175,10 +141,6 @@ export class WebSocketClient {
                         errstr,
                         message: getErrorMsg(data.errno, errstr),
                     };
-                    // 鉴权类错误（token 过期 / 不匹配 / 账号异常）交由上层刷新 token，不在底层自动重连
-                    if (data.errno === 1101 || data.errno === 1103) {
-                        this.authFailed = true;
-                    }
                     this.serverErrorHandlers.forEach((fn) => fn(parsed));
                 }
                 const type = data.type || data.event || "message";
@@ -204,10 +166,6 @@ export class WebSocketClient {
             }
             console.log("[WS] 连接关闭, code:", event.code, "reason:", event.reason || "(无)");
             this.closeHandlers.forEach((fn) => fn(event));
-            // 鉴权失败时交由上层处理（刷新 token / 登出），不再触发自动重连
-            // 握手从未成功时通常是代理/服务端拒绝了该 endpoint。
-            // 不自动重试，避免通知、在线、聊天三个单例持续刷屏并反复发起失败握手。
-            // 已经建立过的连接断开后才进入有限指数退避重连。
             if (hasOpened && !this.intentionalClose && !this.authFailed) {
                 this.scheduleReconnect();
             }
@@ -222,7 +180,6 @@ export class WebSocketClient {
         };
     }
 
-    /** 断开连接（不重连） */
     disconnect() {
         this.intentionalClose = true;
         this.connectionGeneration++;
@@ -230,8 +187,6 @@ export class WebSocketClient {
         const socket = this.ws;
         this.ws = null;
         if (socket) {
-            // Chrome 会把 close(CONNECTING) 报告为“closed before the connection was established”。
-            // 握手阶段不调用 close，只解绑事件并让浏览器自然结束；已建立的连接才主动关闭。
             socket.onmessage = null;
             socket.onclose = null;
             socket.onerror = null;
@@ -245,7 +200,6 @@ export class WebSocketClient {
         this.hasOpened = false;
     }
 
-    /** 发送消息 */
     send(data: string | object) {
         const payload = typeof data === "string" ? data : JSON.stringify(data);
         if (this.ws?.readyState === WebSocket.OPEN) {
@@ -255,9 +209,6 @@ export class WebSocketClient {
         }
     }
 
-    // ---------- 事件订阅（返回取消订阅函数） ----------
-
-    /** 订阅指定类型的消息 */
     onMessage(type: string, handler: MessageHandler): () => void {
         if (!this.messageHandlers.has(type)) {
             this.messageHandlers.set(type, new Set());
@@ -268,7 +219,6 @@ export class WebSocketClient {
         };
     }
 
-    /** 连接成功回调 */
     onOpen(handler: EventHandler): () => void {
         this.openHandlers.add(handler);
         return () => {
@@ -276,7 +226,6 @@ export class WebSocketClient {
         };
     }
 
-    /** 连接关闭回调 */
     onClose(handler: EventHandler): () => void {
         this.closeHandlers.add(handler);
         return () => {
@@ -284,7 +233,6 @@ export class WebSocketClient {
         };
     }
 
-    /** 连接错误回调 */
     onError(handler: EventHandler): () => void {
         this.errorHandlers.add(handler);
         return () => {
@@ -292,7 +240,6 @@ export class WebSocketClient {
         };
     }
 
-    /** 服务端错误帧回调（errno/errstr 同 HTTP API） */
     onServerError(handler: ServerErrorHandler): () => void {
         this.serverErrorHandlers.add(handler);
         return () => {
@@ -300,7 +247,6 @@ export class WebSocketClient {
         };
     }
 
-    /** 调度自动重连（指数退避，最大 30s） */
     private scheduleReconnect() {
         if (this.reconnectAttempts >= this.maxReconnectAttempts) {
             return;
@@ -324,11 +270,5 @@ export class WebSocketClient {
         }
     }
 }
-
-/** 通知 WebSocket 单例（path: /ws/v1/notification） */
-export const notificationWS = new WebSocketClient("/ws/v1/notification");
-
-/** 聊天 WebSocket 单例（path: /ws/v1/messages，双向收发消息） */
-export const chatWS = new WebSocketClient("/ws/v1/messages");
 
 export default WebSocketClient;

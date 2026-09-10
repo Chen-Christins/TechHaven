@@ -8,7 +8,7 @@ import Avatar from "@/components/avatar/Avatar";
 import Input from "@/components/input/Input";
 import MessageService from "@/services/messageService";
 import FollowService from "@/services/followService";
-import { chatWS } from "@/utils/websocket";
+import { chatWS } from "@/services/wsInstances";
 import { confirm } from "@/components/confirm/Confirm";
 import { useAuth } from "@/contexts/AuthContext";
 import { isNormalUser } from "@/types/roles";

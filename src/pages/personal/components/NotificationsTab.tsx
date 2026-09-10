@@ -30,7 +30,7 @@ import {
     subscribe as subscribeSettings,
     type NotifType,
 } from "@/utils/notificationSettingsState";
-import { notificationWS } from "@/utils/websocket";
+import { notificationWS } from "@/services/wsInstances";
 import CustomSelect from "@/components/customSelect/CustomSelect";
 import Modal from "@/components/modal/Modal";
 import Switch from "@/components/switch/Switch";

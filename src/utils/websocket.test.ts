@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import { WebSocketClient } from "./websocket";
-import { tokenManager } from "./http";
+import { tokenManager } from "./tokenManager";
 
 /**
  * token 脱敏回归测试（R0 安全项）。

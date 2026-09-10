@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthService } from "../services/authService";
-import { tokenManager, getTokenFromCookie, clearAuthCookies } from "../utils/http";
-import { notificationWS, chatWS } from "../utils/websocket";
+import { tokenManager } from "../utils/tokenManager";
+import { getTokenFromCookie, clearAuthCookies } from "../utils/cookieHelper";
+import { notificationWS, chatWS } from "../services/wsInstances";
 import { setFaviconBadge } from "../utils/favicon";
 import { resetNotificationState } from "../utils/notificationState";
 import { canChat } from "../types/roles";
@@ -82,10 +83,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             try {
                 const cookieToken = getTokenFromCookie();
 
-                if (cookieToken) {
-                    setToken(cookieToken);
-                    tokenManager.setToken(cookieToken);
+                if (!cookieToken) {
+                    // 无 token → 直接标记未认证，不发请求
+                    clearAuthRuntimeState();
+                    return;
                 }
+
+                // 有 token → 设置后再 getUserInfo
+                setToken(cookieToken);
+                tokenManager.setToken(cookieToken);
 
                 try {
                     const userResponse = await AuthService.getUserInfo();
@@ -191,10 +197,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 if (userToken) {
                     setToken(userToken);
                     tokenManager.setToken(userToken);
-                    // console.log('✅ Token已设置:', userToken);
-                } else {
-                    // console.warn('⚠️ 未找到token，检查响应headers和Cookie:', (response as any).headers);
-                    // console.log('🍪 当前页面Cookie:', document.cookie);
                 }
 
                 // 获取最新的用户信息
@@ -209,7 +211,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                         console.warn("⚠️ 用户信息接口返回异常:", userResponse);
                     }
                 } catch (_userError) {
-                    // console.warn('⚠️ 获取最新用户信息失败，使用登录返回的用户信息:', userError);
                     // 如果获取用户信息失败，使用登录响应中的用户信息
                     if ((response.data as any)?.user) {
                         const fallbackUserData = (response.data as any).user;
@@ -221,8 +222,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                             status: fallbackUserData.status || "active",
                         };
                         setUser(fallbackUser);
-                        // console.log('🔄 使用登录响应的用户信息:', fallbackUser);
-                        // console.log('🔐 当前认证状态:', { token: userToken, user: fallbackUser });
                     }
                 }
             } else {

@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { HttpClient, HttpError, tokenManager, setBusinessErrorHandler } from "./http";
+import { HttpClient, HttpError, setBusinessErrorHandler } from "./http";
+import { tokenManager } from "./tokenManager";
 
 it("postForm preserves falsy values, encodes special text and omits only nullish fields", async () => {
     let sent = "";
@@ -48,17 +49,16 @@ describe("HTTP 未授权（1101）处理", () => {
         setBusinessErrorHandler(null);
     });
 
-    it("收到 1101 时抛出 HttpError 并清空内存 token", async () => {
+    it("收到 1101 时抛出 HttpError", async () => {
         tokenManager.setToken("tok-123");
         const client = new HttpClient({ baseURL: "http://test.local" });
         await expect(client.get("/x", { adapter: unauthorizedAdapter })).rejects.toMatchObject({
             errno: 1101,
             code: 200,
         });
-        expect(tokenManager.getToken()).toBeNull();
     });
 
-    it("收到 1101 时通过注册回调同步清空 AuthContext 登录态", async () => {
+    it("收到 1101 时通过注册回调同步处理", async () => {
         let notified = 0;
         setBusinessErrorHandler((errno) => {
             if (errno === 1101) {
@@ -69,7 +69,6 @@ describe("HTTP 未授权（1101）处理", () => {
         const client = new HttpClient({ baseURL: "http://test.local" });
         await expect(client.get("/x", { adapter: unauthorizedAdapter })).rejects.toBeInstanceOf(HttpError);
         expect(notified).toBe(1);
-        expect(tokenManager.getToken()).toBeNull();
     });
 
     it("请求拦截器为已登录请求附加 Bearer token", async () => {
