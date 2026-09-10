@@ -1,4 +1,4 @@
-import http from "../utils/http";
+import http from "../infra/http.ts";
 
 /**
  * 文章分页查询请求参数类型

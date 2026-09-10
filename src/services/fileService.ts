@@ -1,4 +1,4 @@
-import http from "../utils/http";
+import http from "../infra/http.ts";
 
 /**
  * 文件上传参数

@@ -2,7 +2,7 @@
 // R&D Platform Service — Real API calls
 // ============================================================
 
-import http from "../utils/http";
+import http from "../infra/http.ts";
 import type {
     Requirement,
     Bug,

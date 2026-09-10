@@ -10,7 +10,7 @@
 ### 2. 数据存储：内存优先
 - **敏感数据**（token、用户信息、权限标识）必须使用内存存储，**禁止**使用 `localStorage`/`sessionStorage`，防止用户篡改
 - **非敏感配置**（主题偏好、布局宽度）方可例外使用 `localStorage`
-- 参考：`src/utils/http.ts` 中的 `TokenManager`（内存存储）vs `ThemeContext`（localStorage 例外）
+- 参考：`src/infra/http.ts` 中的 `TokenManager`（内存存储）vs `ThemeContext`（localStorage 例外）
 
 ### 3. 组件开发流程
 ```
@@ -31,4 +31,4 @@ npm run format  # Prettier 格式化
 - **WebSocket**：`notificationWS` 单例，生命周期绑定 AuthContext（登录连/登出断），支持自动重连
 - **路由**：`/auth` 和 `/admin/*` 免维护模式守卫，其余路由受 `MaintenanceGuard` 保护
 - **样式**：CSS Modules + CSS 自定义属性（`data-theme` 驱动明暗主题，`data-width-mode` 驱动页面宽度）
-- **HTTP**：`src/utils/http.ts` 封装，拦截器做了完整的中文业务状态码映射
+- **HTTP**：`src/infra/http.ts` 封装，拦截器做了完整的中文业务状态码映射

@@ -5,9 +5,9 @@
  * http.ts 只负责调用 setBusinessErrorHandler 注册的回调。
  */
 
-import { tokenManager, detectInvalidReason, type SessionInvalidReason } from "./tokenManager";
-import { clearAuthCookies } from "./cookieHelper";
-import { setBusinessErrorHandler } from "./http";
+import { tokenManager, detectInvalidReason, type SessionInvalidReason } from "../auth/tokenManager.ts";
+import { clearAuthCookies } from "../auth/cookieHelper.ts";
+import { setBusinessErrorHandler } from "../infra/http.ts";
 
 // ---------- 1101：未登录（token 过期 / 被顶下线） ----------
 

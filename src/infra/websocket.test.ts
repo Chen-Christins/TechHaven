@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
-import { WebSocketClient } from "./websocket";
-import { tokenManager } from "./tokenManager";
+import { WebSocketClient } from "./websocket.ts";
+import { tokenManager } from "../auth/tokenManager.ts";
 
 /**
  * token 脱敏回归测试（R0 安全项）。
@@ -33,7 +33,10 @@ class MockWebSocket {
         this.url = url;
         MockWebSocket.instances.push(this);
     }
-    send(): void {}
+    sent: string[] = [];
+    send(data: string): void {
+        this.sent.push(data);
+    }
     close(): void {
         this.readyState = MockWebSocket.CLOSED;
     }
@@ -41,7 +44,6 @@ class MockWebSocket {
 
 const TOKEN = "S_TOKEN_VALUE_SUPER_SECRET_9f3a";
 const TOKEN_TIME = "1756000000000";
-
 /** 收集一次 connect 期间 console 的全部输出文本 */
 function captureConsole(client: WebSocketClient, uid: string | number | undefined): string[] {
     const lines: string[] = [];
@@ -68,6 +70,7 @@ describe("WebSocket 建连 token 处理", () => {
         // jsdom 下直接写 document.cookie 即可，过期时间设到未来避免被丢弃
         document.cookie = `S_TOKEN=${TOKEN}; path=/`;
         document.cookie = `S_TOKEN_TIME=${TOKEN_TIME}; path=/`;
+        tokenManager.setToken(TOKEN);
     });
 
     afterEach(() => {
@@ -103,25 +106,21 @@ describe("WebSocket 建连 token 处理", () => {
         expect(lines.join("\n")).toContain("42");
     });
 
-    it("无 Cookie 时 URL 不带 token 参数，且不会写出 undefined", () => {
-        // 清掉两个 Cookie（置为过期）
-        document.cookie = "S_TOKEN=; path=/; max-age=0";
-        document.cookie = "S_TOKEN_TIME=; path=/; max-age=0";
-
+    it("内存中没有 token 时拒绝建连，即使 Cookie 中存在 token", () => {
+        tokenManager.clearToken();
         const client = new WebSocketClient("/ws/v1/notification");
         const lines = captureConsole(client, 7);
 
-        const url = MockWebSocket.instances[0].url;
-        expect(url).not.toContain("token=");
-        expect(url).not.toContain("token_time=");
-        expect(url).toContain("uid=7");
+        expect(MockWebSocket.instances).toHaveLength(0);
+        expect(client.connect(7)).toBe(false);
+        expect(lines).toHaveLength(0);
         expect(lines.join("\n")).not.toContain("***");
     });
 
     it("Cookie 值含 = 时不截断（base64 填充 / JWT 分段场景）", () => {
         // 含两个 "=" 的 token：split("=") 会把值切在第一处，只剩 "PADDED_"
         const padded = "PADDED_BASE64_TOKEN_==";
-        document.cookie = `S_TOKEN=${padded}; path=/`;
+        tokenManager.setToken(padded);
 
         const client = new WebSocketClient("/ws/v1/notification");
         captureConsole(client, 9);
@@ -171,5 +170,61 @@ describe("WebSocket 建连 token 处理", () => {
 
         expect(MockWebSocket.instances).toHaveLength(1);
         vi.useRealTimers();
+    });
+
+    it("单个消息处理器抛错不会重复分发或阻断其他处理器", () => {
+        const client = new WebSocketClient("/ws/v1/notification");
+        captureConsole(client, 1);
+        const socket = MockWebSocket.instances[0];
+        const first = vi.fn(() => {
+            throw new Error("handler failed");
+        });
+        const second = vi.fn();
+        const wildcard = vi.fn();
+        client.onMessage("notification", first);
+        client.onMessage("notification", second);
+        client.onMessage("*", wildcard);
+        vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+        socket.onmessage?.({ data: JSON.stringify({ type: "notification", id: 1 }) } as MessageEvent);
+
+        expect(first).toHaveBeenCalledOnce();
+        expect(second).toHaveBeenCalledOnce();
+        expect(wildcard).toHaveBeenCalledOnce();
+        expect(wildcard).toHaveBeenCalledWith({ type: "notification", id: 1 });
+    });
+
+    it("待发送队列有上限并在连接成功后按顺序清空", () => {
+        const client = new WebSocketClient("/ws/v1/notification", { maxPendingMessages: 2 });
+        captureConsole(client, 1);
+        const socket = MockWebSocket.instances[0];
+
+        expect(client.send({ id: 1 })).toBe(true);
+        expect(client.send({ id: 2 })).toBe(true);
+        expect(client.send({ id: 3 })).toBe(false);
+
+        socket.readyState = MockWebSocket.OPEN;
+        socket.onopen?.();
+        expect(socket.sent).toEqual(['{"id":1}', '{"id":2}']);
+    });
+
+    it("不可序列化消息返回 false 且不会进入队列", () => {
+        const client = new WebSocketClient("/ws/v1/notification", { maxPendingMessages: 1 });
+        captureConsole(client, 1);
+        vi.spyOn(console, "error").mockImplementation(() => undefined);
+        const circular: Record<string, unknown> = {};
+        circular.self = circular;
+
+        expect(client.send(circular)).toBe(false);
+        expect(client.send("valid")).toBe(true);
+        expect(client.send("overflow")).toBe(false);
+    });
+
+    it("主动断开后拒绝缓存新消息", () => {
+        const client = new WebSocketClient("/ws/v1/notification");
+        captureConsole(client, 1);
+        client.disconnect();
+
+        expect(client.send("stale message")).toBe(false);
     });
 });

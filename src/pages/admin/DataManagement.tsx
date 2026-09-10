@@ -33,7 +33,7 @@ import { confirm } from "@/components/confirm/Confirm";
 import { message } from "@/components/message/Message";
 import { formatToChinaTime } from "@/utils/utils";
 import DataService from "@/services/dataService";
-import http from "@/utils/http";
+import http from "@/infra/http.ts";
 import type { BackupRecord, DataStats, ExportRecord } from "@/services/dataService";
 import type { SelectOption } from "@/types/index";
 import { BackupStatusLabel, type BackupStatus } from "@/types/enums";

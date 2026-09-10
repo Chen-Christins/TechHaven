@@ -1,4 +1,4 @@
-import { WebSocketClient } from "../utils/websocket";
+import { WebSocketClient } from "../infra/websocket.ts";
 
 /** 在线状态 WebSocket 单例 */
 export const presenceWS = new WebSocketClient("/ws/v1/presence");

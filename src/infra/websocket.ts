@@ -1,9 +1,16 @@
-import { getErrorMsg } from "./errorCodes";
-import { tokenManager } from "./tokenManager";
-import { getCookie } from "./cookieHelper";
+import { getErrorMsg } from "../utils/errorCodes.ts";
+import { tokenManager } from "../auth/tokenManager.ts";
+import { getCookie } from "../auth/cookieHelper.ts";
 
-type MessageHandler = (data: any) => void;
+type MessageHandler = (data: unknown) => void;
 type EventHandler = (event?: Event) => void;
+
+export interface WebSocketClientOptions {
+    maxReconnectAttempts?: number;
+    reconnectDelay?: number;
+    maxReconnectDelay?: number;
+    maxPendingMessages?: number;
+}
 
 /** WebSocket 服务端错误帧（与 HTTP API 同构的 errno / errstr 格式） */
 export interface WsServerError {
@@ -22,8 +29,10 @@ export class WebSocketClient {
     private ws: WebSocket | null = null;
     private basePath: string;
     private reconnectAttempts = 0;
-    private maxReconnectAttempts = 5;
-    private reconnectDelay = 1000;
+    private readonly maxReconnectAttempts: number;
+    private readonly reconnectDelay: number;
+    private readonly maxReconnectDelay: number;
+    private readonly maxPendingMessages: number;
     private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     private messageHandlers: Map<string, Set<MessageHandler>> = new Map();
     private openHandlers: Set<EventHandler> = new Set();
@@ -31,8 +40,6 @@ export class WebSocketClient {
     private errorHandlers: Set<EventHandler> = new Set();
     private serverErrorHandlers: Set<ServerErrorHandler> = new Set();
     private intentionalClose = false;
-    /** 连接时收到鉴权错误帧（如 token 过期），交由上层刷新 token，不再自动重连 */
-    private authFailed = false;
     private pendingSend: string[] = [];
     private uid: string | number | undefined;
     /** 每次建连递增；旧连接的异步事件不能影响新连接。 */
@@ -42,7 +49,7 @@ export class WebSocketClient {
     /**
      * @param path WebSocket 路径，如 "/notification"
      */
-    constructor(path: string) {
+    constructor(path: string, options: WebSocketClientOptions = {}) {
         const explicit = import.meta.env.VITE_WS_URL;
         const wsProto = window.location.protocol === "https:" ? "wss" : "ws";
         const isLoopback = !explicit || /^wss?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?/i.test(explicit);
@@ -50,6 +57,18 @@ export class WebSocketClient {
         const cleanBase = baseUrl.replace(/\/+$/, "");
         const cleanPath = path.startsWith("/") ? path : `/${path}`;
         this.basePath = `${cleanBase}${cleanPath}`;
+        this.maxReconnectAttempts = Math.max(0, options.maxReconnectAttempts ?? 5);
+        this.reconnectDelay = Math.max(0, options.reconnectDelay ?? 1000);
+        this.maxReconnectDelay = Math.max(this.reconnectDelay, options.maxReconnectDelay ?? 30000);
+        this.maxPendingMessages = Math.max(0, options.maxPendingMessages ?? 100);
+
+        window.addEventListener(
+            "beforeunload",
+            () => {
+                this.intentionalClose = true;
+            },
+            { once: true },
+        );
     }
 
     get readyState(): number {
@@ -64,33 +83,28 @@ export class WebSocketClient {
         return this.hasOpened;
     }
 
-    connect(uid?: string | number) {
+    connect(uid?: string | number): boolean {
         if (uid !== undefined) {
             this.uid = uid;
         }
         if (this.ws?.readyState === WebSocket.OPEN || this.ws?.readyState === WebSocket.CONNECTING) {
-            return;
+            return true;
+        }
+
+        const token = tokenManager.getToken();
+        if (!token) {
+            return false;
         }
         this.intentionalClose = false;
-        this.authFailed = false;
         this.clearReconnectTimer();
         const generation = ++this.connectionGeneration;
 
-        const handleBeforeUnload = () => {
-            this.intentionalClose = true;
-        };
-        window.addEventListener("beforeunload", handleBeforeUnload, { once: true });
-
-        const token = tokenManager.getToken() || getCookie("S_TOKEN");
-        const tokenTime = getCookie("S_TOKEN_TIME");
-
         const params = new URLSearchParams();
+        const tokenTime = getCookie("S_TOKEN_TIME");
         if (this.uid !== undefined && this.uid !== null && this.uid !== "") {
             params.set("uid", String(this.uid));
         }
-        if (token) {
-            params.set("token", token);
-        }
+        params.set("token", token);
         if (tokenTime) {
             params.set("token_time", tokenTime);
         }
@@ -120,44 +134,50 @@ export class WebSocketClient {
             hasOpened = true;
             this.hasOpened = true;
             this.reconnectAttempts = 0;
-            this.authFailed = false;
             while (this.pendingSend.length > 0) {
-                const msg = this.pendingSend.shift();
-                this.ws?.send(msg!);
+                const message = this.pendingSend[0];
+                try {
+                    socket.send(message);
+                    this.pendingSend.shift();
+                } catch (error) {
+                    console.error("[WS] 待发送消息发送失败:", error);
+                    break;
+                }
             }
-            this.openHandlers.forEach((fn) => fn());
+            this.dispatchHandlers(this.openHandlers, undefined, "open");
         };
 
         socket.onmessage = (event: MessageEvent) => {
             if (!isCurrentConnection()) {
                 return;
             }
+            let data: unknown;
             try {
-                const data = JSON.parse(event.data);
-                if (data && typeof data === "object" && typeof data.errno === "number" && data.errno !== 0) {
+                data = JSON.parse(event.data);
+            } catch {
+                this.dispatchMessage("*", event.data);
+                return;
+            }
+
+            if (this.isMessageRecord(data)) {
+                if (typeof data.errno === "number" && data.errno !== 0) {
                     const errstr = typeof data.errstr === "string" ? data.errstr : typeof data.msg === "string" ? data.msg : "";
                     const parsed: WsServerError = {
                         errno: data.errno,
                         errstr,
                         message: getErrorMsg(data.errno, errstr),
                     };
-                    this.serverErrorHandlers.forEach((fn) => fn(parsed));
+                    this.dispatchHandlers(this.serverErrorHandlers, parsed, "server error");
                 }
-                const type = data.type || data.event || "message";
-                const handlers = this.messageHandlers.get(type);
-                if (handlers) {
-                    handlers.forEach((fn) => fn(data));
-                }
-                const allHandlers = this.messageHandlers.get("*");
-                if (allHandlers) {
-                    allHandlers.forEach((fn) => fn(data));
-                }
-            } catch {
-                const allHandlers = this.messageHandlers.get("*");
-                if (allHandlers) {
-                    allHandlers.forEach((fn) => fn(event.data));
-                }
+                const type = typeof data.type === "string" ? data.type : typeof data.event === "string" ? data.event : "message";
+                this.dispatchMessage(type, data);
+            } else {
+                this.dispatchMessage("message", data);
             }
+            if (this.isMessageRecord(data) && (data.type === "*" || data.event === "*")) {
+                return;
+            }
+            this.dispatchMessage("*", data);
         };
 
         socket.onclose = (event: CloseEvent) => {
@@ -165,8 +185,8 @@ export class WebSocketClient {
                 return;
             }
             console.log("[WS] 连接关闭, code:", event.code, "reason:", event.reason || "(无)");
-            this.closeHandlers.forEach((fn) => fn(event));
-            if (hasOpened && !this.intentionalClose && !this.authFailed) {
+            this.dispatchHandlers(this.closeHandlers, event, "close");
+            if (hasOpened && !this.intentionalClose) {
                 this.scheduleReconnect();
             }
         };
@@ -176,8 +196,9 @@ export class WebSocketClient {
                 return;
             }
             console.error("[WS] 连接错误:", event);
-            this.errorHandlers.forEach((fn) => fn(event));
+            this.dispatchHandlers(this.errorHandlers, event, "error");
         };
+        return true;
     }
 
     disconnect() {
@@ -200,13 +221,31 @@ export class WebSocketClient {
         this.hasOpened = false;
     }
 
-    send(data: string | object) {
-        const payload = typeof data === "string" ? data : JSON.stringify(data);
-        if (this.ws?.readyState === WebSocket.OPEN) {
-            this.ws.send(payload);
-        } else {
-            this.pendingSend.push(payload);
+    send(data: string | object): boolean {
+        let payload: string;
+        try {
+            payload = typeof data === "string" ? data : JSON.stringify(data);
+        } catch (error) {
+            console.error("[WS] 消息序列化失败:", error);
+            return false;
         }
+        if (this.ws?.readyState === WebSocket.OPEN) {
+            try {
+                this.ws.send(payload);
+                return true;
+            } catch (error) {
+                console.error("[WS] 消息发送失败:", error);
+                return false;
+            }
+        }
+        if (this.intentionalClose) {
+            return false;
+        }
+        if (this.pendingSend.length >= this.maxPendingMessages) {
+            return false;
+        }
+        this.pendingSend.push(payload);
+        return true;
     }
 
     onMessage(type: string, handler: MessageHandler): () => void {
@@ -251,7 +290,7 @@ export class WebSocketClient {
         if (this.reconnectAttempts >= this.maxReconnectAttempts) {
             return;
         }
-        const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts), 30000);
+        const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay);
         this.reconnectAttempts++;
         const generation = this.connectionGeneration;
         this.reconnectTimer = setTimeout(() => {
@@ -267,6 +306,27 @@ export class WebSocketClient {
         if (this.reconnectTimer) {
             clearTimeout(this.reconnectTimer);
             this.reconnectTimer = null;
+        }
+    }
+
+    private isMessageRecord(data: unknown): data is Record<string, unknown> {
+        return typeof data === "object" && data !== null;
+    }
+
+    private dispatchMessage(type: string, data: unknown): void {
+        const handlers = this.messageHandlers.get(type);
+        if (handlers) {
+            this.dispatchHandlers(handlers, data, `message:${type}`);
+        }
+    }
+
+    private dispatchHandlers<T>(handlers: Set<(data: T) => void>, data: T, eventName: string): void {
+        for (const handler of [...handlers]) {
+            try {
+                handler(data);
+            } catch (error) {
+                console.error(`[WS] ${eventName} 处理器执行失败:`, error);
+            }
         }
     }
 }

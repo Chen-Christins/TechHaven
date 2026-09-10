@@ -57,7 +57,7 @@ WebSocket is closed before the connection was established
 
 ### WebSocket 客户端
 
-修复位于 `src/utils/websocket.ts`：
+修复位于 `../src/infra/websocket.ts`：
 
 - 为每次连接分配递增的 generation，只允许当前连接处理 `open`、`message`、`close` 和 `error` 事件。
 - 记录连接是否真正触发过 `open`。

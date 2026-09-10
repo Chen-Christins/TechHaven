@@ -26,15 +26,15 @@ BrowserRouter → ThemeProvider → AuthProvider → LayoutWidthProvider → Sit
 
 ### 认证与 HTTP 层
 
-- Token 使用**内存存储**（`TokenManager` 类，见 `src/utils/http.ts`），不使用 localStorage/Cookie 直接读写，避免 XSS 风险
+- Token 使用 **内存存储**（`TokenManager` 类，见 `src/infra/http.ts`），不使用 localStorage/Cookie 直接读写，避免 XSS 风险
 - Token 来源：登录时从响应的 `Set-Cookie` header 中提取 `S_TOKEN`，或从 `document.cookie` 回退读取
-- 所有 API 请求通过 `src/utils/http.ts` 的 `http` 实例发送，拦截器自动附加 `Authorization: Bearer <token>` header
+- 所有 API 请求通过 `src/infra/http.ts` 的 `http` 实例发送，拦截器自动附加 `Authorization: Bearer <token>` header
 - 后端返回统一结构 `{ code, data, message/msg, success }`，响应拦截器做了完整的业务状态码映射（400-504 均有中文错误提示）
 - API Service 层位于 `src/services/`，每个 service 文件封装一类业务接口
 
 ### WebSocket 连接管理
 
-- WebSocket 客户端封装在 `src/utils/websocket.ts`（`WebSocketClient` 类），支持自动重连（指数退避，最多 50 次，最长间隔 30s）、消息类型分发、Cookie 鉴权
+- WebSocket 客户端封装在 `src/infra/websocket.ts`（`WebSocketClient` 类），支持自动重连（指数退避，最多 50 次，最长间隔 30s）、消息类型分发、Cookie 鉴权
 - 通知 WebSocket 是全局单例 `notificationWS`，**连接生命周期绑定在 AuthContext 中** — 登录成功自动 connect，登出自动 disconnect，不会随路由切换重连
 - WebSocket 路径通过 `VITE_WS_URL` 环境变量配置
 

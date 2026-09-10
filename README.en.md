@@ -201,7 +201,7 @@ The `/rd` layout additionally mounts `RdOrgProvider` for the current organizatio
 
 ### HTTP and Real-Time Communication
 
-- Regular business APIs are organized by domain under `src/services/` and reuse the shared Axios instance from `src/utils/http.ts`.
+- Regular business APIs are organized by domain under `src/services/` and reuse the shared Axios instance from `src/infra/http.ts`.
 - The HTTP layer handles business `errno` values, dynamic error-code tables, HTTP errors, and authentication expiration.
 - AI summaries use the native Fetch API to consume an SSE stream.
 - Notifications and presence use separate WebSocket connections, connect after login, disconnect after logout, and support automatic reconnects.

@@ -1,4 +1,4 @@
-import http from "../utils/http";
+import http from "../infra/http.ts";
 import type { ChatMsg, Conversation, ConversationListResponse, MessageListResponse } from "../types/message";
 
 /**

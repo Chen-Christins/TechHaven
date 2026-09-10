@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse, AxiosError } from "axios";
-import { getErrorMsg } from "./errorCodes";
-import { tokenManager } from "./tokenManager";
+import { getErrorMsg } from "../utils/errorCodes.ts";
+import { tokenManager } from "../auth/tokenManager.ts";
 
 /**
  * HTTP 请求响应接口
@@ -44,15 +44,42 @@ export class HttpError extends Error {
     errno?: number;
     config: HttpRequestConfig;
     msg: string;
+    responseData?: unknown;
+    isTimeout: boolean;
+    isCanceled: boolean;
 
-    constructor(message: string, code: number, config: HttpRequestConfig, errno?: number) {
-        super(message);
+    constructor(
+        message: string,
+        code: number,
+        config: HttpRequestConfig = {},
+        options: { errno?: number; responseData?: unknown; cause?: unknown; isTimeout?: boolean; isCanceled?: boolean } = {},
+    ) {
+        super(message, { cause: options.cause });
         this.name = "HttpError";
         this.code = code;
-        this.errno = errno;
+        this.errno = options.errno;
         this.config = config;
         this.msg = message;
+        this.responseData = options.responseData;
+        this.isTimeout = options.isTimeout ?? false;
+        this.isCanceled = options.isCanceled ?? false;
     }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null;
+}
+
+function getResponseMessage(data: unknown): string | undefined {
+    if (!isRecord(data)) {
+        return undefined;
+    }
+    const message = typeof data.msg === "string" ? data.msg : data.message;
+    return typeof message === "string" ? message : undefined;
+}
+
+function getResponseErrno(data: unknown): number | undefined {
+    return isRecord(data) && typeof data.errno === "number" ? data.errno : undefined;
 }
 
 /**
@@ -100,7 +127,7 @@ class HttpClient {
         this.instance.interceptors.request.use(
             (config) => {
                 const token = tokenManager.getToken();
-                if (token && config.headers) {
+                if (token && config.headers && !config.headers.Authorization) {
                     config.headers.Authorization = `Bearer ${token}`;
                 }
                 return config;
@@ -114,29 +141,33 @@ class HttpClient {
             (response: AxiosResponse<HttpResponse>) => {
                 const { data } = response;
 
-                if (response.status === 200) {
-                    if (data && typeof data === "object" && "errno" in data) {
-                        if (data.errno === 0 || data.success) {
-                            return response;
-                        } else {
-                            const errno = data.errno as number;
-                            const fallbackMsg = (data as any)?.msg || (data as any)?.message || "请求失败";
-                            const mappedMessage = getErrorMsg(errno, fallbackMsg);
-
-                            businessErrorHandler?.(errno, data);
-
-                            throw new HttpError(mappedMessage, 200, response.config as HttpRequestConfig, errno);
-                        }
-                    } else {
-                        return response;
-                    }
+                if (!isRecord(data)) {
+                    return response;
                 }
 
+                const errno = getResponseErrno(data);
+                const failed = (errno !== undefined && errno !== 0) || (errno === undefined && data.success === false);
+                if (failed) {
+                    const fallbackMessage = getResponseMessage(data) || "请求失败";
+                    const mappedMessage = errno === undefined ? fallbackMessage : getErrorMsg(errno, fallbackMessage);
+                    if (errno !== undefined) {
+                        businessErrorHandler?.(errno, data);
+                    }
+                    throw new HttpError(mappedMessage, response.status, response.config as HttpRequestConfig, {
+                        errno,
+                        responseData: data,
+                    });
+                }
                 return response;
             },
-            (error: AxiosError) => {
+            (error: unknown) => {
                 if (error instanceof HttpError) {
                     return Promise.reject(error);
+                }
+
+                if (!axios.isAxiosError(error)) {
+                    const message = error instanceof Error ? error.message : "请求配置错误";
+                    return Promise.reject(new HttpError(message, 500, {}, { cause: error }));
                 }
 
                 console.error("❌ 请求错误:", {
@@ -152,20 +183,25 @@ class HttpClient {
                 let message = "网络错误";
                 let code = 500;
                 let responseErrno: number | undefined;
+                const isCanceled = axios.isCancel(error) || error.code === AxiosError.ERR_CANCELED;
+                const isTimeout = error.code === AxiosError.ECONNABORTED || error.code === AxiosError.ETIMEDOUT;
 
                 if (error.response) {
                     const { status, data } = error.response;
                     code = status;
-                    responseErrno = (data as any)?.errno;
-                    const fallbackMsg = (data as any)?.msg || (data as any)?.message;
+                    responseErrno = getResponseErrno(data);
+                    const fallbackMsg = getResponseMessage(data);
 
-                    if (responseErrno) {
+                    if (responseErrno !== undefined) {
                         message = getErrorMsg(responseErrno, fallbackMsg);
+                        businessErrorHandler?.(responseErrno, data);
                     } else {
-                        message = `请求失败 (${status})`;
+                        message = fallbackMsg || `请求失败 (${status})`;
                     }
+                } else if (isCanceled) {
+                    message = "请求已取消";
                 } else if (error.request) {
-                    if (error.code === "ECONNABORTED") {
+                    if (isTimeout) {
                         message = "请求超时";
                     } else {
                         message = "网络连接失败";
@@ -174,7 +210,13 @@ class HttpClient {
                     message = error.message || "请求配置错误";
                 }
 
-                const httpError = new HttpError(message, code, error.config as HttpRequestConfig, responseErrno);
+                const httpError = new HttpError(message, code, error.config as HttpRequestConfig, {
+                    errno: responseErrno,
+                    responseData: error.response?.data,
+                    cause: error,
+                    isTimeout,
+                    isCanceled,
+                });
                 return Promise.reject(httpError);
             },
         );
@@ -185,7 +227,7 @@ class HttpClient {
         return response.data;
     }
 
-    async post<T = any>(url: string, data?: any, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
+    async post<T = any>(url: string, data?: unknown, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
         const response = await this.instance.post<HttpResponse<T>>(url, data, config);
         return response.data;
     }
@@ -209,12 +251,12 @@ class HttpClient {
         });
     }
 
-    async put<T = any>(url: string, data?: any, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
+    async put<T = any>(url: string, data?: unknown, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
         const response = await this.instance.put<HttpResponse<T>>(url, data, config);
         return response.data;
     }
 
-    async patch<T = any>(url: string, data?: any, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
+    async patch<T = any>(url: string, data?: unknown, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
         const response = await this.instance.patch<HttpResponse<T>>(url, data, config);
         return response.data;
     }
@@ -225,43 +267,16 @@ class HttpClient {
     }
 
     async upload<T = any>(url: string, formData: FormData, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
-        const uploadConfig: HttpRequestConfig = {
-            ...config,
-            headers: {
-                "Content-Type": "multipart/form-data",
-                ...config?.headers,
-            },
-        };
-
-        const response = await this.instance.post<HttpResponse<T>>(url, formData, uploadConfig);
+        const response = await this.instance.post<HttpResponse<T>>(url, formData, config);
         return response.data;
     }
 
-    async download(url: string, filename?: string, _config?: HttpRequestConfig): Promise<void> {
-        const fullUrl = `${this.baseURL}${url}`;
-        const headers: HeadersInit = {};
-        const token = tokenManager.getToken();
-        if (token) {
-            headers["Authorization"] = `Bearer ${token}`;
-        }
-        const res = await fetch(fullUrl, { headers, credentials: "include" });
-
-        if (!res.ok) {
-            let msg = "下载失败";
-            try {
-                const err = await res.json();
-                msg = err.msg || err.message || msg;
-            } catch {
-                msg = `下载失败 (HTTP ${res.status})`;
-            }
-            throw new Error(msg);
-        }
-
-        const blob = await res.blob();
-
-        const disposition = res.headers.get("Content-Disposition");
+    async download(url: string, filename?: string, config?: HttpRequestConfig): Promise<void> {
+        const response = await this.instance.get<Blob>(url, { ...config, responseType: "blob" });
+        const blob = response.data;
+        const disposition = response.headers["content-disposition"];
         let fileName = filename || "download";
-        if (disposition) {
+        if (typeof disposition === "string") {
             const match = disposition.match(/filename\*?=(?:UTF-8'')?"?([^";\n]+)"?/);
             if (match) {
                 try {
@@ -279,8 +294,12 @@ class HttpClient {
         return axios.CancelToken.source();
     }
 
-    isCancel(error: any): boolean {
-        return axios.isCancel(error);
+    createAbortController(): AbortController {
+        return new AbortController();
+    }
+
+    isCancel(error: unknown): boolean {
+        return axios.isCancel(error) || (error instanceof HttpError && error.isCanceled);
     }
 
     getBaseURL(): string {

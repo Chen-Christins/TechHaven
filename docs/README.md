@@ -14,7 +14,7 @@
 
 ## 通用约定
 
-所有接口基于 `src/utils/http.ts` 中的 `HttpClient`，遵循以下约定：
+所有接口基于 `../src/infra/http.ts` 中的 `HttpClient`，遵循以下约定：
 
 - **Base URL**：`VITE_USE_PROXY=true` 时为 `/api/v1`，否则为 `VITE_API_BASE_URL`（如 `http://8.148.82.38:8078`）。
 - **鉴权**：请求拦截器自动附加 `Authorization: Bearer <token>`，token 来自内存态 `TokenManager`（取自 `S_TOKEN` Cookie），**不**使用 localStorage。

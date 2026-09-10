@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { HttpClient, HttpError, setBusinessErrorHandler } from "./http";
-import { tokenManager } from "./tokenManager";
+import { HttpClient, HttpError, setBusinessErrorHandler } from "./http.ts";
+import { tokenManager } from "../auth/tokenManager.ts";
 
 it("postForm preserves falsy values, encodes special text and omits only nullish fields", async () => {
     let sent = "";
@@ -58,6 +58,36 @@ describe("HTTP 未授权（1101）处理", () => {
         });
     });
 
+    it("非零 errno 优先于冲突的 success=true", async () => {
+        const client = new HttpClient({ baseURL: "http://test.local" });
+        await expect(
+            client.get("/x", {
+                adapter: async (config) => ({
+                    data: { errno: 1101, success: true, data: null },
+                    status: 201,
+                    statusText: "Created",
+                    headers: {},
+                    config,
+                }),
+            }),
+        ).rejects.toMatchObject({ errno: 1101, code: 201 });
+    });
+
+    it("没有 errno 的 success=false 仍作为业务错误处理", async () => {
+        const client = new HttpClient({ baseURL: "http://test.local" });
+        await expect(
+            client.get("/x", {
+                adapter: async (config) => ({
+                    data: { success: false, message: "操作失败", data: null },
+                    status: 200,
+                    statusText: "OK",
+                    headers: {},
+                    config,
+                }),
+            }),
+        ).rejects.toMatchObject({ message: "操作失败", code: 200, responseData: { success: false, message: "操作失败", data: null } });
+    });
+
     it("收到 1101 时通过注册回调同步处理", async () => {
         let notified = 0;
         setBusinessErrorHandler((errno) => {
@@ -88,5 +118,25 @@ describe("HTTP 未授权（1101）处理", () => {
             },
         });
         expect(captured?.headers?.Authorization).toBe("Bearer tok-456");
+    });
+
+    it("不覆盖调用方显式提供的 Authorization", async () => {
+        tokenManager.setToken("tok-456");
+        let captured: import("axios").AxiosRequestConfig | undefined;
+        const client = new HttpClient({ baseURL: "http://test.local" });
+        await client.get("/ok", {
+            headers: { Authorization: "Basic explicit" },
+            adapter: async (config) => {
+                captured = config;
+                return {
+                    data: { errno: 0, success: true, data: null },
+                    status: 200,
+                    statusText: "OK",
+                    headers: {},
+                    config,
+                };
+            },
+        });
+        expect(captured?.headers?.Authorization).toBe("Basic explicit");
     });
 });

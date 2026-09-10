@@ -1,4 +1,4 @@
-import http from "../utils/http";
+import http from "../infra/http.ts";
 
 /* ═══════════════════════════════════════════
    API 响应类型（snake_case）

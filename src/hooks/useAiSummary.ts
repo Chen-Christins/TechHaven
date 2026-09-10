@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { tokenManager } from "../utils/tokenManager";
+import { tokenManager } from "../auth/tokenManager.ts";
 
 /**
  * 时间戳工具函数，格式: [HH:MM:SS.mmm]

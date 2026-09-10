@@ -1,4 +1,4 @@
-import http from "../utils/http";
+import http from "../infra/http.ts";
 import type { NotificationListResponse } from "../types/notification";
 
 export class NotificationService {
