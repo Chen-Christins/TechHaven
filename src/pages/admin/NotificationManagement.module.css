@@ -1,299 +1,299 @@
 .notificationManagement {
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 /* 页面头部 */
 .pageHeader {
-  composes: pageHeader from "./AdminPageShared.module.css";
+    composes: pageHeader from "./AdminPageShared.module.css";
 }
 
 .pageTitle {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .pageTitle svg {
-  color: var(--primary);
+    color: var(--primary);
 }
 
 .pageDescription {
-  composes: pageDescription from "./AdminPageShared.module.css";
+    composes: pageDescription from "./AdminPageShared.module.css";
 }
 
 /* 表单卡片 */
 .formCard {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 24px;
-  overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 24px;
+    overflow: hidden;
 }
 
 .formSection {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .formSectionTitle {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .formDivider {
-  height: 1px;
-  background-color: var(--border-primary);
-  margin: 24px 0;
+    height: 1px;
+    background-color: var(--border-primary);
+    margin: 24px 0;
 }
 
 /* 表单双列布局 */
 .formGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
 }
 
 .formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
 }
 
 .formGroup:last-child {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .switchRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .switchHint {
-  font-size: 13px;
-  color: var(--text-tertiary);
+    font-size: 13px;
+    color: var(--text-tertiary);
 }
 
 .formLabel {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .charCount {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-tertiary);
 }
 
 /* 文本域 */
 .textarea {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  padding: 10px 14px;
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  background: var(--card-bg);
-  color: var(--text-primary);
-  font-size: 14px;
-  outline: none;
-  resize: vertical;
-  min-height: 140px;
-  font-family: inherit;
-  line-height: 1.6;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    resize: vertical;
+    min-height: 140px;
+    font-family: inherit;
+    line-height: 1.6;
 }
 
 .textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .textarea::placeholder {
-  color: var(--text-tertiary);
+    color: var(--text-tertiary);
 }
 
 /* 发送结果 */
 .resultBox {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 20px;
 }
 
 .resultSuccess {
-  background: rgba(34, 197, 94, 0.08);
-  color: #16a34a;
-  border: 1px solid rgba(34, 197, 94, 0.2);
+    background: rgba(34, 197, 94, 0.08);
+    color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .resultError {
-  background: rgba(239, 68, 68, 0.08);
-  color: #dc2626;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+    background: rgba(239, 68, 68, 0.08);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 /* 操作按钮区域 */
 .formActions {
-  display: flex;
-  gap: 12px;
-  padding-top: 20px;
-  justify-content: flex-end;
+    display: flex;
+    gap: 12px;
+    padding-top: 20px;
+    justify-content: flex-end;
 }
 
 .broadcastList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .broadcastItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  padding: 10px 14px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
 }
 
 .broadcastContent {
-  flex: 1;
-  min-width: 0;
+    flex: 1;
+    min-width: 0;
 }
 
 .broadcastTitle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
 }
 
 .broadcastTitle strong {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .broadcastText {
-  margin-top: 2px;
-  overflow: hidden;
-  color: var(--text-secondary);
-  font-size: 13px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    margin-top: 2px;
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .broadcastCloseButton {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 4px 10px;
-  color: var(--text-secondary);
-  font-size: 12px;
-  background: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
-  cursor: pointer;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 10px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    cursor: pointer;
 }
 
 /* 响应式 */
 @media (max-width: 768px) {
-  .notificationManagement {
-    width: 100%;
-    overflow-x: hidden;
-  }
+    .notificationManagement {
+        width: 100%;
+        overflow-x: hidden;
+    }
 
-  .formGrid {
-    grid-template-columns: 1fr;
-  }
+    .formGrid {
+        grid-template-columns: 1fr;
+    }
 
-  .formCard {
-    padding: 16px;
-  }
+    .formCard {
+        padding: 16px;
+    }
 
-  .pageHeader {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+    .pageHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-  .formGroup,
-  .switchRow,
-  .formLabel {
-    min-width: 0;
-  }
+    .formGroup,
+    .switchRow,
+    .formLabel {
+        min-width: 0;
+    }
 }
 
 @media (max-width: 480px) {
-  .pageTitle {
-    font-size: 1.2rem;
-  }
+    .pageTitle {
+        font-size: 1.2rem;
+    }
 
-  .formCard {
-    padding: 12px;
-  }
+    .formCard {
+        padding: 12px;
+    }
 
-  .switchRow {
-    align-items: flex-start;
-  }
+    .switchRow {
+        align-items: flex-start;
+    }
 
-  .switchHint {
-    min-width: 0;
-  }
+    .switchHint {
+        min-width: 0;
+    }
 
-  .formGrid {
-    gap: 10px;
-  }
+    .formGrid {
+        gap: 10px;
+    }
 
-  .formActions {
-    flex-direction: column;
-    gap: 8px;
-  }
+    .formActions {
+        flex-direction: column;
+        gap: 8px;
+    }
 
-  .formActions .btn {
-    width: 100%;
-    justify-content: center;
-  }
+    .formActions .btn {
+        width: 100%;
+        justify-content: center;
+    }
 
-  .broadcastItem {
-    align-items: stretch;
-    flex-direction: column;
-    padding: 10px 12px;
-  }
+    .broadcastItem {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 10px 12px;
+    }
 
-  .broadcastCloseButton {
-    align-self: flex-end;
-  }
+    .broadcastCloseButton {
+        align-self: flex-end;
+    }
 
-  .textarea {
-    min-height: 100px;
-    font-size: 13px;
-  }
+    .textarea {
+        min-height: 100px;
+        font-size: 13px;
+    }
 }

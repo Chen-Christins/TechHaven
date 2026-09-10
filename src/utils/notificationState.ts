@@ -8,26 +8,26 @@ let version = 0;
 const listeners = new Set<(delta: number) => void>();
 
 export function isRead(id: string | number): boolean {
-  return readIds.has(id);
+    return readIds.has(id);
 }
 
 export function markRead(id: string | number): void {
-  readIds.add(id);
-  version++;
-  listeners.forEach((fn) => fn(1));
+    readIds.add(id);
+    version++;
+    listeners.forEach((fn) => fn(1));
 }
 
 export function markAllRead(ids: Array<string | number>): void {
-  ids.forEach((id) => readIds.add(id));
-  version++;
-  listeners.forEach((fn) => fn(ids.length));
+    ids.forEach((id) => readIds.add(id));
+    version++;
+    listeners.forEach((fn) => fn(ids.length));
 }
 
 export function subscribe(fn: (delta: number) => void): () => void {
-  listeners.add(fn);
-  return () => {
-    listeners.delete(fn);
-  };
+    listeners.add(fn);
+    return () => {
+        listeners.delete(fn);
+    };
 }
 
 // Global unread count that persists across component mounts (SPA navigation).
@@ -39,40 +39,40 @@ let countInitialized = false;
 const countListeners = new Set<(count: number) => void>();
 
 export function getUnreadCount(): number {
-  return globalUnreadCount;
+    return globalUnreadCount;
 }
 
 export function setUnreadCount(count: number): void {
-  globalUnreadCount = count;
-  countInitialized = true;
-  countListeners.forEach((fn) => fn(count));
+    globalUnreadCount = count;
+    countInitialized = true;
+    countListeners.forEach((fn) => fn(count));
 }
 
 export function decrementUnreadCount(delta: number): void {
-  globalUnreadCount = Math.max(0, globalUnreadCount - delta);
-  countListeners.forEach((fn) => fn(globalUnreadCount));
+    globalUnreadCount = Math.max(0, globalUnreadCount - delta);
+    countListeners.forEach((fn) => fn(globalUnreadCount));
 }
 
 export function incrementUnreadCount(): void {
-  globalUnreadCount += 1;
-  countListeners.forEach((fn) => fn(globalUnreadCount));
+    globalUnreadCount += 1;
+    countListeners.forEach((fn) => fn(globalUnreadCount));
 }
 
 export function subscribeUnreadCount(fn: (count: number) => void): () => void {
-  countListeners.add(fn);
-  return () => countListeners.delete(fn);
+    countListeners.add(fn);
+    return () => countListeners.delete(fn);
 }
 
 export function isUnreadCountInitialized(): boolean {
-  return countInitialized;
+    return countInitialized;
 }
 
 export function resetNotificationState(): void {
-  readIds.clear();
-  version++;
-  listeners.forEach((fn) => fn(0));
+    readIds.clear();
+    version++;
+    listeners.forEach((fn) => fn(0));
 
-  globalUnreadCount = 0;
-  countInitialized = false;
-  countListeners.forEach((fn) => fn(globalUnreadCount));
+    globalUnreadCount = 0;
+    countInitialized = false;
+    countListeners.forEach((fn) => fn(globalUnreadCount));
 }

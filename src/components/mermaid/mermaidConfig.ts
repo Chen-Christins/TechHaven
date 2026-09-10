@@ -10,13 +10,13 @@ import type { MermaidConfig } from "mermaid";
  * 对应的恶意输入回归测试见同目录 MermaidComponent.test.ts。
  */
 export const MERMAID_INIT_CONFIG: MermaidConfig = {
-  startOnLoad: false,
-  theme: "default",
-  securityLevel: "strict",
-  fontFamily: "var(--font-mono)",
-  fontSize: 14,
-  flowchart: {
-    useMaxWidth: true,
-    curve: "basis",
-  },
+    startOnLoad: false,
+    theme: "default",
+    securityLevel: "strict",
+    fontFamily: "var(--font-mono)",
+    fontSize: 14,
+    flowchart: {
+        useMaxWidth: true,
+        curve: "basis",
+    },
 };

@@ -17,101 +17,101 @@ declare const process: { env: Record<string, string | undefined> };
 const GATEWAY_URL = process.env.TECHHAVEN_GATEWAY_URL;
 
 function authFetch(token: string): typeof fetch {
-  return (input, init) =>
-    fetch(input, {
-      ...init,
-      headers: {
-        ...(init?.headers as Record<string, string> | undefined),
-        authorization: `Bearer ${token}`,
-        "x-techhaven-actor": "user:9",
-      },
-    });
+    return (input, init) =>
+        fetch(input, {
+            ...init,
+            headers: {
+                ...(init?.headers as Record<string, string> | undefined),
+                authorization: `Bearer ${token}`,
+                "x-techhaven-actor": "user:9",
+            },
+        });
 }
 
 describe.skipIf(!GATEWAY_URL)("AgentGatewayClient × 本机 Gateway（integration）", () => {
-  it("创建会话 → 观察端刷新式重连 → 历史回放 → 审批 → 终态关闭", async () => {
-    const token = process.env.TECHHAVEN_GATEWAY_TOKEN ?? "dev-token";
-    const client = new AgentGatewayClient(GATEWAY_URL, authFetch(token));
+    it("创建会话 → 观察端刷新式重连 → 历史回放 → 审批 → 终态关闭", async () => {
+        const token = process.env.TECHHAVEN_GATEWAY_TOKEN ?? "dev-token";
+        const client = new AgentGatewayClient(GATEWAY_URL, authFetch(token));
 
-    const created = await client.createSession({
-      orgId: 1,
-      subjectType: "bug",
-      subjectId: "bug_1",
-      prompt: "集成验证：读取缺陷并分析。",
-    });
-    expect(created.sid).toBeTruthy();
-    expect(["queued", "running"]).toContain(created.status);
+        const created = await client.createSession({
+            orgId: 1,
+            subjectType: "bug",
+            subjectId: "bug_1",
+            prompt: "集成验证：读取缺陷并分析。",
+        });
+        expect(created.sid).toBeTruthy();
+        expect(["queued", "running"]).toContain(created.status);
 
-    const initialEvents: EventEnvelope[] = [];
-    let permissionRequestId = "";
+        const initialEvents: EventEnvelope[] = [];
+        let permissionRequestId = "";
 
-    // 第一观察端读到审批点后主动断开，模拟页面刷新前的连接关闭。
-    await new Promise<void>((resolve, reject) => {
-      let unwatch: () => void = () => undefined;
-      const timeout = setTimeout(() => {
-        unwatch();
-        reject(new Error(`等待 permission_request 超时（events=${initialEvents.length}）`));
-      }, 30_000);
-      unwatch = client.subscribeEvents(created.sid, {
-        onEvent: (env) => {
-          initialEvents.push(env);
-          if (env.type !== "permission_request") return;
-          permissionRequestId = env.payload.requestId;
-          clearTimeout(timeout);
-          unwatch();
-          resolve();
-        },
-        onProtocolError: (message) => reject(new Error(message)),
-        onEnd: () => reject(new Error("审批前事件流意外结束")),
-      });
-    });
-
-    expect(initialEvents.some((env) => env.type === "tool_call")).toBe(true);
-    expect(initialEvents.some((env) => env.type === "status_change" && env.payload.status === "awaiting_permission")).toBe(true);
-    expect(permissionRequestId).toBeTruthy();
-
-    // 新 client 不依赖旧连接内存：先查询同一 SID，再从 seq=0 全量回放以重建页面历史和审批卡。
-    const resumedClient = new AgentGatewayClient(GATEWAY_URL, authFetch(token));
-    const detail = await resumedClient.getSession(created.sid);
-    expect(detail.status).toBe("awaiting_permission");
-
-    const replayed: EventEnvelope[] = [];
-    let sawSucceeded = false;
-    let endReason: string | undefined;
-    let answered = false;
-
-    await new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        unwatch();
-        reject(new Error(`恢复后等待终态超时（events=${replayed.length}，end=${endReason}）`));
-      }, 30_000);
-      const unwatch = resumedClient.subscribeEvents(created.sid, {
-        onEvent: (env) => {
-          replayed.push(env);
-          if (env.type === "assistant_chunk") expect(env.payload.text.length).toBeGreaterThan(0);
-          if (env.type === "permission_request" && !answered) {
-            answered = true;
-            void resumedClient.answerPermission(created.sid, env.payload.requestId, "approve").catch((err) => {
-              reject(err as Error);
+        // 第一观察端读到审批点后主动断开，模拟页面刷新前的连接关闭。
+        await new Promise<void>((resolve, reject) => {
+            let unwatch: () => void = () => undefined;
+            const timeout = setTimeout(() => {
+                unwatch();
+                reject(new Error(`等待 permission_request 超时（events=${initialEvents.length}）`));
+            }, 30_000);
+            unwatch = client.subscribeEvents(created.sid, {
+                onEvent: (env) => {
+                    initialEvents.push(env);
+                    if (env.type !== "permission_request") return;
+                    permissionRequestId = env.payload.requestId;
+                    clearTimeout(timeout);
+                    unwatch();
+                    resolve();
+                },
+                onProtocolError: (message) => reject(new Error(message)),
+                onEnd: () => reject(new Error("审批前事件流意外结束")),
             });
-          }
-          if (env.type === "status_change" && env.payload.status === "succeeded") sawSucceeded = true;
-        },
-        onProtocolError: (message) => reject(new Error(message)),
-        onEnd: (reason) => {
-          endReason = reason;
-          clearTimeout(timeout);
-          unwatch();
-          resolve();
-        },
-      });
-    });
+        });
 
-    const replayedSeqs = replayed.map((env) => env.seq);
-    expect(endReason).toBe("completed");
-    expect(replayedSeqs.slice(0, initialEvents.length)).toEqual(initialEvents.map((env) => env.seq));
-    expect(new Set(replayedSeqs).size).toBe(replayedSeqs.length);
-    expect(answered).toBe(true);
-    expect(sawSucceeded).toBe(true);
-  }, 45_000);
+        expect(initialEvents.some((env) => env.type === "tool_call")).toBe(true);
+        expect(initialEvents.some((env) => env.type === "status_change" && env.payload.status === "awaiting_permission")).toBe(true);
+        expect(permissionRequestId).toBeTruthy();
+
+        // 新 client 不依赖旧连接内存：先查询同一 SID，再从 seq=0 全量回放以重建页面历史和审批卡。
+        const resumedClient = new AgentGatewayClient(GATEWAY_URL, authFetch(token));
+        const detail = await resumedClient.getSession(created.sid);
+        expect(detail.status).toBe("awaiting_permission");
+
+        const replayed: EventEnvelope[] = [];
+        let sawSucceeded = false;
+        let endReason: string | undefined;
+        let answered = false;
+
+        await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                unwatch();
+                reject(new Error(`恢复后等待终态超时（events=${replayed.length}，end=${endReason}）`));
+            }, 30_000);
+            const unwatch = resumedClient.subscribeEvents(created.sid, {
+                onEvent: (env) => {
+                    replayed.push(env);
+                    if (env.type === "assistant_chunk") expect(env.payload.text.length).toBeGreaterThan(0);
+                    if (env.type === "permission_request" && !answered) {
+                        answered = true;
+                        void resumedClient.answerPermission(created.sid, env.payload.requestId, "approve").catch((err) => {
+                            reject(err as Error);
+                        });
+                    }
+                    if (env.type === "status_change" && env.payload.status === "succeeded") sawSucceeded = true;
+                },
+                onProtocolError: (message) => reject(new Error(message)),
+                onEnd: (reason) => {
+                    endReason = reason;
+                    clearTimeout(timeout);
+                    unwatch();
+                    resolve();
+                },
+            });
+        });
+
+        const replayedSeqs = replayed.map((env) => env.seq);
+        expect(endReason).toBe("completed");
+        expect(replayedSeqs.slice(0, initialEvents.length)).toEqual(initialEvents.map((env) => env.seq));
+        expect(new Set(replayedSeqs).size).toBe(replayedSeqs.length);
+        expect(answered).toBe(true);
+        expect(sawSucceeded).toBe(true);
+    }, 45_000);
 });

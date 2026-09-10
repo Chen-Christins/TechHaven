@@ -15,54 +15,64 @@ import ThemeBackground from "./components/themeBackground";
 import SessionNotifier from "./components/auth/SessionNotifier";
 import { usePresenceConnection } from "./hooks/useOnlineCount";
 import { useDevToolsProtection } from "./hooks/useDevToolsProtection";
-import { initErrorCodes } from "./utils/errorCodes";
+import { initErrorCodes, refreshErrorCodes } from "./utils/errorCodes";
+import "./utils/errorHandlers"; // 注册业务 errno 处理器（1101 等）
 
 function AppContent() {
-  usePresenceConnection();
-  useDevToolsProtection();
+    usePresenceConnection();
+    useDevToolsProtection();
 
-  // 应用启动时拉取一次错误码表
-  const { settings } = useSiteSettings();
-  useEffect(() => {
-    initErrorCodes(settings.language);
-  }, [settings.language]);
-  return (
-    <>
-      <IdleTimeoutHandler />
-      <MessageProvider>
-        <ConfirmProvider>
-          <ThemeBackground />
-          <SessionNotifier />
-          <SimpleBar
-            style={{
-              maxHeight: "100vh",
-              width: "100vw",
-              overflowX: "hidden",
-            }}
-            autoHide={false}
-          >
-            <RouterConfig />
-          </SimpleBar>
-        </ConfirmProvider>
-      </MessageProvider>
-    </>
-  );
+    const { settings } = useSiteSettings();
+
+    // 启动时立即加载错误码（不依赖 settings）
+    useEffect(() => {
+        initErrorCodes();
+    }, []);
+
+    // settings 加载后，语言变化时刷新错误码
+    useEffect(() => {
+        if (settings.language) {
+            refreshErrorCodes(settings.language);
+        }
+    }, [settings.language]);
+
+    return (
+        <>
+            <IdleTimeoutHandler />
+            <MessageProvider>
+                <ConfirmProvider>
+                    <ThemeBackground />
+                    <SessionNotifier />
+                    <SimpleBar
+                        style={{
+                            maxHeight: "100vh",
+                            width: "100vw",
+                            overflowX: "hidden",
+                        }}
+                        autoHide={false}
+                    >
+                        <RouterConfig />
+                    </SimpleBar>
+                </ConfirmProvider>
+            </MessageProvider>
+        </>
+    );
 }
 
 function App() {
-  return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <LayoutWidthProvider>
-            <SiteSettingsProvider>
-              <AppContent />
-            </SiteSettingsProvider>
-          </LayoutWidthProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </BrowserRouter>
-  );
+    return (
+        <BrowserRouter>
+            <ThemeProvider>
+                <AuthProvider>
+                    <LayoutWidthProvider>
+                        <SiteSettingsProvider>
+                            <AppContent />
+                        </SiteSettingsProvider>
+                    </LayoutWidthProvider>
+                </AuthProvider>
+            </ThemeProvider>
+        </BrowserRouter>
+    );
 }
 
 export default App;

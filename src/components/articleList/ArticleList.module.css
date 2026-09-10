@@ -1,289 +1,289 @@
 .articleList {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
 .title {
-  font-size: 1.8rem;
-  color: var(--text-primary);
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid var(--primary);
-  padding-bottom: 0.5rem;
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 0.5rem;
 }
 
 .articles {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  min-height: 1350px; /* 固定最小高度，确保分页位置稳定 */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-height: 1350px; /* 固定最小高度，确保分页位置稳定 */
 }
 
 /* 当文章数量少于每页数量时，用占位空间填充 */
 .articles::after {
-  content: "";
-  flex-grow: 1;
+    content: "";
+    flex-grow: 1;
 }
 
 .articleItem {
-  padding: 1.75rem 2rem;
-  background-color: var(--card-bg);
-  border-radius: 12px;
-  border: 1px solid var(--border-light);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  position: relative;
+    padding: 1.75rem 2rem;
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    position: relative;
 }
 
 .articleItem:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
-  border-color: var(--border-primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+    border-color: var(--border-primary);
 }
 
 .articleItem::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 20%;
-  bottom: 20%;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--border-light);
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 20%;
+    bottom: 20%;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--border-light);
 }
 
 .articleItem:hover::before {
-  background: linear-gradient(180deg, var(--primary), var(--accent, #8b5cf6));
-  top: 12%;
-  bottom: 12%;
+    background: linear-gradient(180deg, var(--primary), var(--accent, #8b5cf6));
+    top: 12%;
+    bottom: 12%;
 }
 
 .articleTitle {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 0.6rem 0;
-  line-height: 1.4;
-  cursor: pointer;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.6rem 0;
+    line-height: 1.4;
+    cursor: pointer;
 }
 
 .articleTitle:hover {
-  color: var(--primary);
+    color: var(--primary);
 }
 
 .articleMeta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem 1.25rem;
-  color: var(--text-tertiary);
-  font-size: 0.82rem;
-  margin-bottom: 0.9rem;
-  padding-bottom: 0.9rem;
-  border-bottom: 1px solid var(--border-light);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+    color: var(--text-tertiary);
+    font-size: 0.82rem;
+    margin-bottom: 0.9rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .articleMeta span {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
 }
 
 .articleMeta svg {
-  opacity: 0.5;
+    opacity: 0.5;
 }
 
 .articleSummary {
-  color: var(--text-secondary);
-  line-height: 1.75;
-  margin-bottom: 1rem;
-  font-size: 0.92rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin-bottom: 1rem;
+    font-size: 0.92rem;
 }
 
 .articleActions {
-  display: flex;
-  justify-content: flex-end;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .readMoreBtn {
-  padding: 8px 14px;
-  font-size: 0.88rem;
+    padding: 8px 14px;
+    font-size: 0.88rem;
 }
 
 /* 分页样式 */
 .pagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
-  padding: 1.5rem;
-  background-color: var(--card-bg);
-  border-radius: 8px;
-  border: 1px solid var(--border-primary);
-  flex-wrap: wrap;
-  gap: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding: 1.5rem;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-primary);
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .paginationInfo {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
 }
 
 .paginationControls {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 .paginationButton {
-  min-width: 36px;
-  height: 36px;
-  padding: 0 8px;
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .paginationButton:hover:not(:disabled) {
-  background-color: var(--bg-hover);
-  border-color: var(--primary);
+    background-color: var(--bg-hover);
+    border-color: var(--primary);
 }
 
 .paginationButton.active {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: white;
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
 }
 
 .paginationButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .paginationEllipsis {
-  padding: 0 8px;
-  color: var(--text-tertiary);
-  font-size: 0.9rem;
+    padding: 0 8px;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
 }
 
 .typeBadge {
-  display: inline-flex;
-  align-items: center;
-  background: rgba(59, 130, 246, 0.08);
-  color: var(--primary);
-  border-radius: 6px;
-  padding: 3px 10px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    background: rgba(59, 130, 246, 0.08);
+    color: var(--primary);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 .categoryBadges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
 .categoryBadge {
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  border-radius: 6px;
-  padding: 3px 10px;
-  font-size: 0.8rem;
-  border: 1px solid var(--border-primary);
-  white-space: nowrap;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.8rem;
+    border: 1px solid var(--border-primary);
+    white-space: nowrap;
 }
 
 /* 响应式分页 */
 @media (max-width: 768px) {
-  .articleItem {
-    padding: 1.25rem;
-  }
+    .articleItem {
+        padding: 1.25rem;
+    }
 
-  .articleTitle {
-    font-size: 1.1rem;
-  }
+    .articleTitle {
+        font-size: 1.1rem;
+    }
 
-  .articleMeta {
-    font-size: 0.8rem;
-    gap: 0.6rem 1rem;
-  }
+    .articleMeta {
+        font-size: 0.8rem;
+        gap: 0.6rem 1rem;
+    }
 
-  .typeBadge {
-    font-size: 0.75rem;
-    padding: 3px 10px;
-  }
+    .typeBadge {
+        font-size: 0.75rem;
+        padding: 3px 10px;
+    }
 
-  .articleSummary {
-    font-size: 0.88rem;
-  }
+    .articleSummary {
+        font-size: 0.88rem;
+    }
 
-  .pagination {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 1rem;
-  }
+    .pagination {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+    }
 
-  .paginationControls {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
+    .paginationControls {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
 
-  .paginationButton {
-    min-width: 32px;
-    height: 32px;
-    font-size: 0.8rem;
-  }
+    .paginationButton {
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
 
-  .paginationInfo {
-    font-size: 0.8rem;
-  }
+    .paginationInfo {
+        font-size: 0.8rem;
+    }
 
-  .articles {
-    min-height: 0; /* 调整最小高度以适应移动设备 */
-  }
+    .articles {
+        min-height: 0; /* 调整最小高度以适应移动设备 */
+    }
 }
 
 @media (max-width: 480px) {
-  .articleItem {
-    padding: 1rem;
-  }
+    .articleItem {
+        padding: 1rem;
+    }
 
-  .articleItem::before {
-    display: none;
-  }
+    .articleItem::before {
+        display: none;
+    }
 
-  .articleTitle {
-    font-size: 1rem;
-  }
+    .articleTitle {
+        font-size: 1rem;
+    }
 
-  .articleMeta {
-    font-size: 0.75rem;
-    gap: 0.5rem 0.8rem;
-  }
+    .articleMeta {
+        font-size: 0.75rem;
+        gap: 0.5rem 0.8rem;
+    }
 
-  .pagination {
-    padding: 1rem;
-  }
+    .pagination {
+        padding: 1rem;
+    }
 
-  .paginationButton {
-    min-width: 28px;
-    height: 28px;
-    font-size: 0.75rem;
-    padding: 0 6px;
-  }
+    .paginationButton {
+        min-width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+        padding: 0 6px;
+    }
 
-  .paginationEllipsis {
-    font-size: 0.8rem;
-    padding: 0 6px;
-  }
+    .paginationEllipsis {
+        font-size: 0.8rem;
+        padding: 0 6px;
+    }
 }

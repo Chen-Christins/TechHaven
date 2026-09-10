@@ -8,25 +8,25 @@ const listeners = new Set<OnlineCountListener>();
 let _onlineCount = 0;
 
 presenceWS.onMessage("online_count", (data: any) => {
-  _onlineCount = data.count ?? data.online_users ?? 0;
-  listeners.forEach((fn) => fn(_onlineCount));
+    _onlineCount = data.count ?? data.online_users ?? 0;
+    listeners.forEach((fn) => fn(_onlineCount));
 });
 
 export function getOnlineCount(): number {
-  return _onlineCount;
+    return _onlineCount;
 }
 
 export function subscribeOnlineCount(listener: OnlineCountListener): () => void {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
+    listeners.add(listener);
+    return () => {
+        listeners.delete(listener);
+    };
 }
 
 export function connectPresence(uid: string | number) {
-  presenceWS.connect(uid);
+    presenceWS.connect(uid);
 }
 
 export function disconnectPresence() {
-  presenceWS.disconnect();
+    presenceWS.disconnect();
 }

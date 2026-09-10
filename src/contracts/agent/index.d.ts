@@ -19,31 +19,31 @@
 export type SessionStatus = "queued" | "running" | "awaiting_permission" | "succeeded" | "failed" | "cancelled";
 
 export type EngineEvent =
-  | { type: "assistant_chunk"; seq: number; ts: string; text: string }
-  | { type: "tool_call"; seq: number; ts: string; tool: string; argsDigest: string; args?: unknown }
-  | { type: "tool_result"; seq: number; ts: string; tool: string; ok: boolean; summary?: string }
-  | { type: "permission_request"; seq: number; ts: string; requestId: string; tool: string; reason?: string }
-  | {
-      type: "proposal_lifecycle";
-      seq: number;
-      ts: string;
-      event: ProposalLifecycleEventType;
-      actor: string;
-      proposal: ProposalView;
-      note?: string;
-    }
-  | { type: "status_change"; seq: number; ts: string; status: SessionStatus; detail?: string }
-  | { type: "error"; seq: number; ts: string; message: string };
+    | { type: "assistant_chunk"; seq: number; ts: string; text: string }
+    | { type: "tool_call"; seq: number; ts: string; tool: string; argsDigest: string; args?: unknown }
+    | { type: "tool_result"; seq: number; ts: string; tool: string; ok: boolean; summary?: string }
+    | { type: "permission_request"; seq: number; ts: string; requestId: string; tool: string; reason?: string }
+    | {
+          type: "proposal_lifecycle";
+          seq: number;
+          ts: string;
+          event: ProposalLifecycleEventType;
+          actor: string;
+          proposal: ProposalView;
+          note?: string;
+      }
+    | { type: "status_change"; seq: number; ts: string; status: SessionStatus; detail?: string }
+    | { type: "error"; seq: number; ts: string; message: string };
 
 /** 引擎事件去掉 seq/type/ts（三者上提到信封）后的载荷形态 */
 export type EngineEventPayload =
-  | { text: string }
-  | { tool: string; argsDigest: string; args?: unknown }
-  | { tool: string; ok: boolean; summary?: string }
-  | { requestId: string; tool: string; reason?: string }
-  | { event: ProposalLifecycleEventType; actor: string; proposal: ProposalView; note?: string }
-  | { status: SessionStatus; detail?: string }
-  | { message: string };
+    | { text: string }
+    | { tool: string; argsDigest: string; args?: unknown }
+    | { tool: string; ok: boolean; summary?: string }
+    | { requestId: string; tool: string; reason?: string }
+    | { event: ProposalLifecycleEventType; actor: string; proposal: ProposalView; note?: string }
+    | { status: SessionStatus; detail?: string }
+    | { message: string };
 
 // ------------------------------------------------------------------
 // 事件信封（SSE 线上形态，TH-RFC-001 §6）
@@ -57,24 +57,24 @@ export type EngineEventPayload =
  *   PoC 阶段固定空串。
  */
 export type EventEnvelope = {
-  schemaVersion: 1;
-  eventId: string;
-  sessionId: string;
-  orgId: number;
-  seq: number;
-  occurredAt: string;
-  traceId: string;
+    schemaVersion: 1;
+    eventId: string;
+    sessionId: string;
+    orgId: number;
+    seq: number;
+    occurredAt: string;
+    traceId: string;
 } & (
-  | { type: "assistant_chunk"; payload: { text: string } }
-  | { type: "tool_call"; payload: { tool: string; argsDigest: string; args?: unknown } }
-  | { type: "tool_result"; payload: { tool: string; ok: boolean; summary?: string } }
-  | { type: "permission_request"; payload: { requestId: string; tool: string; reason?: string } }
-  | {
-      type: "proposal_lifecycle";
-      payload: { event: ProposalLifecycleEventType; actor: string; proposal: ProposalView; note?: string };
-    }
-  | { type: "status_change"; payload: { status: SessionStatus; detail?: string } }
-  | { type: "error"; payload: { message: string } }
+    | { type: "assistant_chunk"; payload: { text: string } }
+    | { type: "tool_call"; payload: { tool: string; argsDigest: string; args?: unknown } }
+    | { type: "tool_result"; payload: { tool: string; ok: boolean; summary?: string } }
+    | { type: "permission_request"; payload: { requestId: string; tool: string; reason?: string } }
+    | {
+          type: "proposal_lifecycle";
+          payload: { event: ProposalLifecycleEventType; actor: string; proposal: ProposalView; note?: string };
+      }
+    | { type: "status_change"; payload: { status: SessionStatus; detail?: string } }
+    | { type: "error"; payload: { message: string } }
 );
 
 // ------------------------------------------------------------------
@@ -82,46 +82,46 @@ export type EventEnvelope = {
 // ------------------------------------------------------------------
 
 export interface SessionView {
-  sid: string;
-  orgId: number;
-  subjectType?: string;
-  subjectId?: string;
-  prompt: string;
-  status: SessionStatus;
-  createdAt: string;
-  endedAt?: string;
+    sid: string;
+    orgId: number;
+    subjectType?: string;
+    subjectId?: string;
+    prompt: string;
+    status: SessionStatus;
+    createdAt: string;
+    endedAt?: string;
 }
 
 export interface CreateSessionRequest {
-  orgId: number;
-  prompt: string;
-  subjectType?: string;
-  subjectId?: string;
+    orgId: number;
+    prompt: string;
+    subjectType?: string;
+    subjectId?: string;
 }
 
 export interface CreateSessionResponse {
-  sid: string;
-  status: SessionStatus;
+    sid: string;
+    status: SessionStatus;
 }
 
 export interface ListSessionsResponse {
-  sessions: SessionView[];
+    sessions: SessionView[];
 }
 
 export type SessionDetailResponse = SessionView;
 
 export interface AnswerPermissionRequest {
-  requestId: string;
-  decision: "approve" | "reject";
-  note?: string;
+    requestId: string;
+    decision: "approve" | "reject";
+    note?: string;
 }
 
 export interface OkResponse {
-  ok: true;
+    ok: true;
 }
 
 export interface ErrorEnvelope {
-  error: string;
+    error: string;
 }
 
 /** Gateway 鉴权：除 /healthz 外所有接口要求 `Authorization: Bearer <token>` */
@@ -147,38 +147,38 @@ export type ProposalLifecycleEventType = "created" | "approved" | "applying" | "
 
 /** 浏览器可见的产品写提案快照；不包含内部数字 subject ID。 */
 export interface ProposalView {
-  id: string;
-  sessionId: string;
-  orgId: number;
-  tool: string;
-  subjectType: string;
-  subjectHashId: string;
-  fromStatus: string;
-  toStatus: string;
-  reason: string;
-  status: ProposalStatus;
-  expiresAt: string;
-  updatedAt: string;
-  note?: string;
+    id: string;
+    sessionId: string;
+    orgId: number;
+    tool: string;
+    subjectType: string;
+    subjectHashId: string;
+    fromStatus: string;
+    toStatus: string;
+    reason: string;
+    status: ProposalStatus;
+    expiresAt: string;
+    updatedAt: string;
+    note?: string;
 }
 
 /** 产品写提案生命周期；与 runner permission 是两条独立授权链。 */
 export interface ProposalLifecycleEvent {
-  event: ProposalLifecycleEventType;
-  ts: string;
-  /** "agent"（发起）/ "user:<id>"（人工决定）/ "system"（自动过期/应用/领取） */
-  actor: string;
-  proposal: ProposalView;
-  note?: string;
+    event: ProposalLifecycleEventType;
+    ts: string;
+    /** "agent"（发起）/ "user:<id>"（人工决定）/ "system"（自动过期/应用/领取） */
+    actor: string;
+    proposal: ProposalView;
+    note?: string;
 }
 
 export interface ListProposalsResponse {
-  proposals: ProposalView[];
+    proposals: ProposalView[];
 }
 
 export type ProposalDetailResponse = ProposalView;
 
 export interface DecideProposalRequest {
-  decision: "approve" | "reject";
-  note?: string;
+    decision: "approve" | "reject";
+    note?: string;
 }

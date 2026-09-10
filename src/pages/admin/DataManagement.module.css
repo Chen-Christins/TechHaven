@@ -1,1064 +1,1064 @@
 .dataManagement {
-  max-width: 100%;
+    max-width: 100%;
 }
 
 /* 页面头部 */
 .pageHeader {
-  composes: pageHeader from "./AdminPageShared.module.css";
+    composes: pageHeader from "./AdminPageShared.module.css";
 }
 
 .pageTitle {
-  composes: pageTitle from "./AdminPageShared.module.css";
+    composes: pageTitle from "./AdminPageShared.module.css";
 }
 
 .pageDescription {
-  composes: pageDescription from "./AdminPageShared.module.css";
+    composes: pageDescription from "./AdminPageShared.module.css";
 }
 
 .headerActions {
-  composes: headerActions from "./AdminPageShared.module.css";
+    composes: headerActions from "./AdminPageShared.module.css";
 }
 
 /* 标签页容器 */
 .tabContainer {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 24px;
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 4px;
-  width: fit-content;
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 4px;
+    width: fit-content;
 }
 
 .tabButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background-color: transparent;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background-color: transparent;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
 }
 
 .tabButton:hover {
-  background-color: var(--bg-hover);
-  color: var(--text-primary);
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
 }
 
 .tabButton.active {
-  background-color: var(--primary);
-  color: white;
+    background-color: var(--primary);
+    color: white;
 }
 
 /* 存储概览 */
 .storageSection {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
 }
 
 .storageHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
 }
 
 .sectionTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-bottom: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
 }
 
 .storageCards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
 }
 
 .storageCard {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background-color: var(--bg-secondary);
-  border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
 }
 
 .storageCard:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .storageIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  background-color: var(--primary-light);
-  color: var(--primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background-color: var(--primary-light);
+    color: var(--primary);
 }
 
 .storageIcon.used {
-  background-color: var(--success-light);
-  color: var(--success);
+    background-color: var(--success-light);
+    color: var(--success);
 }
 
 .storageIcon.available {
-  background-color: var(--info-light);
-  color: #3b82f6;
+    background-color: var(--info-light);
+    color: #3b82f6;
 }
 
 .storageInfo {
-  flex: 1;
+    flex: 1;
 }
 
 .storageLabel {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
 }
 
 .storageValue {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .storageBar {
-  height: 8px;
-  background-color: var(--bg-secondary);
-  border-radius: 4px;
-  overflow: hidden;
+    height: 8px;
+    background-color: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
 }
 
 .storageProgress {
-  height: 100%;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--success) 100%);
-  border-radius: 4px;
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--success) 100%);
+    border-radius: 4px;
 }
 
 /* 数据统计 */
 .statsSection {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
 }
 
 .statsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
 }
 
 .statCard {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 20px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
 }
 
 .statCard:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .statIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  margin-bottom: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 12px;
 }
 
 .statIcon.primary {
-  background-color: var(--primary-light);
-  color: var(--primary);
+    background-color: var(--primary-light);
+    color: var(--primary);
 }
 
 .statIcon.success {
-  background-color: var(--success-light);
-  color: var(--success);
+    background-color: var(--success-light);
+    color: var(--success);
 }
 
 .statIcon.info {
-  background-color: var(--info-light);
-  color: #3b82f6;
+    background-color: var(--info-light);
+    color: #3b82f6;
 }
 
 .statIcon.warning {
-  background-color: var(--warn-light);
-  color: var(--warning);
+    background-color: var(--warn-light);
+    color: var(--warning);
 }
 
 .statIcon.secondary {
-  background-color: rgba(107, 114, 128, 0.1);
-  color: var(--text-secondary);
+    background-color: rgba(107, 114, 128, 0.1);
+    color: var(--text-secondary);
 }
 
 .statIcon.error {
-  background-color: var(--error-light);
-  color: var(--error);
+    background-color: var(--error-light);
+    color: var(--error);
 }
 
 .statValue {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 4px;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
 }
 
 .statLabel {
-  font-size: 14px;
-  color: var(--text-secondary);
+    font-size: 14px;
+    color: var(--text-secondary);
 }
 
 /* 快速操作 */
 .quickActions {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 20px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
 }
 
 .actionCards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
 }
 
 .actionCard {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
 }
 
 .actionCard:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
 }
 
 .actionIcon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  background-color: var(--primary-light);
-  color: var(--primary);
-  flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background-color: var(--primary-light);
+    color: var(--primary);
+    flex-shrink: 0;
 }
 
 .actionContent {
-  flex: 1;
+    flex: 1;
 }
 
 .actionTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
 }
 
 .actionDescription {
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.4;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
 }
 
 /* 筛选区域 */
 .filterSection {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
 }
 
 .filterHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
 }
 
 .filterTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .filterActions {
-  display: flex;
-  gap: 8px;
+    display: flex;
+    gap: 8px;
 }
 
 .filterForm {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  align-items: end;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: end;
 }
 
 .filterGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .filterLabel {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
 }
 
 /* 表格容器 */
 .tableContainer {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  overflow: hidden;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .tableHeader {
-  padding: 20px;
-  border-bottom: 1px solid var(--border-primary);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .tableTitle {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
 }
 
 .tableActions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .recordsTable {
-  width: 100%;
-  min-width: 650px;
-  border-collapse: collapse;
+    width: 100%;
+    min-width: 650px;
+    border-collapse: collapse;
 }
 
 .recordsTable thead {
-  background-color: var(--bg-secondary);
+    background-color: var(--bg-secondary);
 }
 
 .recordsTable th {
-  padding: 12px 16px;
-  text-align: center;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-primary);
-  white-space: nowrap;
+    padding: 12px 16px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-primary);
+    white-space: nowrap;
 }
 
 .recordsTable th:first-child {
-  text-align: left;
+    text-align: left;
 }
 
 .recordsTable tbody tr {
-  border-bottom: 1px solid var(--border-primary);
+    border-bottom: 1px solid var(--border-primary);
 }
 
 .recordsTable tbody tr:hover {
-  background-color: var(--bg-hover);
+    background-color: var(--bg-hover);
 }
 
 .recordsTable td {
-  padding: 16px;
-  font-size: 14px;
-  color: var(--text-primary);
-  vertical-align: middle;
-  text-align: center;
+    padding: 16px;
+    font-size: 14px;
+    color: var(--text-primary);
+    vertical-align: middle;
+    text-align: center;
 }
 
 .recordsTable td:first-child {
-  text-align: left;
+    text-align: left;
 }
 
 /* 记录信息单元格 */
 .recordInfo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  justify-content: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: flex-start;
 }
 
 .recordIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  background-color: var(--primary-light);
-  color: var(--primary);
-  flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    background-color: var(--primary-light);
+    color: var(--primary);
+    flex-shrink: 0;
 }
 
 .recordDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-align: left;
-  max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+    max-width: 300px;
 }
 
 .recordName {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
 }
 
 .recordMeta {
-  font-size: 12px;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 4px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .recordDescription {
-  font-size: 12px;
-  color: var(--text-disabled);
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+    font-size: 12px;
+    color: var(--text-disabled);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 /* 类型标签 */
 .typeBadge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .typeBadge.full {
-  background-color: var(--error-light);
-  color: var(--error);
+    background-color: var(--error-light);
+    color: var(--error);
 }
 
 .typeBadge.incremental {
-  background-color: var(--warning);
-  color: white;
+    background-color: var(--warning);
+    color: white;
 }
 
 .typeBadge.manual {
-  background-color: var(--info-light);
-  color: #3b82f6;
+    background-color: var(--info-light);
+    color: #3b82f6;
 }
 
 .typeBadge.articles {
-  background-color: rgba(67, 97, 238, 0.1);
-  color: var(--primary);
+    background-color: rgba(67, 97, 238, 0.1);
+    color: var(--primary);
 }
 
 .typeBadge.users {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: var(--success);
+    background-color: rgba(34, 197, 94, 0.1);
+    color: var(--success);
 }
 
 .typeBadge.comments {
-  background-color: rgba(251, 146, 60, 0.1);
-  color: #fb923c;
+    background-color: rgba(251, 146, 60, 0.1);
+    color: #fb923c;
 }
 
 .typeBadge.full {
-  background-color: var(--error-light);
-  color: var(--error);
+    background-color: var(--error-light);
+    color: var(--error);
 }
 
 /* 格式标签 */
 .formatBadge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  color: white;
-  background-color: var(--text-secondary);
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    background-color: var(--text-secondary);
 }
 
 /* 状态标签 */
 .statusBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .statusBadge.completed {
-  background-color: var(--success-light);
-  color: var(--success);
+    background-color: var(--success-light);
+    color: var(--success);
 }
 
 .statusBadge.processing {
-  background-color: var(--warning);
-  color: white;
+    background-color: var(--warning);
+    color: white;
 }
 
 .statusBadge.failed {
-  background-color: var(--error-light);
-  color: var(--error);
+    background-color: var(--error-light);
+    color: var(--error);
 }
 
 .statusIndicator {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: currentColor;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
 }
 
 /* 时间信息 */
 .timeInfo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  font-size: 11px;
-  color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 11px;
+    color: var(--text-secondary);
 }
 
 .timeInfo div {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
 }
 
 /* 操作按钮 */
 .actionButtons {
-  display: flex;
-  gap: 4px;
-  justify-content: center;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .actionButton {
-  padding: 6px 8px;
-  background: none;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  color: var(--text-secondary);
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 28px;
-  height: 28px;
+    padding: 6px 8px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
 }
 
 .actionButton:hover {
-  background-color: var(--bg-hover);
-  color: var(--text-primary);
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
 }
 
 .actionButton:hover:not(:disabled) {
-  background-color: var(--bg-hover);
-  color: var(--text-primary);
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
 }
 
 .actionButton.download:hover:not(:disabled) {
-  color: var(--success);
+    color: var(--success);
 }
 
 .actionButton.delete:hover {
-  color: var(--error);
+    color: var(--error);
 }
 
 .actionButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* 分页 */
 .paginationContainer {
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
 }
 
 .paginationInfo {
-  font-size: 14px;
-  color: var(--text-secondary);
+    font-size: 14px;
+    color: var(--text-secondary);
 }
 
 .paginationControls {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .paginationButton {
-  min-width: 32px;
-  height: 32px;
-  padding: 0 8px;
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
-  color: var(--text-primary);
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .paginationButton:hover:not(:disabled) {
-  background-color: var(--bg-hover);
-  border-color: var(--primary);
+    background-color: var(--bg-hover);
+    border-color: var(--primary);
 }
 
 .paginationButton.active {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: white;
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
 }
 
 .paginationButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .paginationEllipsis {
-  padding: 0 8px;
-  color: var(--text-tertiary);
+    padding: 0 8px;
+    color: var(--text-tertiary);
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .pageHeader {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+    .pageHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-  .headerActions {
-    width: 100%;
-    justify-content: flex-start;
-  }
+    .headerActions {
+        width: 100%;
+        justify-content: flex-start;
+    }
 
-  .storageCards {
-    grid-template-columns: 1fr;
-  }
+    .storageCards {
+        grid-template-columns: 1fr;
+    }
 
-  .statsGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+    .statsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 
-  .actionCards {
-    grid-template-columns: 1fr;
-  }
+    .actionCards {
+        grid-template-columns: 1fr;
+    }
 
-  .filterForm {
-    grid-template-columns: 1fr;
-  }
+    .filterForm {
+        grid-template-columns: 1fr;
+    }
 
-  .tableContainer {
-    overflow-x: auto;
-  }
+    .tableContainer {
+        overflow-x: auto;
+    }
 
-  .recordsTable {
-    min-width: 800px;
-  }
+    .recordsTable {
+        min-width: 800px;
+    }
 
-  .paginationContainer {
-    flex-direction: column;
-    align-items: center;
-  }
+    .paginationContainer {
+        flex-direction: column;
+        align-items: center;
+    }
 
-  .actionButtons {
-    flex-direction: column;
-    gap: 4px;
-  }
+    .actionButtons {
+        flex-direction: column;
+        gap: 4px;
+    }
 
-  .tableActions {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
+    .tableActions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
 }
 
 @media (max-width: 480px) {
-  .pageTitle {
-    font-size: 1.2rem;
-  }
+    .pageTitle {
+        font-size: 1.2rem;
+    }
 
-  .statsGrid {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
+    .statsGrid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
 
-  .statCard {
-    padding: 12px;
-  }
+    .statCard {
+        padding: 12px;
+    }
 
-  .statValue {
-    font-size: 20px;
-  }
+    .statValue {
+        font-size: 20px;
+    }
 
-  .statLabel {
-    font-size: 12px;
-  }
+    .statLabel {
+        font-size: 12px;
+    }
 
-  .storageSection {
-    padding: 12px;
-  }
+    .storageSection {
+        padding: 12px;
+    }
 
-  .storageCards {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
+    .storageCards {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
 
-  .storageCard {
-    padding: 12px;
-  }
+    .storageCard {
+        padding: 12px;
+    }
 
-  .actionCards {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
+    .actionCards {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
 
-  .actionCard {
-    padding: 14px;
-    gap: 12px;
-  }
+    .actionCard {
+        padding: 14px;
+        gap: 12px;
+    }
 
-  .actionTitle {
-    font-size: 14px;
-  }
+    .actionTitle {
+        font-size: 14px;
+    }
 
-  .filterSection {
-    padding: 12px;
-  }
+    .filterSection {
+        padding: 12px;
+    }
 
-  .filterHeader {
-    flex-direction: column;
-    gap: 8px;
-    align-items: flex-start;
-  }
+    .filterHeader {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
 
-  .tabContainer {
-    width: 100%;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-  }
+    .tabContainer {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
 
-  .tabButton {
-    padding: 8px 12px;
-    font-size: 12px;
-    white-space: nowrap;
-  }
+    .tabButton {
+        padding: 8px 12px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
 
-  .tableContainer {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+    .tableContainer {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
 
-  .recordsTable {
-    min-width: 0;
-  }
+    .recordsTable {
+        min-width: 0;
+    }
 
-  .recordsTable th,
-  .recordsTable td {
-    padding: 8px 6px;
-    font-size: 0.72rem;
-  }
+    .recordsTable th,
+    .recordsTable td {
+        padding: 8px 6px;
+        font-size: 0.72rem;
+    }
 
-  /* 隐藏次要列: 类型(2) 格式/大小(3) 大小/文件数(4) */
-  .recordsTable th:nth-child(2),
-  .recordsTable td:nth-child(2),
-  .recordsTable th:nth-child(3),
-  .recordsTable td:nth-child(3),
-  .recordsTable th:nth-child(4),
-  .recordsTable td:nth-child(4) {
-    display: none;
-  }
+    /* 隐藏次要列: 类型(2) 格式/大小(3) 大小/文件数(4) */
+    .recordsTable th:nth-child(2),
+    .recordsTable td:nth-child(2),
+    .recordsTable th:nth-child(3),
+    .recordsTable td:nth-child(3),
+    .recordsTable th:nth-child(4),
+    .recordsTable td:nth-child(4) {
+        display: none;
+    }
 
-  .tableHeader {
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px;
-  }
+    .tableHeader {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+    }
 
-  .tableTitle {
-    font-size: 1rem;
-  }
+    .tableTitle {
+        font-size: 1rem;
+    }
 
-  .paginationContainer {
-    padding: 12px;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
+    .paginationContainer {
+        padding: 12px;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
 
-  .paginationButton {
-    min-width: 28px;
-    height: 28px;
-    font-size: 12px;
-  }
+    .paginationButton {
+        min-width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
 
-  .paginationInfo {
-    font-size: 12px;
-  }
+    .paginationInfo {
+        font-size: 12px;
+    }
 
-  .actionButton {
-    padding: 4px 6px;
-    font-size: 12px;
-  }
+    .actionButton {
+        padding: 4px 6px;
+        font-size: 12px;
+    }
 }
 
 /* 通用按钮样式 */
 .btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
 }
 
 .btnPrimary {
-  background-color: var(--primary);
-  color: white;
+    background-color: var(--primary);
+    color: white;
 }
 
 .btnPrimary:hover {
-  background-color: var(--primary-hover);
+    background-color: var(--primary-hover);
 }
 
 .btnSecondary {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
 }
 
 .btnSecondary:hover {
-  background-color: var(--bg-hover);
-  border-color: var(--border-secondary);
+    background-color: var(--bg-hover);
+    border-color: var(--border-secondary);
 }
 
 .btnOutline {
-  background-color: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-primary);
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-primary);
 }
 
 .btnOutline:hover {
-  background-color: var(--bg-hover);
-  color: var(--text-primary);
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
 }
 
 .btnSm {
-  padding: 6px 12px;
-  font-size: 13px;
+    padding: 6px 12px;
+    font-size: 13px;
 }
 
 .btnIcon {
-  padding: 8px;
-  border-radius: 50%;
+    padding: 8px;
+    border-radius: 50%;
 }
 
 @media (max-width: 640px) {
-  .tableContainer {
-    overflow: visible;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-  }
+    .tableContainer {
+        overflow: visible;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+    }
 
-  .tableHeader {
-    background: var(--card-bg);
-    border: 1px solid var(--border-primary);
-    border-radius: 8px;
-    margin-bottom: 12px;
-  }
+    .tableHeader {
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
 
-  .recordsTable,
-  .recordsTable tbody,
-  .recordsTable tr,
-  .recordsTable td {
-    display: block;
-    width: 100%;
-  }
+    .recordsTable,
+    .recordsTable tbody,
+    .recordsTable tr,
+    .recordsTable td {
+        display: block;
+        width: 100%;
+    }
 
-  .recordsTable {
-    min-width: 0;
-  }
+    .recordsTable {
+        min-width: 0;
+    }
 
-  .recordsTable thead {
-    display: none;
-  }
+    .recordsTable thead {
+        display: none;
+    }
 
-  .recordsTable tbody {
-    display: grid;
-    gap: 12px;
-  }
+    .recordsTable tbody {
+        display: grid;
+        gap: 12px;
+    }
 
-  .recordsTable tbody tr {
-    background: var(--card-bg);
-    border: 1px solid var(--border-primary);
-    border-radius: 8px;
-    padding: 12px;
-  }
+    .recordsTable tbody tr {
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        padding: 12px;
+    }
 
-  .recordsTable td,
-  .recordsTable td:nth-child(2),
-  .recordsTable td:nth-child(3),
-  .recordsTable td:nth-child(4) {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 8px 0;
-    text-align: right;
-    font-size: 14px;
-  }
+    .recordsTable td,
+    .recordsTable td:nth-child(2),
+    .recordsTable td:nth-child(3),
+    .recordsTable td:nth-child(4) {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 8px 0;
+        text-align: right;
+        font-size: 14px;
+    }
 
-  .recordsTable td::before {
-    flex: 0 0 auto;
-    color: var(--text-tertiary);
-    font-size: 12px;
-    font-weight: 600;
-    text-align: left;
-  }
+    .recordsTable td::before {
+        flex: 0 0 auto;
+        color: var(--text-tertiary);
+        font-size: 12px;
+        font-weight: 600;
+        text-align: left;
+    }
 
-  .recordsTable td:nth-child(1) {
-    display: block;
-    text-align: left;
-    padding-bottom: 12px;
-    margin-bottom: 4px;
-    border-bottom: 1px solid var(--border-primary);
-  }
+    .recordsTable td:nth-child(1) {
+        display: block;
+        text-align: left;
+        padding-bottom: 12px;
+        margin-bottom: 4px;
+        border-bottom: 1px solid var(--border-primary);
+    }
 
-  .recordsTable td:nth-child(1)::before {
-    display: none;
-  }
+    .recordsTable td:nth-child(1)::before {
+        display: none;
+    }
 
-  .backupRecordsTable td:nth-child(2)::before,
-  .exportRecordsTable td:nth-child(2)::before {
-    content: "类型";
-  }
+    .backupRecordsTable td:nth-child(2)::before,
+    .exportRecordsTable td:nth-child(2)::before {
+        content: "类型";
+    }
 
-  .backupRecordsTable td:nth-child(3)::before {
-    content: "大小";
-  }
+    .backupRecordsTable td:nth-child(3)::before {
+        content: "大小";
+    }
 
-  .backupRecordsTable td:nth-child(4)::before {
-    content: "文件数量";
-  }
+    .backupRecordsTable td:nth-child(4)::before {
+        content: "文件数量";
+    }
 
-  .exportRecordsTable td:nth-child(3)::before {
-    content: "格式";
-  }
+    .exportRecordsTable td:nth-child(3)::before {
+        content: "格式";
+    }
 
-  .exportRecordsTable td:nth-child(4)::before {
-    content: "大小";
-  }
+    .exportRecordsTable td:nth-child(4)::before {
+        content: "大小";
+    }
 
-  .backupRecordsTable td:nth-child(5)::before {
-    content: "状态";
-  }
+    .backupRecordsTable td:nth-child(5)::before {
+        content: "状态";
+    }
 
-  .backupRecordsTable td:nth-child(6)::before {
-    content: "创建时间";
-  }
+    .backupRecordsTable td:nth-child(6)::before {
+        content: "创建时间";
+    }
 
-  .backupRecordsTable td:nth-child(7)::before {
-    content: "操作";
-  }
+    .backupRecordsTable td:nth-child(7)::before {
+        content: "操作";
+    }
 
-  .exportRecordsTable td:nth-child(5)::before {
-    content: "记录数量";
-  }
+    .exportRecordsTable td:nth-child(5)::before {
+        content: "记录数量";
+    }
 
-  .exportRecordsTable td:nth-child(6)::before {
-    content: "状态";
-  }
+    .exportRecordsTable td:nth-child(6)::before {
+        content: "状态";
+    }
 
-  .exportRecordsTable td:nth-child(7)::before {
-    content: "创建时间";
-  }
+    .exportRecordsTable td:nth-child(7)::before {
+        content: "创建时间";
+    }
 
-  .exportRecordsTable td:nth-child(8)::before {
-    content: "操作";
-  }
+    .exportRecordsTable td:nth-child(8)::before {
+        content: "操作";
+    }
 
-  .timeInfo {
-    align-items: flex-end;
-  }
+    .timeInfo {
+        align-items: flex-end;
+    }
 
-  .actionButtons {
-    flex-direction: row;
-    justify-content: flex-end;
-  }
+    .actionButtons {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
 
-  .paginationContainer {
-    margin-top: 12px;
-    background: var(--card-bg);
-    border: 1px solid var(--border-primary);
-    border-radius: 8px;
-  }
+    .paginationContainer {
+        margin-top: 12px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+    }
 }

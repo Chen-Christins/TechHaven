@@ -15,35 +15,35 @@ vi.mock("../pages/rd-platform/AgentSessionPanel", () => ({ default: () => <div>a
 let root: Root | undefined;
 let container: HTMLDivElement;
 afterEach(async () => {
-  await act(async () => root?.unmount());
-  container?.remove();
-  vi.unstubAllEnvs();
-  vi.unstubAllGlobals();
+    await act(async () => root?.unmount());
+    container?.remove();
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
 });
 for (const [flag, expected] of [
-  [undefined, "not-found"],
-  ["false", "not-found"],
-  ["TRUE", "not-found"],
-  ["true", "agent-panel-loaded"],
+    [undefined, "not-found"],
+    ["false", "not-found"],
+    ["TRUE", "not-found"],
+    ["true", "agent-panel-loaded"],
 ] as const) {
-  it(`direct /rd/agent navigation with flag=${String(flag)} resolves to ${expected}`, async () => {
-    vi.resetModules();
-    vi.stubEnv("VITE_AGENT_ENABLED", flag);
-    Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
-    const fetcher = vi.fn();
-    vi.stubGlobal("fetch", fetcher);
-    const { default: RouterConfig } = await import("./RouterConfig");
-    container = document.createElement("div");
-    document.body.append(container);
-    root = createRoot(container);
-    await act(async () => {
-      root!.render(
-        <MemoryRouter initialEntries={["/rd/agent"]}>
-          <RouterConfig />
-        </MemoryRouter>,
-      );
+    it(`direct /rd/agent navigation with flag=${String(flag)} resolves to ${expected}`, async () => {
+        vi.resetModules();
+        vi.stubEnv("VITE_AGENT_ENABLED", flag);
+        Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+        const fetcher = vi.fn();
+        vi.stubGlobal("fetch", fetcher);
+        const { default: RouterConfig } = await import("./RouterConfig");
+        container = document.createElement("div");
+        document.body.append(container);
+        root = createRoot(container);
+        await act(async () => {
+            root!.render(
+                <MemoryRouter initialEntries={["/rd/agent"]}>
+                    <RouterConfig />
+                </MemoryRouter>,
+            );
+        });
+        expect(container.textContent).toContain(expected);
+        expect(fetcher).not.toHaveBeenCalled();
     });
-    expect(container.textContent).toContain(expected);
-    expect(fetcher).not.toHaveBeenCalled();
-  });
 }

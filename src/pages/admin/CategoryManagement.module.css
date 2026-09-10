@@ -1,643 +1,643 @@
 .categoryManagement {
-  max-width: 100%;
+    max-width: 100%;
 }
 
 .pageHeader {
-  composes: pageHeader from "./AdminPageShared.module.css";
+    composes: pageHeader from "./AdminPageShared.module.css";
 }
 
 .pageTitle {
-  composes: pageTitle from "./AdminPageShared.module.css";
+    composes: pageTitle from "./AdminPageShared.module.css";
 }
 
 .pageDescription {
-  composes: pageDescription from "./AdminPageShared.module.css";
+    composes: pageDescription from "./AdminPageShared.module.css";
 }
 
 .headerActions {
-  composes: headerActions from "./AdminPageShared.module.css";
+    composes: headerActions from "./AdminPageShared.module.css";
 }
 
 .statsContainer {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
 }
 
 .statCard {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 20px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
 }
 
 .statCard:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
 }
 
 .statIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  margin-bottom: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 12px;
 }
 
 .statIcon.primary {
-  background-color: var(--primary-light);
-  color: var(--primary);
+    background-color: var(--primary-light);
+    color: var(--primary);
 }
 
 .statIcon.success {
-  background-color: var(--success-light);
-  color: var(--success);
+    background-color: var(--success-light);
+    color: var(--success);
 }
 
 .statIcon.warning {
-  background-color: var(--warn-light);
-  color: var(--warning);
+    background-color: var(--warn-light);
+    color: var(--warning);
 }
 
 .statIcon.error {
-  background-color: var(--error-light);
-  color: var(--error);
+    background-color: var(--error-light);
+    color: var(--error);
 }
 
 .statValue {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 4px;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
 }
 
 .statLabel {
-  font-size: 14px;
-  color: var(--text-secondary);
+    font-size: 14px;
+    color: var(--text-secondary);
 }
 
 .filterSection {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
 }
 
 .filterHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
 }
 
 .filterTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .filterActions {
-  display: flex;
-  gap: 8px;
+    display: flex;
+    gap: 8px;
 }
 
 .filterForm {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  align-items: end;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: end;
 }
 
 .filterGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .filterLabel {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
 }
 
 .tableContainer {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  overflow: hidden;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .tableHeader {
-  padding: 20px;
-  border-bottom: 1px solid var(--border-primary);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .tableTitle {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
 }
 
 .tableActions {
-  display: flex;
-  gap: 8px;
+    display: flex;
+    gap: 8px;
 }
 
 .categoriesTable {
-  width: 100%;
-  min-width: 700px;
-  border-collapse: collapse;
+    width: 100%;
+    min-width: 700px;
+    border-collapse: collapse;
 }
 
 .categoriesTable th {
-  padding: 12px 16px;
-  text-align: center;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-primary);
-  white-space: nowrap;
+    padding: 12px 16px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-primary);
+    white-space: nowrap;
 }
 
 .categoriesTable th:first-child {
-  text-align: left;
-  padding-left: 24px;
+    text-align: left;
+    padding-left: 24px;
 }
 
 .categoriesTable tbody tr {
-  border-bottom: 1px solid var(--border-primary);
+    border-bottom: 1px solid var(--border-primary);
 }
 
 .categoriesTable tbody tr:hover {
-  background-color: var(--bg-hover);
+    background-color: var(--bg-hover);
 }
 
 .categoriesTable tbody tr:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .categoriesTable td {
-  padding: 16px;
-  font-size: 14px;
-  color: var(--text-primary);
-  vertical-align: middle;
-  text-align: center;
+    padding: 16px;
+    font-size: 14px;
+    color: var(--text-primary);
+    vertical-align: middle;
+    text-align: center;
 }
 
 .categoriesTable td:first-child {
-  text-align: left;
-  padding-left: 24px;
+    text-align: left;
+    padding-left: 24px;
 }
 
 .categoryInfo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .categoryIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  color: white;
-  flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: white;
+    flex-shrink: 0;
 }
 
 .categoryDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .categoryName {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 15px;
 }
 
 .categorySlug {
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
 }
 
 .categoryDescription {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .parentBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
 }
 
 .statusBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .statusBadge.active {
-  background-color: var(--success-light);
-  color: var(--success);
+    background-color: var(--success-light);
+    color: var(--success);
 }
 
 .statusBadge.inactive {
-  background-color: var(--error-light);
-  color: var(--error);
+    background-color: var(--error-light);
+    color: var(--error);
 }
 
 .statusIndicator {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: currentColor;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
 }
 
 .statsInfo {
-  display: flex;
-  flex-direction: row;
-  gap: 16px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  justify-content: center;
-  flex-wrap: wrap;
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .statsInfo span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .actionButtons {
-  display: flex;
-  gap: 4px;
-  justify-content: center;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .actionButton {
-  padding: 6px 8px;
-  background: none;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  color: var(--text-secondary);
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 28px;
-  height: 28px;
+    padding: 6px 8px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
 }
 
 .actionButton:hover {
-  background-color: var(--bg-hover);
-  color: var(--text-primary);
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
 }
 
 .actionButton.edit:hover {
-  color: var(--primary);
+    color: var(--primary);
 }
 
 .actionButton.delete:hover {
-  color: var(--error);
+    color: var(--error);
 }
 
 .btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
 }
 
 .btnPrimary {
-  background-color: var(--primary);
-  color: white;
+    background-color: var(--primary);
+    color: white;
 }
 
 .btnPrimary:hover {
-  background-color: var(--primary-hover);
+    background-color: var(--primary-hover);
 }
 
 .btnSecondary {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
 }
 
 .btnSecondary:hover {
-  background-color: var(--bg-hover);
-  border-color: var(--border-secondary);
+    background-color: var(--bg-hover);
+    border-color: var(--border-secondary);
 }
 
 .btnOutline {
-  background-color: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-primary);
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-primary);
 }
 
 .btnOutline:hover {
-  background-color: var(--bg-hover);
-  color: var(--text-primary);
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
 }
 
 .btnSm {
-  padding: 6px 12px;
-  font-size: 13px;
+    padding: 6px 12px;
+    font-size: 13px;
 }
 
 .formGroup {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 .formLabel {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 8px;
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 8px;
 }
 
 .formInput {
-  width: 100%;
+    width: 100%;
 }
 
 .formTextarea {
-  width: 100%;
-  min-height: 80px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
-  background-color: var(--input-bg);
-  color: var(--text-primary);
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
-  outline: none;
-  box-sizing: border-box;
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
 }
 
 .formTextarea:focus {
-  border-color: var(--primary);
-  box-shadow: var(--focus-ring);
+    border-color: var(--primary);
+    box-shadow: var(--focus-ring);
 }
 
 .formRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
 }
 
 .colorPickerContainer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .colorInput {
-  width: 50px;
-  height: 38px;
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
-  cursor: pointer;
-  padding: 2px;
-  background: var(--bg-primary);
+    width: 50px;
+    height: 38px;
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 2px;
+    background: var(--bg-primary);
 }
 
 .colorPreview {
-  width: 38px;
-  height: 38px;
-  border-radius: 6px;
-  border: 1px solid var(--border-primary);
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
+    border: 1px solid var(--border-primary);
 }
 
 @media (max-width: 768px) {
-  .pageHeader {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+    .pageHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-  .headerActions {
-    width: 100%;
-    justify-content: flex-start;
-  }
+    .headerActions {
+        width: 100%;
+        justify-content: flex-start;
+    }
 
-  .statsContainer {
-    grid-template-columns: repeat(2, 1fr);
-  }
+    .statsContainer {
+        grid-template-columns: repeat(2, 1fr);
+    }
 
-  .filterForm {
-    grid-template-columns: 1fr;
-  }
+    .filterForm {
+        grid-template-columns: 1fr;
+    }
 
-  .tableContainer {
-    overflow-x: auto;
-  }
+    .tableContainer {
+        overflow-x: auto;
+    }
 
-  .categoriesTable {
-    min-width: 600px;
-  }
+    .categoriesTable {
+        min-width: 600px;
+    }
 
-  .formRow {
-    grid-template-columns: 1fr;
-  }
+    .formRow {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 480px) {
-  .pageTitle {
-    font-size: 1.2rem;
-  }
+    .pageTitle {
+        font-size: 1.2rem;
+    }
 
-  .statsContainer {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
+    .statsContainer {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
 
-  .statCard {
-    padding: 14px;
-  }
+    .statCard {
+        padding: 14px;
+    }
 
-  .statValue {
-    font-size: 22px;
-  }
+    .statValue {
+        font-size: 22px;
+    }
 
-  .filterSection {
-    padding: 12px;
-  }
+    .filterSection {
+        padding: 12px;
+    }
 
-  .tableContainer {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+    .tableContainer {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
 
-  .categoriesTable {
-    min-width: 0;
-  }
+    .categoriesTable {
+        min-width: 0;
+    }
 
-  .categoriesTable th,
-  .categoriesTable td {
-    padding: 8px 6px;
-    font-size: 0.75rem;
-  }
+    .categoriesTable th,
+    .categoriesTable td {
+        padding: 8px 6px;
+        font-size: 0.75rem;
+    }
 
-  .categoriesTable th:nth-child(2),
-  .categoriesTable td:nth-child(2),
-  .categoriesTable th:nth-child(4),
-  .categoriesTable td:nth-child(4),
-  .categoriesTable th:nth-child(5),
-  .categoriesTable td:nth-child(5) {
-    display: none;
-  }
+    .categoriesTable th:nth-child(2),
+    .categoriesTable td:nth-child(2),
+    .categoriesTable th:nth-child(4),
+    .categoriesTable td:nth-child(4),
+    .categoriesTable th:nth-child(5),
+    .categoriesTable td:nth-child(5) {
+        display: none;
+    }
 
-  .actionButton {
-    padding: 4px 6px;
-    font-size: 12px;
-  }
+    .actionButton {
+        padding: 4px 6px;
+        font-size: 12px;
+    }
 }
 
 @media (max-width: 640px) {
-  .tableContainer {
-    overflow: visible;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-  }
+    .tableContainer {
+        overflow: visible;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+    }
 
-  .tableHeader {
-    background: var(--card-bg);
-    border: 1px solid var(--border-primary);
-    border-radius: 8px;
-    margin-bottom: 12px;
-  }
+    .tableHeader {
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
 
-  .categoriesTable,
-  .categoriesTable tbody,
-  .categoriesTable tr,
-  .categoriesTable td {
-    display: block;
-    width: 100%;
-  }
+    .categoriesTable,
+    .categoriesTable tbody,
+    .categoriesTable tr,
+    .categoriesTable td {
+        display: block;
+        width: 100%;
+    }
 
-  .categoriesTable {
-    min-width: 0;
-  }
+    .categoriesTable {
+        min-width: 0;
+    }
 
-  .categoriesTable thead {
-    display: none;
-  }
+    .categoriesTable thead {
+        display: none;
+    }
 
-  .categoriesTable tbody {
-    display: grid;
-    gap: 12px;
-  }
+    .categoriesTable tbody {
+        display: grid;
+        gap: 12px;
+    }
 
-  .categoriesTable tbody tr {
-    background: var(--card-bg);
-    border: 1px solid var(--border-primary);
-    border-radius: 8px;
-    padding: 12px;
-  }
+    .categoriesTable tbody tr {
+        background: var(--card-bg);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        padding: 12px;
+    }
 
-  .categoriesTable td,
-  .categoriesTable td:nth-child(2),
-  .categoriesTable td:nth-child(4),
-  .categoriesTable td:nth-child(5) {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 8px 0;
-    text-align: right;
-    font-size: 14px;
-  }
+    .categoriesTable td,
+    .categoriesTable td:nth-child(2),
+    .categoriesTable td:nth-child(4),
+    .categoriesTable td:nth-child(5) {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 8px 0;
+        text-align: right;
+        font-size: 14px;
+    }
 
-  .categoriesTable td::before {
-    flex: 0 0 auto;
-    color: var(--text-tertiary);
-    font-size: 12px;
-    font-weight: 600;
-    text-align: left;
-  }
+    .categoriesTable td::before {
+        flex: 0 0 auto;
+        color: var(--text-tertiary);
+        font-size: 12px;
+        font-weight: 600;
+        text-align: left;
+    }
 
-  .categoriesTable td:first-child {
-    display: block;
-    text-align: left;
-    padding-bottom: 12px;
-    margin-bottom: 4px;
-    border-bottom: 1px solid var(--border-primary);
-  }
+    .categoriesTable td:first-child {
+        display: block;
+        text-align: left;
+        padding-bottom: 12px;
+        margin-bottom: 4px;
+        border-bottom: 1px solid var(--border-primary);
+    }
 
-  .categoriesTable td:first-child::before {
-    display: none;
-  }
+    .categoriesTable td:first-child::before {
+        display: none;
+    }
 
-  .categoriesTable td:nth-child(2)::before {
-    content: "父级分类";
-  }
+    .categoriesTable td:nth-child(2)::before {
+        content: "父级分类";
+    }
 
-  .categoriesTable td:nth-child(3)::before {
-    content: "状态";
-  }
+    .categoriesTable td:nth-child(3)::before {
+        content: "状态";
+    }
 
-  .categoriesTable td:nth-child(4)::before {
-    content: "统计";
-  }
+    .categoriesTable td:nth-child(4)::before {
+        content: "统计";
+    }
 
-  .categoriesTable td:nth-child(5)::before {
-    content: "创建时间";
-  }
+    .categoriesTable td:nth-child(5)::before {
+        content: "创建时间";
+    }
 
-  .categoriesTable td:nth-child(6)::before {
-    content: "操作";
-  }
+    .categoriesTable td:nth-child(6)::before {
+        content: "操作";
+    }
 
-  .actionButtons {
-    flex-direction: row;
-    justify-content: flex-end;
-  }
+    .actionButtons {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
 }
