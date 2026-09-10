@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { encodeId } from "@/utils/HashId.ts";
 import ReactMarkdown from "react-markdown";
-import { articleMarkdownComponents, articleMarkdownPlugins } from "@/components/articleView/markdown";
+import { articleMarkdownComponents, articleMarkdownPlugins } from "@/components/articleView/Markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import CommentNode from "@/components/commentTree/CommentNode";

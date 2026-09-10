@@ -2,7 +2,7 @@
 // AI / API 配置类型与常量
 // ============================================================
 
-import type { SelectOption } from "./Index";
+import type { SelectOption } from "./index";
 
 // ===== 类型定义 =====
 

@@ -24,6 +24,19 @@ npm run build   # tsc -b + vite build，修复所有错误
 npm run format  # Prettier 格式化
 ```
 
+### 5. 代码风格
+- **文件命名**：`src/` 下所有 `.ts`/`.tsx` 文件使用 **PascalCase**（如 `ArticleList.tsx`、`Features.ts`），模块入口文件例外使用 `index.ts`
+- **if 语句**：即使只有一行也**必须使用大括号**，禁止省略：
+  ```typescript
+  // ✗ 错误
+  if (condition) doSomething();
+
+  // ✓ 正确
+  if (condition) {
+      doSomething();
+  }
+  ```
+
 ## 项目架构要点
 
 - **Provider 嵌套顺序**：BrowserRouter → Theme → Auth → LayoutWidth → SiteSettings → Message → Confirm

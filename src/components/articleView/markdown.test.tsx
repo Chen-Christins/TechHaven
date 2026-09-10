@@ -2,7 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import ReactMarkdown from "react-markdown";
 import { describe, expect, it, vi } from "vitest";
-import { articleMarkdownComponents, articleMarkdownPlugins } from "./markdown";
+import { articleMarkdownComponents, articleMarkdownPlugins } from "./Markdown";
 
 vi.mock("../mermaid/MermaidComponent", () => ({ default: ({ code }: { code: string }) => <span data-mermaid={code} /> }));
 

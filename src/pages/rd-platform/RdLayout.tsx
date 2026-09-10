@@ -1,4 +1,4 @@
-import { AGENT_ENABLED } from "@/config/features";
+import { AGENT_ENABLED } from "@/config/Features";
 import { FaRobot } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import { useLocation, Outlet, useSearchParams } from "react-router-dom";

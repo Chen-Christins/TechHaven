@@ -5,7 +5,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { encodeId, decodeId } from "@/utils/HashId.ts";
 import ReactMarkdown from "react-markdown";
-import { articleMarkdownComponents, articleMarkdownPlugins } from "@/components/articleView/markdown";
+import { articleMarkdownComponents, articleMarkdownPlugins } from "@/components/articleView/Markdown";
 import type { ArticleCreateProps, ArticleFormData, SelectOption, Tag } from "@/types";
 import { FaEdit, FaEye, FaFileImport, FaInfoCircle, FaSave, FaFly, FaLock } from "react-icons/fa";
 import styles from "./ArticleCreate.module.css";

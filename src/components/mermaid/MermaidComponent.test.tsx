@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import MermaidComponent from "./MermaidComponent";
-import { MERMAID_INIT_CONFIG } from "./mermaidConfig";
+import { MERMAID_INIT_CONFIG } from "./MermaidConfig";
 
 // react-dom 的 act() 需要显式标记测试环境（React 19 从 "react" 导出 act）
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
