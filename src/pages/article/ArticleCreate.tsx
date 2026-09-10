@@ -421,7 +421,11 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
                     label: labelIds,
                     category: categoryId,
                 });
-                message.success("文章更新成功");
+                message.success(
+                    <span>
+                        文章「<strong>{formData.title || "无标题"}</strong>」更新成功
+                    </span>,
+                );
                 navigate(`/article/${encodeId(id, "article")}`);
             } else {
                 const createParams: CreateArticleParams = {
@@ -443,7 +447,11 @@ const ArticleCreate: React.FC<ArticleCreateProps> = ({ className = "", onSaveDra
                         id: createRes.id,
                         publish_time: timestamp,
                     });
-                    message.success("文章发布成功, 待审核");
+                    message.success(
+                        <span>
+                            文章「<strong>{formData.title || "无标题"}</strong>」发布成功
+                        </span>,
+                    );
                     clearDraftFromStorage();
                     navigate(`/article/${encodeId(createRes.id, "article")}`);
                     // console.log('发布文章成功:', publishRes);

@@ -198,14 +198,22 @@ const MyArticlesTab: React.FC = () => {
     };
 
     // 切换文章状态
-    const handleToggleStatus = async (id: string | number, newStatus: "published" | "private" | "unallowed" | "reviewing") => {
+    const handleToggleStatus = async (
+        id: string | number,
+        newStatus: "published" | "private" | "unallowed" | "reviewing",
+        title?: string,
+    ) => {
         try {
             if (newStatus === "reviewing") {
                 await ArticleService.publishArticle({
                     id: id,
                     publish_time: Math.floor(Date.now() / 1000),
                 });
-                message.success("文章发布成功, 等待管理员审核中");
+                message.success(
+                    <span>
+                        文章「<strong>{title || "无标题"}</strong>」发布成功，等待管理员审核
+                    </span>,
+                );
                 setArticles(articles.map((article) => (article.id === id ? { ...article, state: newStatus } : article)));
             }
             if (newStatus === "private") {
@@ -344,7 +352,7 @@ const MyArticlesTab: React.FC = () => {
                                     <button
                                         className={styles.actionButton}
                                         title="撤回审核"
-                                        onClick={() => handleToggleStatus(article.id, "private")}
+                                        onClick={() => handleToggleStatus(article.id, "private", article.title)}
                                     >
                                         <FaArrowDown />
                                     </button>
@@ -353,7 +361,7 @@ const MyArticlesTab: React.FC = () => {
                                     <button
                                         className={styles.actionButton}
                                         title="设为私密"
-                                        onClick={() => handleToggleStatus(article.id, "private")}
+                                        onClick={() => handleToggleStatus(article.id, "private", article.title)}
                                     >
                                         <FaLock />
                                     </button>
@@ -362,7 +370,7 @@ const MyArticlesTab: React.FC = () => {
                                     <button
                                         className={styles.actionButton}
                                         title="发布文章"
-                                        onClick={() => handleToggleStatus(article.id, "reviewing")}
+                                        onClick={() => handleToggleStatus(article.id, "reviewing", article.title)}
                                     >
                                         <FaPlus />
                                     </button>
@@ -371,7 +379,7 @@ const MyArticlesTab: React.FC = () => {
                                     <button
                                         className={styles.actionButton}
                                         title="重新提交"
-                                        onClick={() => handleToggleStatus(article.id, "reviewing")}
+                                        onClick={() => handleToggleStatus(article.id, "reviewing", article.title)}
                                     >
                                         <FaPlus />
                                     </button>

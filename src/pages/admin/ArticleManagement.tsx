@@ -330,6 +330,12 @@ const ArticleManagement: React.FC = () => {
                         state: REVERSE_STATE_MAP["published"],
                     });
 
+                    message.success(
+                        <span>
+                            文章「<strong>{article.title}</strong>」审核通过，已发布
+                        </span>,
+                    );
+
                     setArticles((prev) =>
                         prev.map((a) =>
                             a.id === article.id
@@ -376,6 +382,12 @@ const ArticleManagement: React.FC = () => {
                         state: REVERSE_STATE_MAP["rejected"],
                     });
 
+                    message.success(
+                        <span>
+                            文章「<strong>{article.title}</strong>」已拒绝
+                        </span>,
+                    );
+
                     setArticles((prev) =>
                         prev.map((a) =>
                             a.id === article.id
@@ -420,6 +432,12 @@ const ArticleManagement: React.FC = () => {
                         id: article.id,
                         state: REVERSE_STATE_MAP["rejected"],
                     });
+
+                    message.success(
+                        <span>
+                            文章「<strong>{article.title}</strong>」已下架
+                        </span>,
+                    );
 
                     setArticles((prev) =>
                         prev.map((a) =>
