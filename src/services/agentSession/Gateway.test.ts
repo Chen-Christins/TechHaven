@@ -8,7 +8,7 @@ const client = vi.hoisted(() => ({
     listProposals: vi.fn(async () => ({ proposals: [] })),
     cancel: vi.fn(async () => {}),
 }));
-vi.mock("../agentGatewayClient", () => ({
+vi.mock("../AgentGatewayClient", () => ({
     AgentGatewayClient: class {
         constructor() {
             return client;

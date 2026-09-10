@@ -5,8 +5,8 @@ import AgentApiConfigCard from "./AgentApiConfigCard";
 import LegacyApiConfigCard from "../personal/components/ApiConfigCard";
 
 const api = vi.hoisted(() => ({ get: vi.fn(), legacyGet: vi.fn(), save: vi.fn() }));
-vi.mock("@/services/agentAiConfigService", () => ({ agentAiConfigService: { getAiConfig: api.get, saveAiConfig: api.save } }));
-vi.mock("@/services/authService", () => ({ AuthService: { getAiConfig: api.legacyGet, saveAiConfig: api.save } }));
+vi.mock("@/services/AgentAiConfigService", () => ({ agentAiConfigService: { getAiConfig: api.get, saveAiConfig: api.save } }));
+vi.mock("@/services/AuthService", () => ({ AuthService: { getAiConfig: api.legacyGet, saveAiConfig: api.save } }));
 let root: Root | undefined;
 let container: HTMLDivElement;
 async function render(element: React.ReactNode) {
