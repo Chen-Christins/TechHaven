@@ -51,9 +51,10 @@ export class WebSocketClient {
      */
     constructor(path: string, options: WebSocketClientOptions = {}) {
         const explicit = import.meta.env.VITE_WS_URL;
+        const useProxy = import.meta.env.VITE_USE_PROXY === "true";
         const wsProto = window.location.protocol === "https:" ? "wss" : "ws";
         const isLoopback = !explicit || /^wss?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?/i.test(explicit);
-        const baseUrl = isLoopback ? `${wsProto}://${window.location.host}` : explicit;
+        const baseUrl = isLoopback || useProxy ? `${wsProto}://${window.location.host}` : explicit;
         const cleanBase = baseUrl.replace(/\/+$/, "");
         const cleanPath = path.startsWith("/") ? path : `/${path}`;
         this.basePath = `${cleanBase}${cleanPath}`;
