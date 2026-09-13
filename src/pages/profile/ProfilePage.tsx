@@ -87,15 +87,23 @@ const Profile: React.FC = () => {
     const [followersCount, setFollowersCount] = useState(0);
     const [userStats, setUserStats] = useState<UserStats | null>(null);
     const [searchParams, setSearchParams] = useSearchParams();
+    const isOwnProfile = isAuthenticated && String(currentUser?.id) === String(id);
+    const visibleTabs = isOwnProfile ? TABS : TABS.filter((tab) => tab.key !== "achievements");
+
     const [activeTab, setActiveTab] = useState<TabKey>(() => {
         const tab = searchParams.get("tab") as TabKey | null;
-        if (tab && TABS.some((t) => t.key === tab)) {
+        if (tab && visibleTabs.some((t) => t.key === tab)) {
             return tab;
         }
         return "overview";
     });
 
-    const isOwnProfile = isAuthenticated && String(currentUser?.id) === String(id);
+    useEffect(() => {
+        if (!isOwnProfile && activeTab === "achievements") {
+            setActiveTab("overview");
+            setSearchParams({ tab: "overview" }, { replace: true });
+        }
+    }, [isOwnProfile, activeTab, setSearchParams]);
 
     useEffect(() => {
         if (!id) {
@@ -639,7 +647,7 @@ const Profile: React.FC = () => {
                 {/* Main content area */}
                 <main className={styles.content}>
                     <nav className={styles.contentTabs}>
-                        {TABS.map((tab) => (
+                        {visibleTabs.map((tab) => (
                             <button
                                 key={tab.key}
                                 className={`${styles.contentTab} ${activeTab === tab.key ? styles.contentTabActive : ""}`}
