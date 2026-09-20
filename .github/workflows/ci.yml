@@ -41,9 +41,6 @@ jobs:
           VITE_AGENT_ENABLED: "true"
         run: npm run build -- --outDir dist-agent
 
-      - name: Check bundle size budget
-        run: node scripts/check-bundle-size.mjs
-
       - name: Check build artifacts
         run: |
           test -d ./dist

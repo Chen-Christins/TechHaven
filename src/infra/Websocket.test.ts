@@ -227,4 +227,88 @@ describe("WebSocket 建连 token 处理", () => {
 
         expect(client.send("stale message")).toBe(false);
     });
+
+    it("连接建立后启动心跳定时器", () => {
+        vi.useFakeTimers();
+        const client = new WebSocketClient("/ws/v1/notification", { heartbeatInterval: 30000 });
+        captureConsole(client, 1);
+        const socket = MockWebSocket.instances[0];
+        socket.readyState = MockWebSocket.OPEN;
+        socket.onopen?.();
+
+        vi.advanceTimersByTime(30000);
+        expect(socket.sent).toContainEqual('{"type":"ping"}');
+
+        vi.advanceTimersByTime(30000);
+        expect(socket.sent.filter((s) => s === '{"type":"ping"}')).toHaveLength(2);
+
+        vi.useRealTimers();
+    });
+
+    it("连接关闭后停止心跳", () => {
+        vi.useFakeTimers();
+        const client = new WebSocketClient("/ws/v1/notification", { heartbeatInterval: 30000 });
+        captureConsole(client, 1);
+        const socket = MockWebSocket.instances[0];
+        socket.readyState = MockWebSocket.OPEN;
+        socket.onopen?.();
+
+        vi.advanceTimersByTime(30000);
+        expect(socket.sent).toContainEqual('{"type":"ping"}');
+
+        socket.readyState = MockWebSocket.CLOSED;
+        socket.onclose?.({ code: 1000, reason: "", wasClean: true } as CloseEvent);
+
+        socket.sent = [];
+        vi.advanceTimersByTime(60000);
+        expect(socket.sent).not.toContainEqual('{"type":"ping"}');
+
+        vi.useRealTimers();
+    });
+
+    it("disconnect() 后停止心跳", () => {
+        vi.useFakeTimers();
+        const client = new WebSocketClient("/ws/v1/notification", { heartbeatInterval: 30000 });
+        captureConsole(client, 1);
+        const socket = MockWebSocket.instances[0];
+        socket.readyState = MockWebSocket.OPEN;
+        socket.onopen?.();
+
+        vi.advanceTimersByTime(30000);
+        expect(socket.sent).toContainEqual('{"type":"ping"}');
+
+        client.disconnect();
+
+        socket.sent = [];
+        vi.advanceTimersByTime(60000);
+        expect(socket.sent).not.toContainEqual('{"type":"ping"}');
+
+        vi.useRealTimers();
+    });
+
+    it("pong 消息不触发用户注册的 handler", () => {
+        const client = new WebSocketClient("/ws/v1/notification");
+        captureConsole(client, 1);
+        const socket = MockWebSocket.instances[0];
+        const handler = vi.fn();
+        client.onMessage("*", handler);
+
+        socket.onmessage?.({ data: JSON.stringify({ type: "pong" }) } as MessageEvent);
+
+        expect(handler).not.toHaveBeenCalled();
+    });
+
+    it("heartbeatInterval 设为 0 时禁用心跳", () => {
+        vi.useFakeTimers();
+        const client = new WebSocketClient("/ws/v1/notification", { heartbeatInterval: 0 });
+        captureConsole(client, 1);
+        const socket = MockWebSocket.instances[0];
+        socket.readyState = MockWebSocket.OPEN;
+        socket.onopen?.();
+
+        vi.advanceTimersByTime(60000);
+        expect(socket.sent).not.toContainEqual('{"type":"ping"}');
+
+        vi.useRealTimers();
+    });
 });
