@@ -10,6 +10,7 @@ export interface WebSocketClientOptions {
     reconnectDelay?: number;
     maxReconnectDelay?: number;
     maxPendingMessages?: number;
+    heartbeatInterval?: number;
 }
 
 /** WebSocket 服务端错误帧（与 HTTP API 同构的 errno / errstr 格式） */
@@ -45,6 +46,8 @@ export class WebSocketClient {
     /** 每次建连递增；旧连接的异步事件不能影响新连接。 */
     private connectionGeneration = 0;
     private hasOpened = false;
+    private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
+    private readonly heartbeatInterval: number;
 
     /**
      * @param path WebSocket 路径，如 "/notification"
@@ -62,6 +65,7 @@ export class WebSocketClient {
         this.reconnectDelay = Math.max(0, options.reconnectDelay ?? 1000);
         this.maxReconnectDelay = Math.max(this.reconnectDelay, options.maxReconnectDelay ?? 30000);
         this.maxPendingMessages = Math.max(0, options.maxPendingMessages ?? 100);
+        this.heartbeatInterval = Math.max(0, options.heartbeatInterval ?? 30000);
 
         window.addEventListener(
             "beforeunload",
@@ -145,6 +149,7 @@ export class WebSocketClient {
                     break;
                 }
             }
+            this.startHeartbeat();
             this.dispatchHandlers(this.openHandlers, undefined, "open");
         };
 
@@ -157,6 +162,11 @@ export class WebSocketClient {
                 data = JSON.parse(event.data);
             } catch {
                 this.dispatchMessage("*", event.data);
+                return;
+            }
+
+            // 心跳响应，静默处理
+            if (this.isMessageRecord(data) && data.type === "pong") {
                 return;
             }
 
@@ -185,6 +195,7 @@ export class WebSocketClient {
             if (!isCurrentConnection()) {
                 return;
             }
+            this.stopHeartbeat();
             console.log("[WS] 连接关闭, code:", event.code, "reason:", event.reason || "(无)");
             this.dispatchHandlers(this.closeHandlers, event, "close");
             if (hasOpened && !this.intentionalClose) {
@@ -203,6 +214,7 @@ export class WebSocketClient {
     }
 
     disconnect() {
+        this.stopHeartbeat();
         this.intentionalClose = true;
         this.connectionGeneration++;
         this.clearReconnectTimer();
@@ -307,6 +319,25 @@ export class WebSocketClient {
         if (this.reconnectTimer) {
             clearTimeout(this.reconnectTimer);
             this.reconnectTimer = null;
+        }
+    }
+
+    private startHeartbeat(): void {
+        this.stopHeartbeat();
+        if (this.heartbeatInterval <= 0) {
+            return;
+        }
+        this.heartbeatTimer = setInterval(() => {
+            if (this.ws?.readyState === WebSocket.OPEN) {
+                this.ws.send(JSON.stringify({ type: "ping" }));
+            }
+        }, this.heartbeatInterval);
+    }
+
+    private stopHeartbeat(): void {
+        if (this.heartbeatTimer) {
+            clearInterval(this.heartbeatTimer);
+            this.heartbeatTimer = null;
         }
     }
 
